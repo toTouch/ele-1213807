@@ -1,5 +1,9 @@
 package com.xiliulou.electricity.vo.userinfo;
 
+import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
+import com.xiliulou.electricity.vo.DetailsUserInfoVo;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.EleDepositRefundVO;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -139,5 +143,23 @@ public class UserEleInfoVO {
      * 所属分组
      */
     private List<UserInfoGroupIdAndNameVO> groupList;
+    
+    /**
+     * 用户基本信息
+     */
+    private DetailsUserInfoVo basicInfo;
+    /**
+     * 电池信息
+     */
+    private DetailsBatteryInfoVo batteryInfo;
+    /**
+     * 滞纳金
+     */
+    private EleBatteryServiceFeeVO batteryServiceFee;
+    
+    /**
+     * 退押
+     */
+    private EleDepositRefundVO eleDepositRefund;
 
 }

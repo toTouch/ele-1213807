@@ -146,6 +146,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
 import com.xiliulou.electricity.vo.DetailsUserInfoVo;
+import com.xiliulou.electricity.vo.EleDepositRefundVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
@@ -187,6 +188,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -2261,76 +2263,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        DetailsUserInfoVo vo = new DetailsUserInfoVo();
-        BeanUtils.copyProperties(userInfo, vo);
-        vo.setUserCertificationTime(userInfo.getCreateTime());
-        
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        vo.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-        vo.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
-        
-        Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
-        vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
-        
-        UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
-        BeanUtils.copyProperties(userTurnoverVo, vo);
-        
-        vo.setCarRentalPackageOrderAmountTotal(
-                carRentalPackageOrderBizService.queryAmountTotalByUid(userInfo.getTenantId(), userInfo.getUid()));
-        vo.setCarRentalPackageOrderSlippageAmountTotal(
-                carRentalPackageOrderSlippageService.selectPaySuccessAmountTotal(userInfo.getTenantId(),
-                        userInfo.getUid()));
-        
-        // 设置企业信息
-        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(uid);
-        if (Objects.nonNull(enterpriseChannelUserVO)) {
-            vo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
-        }
-        
-        // 设置电子签名信息
-        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(),
-                Long.valueOf(TenantContextHolder.getTenantId()));
-        if (Objects.nonNull(eleUserEsignRecord)) {
-            vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
-            vo.setSignFinishStatus(Objects.equals(1, eleUserEsignRecord.getSignFinishStatus())
-                    ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode());
-        } else {
-            vo.setSignFinishStatus(SignStatusEnum.UNSIGNED.getCode());
-        }
-        
-        List<UserOauthBind> userOauthBinds = userOauthBindService.selectListByUidAndPhone(vo.getPhone(), uid, tenantId);
-        Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList())
-                .stream().collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
-        
-        vo.setBindWX(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_WX_PRO)) ? UserOauthBind.STATUS_BIND_VX
-                : UserOauthBind.STATUS_UN_BIND_VX);
-        vo.setBindAlipay(
-                this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY
-                        : UserOauthBind.STATUS_UN_BIND_ALIPAY);
-        
-        // 邀请人是否可被修改
-        Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
-        MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid);
-        if (Objects.isNull(merchantInviterVO)) {
-            vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_NOT_MODIFY.getCode());
-        } else {
-            vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_MODIFY.getCode());
-            if (Objects.equals(merchantInviterVO.getInviterSource(),
-                    UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
-                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
-            }
-        }
-        
-        // 邀请人名称
-        vo.setInviterName(queryFinalInviterUserName(uid));
-        // 邀请人来源
-        vo.setInviterSource(inviterSource);
-        // 是否限制换电套餐购买次数
-        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
-        vo.setEleLimit(
-                Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
-        
-        return R.ok(vo);
+        return R.ok(getBasicInfo(userInfo, tenantId));
     }
     
     /**
@@ -2964,6 +2897,148 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(userEleInfoVOS)) {
             return R.ok(Collections.emptyList());
         }
+    
+    
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(getEleListInfo(userEleInfoVOS));
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+        
+        return R.ok(userEleInfoVOS);
+    }
+    
+    @Override
+    @Slave
+    public R queryEleListCount(UserInfoQuery userInfoQuery) {
+        Integer count = userInfoMapper.queryEleListCount(userInfoQuery);
+        
+        return R.ok(count);
+    }
+    
+    @Override
+    @Slave
+    public R queryEleListForPro(UserInfoQuery userInfoQuery) {
+        List<UserEleInfoVO> userEleInfoVOS = userInfoMapper.queryEleList(userInfoQuery);
+        if (ObjectUtil.isEmpty(userEleInfoVOS)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        // 查询会员列表
+        CompletableFuture<Void>[] eleListInfo = getEleListInfo(userEleInfoVOS);
+        
+        // 查询用户基本信息
+        Integer tenantId = TenantContextHolder.getTenantId();
+        CompletableFuture<Void> queryBasicInfo = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(item.getUid());
+                if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
+                    item.setBasicInfo(null);
+                }
+                
+                item.setBasicInfo(getBasicInfo(userInfo, tenantId));
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user basic info error!", e);
+            return null;
+        });
+        
+        // 查询用户电池信息
+        CompletableFuture<Void> queryBatteryInfo = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(item.getUid());
+                if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
+                    item.setBatteryInfo(null);
+                }
+                
+                item.setBatteryInfo(getBatteryInfo(userInfo));
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user battery info error!", e);
+            return null;
+        });
+        
+        // 查询用户电池滞纳金
+        CompletableFuture<Void> queryBatteryServiceFee = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(item.getUid());
+                if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
+                    item.setBatteryServiceFee(null);
+                }
+                
+                item.setBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo.getUid()));
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user battery serviceFee error!", e);
+            return null;
+        });
+        
+        // 押金是否可退
+        CompletableFuture<Void> queryDepositInfo = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                EleDepositRefundVO eleDepositRefundVO = new EleDepositRefundVO();
+                
+                UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(item.getUid());
+                if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
+                    eleDepositRefundVO.setRefundFlag(false);
+                    item.setEleDepositRefund(eleDepositRefundVO);
+                    return;
+                }
+                
+                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userBatteryDeposit)) {
+                    eleDepositRefundVO.setRefundFlag(false);
+                    item.setEleDepositRefund(eleDepositRefundVO);
+                    return;
+                }
+                
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                if (Objects.isNull(eleDepositOrder)) {
+                    eleDepositRefundVO.setRefundFlag(false);
+                    item.setEleDepositRefund(eleDepositRefundVO);
+                    return;
+                }
+                
+                eleDepositRefundVO.setStatus(eleDepositOrder.getStatus());
+                eleDepositRefundVO.setOrderType(eleDepositOrder.getOrderType());
+                
+                List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(userBatteryDeposit.getOrderId());
+                // 订单已退押或正在退押中
+                if (!CollectionUtils.isEmpty(eleRefundOrders)) {
+                    for (EleRefundOrder e : eleRefundOrders) {
+                        if (EleRefundOrder.STATUS_SUCCESS.equals(e.getStatus()) || EleRefundOrder.STATUS_REFUND.equals(e.getStatus())) {
+                            eleDepositRefundVO.setRefundFlag(false);
+                            item.setEleDepositRefund(eleDepositRefundVO);
+                            return;
+                        }
+                    }
+                }
+                
+                eleDepositRefundVO.setRefundFlag(true);
+                item.setEleDepositRefund(eleDepositRefundVO);
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user deposit info error!", e);
+            return null;
+        });
+        
+        CompletableFuture<Void>[] resultFuture = Arrays.copyOf(eleListInfo, eleListInfo.length + 4);
+        resultFuture[resultFuture.length - 4] = queryBasicInfo;
+        resultFuture[resultFuture.length - 3] = queryBatteryInfo;
+        resultFuture[resultFuture.length - 2] = queryBatteryServiceFee;
+        resultFuture[resultFuture.length - 1] = queryDepositInfo;
+        
+        try {
+            CompletableFuture.allOf(resultFuture).get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+        
+        return R.ok(userEleInfoVOS);
+    }
+    
+    private CompletableFuture<Void>[] getEleListInfo(List<UserEleInfoVO> userEleInfoVOS) {
         // 获取用户电池套餐相关信息
         CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
@@ -3053,24 +3128,88 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryMemberCardInfo,
-                queryUserOtherInfo, queryUserGroupInfo);
-        
-        try {
-            resultFuture.get(10, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            log.error("DATA SUMMARY BROWSING ERROR!", e);
-        }
-        
-        return R.ok(userEleInfoVOS);
+        return new CompletableFuture[] {queryUserBatteryMemberCardInfo, queryUserOtherInfo, queryUserGroupInfo};
     }
     
-    @Override
-    @Slave
-    public R queryEleListCount(UserInfoQuery userInfoQuery) {
-        Integer count = userInfoMapper.queryEleListCount(userInfoQuery);
+    private DetailsUserInfoVo getBasicInfo(UserInfo userInfo, Integer tenantId) {
+        Long uid = userInfo.getUid();
+        DetailsUserInfoVo vo = new DetailsUserInfoVo();
+        BeanUtils.copyProperties(userInfo, vo);
+        vo.setUserCertificationTime(userInfo.getCreateTime());
         
-        return R.ok(count);
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        vo.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        vo.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
+        
+        Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
+        vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
+        
+        UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
+        BeanUtils.copyProperties(userTurnoverVo, vo);
+        
+        vo.setCarRentalPackageOrderAmountTotal(carRentalPackageOrderBizService.queryAmountTotalByUid(userInfo.getTenantId(), userInfo.getUid()));
+        vo.setCarRentalPackageOrderSlippageAmountTotal(carRentalPackageOrderSlippageService.selectPaySuccessAmountTotal(userInfo.getTenantId(), userInfo.getUid()));
+        
+        // 设置企业信息
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(uid);
+        if (Objects.nonNull(enterpriseChannelUserVO)) {
+            vo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
+        }
+        
+        // 设置电子签名信息
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
+        if (Objects.nonNull(eleUserEsignRecord)) {
+            vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
+            vo.setSignFinishStatus(
+                    Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode());
+        } else {
+            vo.setSignFinishStatus(SignStatusEnum.UNSIGNED.getCode());
+        }
+        
+        List<UserOauthBind> userOauthBinds = userOauthBindService.selectListByUidAndPhone(vo.getPhone(), uid, tenantId);
+        Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
+        
+        vo.setBindWX(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_WX_PRO)) ? UserOauthBind.STATUS_BIND_VX : UserOauthBind.STATUS_UN_BIND_VX);
+        vo.setBindAlipay(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
+        
+        // 邀请人是否可被修改
+        Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
+        MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid);
+        if (Objects.isNull(merchantInviterVO)) {
+            vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_NOT_MODIFY.getCode());
+        } else {
+            vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_MODIFY.getCode());
+            if (Objects.equals(merchantInviterVO.getInviterSource(), UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
+                inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
+            }
+        }
+        
+        // 邀请人名称
+        vo.setInviterName(queryFinalInviterUserName(uid));
+        // 邀请人来源
+        vo.setInviterSource(inviterSource);
+        // 是否限制换电套餐购买次数
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        vo.setEleLimit(Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
+        
+        return vo;
+    }
+    
+    private DetailsBatteryInfoVo getBatteryInfo(UserInfo userInfo) {
+        DetailsBatteryInfoVo vo = new DetailsBatteryInfoVo();
+        vo.setUid(userInfo.getUid());
+        
+        // 用户电池押金
+        queryUserBatteryDeposit(vo, userInfo);
+        
+        // 用户会员信息
+        queryUserBatteryMemberCard(vo, userInfo);
+        
+        // 用户电池信息
+        queryUserBattery(vo, userInfo);
+        
+        return vo;
     }
     
     @Override
