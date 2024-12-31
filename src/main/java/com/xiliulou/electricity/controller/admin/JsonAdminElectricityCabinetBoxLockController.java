@@ -28,12 +28,19 @@ public class JsonAdminElectricityCabinetBoxLockController {
     }
 
 
+
     @PostMapping(value = "/admin/electricityCabinetBoxLock/count")
     public R queryCount(@RequestBody ElectricityCabinetBoxLockPageQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
         return R.ok(electricityCabinetBoxLockService.queryCount(query));
     }
 
+    /**
+     * 仓门启用，当前接口只用于锁仓列表的启用
+     *
+     * @param eleOuterCommandQuery eleOuterCommandQuery
+     * @return R
+     */
     @PostMapping(value = "/admin/electricityCabinet/enableBoxCell")
     public R enableBoxCell(@RequestBody EleOuterCommandQuery eleOuterCommandQuery) {
         return electricityCabinetBoxLockService.enableBoxCell(eleOuterCommandQuery);
