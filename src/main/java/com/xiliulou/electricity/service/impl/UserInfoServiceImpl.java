@@ -3028,17 +3028,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! query user battery info error!", e);
             return null;
         });
-        
+    
         // 查询用户电池滞纳金
         CompletableFuture<Void> queryBatteryServiceFee = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
-                UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(item.getUid());
-                if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
-                    item.setBatteryServiceFee(null);
-                    return;
-                }
-                
-                item.setBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo.getUid()));
+                item.setBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(item.getUid()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery serviceFee error!", e);
@@ -3049,15 +3043,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryDepositInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
                 EleDepositRefundVO eleDepositRefundVO = new EleDepositRefundVO();
-                
-                UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(item.getUid());
-                if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
-                    eleDepositRefundVO.setRefundFlag(false);
-                    item.setEleDepositRefund(eleDepositRefundVO);
-                    return;
-                }
-                
-                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
                 if (Objects.isNull(userBatteryDeposit)) {
                     eleDepositRefundVO.setRefundFlag(false);
                     item.setEleDepositRefund(eleDepositRefundVO);
@@ -3101,12 +3087,52 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! query user deposit info error!", e);
             return null;
         });
+    
+        // 租金是否可退
+        CompletableFuture<Void> rentRefundInfo = CompletableFuture.runAsync(() -> {
+            userEleInfoVOS.forEach(item -> {
+                item.setRentRefundFlag(false);
+            
+                // 查询订单：支付成功+生效中+交易方式：线上和线下
+                List<ElectricityMemberCardOrder> usingOrders = electricityMemberCardOrderService.listByUidAndUseStatus(item.getUid(), tenantId,
+                        ElectricityMemberCardOrder.USE_STATUS_USING, List.of(ElectricityMemberCardOrder.ONLINE_PAYMENT, ElectricityMemberCardOrder.OFFLINE_PAYMENT));
+                if (CollectionUtils.isNotEmpty(usingOrders)) {
+                    // 有使用中的订单
+                    for (ElectricityMemberCardOrder usingOrder : usingOrders) {
+                        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(usingOrder.getMemberCardId());
+                        // 如果是可退套餐,且未过可退期，则可退
+                        if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)
+                                && usingOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000 <= System.currentTimeMillis()) {
+                            item.setRentRefundFlag(true);
+                            return;
+                        }
+                    }
+                } else {
+                    // 查询未使用的订单
+                    List<ElectricityMemberCardOrder> noUsingOrders = electricityMemberCardOrderService.listByUidAndUseStatus(item.getUid(), tenantId,
+                            ElectricityMemberCardOrder.USE_STATUS_NOT_USE, List.of(ElectricityMemberCardOrder.ONLINE_PAYMENT, ElectricityMemberCardOrder.OFFLINE_PAYMENT));
+                    if (CollectionUtils.isNotEmpty(noUsingOrders)) {
+                        for (ElectricityMemberCardOrder noUsingOrder : noUsingOrders) {
+                            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(noUsingOrder.getMemberCardId());
+                            if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)) {
+                                item.setRentRefundFlag(true);
+                                return;
+                            }
+                        }
+                    }
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("ELE ERROR! query user rentRefundFlag error!", e);
+            return null;
+        });
         
-        CompletableFuture<Void>[] resultFuture = Arrays.copyOf(elePropertiesInfos, elePropertiesInfos.length + 4);
-        resultFuture[resultFuture.length - 4] = queryBasicInfo;
-        resultFuture[resultFuture.length - 3] = queryBatteryInfo;
-        resultFuture[resultFuture.length - 2] = queryBatteryServiceFee;
-        resultFuture[resultFuture.length - 1] = queryDepositInfo;
+        CompletableFuture<Void>[] resultFuture = Arrays.copyOf(elePropertiesInfos, elePropertiesInfos.length + 5);
+        resultFuture[resultFuture.length - 5] = queryBasicInfo;
+        resultFuture[resultFuture.length - 4] = queryBatteryInfo;
+        resultFuture[resultFuture.length - 3] = queryBatteryServiceFee;
+        resultFuture[resultFuture.length - 2] = queryDepositInfo;
+        resultFuture[resultFuture.length - 1] = rentRefundInfo;
         
         try {
             CompletableFuture.allOf(resultFuture).get(10, TimeUnit.SECONDS);

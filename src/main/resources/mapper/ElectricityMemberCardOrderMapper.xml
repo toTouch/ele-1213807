@@ -614,4 +614,19 @@
         from t_electricity_member_card_order
         where external_agreement_no = #{externalAgreementNo}
     </select>
+    
+    <select id="selectListByUidAndUseStatus" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+        <include refid="column"/>
+        from t_electricity_member_card_order
+        where uid = #{uid}
+        and tenant_id = #{tenantId}
+        and use_status = #{useStatus}
+        and pay_type in
+        <foreach collection="payTypeList" item="payType" index="index" open="(" close=")" separator=",">
+            #{payType}
+        </foreach>
+        and status = 1
+    </select>
+
 </mapper>

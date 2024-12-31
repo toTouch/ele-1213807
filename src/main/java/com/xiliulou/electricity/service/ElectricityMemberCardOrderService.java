@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -175,4 +174,6 @@ public interface ElectricityMemberCardOrderService {
      * @return 套餐订单
      */
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
+    
+    List<ElectricityMemberCardOrder> listByUidAndUseStatus(Long uid, Integer tenantId, Integer useStatus, List<Integer> payTypeList);
 }

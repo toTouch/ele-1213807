@@ -161,5 +161,10 @@ public class UserEleInfoVO {
      * 退押
      */
     private EleDepositRefundVO eleDepositRefund;
+    
+    /**
+     * 退租：true-可退，false-不可退
+     */
+    private Boolean rentRefundFlag;
 
 }

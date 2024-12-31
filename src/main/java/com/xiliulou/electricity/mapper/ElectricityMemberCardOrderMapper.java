@@ -75,4 +75,7 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     ElectricityMemberCardOrder selectOrderByAgreementNoAndIssue(@Param("externalAgreementNo") String externalAgreementNo, @Param("issue") Integer issue);
     
     List<ElectricityMemberCardOrder> selectListOrderByExternalAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
+    
+    List<ElectricityMemberCardOrder> selectListByUidAndUseStatus(@Param("uid") Long uid, @Param("tenantId") Integer tenantId, @Param("useStatus") Integer useStatus,
+            @Param("payTypeList") List<Integer> payTypeList);
 }
