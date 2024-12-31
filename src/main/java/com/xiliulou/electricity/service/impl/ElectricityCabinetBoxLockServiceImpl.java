@@ -1,16 +1,33 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxLockMapper;
+import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxLockService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author renhang
@@ -24,6 +41,15 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
 
     @Resource
     private ElectricityCabinetBoxLockMapper electricityCabinetBoxLockMapper;
+
+    @Resource
+    private AssertPermissionService assertPermissionService;
+
+    @Resource
+    private FranchiseeService franchiseeService;
+
+    @Resource
+    private StoreService storeService;
 
     @Override
     public void insertElectricityCabinetBoxLock(ElectricityCabinetBoxLock cabinetBoxLock) {
@@ -75,5 +101,51 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         updateBoxLock.setId(electricityCabinetBoxLock.getId());
         updateBoxLock.setDelFlag(ElectricityCabinetBoxLock.DEL_DEL);
         electricityCabinetBoxLockMapper.updateEleLockBox(updateBoxLock);
+    }
+
+    @Override
+    public List<ElectricityCabinetBoxLockPageVO> queryList(ElectricityCabinetBoxLockPageQuery query) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(user);
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
+        }
+        query.setFranchiseeIds(pair.getRight());
+
+        List<ElectricityCabinetBoxLock> electricityCabinetBoxLocks = electricityCabinetBoxLockMapper.listCabinetBoxLock(query);
+        if (CollUtil.isEmpty(electricityCabinetBoxLocks)) {
+            return CollUtil.newArrayList();
+        }
+
+        return electricityCabinetBoxLocks.stream().map(item -> {
+            ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
+            BeanUtil.copyProperties(item, vo);
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
+            Store store = storeService.queryByIdFromCache(item.getStoreId());
+            vo.setStoreName(Objects.nonNull(store) ? store.getName() : null);
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Long queryCount(ElectricityCabinetBoxLockPageQuery query) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(user);
+        if (!pair.getLeft()) {
+            return NumberConstant.ZERO_L;
+        }
+        query.setFranchiseeIds(pair.getRight());
+
+        return electricityCabinetBoxLockMapper.countCabinetBoxLock(query);
     }
 }

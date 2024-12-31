@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
+import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 
 public interface ElectricityCabinetBoxLockMapper {
@@ -12,4 +15,8 @@ public interface ElectricityCabinetBoxLockMapper {
     ElectricityCabinetBoxLock selectBoxLockByEidAndCell(@Param("eid") Integer eid,@Param("cellNo") String cellNo);
 
     void updateEleLockBox(ElectricityCabinetBoxLock updateBoxLock);
+
+    List<ElectricityCabinetBoxLock> listCabinetBoxLock(ElectricityCabinetBoxLockPageQuery query);
+
+    Long countCabinetBoxLock(ElectricityCabinetBoxLockPageQuery query);
 }
