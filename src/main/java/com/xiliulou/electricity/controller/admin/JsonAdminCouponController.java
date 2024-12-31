@@ -70,7 +70,7 @@ public class JsonAdminCouponController extends BaseController {
      */
     @GetMapping("/admin/coupon/search")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,@RequestParam(value = "discountType",required = false) Integer discountType) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -79,7 +79,7 @@ public class JsonAdminCouponController extends BaseController {
             offset = 0L;
         }
         
-        CouponQuery query = CouponQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).franchiseeId(franchiseeId).build();
+        CouponQuery query = CouponQuery.builder().size(size).discountType(discountType).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).franchiseeId(franchiseeId).build();
         
         return R.ok(couponService.search(query));
     }
@@ -184,7 +184,8 @@ public class JsonAdminCouponController extends BaseController {
     @GetMapping(value = "/admin/coupon/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "discountType", required = false) Integer discountType,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "applyType", required = false) Integer applyType, @RequestParam(value = "superposition", required = false) Integer superposition) {
+            @RequestParam(value = "applyType", required = false) Integer applyType, @RequestParam(value = "superposition", required = false) Integer superposition,
+            @RequestParam(value = "useScope",required = false) Integer useScope) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -211,7 +212,7 @@ public class JsonAdminCouponController extends BaseController {
         }
         
         CouponQuery couponQuery = CouponQuery.builder().offset(offset).size(size).name(name).discountType(discountType).franchiseeId(franchiseeId).applyType(applyType)
-                .superposition(superposition).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
+                .superposition(superposition).useScope(useScope).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
         return couponService.queryCouponList(couponQuery);
     }
     
@@ -219,7 +220,7 @@ public class JsonAdminCouponController extends BaseController {
     @GetMapping(value = "/admin/coupon/count")
     public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "applyType", required = false) Integer applyType,
-            @RequestParam(value = "superposition", required = false) Integer superposition) {
+            @RequestParam(value = "superposition", required = false) Integer superposition,@RequestParam(value = "useScope",required = false) Integer useScope) {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -242,7 +243,7 @@ public class JsonAdminCouponController extends BaseController {
         }
         
         CouponQuery couponQuery = CouponQuery.builder().name(name).discountType(discountType).franchiseeId(franchiseeId).applyType(applyType).superposition(superposition)
-                .tenantId(tenantId).franchiseeIds(franchiseeIds).build();
+                .tenantId(tenantId).useScope(useScope).franchiseeIds(franchiseeIds).build();
         return couponService.queryCount(couponQuery);
     }
     

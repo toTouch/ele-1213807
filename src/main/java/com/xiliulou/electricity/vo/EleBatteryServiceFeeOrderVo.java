@@ -126,6 +126,11 @@ public class EleBatteryServiceFeeOrderVo {
     private String paymentChannel;
     
     /**
+     * 套餐过期保护期，单位:小时，0-24表示套餐过期滞纳金起算时间，-1表示套餐冻结滞纳金
+     */
+    private Integer expiredProtectionTime;
+    
+    /**
      * 租户名称
      */
     private String tenantName;

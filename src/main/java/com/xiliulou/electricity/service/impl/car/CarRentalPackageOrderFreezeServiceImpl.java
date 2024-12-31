@@ -101,11 +101,10 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      * @param applyTerm  申请期限
      * @param applyTime  申请时间
      * @param autoEnable 是否自动启用
-     * @return 启用时间戳，实际冻结期限(单位：天)
+     * @return 启用时间戳
      */
-    @Override
-    public Pair<Long, Integer> calculateRealTerm(Integer applyTerm, Long applyTime, boolean autoEnable) {
-        if (!ObjectUtils.allNotNull(applyTerm, applyTime, autoEnable)) {
+    private Long calculateRealTerm(Integer applyTerm, Long auditTime, boolean autoEnable) {
+        if (!ObjectUtils.allNotNull(applyTerm, auditTime, autoEnable)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         // 实际期限、启用算法
@@ -115,14 +114,12 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
         // 操作时间
         long nowTime = System.currentTimeMillis();
         // 启用时间：申请时间 + 申请期限
-        Long enableTime = applyTime + (applyTerm * TimeConstant.DAY_MILLISECOND);
-        Integer realTerm = applyTerm;
+        Long enableTime = auditTime + (applyTerm * TimeConstant.DAY_MILLISECOND);
         // 提前启用
         if (!autoEnable) {
             enableTime = nowTime;
-            realTerm = Integer.valueOf(String.valueOf(DateUtils.diffDay(nowTime, applyTime)));
         }
-        return Pair.of(enableTime, realTerm);
+        return enableTime;
     }
 
     /**
@@ -160,12 +157,11 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
         long nowTime = System.currentTimeMillis();
         // 申请期限
         Integer applyTerm = freezeEntity.getApplyTerm();
-        Long applyTime = freezeEntity.getApplyTime();
-
-        Pair<Long, Integer> realTermPair = calculateRealTerm(applyTerm, applyTime, autoEnable);
-
+//        Long applyTime = freezeEntity.getApplyTime();
+        Long auditTime = freezeEntity.getAuditTime();
+        
         // 启用时间
-        Long enableTime = realTermPair.getLeft();
+        Long enableTime = calculateRealTerm(applyTerm, auditTime, autoEnable);
         Integer status = RentalPackageOrderFreezeStatusEnum.AUTO_ENABLE.getCode();
         // 提前启用
         if (!autoEnable) {

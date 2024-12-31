@@ -200,4 +200,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R bindBattery(BindBatteryRequest bindBatteryRequest);
     
     Integer updatePayCountByUid(UserInfo userInfo);
+
+    UserInfo queryByUidFromDB(Long uid);
 }

@@ -111,6 +111,14 @@ public interface CarRentalPackageOrderSlippageMapper {
      * @return 操作条数
      */
     int insert(CarRentalPackageOrderSlippagePo entity);
-
-
+    
+    
+    /**
+     * 根据套餐购买订单编号和逾期订单类型，查询未支付的逾期订单信息
+     *
+     * @param rentalPackageOrderNos 套餐购买订单编码
+     * @param type                 逾期订单类型：1-过期、2-冻结
+     * @return 逾期订单信息
+     */
+    List<CarRentalPackageOrderSlippagePo> selectListByPackageOrderNosAndType(@Param("rentalPackageOrderNos")List<String> rentalPackageOrderNos, @Param("type")Integer type);
 }

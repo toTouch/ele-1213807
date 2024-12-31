@@ -55,4 +55,6 @@ public interface ShareActivityMapper extends BaseMapper<ShareActivity>{
     List<ShareActivity> selectOnlineActivity(@Param("tenantId") Integer tenantId);
     
     List<ShareAndUserActivityVO> listShareActivity(ShareActivityPageQuery query);
+
+    ShareActivity selectByIdWithDelFlag(@Param("id") Integer id);
 }

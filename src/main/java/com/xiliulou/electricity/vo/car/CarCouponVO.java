@@ -28,6 +28,13 @@ public class CarCouponVO {
     
     /**
      * <p>
+     * Description: 类型1--减免券，2--折扣券，3--天数券
+     * </p>
+     */
+    private Integer discountType;
+    
+    /**
+     * <p>
      * Description: 优惠劵名称
      * </p>
      */
@@ -39,4 +46,11 @@ public class CarCouponVO {
      * </p>
      */
     private BigDecimal amount;
+    
+    /**
+     * <p>
+     * Description: 天数
+     * </p>
+     */
+    private Integer count;
 }

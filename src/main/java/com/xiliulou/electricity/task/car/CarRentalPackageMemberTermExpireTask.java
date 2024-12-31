@@ -20,17 +20,20 @@ import java.util.UUID;
  * 租车套餐购买订单过期 Job
  *
  * @author xiaohui.song
+ * @see CarRentalPackageMemberTermExpireTaskV2
  **/
 @Slf4j
 @Component
 @JobHandler("carRentalPackageMemberTermExpireTask")
+@Deprecated
 public class CarRentalPackageMemberTermExpireTask extends IJobHandler {
-
+    
     @Resource
     private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
-
+    
     /**
      * 会员期限订单过期任务
+     *
      * @param param
      * @return
      * @throws Exception
@@ -39,7 +42,7 @@ public class CarRentalPackageMemberTermExpireTask extends IJobHandler {
     public ReturnT<String> execute(String param) throws Exception {
         MDC.put(CommonConstant.TRACE_ID, UUID.randomUUID().toString().replaceAll("-", ""));
         log.info("CarRentalPackageOrderExpireTask begin.");
-
+        
         Integer offset = 0;
         Integer size = 500;
         if (!StringUtils.isBlank(param)) {
@@ -47,7 +50,7 @@ public class CarRentalPackageMemberTermExpireTask extends IJobHandler {
             offset = ObjectUtils.isEmpty(jsonObjectParam.getInteger("offset")) ? offset : jsonObjectParam.getInteger("offset");
             size = ObjectUtils.isEmpty(jsonObjectParam.getInteger("size")) ? size : jsonObjectParam.getInteger("size");
         }
-
+        
         try {
             carRentalPackageMemberTermBizService.expirePackageOrder(offset, size);
         } catch (Exception e) {
@@ -55,9 +58,9 @@ public class CarRentalPackageMemberTermExpireTask extends IJobHandler {
         } finally {
             MDC.clear();
         }
-
+        
         log.info("CarRentalPackageOrderExpireTask end.");
-
+        
         return IJobHandler.SUCCESS;
     }
 }

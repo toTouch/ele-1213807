@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity.car;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -15,12 +16,14 @@ import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.core.base.enums.ChannelEnum;
+import com.xiliulou.electricity.utils.DateUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -160,6 +163,11 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     private BigDecimal lateFee;
     
     /**
+     * 冻结滞纳金
+     */
+    private BigDecimal freezeLateFee;
+    
+    /**
      * 交易方式
      * <pre>
      *     1-线上
@@ -260,4 +268,19 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
         }
         this.couponArrays = JsonUtil.toJson(new HashSet<>(couponId));
     }
+    
+    
+    public static void main(String[] args) {
+        System.out.println(DateUtil.format(new Date(1732171641556l),"yyyy-MM-dd HH:mm:ss"));
+    
+        long timeAgoEndTime = DateUtils.getTimeAgoEndTime(1);
+        System.out.println(timeAgoEndTime);
+        System.out.println(DateUtil.format(new Date(timeAgoEndTime),"yyyy-MM-dd HH:mm:ss"));
+    
+    
+        long diffMinute = DateUtils.diffDay(1732031999999l, System.currentTimeMillis());
+        System.out.println(7-diffMinute);
+        
+    }
+    
 }

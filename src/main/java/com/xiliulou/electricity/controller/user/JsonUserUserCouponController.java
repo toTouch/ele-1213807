@@ -2,7 +2,10 @@ package com.xiliulou.electricity.controller.user;
 
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserDayCouponService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,9 +32,12 @@ public class JsonUserUserCouponController {
     @Autowired
     private UserCouponService userCouponService;
     
+    @Autowired
+    private UserDayCouponService userDayCouponService;
+    
     //我的优惠券查询
     //status 1--未使用  2--已使用  3--已过期
-    //type  1--减免券，2--打折券，3-体验劵
+    //type  1--减免券，2--打折券，3-天数券
     //TODO 优化  （加分页）
     @Deprecated
     @GetMapping(value = "/user/userCoupon/queryMyCoupon")
@@ -67,6 +74,11 @@ public class JsonUserUserCouponController {
             
             statusList = Arrays.asList(statuses);
         }
+
+        if (CollectionUtils.isEmpty(typeList)){
+            typeList = Collections.singletonList(Coupon.FULL_REDUCTION);
+        }
+
         return userCouponService.queryMyCoupons(statusList, typeList, franchiseeId);
         
     }
@@ -78,4 +90,8 @@ public class JsonUserUserCouponController {
         return userCouponService.getShareCoupon(activityId, couponId);
     }
     
+    @GetMapping(value = "/user/userCoupon/useDayCoupon")
+    public R useDayCoupon(@RequestParam("id") Integer id) {
+        return userDayCouponService.useDayCoupon(id);
+    }
 }
