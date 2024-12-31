@@ -509,10 +509,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             ElectricityConfig electricityConfig, CarRentalPackageMemberTermPo memberTermPo,
             CarRentalPackageOrderPo packageOrderEntity, ElectricityCar electricityCar) {
         
-        // 免除滞纳金
-        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
-            return null;
-        }
+        
         
         // 获取过期保护期毫秒
         long expiredProtectionMillisecond = this.getExpiredProtectionMillisecond(electricityConfig);
@@ -526,6 +523,11 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         // 查询当时购买的订单信息
         if (Objects.isNull(packageOrderEntity)) {
             log.warn("WARN not found car_rental_package_order. orderNo is {}", memberTermPo.getRentalPackageOrderNo());
+            return null;
+        }
+        
+        // 免除滞纳金
+        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
             return null;
         }
         
