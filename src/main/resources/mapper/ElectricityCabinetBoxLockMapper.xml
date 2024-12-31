@@ -69,7 +69,7 @@
             and name like concat('%',#{name},'%')
         </if>
         <if test="sn != null and sn != ''">
-            and sn = #{sn}
+            and sn  like concat('%',#{sn},'%')
         </if>
         <if test="address != null and address != ''">
             and address like concat('%',#{address},'%')
@@ -105,12 +105,11 @@
         select count(1)
         from t_electricity_cabinet_box_lock
         where del_flag=0 and tenant_id = #{tenantId}
-        where del_flag=0 and tenant_id = #{tenantId}
         <if test="name != null and name != ''">
             and name like concat('%',#{name},'%')
         </if>
         <if test="sn != null and sn != ''">
-            and sn = #{sn}
+            and sn like concat('%',#{sn},'%')
         </if>
         <if test="address != null and address != ''">
             and address like concat('%',#{address},'%')
