@@ -222,6 +222,9 @@ public class JsonAdminUserInfoV2Controller {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
         
         return R.ok(carRentalPackageMemberTermBizService.queryUserMemberInfo(tenantId, uid));
         

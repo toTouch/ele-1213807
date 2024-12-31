@@ -633,6 +633,55 @@ public class JsonAdminUserInfoController extends BaseController {
         return userInfoService.queryCarRentalList(userInfoQuery);
     }
     
+    @GetMapping(value = "/admin/userInfo/carRentalList/pro")
+    public R queryCarRentalListForPro(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "sortType", required = false) Integer sortType, @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "carRentalExpireTimeBegin", required = false) Long carRentalExpireTimeBegin,
+            @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
+            @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType,
+            @RequestParam(value = "depositStatus", required = false) Integer depositStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus) {
+        
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).carMemberCardExpireType(carRentalExpireType)
+                .carMemberCardExpireTimeBegin(carRentalExpireTimeBegin).carMemberCardExpireTimeEnd(carRentalExpireTimeEnd).uid(uid).name(name).phone(phone).sortType(sortType)
+                .sortBy(sortBy).carDepositStatus(depositStatus).freezeStatus(packageFreezeStatus).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        verifyCarMemberCardExpireTimeEnd(userInfoQuery);
+        
+        return userInfoService.queryCarRentalListForPro(userInfoQuery);
+    }
+    
     @GetMapping(value = "/admin/userInfo/carRentalCount")
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "sortType", required = false) Integer sortType,

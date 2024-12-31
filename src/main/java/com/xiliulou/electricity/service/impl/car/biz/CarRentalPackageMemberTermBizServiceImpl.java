@@ -592,10 +592,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      */
     @Override
     public UserMemberInfoVo queryUserMemberInfo(Integer tenantId, Long uid) {
-        if (!ObjectUtils.allNotNull(tenantId, uid)) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-        
         // 查看会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {

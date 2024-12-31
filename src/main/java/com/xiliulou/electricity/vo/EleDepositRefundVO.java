@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 退押
@@ -17,4 +19,16 @@ public class EleDepositRefundVO {
     private Boolean refundFlag;
     
     private String orderId;
+    
+    private Integer payType;
+    
+    /**
+     * 可退款金额
+     */
+    private Double payTransAmt;
+    
+    /**
+     * 支付金额
+     */
+    private BigDecimal payAmount;
 }
