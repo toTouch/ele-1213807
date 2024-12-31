@@ -258,7 +258,6 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         // 循环执行
         noExpirOrderSlippageList.forEach(packageMemberTermPo -> {
-            log.info("noExpirOrderSlippage RentalPackageOrderNo:{}",packageMemberTermPo.getRentalPackageOrderNo());
             
             ElectricityCar electricityCar = uidCarMap.get(packageMemberTermPo.getUid());
             UserInfo userInfo = uidUserMap.get(packageMemberTermPo.getUid());
@@ -389,7 +388,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
                     UseStateEnum.EXPIRED.getCode(), null, null);
             
         } catch (Exception e) {
-            log.warn("Exception in late fee processing:", e);
+            log.warn("Exception in late fee processing RentalPackageOrderNo:{},",packageMemberTermPo.getRentalPackageOrderNo(), e);
         }
     }
     
@@ -509,10 +508,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             ElectricityConfig electricityConfig, CarRentalPackageMemberTermPo memberTermPo,
             CarRentalPackageOrderPo packageOrderEntity, ElectricityCar electricityCar) {
         
-        // 免除滞纳金
-        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
-            return null;
-        }
+        
         
         // 获取过期保护期毫秒
         long expiredProtectionMillisecond = this.getExpiredProtectionMillisecond(electricityConfig);
@@ -526,6 +522,11 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         // 查询当时购买的订单信息
         if (Objects.isNull(packageOrderEntity)) {
             log.warn("WARN not found car_rental_package_order. orderNo is {}", memberTermPo.getRentalPackageOrderNo());
+            return null;
+        }
+        
+        // 免除滞纳金
+        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
             return null;
         }
         
@@ -781,7 +782,6 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         
         boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
-        log.info("buildCarLockCtrlHistory, carRentalOrderBizService.retryCarLockCtrl result is {}", result);
         
         CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
         carLockCtrlHistory.setUid(userInfo.getUid());
