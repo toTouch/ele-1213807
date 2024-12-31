@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetBoxLockMapper">
+
+    <sql id="baseSql">
+        id
+        ,name,sn,electricity_cabinet_id,cell_no,lock_type,lock_reason,lock_status_change_time,address,area_id,tenant_id,franchisee_id,store_id,del_flag,create_time,update_time
+    </sql>
+
+    <insert id="insertEleLockBox">
+        INSERT INTO t_electricity_cabinet_box_lock
+        (id,
+         name,
+         sn,
+         electricity_cabinet_id,
+         cell_no,
+         lock_type,
+         lock_reason,
+         lock_status_change_time,
+         address,
+         area_id,
+         tenant_id,
+         franchisee_id,
+         store_id,
+         del_flag,
+         create_time,
+         update_time)
+        VALUES (#{boxLock.id},
+                #{boxLock.name},
+                #{boxLock.sn},
+                #{boxLock.electricityCabinetId},
+                #{boxLock.cellNo},
+                #{boxLock.lockType},
+                #{boxLock.lockReason},
+                #{boxLock.lockStatusChangeTime},
+                #{boxLock.address},
+                #{boxLock.areaId},
+                #{boxLock.tenantId},
+                #{boxLock.franchiseeId},
+                #{boxLock.storeId},
+                #{boxLock.delFlag},
+                #{boxLock.createTime},
+                #{boxLock.updateTime})
+    </insert>
+
+    <update id="updateEleLockBox">
+        UPDATE t_electricity_cabinet_box_lock
+        set del_flag    = #{boxLock.delFlag},
+            update_time = #{boxLock.updateTime}
+        where id = #{boxLock.id}
+    </update>
+
+
+    <select id="selectBoxLockByEidAndCell"
+            resultType="com.xiliulou.electricity.entity.ElectricityCabinetBoxLock">
+        SELECT
+        <include refid="baseSql"/>
+        from t_electricity_cabinet_box_lock
+        where electricity_cabinet_id = #{eid}
+        and cell_no = #{cellNo}
+    </select>
+</mapper>
