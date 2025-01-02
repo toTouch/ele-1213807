@@ -390,6 +390,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
                     // 更新用户保险订单为已失效
                     insuranceOrderService.updateUseStatusByOrderId(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                    // 是否存在未生效的保险
+                    InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
+                    if (Objects.nonNull(insuranceOrder)) {
+                        insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                    }
                 }
                 
                 // 退押金解绑用户所属加盟商
@@ -702,6 +708,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 // 更新用户保险订单为已失效
                 insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                // 是否存在未生效的保险
+                InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
+                if (Objects.nonNull(insuranceOrder)){
+                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                }
             }
             
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
@@ -1290,6 +1302,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 更新用户保险订单为已失效
             insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+            InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
+            if (Objects.nonNull(insuranceOrder)){
+                insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+            }
         }
         
         // 退押金解绑用户所属加盟商
@@ -1495,6 +1512,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 insuranceUserInfoService.deleteById(insuranceUserInfo);
                 // 更新用户保险订单为已失效
                 insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                // 是否存在未生效的保险
+                InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
+                if (Objects.nonNull(insuranceOrder)){
+                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                }
             }
             
             userInfoService.unBindUserFranchiseeId(uid);

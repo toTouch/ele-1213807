@@ -237,6 +237,11 @@ public class BatteryBusinessHandler implements BusinessHandler {
                 
                 // 更新用户保险订单为已失效
                 insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
+                if (Objects.nonNull(insuranceOrder)) {
+                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                }
             }
             
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
