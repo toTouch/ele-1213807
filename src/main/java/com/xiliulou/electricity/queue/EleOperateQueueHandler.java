@@ -276,6 +276,10 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                     lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
                 }
+
+                // 保存租/退二次扫码的自主开仓时间限制
+                redisService.set(CacheConstant.RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY + rentBatteryOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 5L,
+                        TimeUnit.MINUTES);
                 
                 if (finalOpenDTO.getIsProcessFail()) {
                     RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
@@ -747,10 +751,6 @@ public class EleOperateQueueHandler {
             // 给第三方推送用户电池信息和用户信息
             pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(),
                     rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER, rentBatteryOrder.getUid());
-
-            //  保存租电自主开仓的时间限制
-            redisService.set(CacheConstant.RENT_ALLOW_SELF_OPEN_CELL_START_TIME + rentBatteryOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 5L,
-                    TimeUnit.MINUTES);
         }
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),
@@ -764,7 +764,8 @@ public class EleOperateQueueHandler {
             //记录企业用户还电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         }
-        
+
+
     }
     
     //检测租电池

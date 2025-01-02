@@ -2,13 +2,11 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
-import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.request.user.BindBatteryRequest;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.validator.CreateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,52 +25,62 @@ import javax.annotation.Resource;
  */
 @RestController
 public class JsonUserRentBatteryOrderController {
-    
+
     /**
      * 服务对象
      */
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
-    
+
     @Resource
     private UserInfoService userInfoService;
-    
-    //租电池
+
+    /**
+     * 租电池
+     *
+     * @param rentBatteryQuery rentBatteryQuery
+     * @return R
+     */
     @PostMapping("/user/rentBattery")
     public R rentBattery(@RequestBody RentBatteryQuery rentBatteryQuery) {
         return rentBatteryOrderService.rentBattery(rentBatteryQuery);
     }
 
+
     /**
-     * 退电二次扫码判断
+     * 退电
      *
-     * @param electricityCabinetId 柜机id
+     * @param electricityCabinetId electricityCabinetId
      * @return R
      */
-    @PostMapping("/user/returnBattery/check")
-    public R returnBatteryCheck(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
-        return rentBatteryOrderService.returnBatteryCheck(electricityCabinetId);
-    }
-    
-    //还电池
     @PostMapping("/user/returnBattery")
     public R returnBattery(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
         return rentBatteryOrderService.returnBattery(electricityCabinetId);
     }
-    
-    //再次开门
+
+    /**
+     * 再次开门
+     *
+     * @param rentOpenDoorQuery rentOpenDoorQuery
+     * @return R
+     */
     @PostMapping("/user/rentBatteryOrder/openDoor")
     public R openDoor(@RequestBody RentOpenDoorQuery rentOpenDoorQuery) {
         return rentBatteryOrderService.openDoor(rentOpenDoorQuery);
     }
-    
-    
-    //查订单状态（新）
+
+
+    /**
+     * 查订单状态（新）
+     *
+     * @param orderId orderId
+     * @return R
+     */
     @GetMapping("/user/rentBatteryOrder/queryNewStatus")
     public R queryNewStatus(@RequestParam("orderId") String orderId) {
         return rentBatteryOrderService.queryNewStatus(orderId);
     }
-    
+
     /**
      * 小程序端绑定电池
      *
@@ -84,13 +92,27 @@ public class JsonUserRentBatteryOrderController {
         return userInfoService.bindBattery(bindBatteryRequest);
     }
 
+
     /**
-     * 上次租电成功，电池不在仓前端调用自主开仓接口
-     * @param query  query
+     * 退电二次扫码判断
+     *
+     * @param electricityCabinetId 柜机id
      * @return R
      */
-    @PostMapping("/user/rentBattery/lessRentSelfOpenCell")
-    public R lessExchangeSelfOpenCell(@RequestBody @Validated LessExchangeSelfOpenCellQuery query) {
-        return rentBatteryOrderService.lessRentSelfOpenCell(query);
+    @PostMapping("/user/returnBattery/check")
+    public R returnBatteryCheck(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        return rentBatteryOrderService.returnBatteryCheck(electricityCabinetId);
+    }
+
+    /**
+     * 上次租电成功，电池不在仓前端调用自主开仓接口
+     * 二次扫码退电，用户自主开仓
+     *
+     * @param query query
+     * @return R R
+     */
+    @PostMapping("/user/rentBattery/lessRentReturnSelfOpenCell")
+    public R lessRentReturnSelfOpenCell(@RequestBody @Validated LessExchangeSelfOpenCellQuery query) {
+        return rentBatteryOrderService.lessRentReturnSelfOpenCell(query);
     }
 }

@@ -92,7 +92,7 @@ public interface RentBatteryOrderService {
 
     R returnBatteryCheck(Integer electricityCabinetId);
 
-    R lessRentSelfOpenCell(LessExchangeSelfOpenCellQuery query);
+    R lessRentReturnSelfOpenCell(LessExchangeSelfOpenCellQuery query);
 
     /**
      * 根据订单号判断是否租退电订单

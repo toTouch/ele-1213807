@@ -2109,7 +2109,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 
     @Override
-    public R lessRentSelfOpenCell(LessExchangeSelfOpenCellQuery query) {
+    public R lessRentReturnSelfOpenCell(LessExchangeSelfOpenCellQuery query) {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -2126,7 +2126,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         // 构造责任链入参
         ProcessContext<ExchangeAssertProcessDTO> processContext = ProcessContext.builder().code(ExchangeAssertChainTypeEnum.RENT_RETURN_BATTERY_LESS_OPEN_FULL_ASSERT.getCode()).processModel(
-                ExchangeAssertProcessDTO.builder().eid(query.getEid()).cellNo(query.getCellNo()).userInfo(userInfo).orderId(query.getOrderId()).selfOpenCellKey(CacheConstant.RENT_ALLOW_SELF_OPEN_CELL_START_TIME)
+                ExchangeAssertProcessDTO.builder().eid(query.getEid()).cellNo(query.getCellNo()).userInfo(userInfo).orderId(query.getOrderId()).selfOpenCellKey(CacheConstant.RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY)
                         .chainObject(new ExchangeChainDTO()).build()).needBreak(false).build();
         // 校验
         @SuppressWarnings("unchecked")
