@@ -915,5 +915,7 @@ public interface CacheConstant {
     String MUTUAL_EXCHANGE_CONFIG_KEY = "mutual_exchange_config:";
     
     String LOCK_USER_DAY_COUPON_USE_SCOPE = "lock_user_day_coupon_use_scope:%s:%s:%s";
+    
+    String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
 }
 

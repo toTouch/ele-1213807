@@ -15,5 +15,7 @@ public interface EleAuthEntryMapper extends BaseMapper<EleAuthEntry>{
 
 
     Integer update(EleAuthEntry eleAuthEntry);
-
+    
+    List<EleAuthEntry> selectListByIdentifies(@Param("tenantId") Integer tenantId, @Param("identifies") List<Integer> identifies);
+    
 }

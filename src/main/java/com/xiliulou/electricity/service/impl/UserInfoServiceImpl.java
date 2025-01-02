@@ -135,6 +135,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordServi
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
@@ -372,9 +373,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Resource
     private UserInfoExtraService userInfoExtraService;
     
-    @Resource
-    private MerchantService merchantService;
-    
     @Autowired
     CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
@@ -398,6 +396,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private TenantFranchiseeMutualExchangeService mutualExchangeService;
+    
+    @Resource
+    private EmergencyContactService emergencyContactService;
     
     /**
      * 分页查询
@@ -1085,6 +1086,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 UserAuthMessage userAuthMessage = userAuthMessageService.selectLatestByUid(e.getUid());
                 userAuthInfoVo.setMsg(Objects.isNull(userAuthMessage) ? "" : userAuthMessage.getMsg());
             }
+    
+            // 紧急联系人
+            userAuthInfoVo.setEmergencyContactList(emergencyContactService.listVOByUid(e.getUid()));
             
             List<EleUserAuth> list = (List<EleUserAuth>) eleUserAuthService.selectCurrentEleAuthEntriesList(e.getUid())
                     .getData();
@@ -2329,6 +2333,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
         vo.setEleLimit(
                 Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
+    
+        // 紧急联系人
+        vo.setEmergencyContactList(emergencyContactService.listVOByUid(uid));
         
         return R.ok(vo);
     }
