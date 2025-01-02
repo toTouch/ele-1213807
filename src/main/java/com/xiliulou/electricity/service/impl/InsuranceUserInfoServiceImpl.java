@@ -747,13 +747,13 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理!");
+            return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理");
         }
 
         List<InsuranceOrder> insuranceOrders = insuranceOrderService.queryByUid(query.getUid(), query.getType());
         // 用户是否有未生效保险
         if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_EFFECTIVE)).collect(Collectors.toList()))) {
-            return R.fail("402015", "当前用户已有未生效的保险订单，请前往【保险购买记录】查看详情。");
+            return R.fail("402015", "当前用户已有未生效的保险订单，请前往【保险购买记录】查看详情");
         }
 
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
