@@ -4,7 +4,6 @@ import cn.hutool.core.util.IdUtil;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -13,9 +12,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.callback.FreeDepositNotifyService;
-import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
@@ -83,8 +80,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
-import com.xiliulou.electricity.service.installment.InstallmentBizService;
-import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -101,7 +96,6 @@ import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeReq
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
-import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -1845,6 +1839,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Integer updateRefundAmountById(Long id, BigDecimal refundAmount) {
         return eleRefundOrderMapper.updateRefundAmountById(id, refundAmount, System.currentTimeMillis());
+    }
+    
+    @Slave
+    @Override
+    public List<EleRefundOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList) {
+        return eleRefundOrderMapper.selectListByOrderIdList(tenantId, orderIdList);
     }
     
     @Slave

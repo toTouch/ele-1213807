@@ -619,7 +619,10 @@
         select
         <include refid="column"/>
         from t_electricity_member_card_order
-        where uid = #{uid}
+        where uid in
+        <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
         and tenant_id = #{tenantId}
         and use_status = #{useStatus}
         and pay_type in
@@ -628,5 +631,6 @@
         </foreach>
         and status = 1
     </select>
+
 
 </mapper>

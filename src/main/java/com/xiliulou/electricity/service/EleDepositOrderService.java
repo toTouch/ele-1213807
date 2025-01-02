@@ -96,4 +96,5 @@ public interface EleDepositOrderService {
     Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
             BasePayConfig basePayConfig);
     
+    List<EleDepositOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList);
 }

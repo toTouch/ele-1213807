@@ -175,5 +175,5 @@ public interface ElectricityMemberCardOrderService {
      */
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
     
-    List<ElectricityMemberCardOrder> listByUidAndUseStatus(Long uid, Integer tenantId, Integer useStatus, List<Integer> payTypeList);
+    List<ElectricityMemberCardOrder> listByUidAndUseStatus(List<Long> uid, Integer tenantId, Integer useStatus, List<Integer> payTypeList);
 }

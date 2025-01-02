@@ -3170,8 +3170,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Slave
     @Override
-    public List<ElectricityMemberCardOrder> listByUidAndUseStatus(Long uid, Integer tenantId, Integer useStatus, List<Integer> payTypeList) {
-        return electricityMemberCardOrderMapper.selectListByUidAndUseStatus(uid, tenantId, useStatus, payTypeList);
+    public List<ElectricityMemberCardOrder> listByUidAndUseStatus(List<Long> uidList, Integer tenantId, Integer useStatus, List<Integer> payTypeList) {
+        return electricityMemberCardOrderMapper.selectListByUidAndUseStatus(uidList, tenantId, useStatus, payTypeList);
     }
     
     @Override
