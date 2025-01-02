@@ -935,6 +935,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return;
         }
         if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            // 更新保险订单状态=已过期
+            insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
+
             InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
             insuranceUserInfo.setId(item.getId());
             insuranceUserInfo.setUid(item.getUid());
@@ -943,17 +946,16 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             // 当前保险过期，未生效保险立即生效（允许定时任务的时间误差），保险状态更新为未出险
             InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(item.getUid(), item.getType(), InsuranceOrder.NOT_EFFECTIVE);
             if (Objects.isNull(insuranceOrder)) {
+                // 没有承接保险
                 insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
                 this.updateInsuranceUserInfoById(insuranceUserInfo);
-                //更新订单状态=已过期
-                insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
             } else {
                 // 未出险，用户新绑定的保险订单
                 insuranceUserInfo.setIsUse(InsuranceOrder.NOT_USE);
                 insuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
                 this.updateInsuranceUserInfoById(insuranceUserInfo);
-                //更新订单状态
-                insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceUserInfo.NOT_USE);
+                //更新承接保险订单状态=未出险
+                insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
             }
 
         }
