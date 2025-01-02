@@ -2718,17 +2718,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             update(electricityCabinetOrderUpdate);
             
             // 发送自助开仓命令
-            // 发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("orderId", query.getOrderId());
             dataMap.put("cellNo", query.getCellNo());
+
+            // 上次换电完成，不让安卓上报换电结果的操作记录；只有失败才上报换电结果操作记录
             if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) && Objects.equals(
                     electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
                 dataMap.put("isTakeCell", true);
             }
             dataMap.put("userSelfOpenCell", true);
 
-            // dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
+
             
             String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
             
