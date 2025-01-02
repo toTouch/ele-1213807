@@ -167,7 +167,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         }
 
         if (!redisService.setNx(CacheConstant.LOCK_CELL_ENABLE_KEY + user.getUid(), NumberConstant.ONE.toString(), 5 * 1000L, false)) {
-            return R.fail(false, "100002", "下单过于频繁");
+            return R.fail(false, "100002", "点击过于频繁，请稍后再试");
         }
 
         // 需要校验是否已经启用了

@@ -144,4 +144,7 @@ public class DetailsUserInfoVo {
      * 是否对换电套餐购买次数限制:0-不限制 1-限制
      */
     private Integer eleLimit;
+
+
+    private String remark;
 }

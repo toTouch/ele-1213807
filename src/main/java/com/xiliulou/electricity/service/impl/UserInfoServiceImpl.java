@@ -2329,7 +2329,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
         vo.setEleLimit(
                 Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
-        
+        vo.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
         return R.ok(vo);
     }
     
