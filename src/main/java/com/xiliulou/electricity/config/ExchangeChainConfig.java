@@ -75,7 +75,7 @@ public class ExchangeChainConfig {
         ProcessController processController = new ProcessController();
         Map<Integer, ExchangeProcessChain> templateConfig = new HashMap<>(4);
         templateConfig.put(ExchangeAssertChainTypeEnum.QUICK_EXCHANGE_ASSERT.getCode(), exchangeProcessChain());
-        templateConfig.put(ExchangeAssertChainTypeEnum.RENT_BATTERY_LESS_OPEN_FULL_ASSERT.getCode(), rentBatteryLessSelfOpenProcessChain());
+        templateConfig.put(ExchangeAssertChainTypeEnum.RENT_RETURN_BATTERY_LESS_OPEN_FULL_ASSERT.getCode(), rentBatteryLessSelfOpenProcessChain());
         processController.setProcessMap(templateConfig);
         return processController;
     }

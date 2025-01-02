@@ -12,7 +12,7 @@ import lombok.Getter;
 public enum ExchangeAssertChainTypeEnum {
     
     QUICK_EXCHANGE_ASSERT(1, "快捷换电"),
-    RENT_BATTERY_LESS_OPEN_FULL_ASSERT(2, "租电段时间内自主开仓"),
+    RENT_RETURN_BATTERY_LESS_OPEN_FULL_ASSERT(2, "租电/退电短时间内自主开仓"),
     ;
     
     private Integer code;

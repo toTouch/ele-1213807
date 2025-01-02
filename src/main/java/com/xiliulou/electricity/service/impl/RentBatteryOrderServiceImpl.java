@@ -2125,10 +2125,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         // 构造责任链入参
-        ProcessContext<ExchangeAssertProcessDTO> processContext = ProcessContext.builder().code(ExchangeAssertChainTypeEnum.RENT_BATTERY_LESS_OPEN_FULL_ASSERT.getCode()).processModel(
+        ProcessContext<ExchangeAssertProcessDTO> processContext = ProcessContext.builder().code(ExchangeAssertChainTypeEnum.RENT_RETURN_BATTERY_LESS_OPEN_FULL_ASSERT.getCode()).processModel(
                 ExchangeAssertProcessDTO.builder().eid(query.getEid()).cellNo(query.getCellNo()).userInfo(userInfo).orderId(query.getOrderId()).selfOpenCellKey(CacheConstant.RENT_ALLOW_SELF_OPEN_CELL_START_TIME)
                         .chainObject(new ExchangeChainDTO()).build()).needBreak(false).build();
         // 校验
+        @SuppressWarnings("unchecked")
         ProcessContext<ExchangeAssertProcessDTO> process = processController.process(processContext);
         if (process.getNeedBreak()) {
             log.warn("rentBatteryLessExchangeSelfOpenCell Warn! BreakReason is {}", JsonUtil.toJson(process.getResult()));
