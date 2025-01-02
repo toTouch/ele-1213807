@@ -12,10 +12,7 @@ import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.dto.BackSelfOpenCellDTO;
 import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.enums.CellTypeEnum;
-import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
-import com.xiliulou.electricity.enums.LastOrderTypeEnum;
-import com.xiliulou.electricity.enums.OrderCheckEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -35,10 +32,7 @@ import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -158,17 +152,23 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
             // 修改退电流程，补充操作记录
             RentBatteryOrder updateRentBattery = new RentBatteryOrder();
             updateRentBattery.setId(lastRentBatteryOrder.getId());
+            updateRentBattery.setCellNo(Integer.parseInt(cabinetBox.getCellNo()));
             updateRentBattery.setUpdateTime(System.currentTimeMillis());
             updateRentBattery.setRemark(ExchangeRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
             updateRentBattery.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
             rentBatteryOrderService.update(updateRentBattery);
 
             // 补充操作记录
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                    .orderId(lastRentBatteryOrder.getOrderId()).tenantId(lastRentBatteryOrder.getTenantId()).msg("归还电池成功")
-                    .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK)
-                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            electricityCabinetOrderOperHistoryService.insert(history);
+            List<ElectricityCabinetOrderOperHistory> list = CollUtil.newArrayList();
+            list.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                    .orderId(lastRentBatteryOrder.getOrderId()).tenantId(lastRentBatteryOrder.getTenantId()).msg(cabinetBox.getCellNo() + LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CLOSE_CELL.getDesc())
+                    .seq(LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CLOSE_CELL.getSeq()).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK)
+                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
+            list.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                    .orderId(lastRentBatteryOrder.getOrderId()).tenantId(lastRentBatteryOrder.getTenantId()).msg(cabinetBox.getCellNo() + LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CHECK.getDesc())
+                    .seq(LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CHECK.getSeq()).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK)
+                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
+            electricityCabinetOrderOperHistoryService.batchInsert(list);
 
             // 解绑电池等后续操作
             returnBatterySuccessHandlerService.checkReturnBatteryDoor(lastRentBatteryOrder);
