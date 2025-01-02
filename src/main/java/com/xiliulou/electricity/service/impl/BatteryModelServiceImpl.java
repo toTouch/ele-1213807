@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -17,6 +16,7 @@ import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
 import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -75,6 +75,9 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     
     @Autowired
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private ElectricityBatteryService electricityBatteryService;
     
     /**
      * 根据电池型号查询数据
@@ -368,12 +371,12 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         if (Objects.equals(batteryModel.getType(), BatteryModel.TYPE_SYSTEM)) {
             return Triple.of(false, "", "系统默认型号不允许删除");
         }
-        
-        Integer result = franchiseeService.checkBatteryModelIsUse(batteryModel.getBatteryModel(), TenantContextHolder.getTenantId());
-        if (Objects.nonNull(result)) {
-            return Triple.of(false, "", "电池型号已绑定加盟商不允许删除");
+    
+        Integer existsBattery = electricityBatteryService.existsByBatteryType(batteryModel.getBatteryType(), TenantContextHolder.getTenantId());
+        if (Objects.nonNull(existsBattery)) {
+            return Triple.of(false, "", "电池型号已绑定电池不允许删除");
         }
-        
+    
         this.deleteById(id);
         
         return Triple.of(true, null, null);

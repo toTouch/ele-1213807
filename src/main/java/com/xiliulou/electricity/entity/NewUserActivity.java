@@ -1,12 +1,21 @@
 package com.xiliulou.electricity.entity;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.json.JsonUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * 活动表(NewUserActivity)实体类
@@ -66,6 +75,11 @@ public class NewUserActivity {
      * 优惠券id
      */
     private Integer couponId;
+    
+    /**
+     * 优惠券数组列
+     */
+    private String couponArrays;
 
     /**
     * 活动说明
@@ -103,6 +117,29 @@ public class NewUserActivity {
      * 创建人用户名
      */
     private String userName;
+    
+    
+    public void setCoupons(List<Long> couponArrays,Integer couponId){
+        Set<Long> couponIds = new HashSet<>();
+        if (Objects.nonNull(couponId)){
+            couponIds.add(Long.valueOf(couponId));
+        }
+        if (CollectionUtil.isNotEmpty(couponArrays)){
+            couponIds.addAll(couponArrays);
+        }
+        this.couponArrays = JsonUtil.toJson(couponIds);
+    }
+    
+    public List<Long> getCoupons(){
+        Set<Long> resultSet = new HashSet<>();
+        if (Objects.nonNull(couponArrays)){
+            resultSet.addAll(JsonUtil.fromJsonArray(couponArrays,Long.class));
+        }
+        if (Objects.nonNull(couponId)){
+            resultSet.add(Long.valueOf(couponId));
+        }
+        return new ArrayList<>(resultSet);
+    }
 
 
 

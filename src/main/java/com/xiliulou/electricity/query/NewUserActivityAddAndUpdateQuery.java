@@ -80,6 +80,11 @@ public class NewUserActivityAddAndUpdateQuery {
      * 创建人用户名
      */
     private String userName;
+    
+    /**
+    * 优惠券数组列
+    */
+    private List<Long> couponArrays;
     /**
     * 0--正常 1--删除
     */

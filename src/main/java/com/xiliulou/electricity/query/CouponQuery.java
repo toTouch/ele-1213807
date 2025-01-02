@@ -76,6 +76,7 @@ public class CouponQuery {
     @NotNull(message = "加盟商不能为空!", groups = {CreateGroup.class})
     private Long franchiseeId;
     
+    
     private List<Long> franchiseeIds;
     /**
      * 适用类型  1--邀请活动优惠券  2--普通活动优惠券
@@ -103,8 +104,13 @@ public class CouponQuery {
     /**
      * 是否可叠加 0：否，1：是
      */
-    @NotNull(message = "优惠券叠加使用方式不能为空!", groups = {CreateGroup.class})
+//    @NotNull(message = "优惠券叠加使用方式不能为空!", groups = {CreateGroup.class})
     private Integer superposition;
+    
+    /**
+     * -1 -- 不限制,0 -- 租车，1 -- 租电，2 -- 车电一体
+    */
+    private Integer useScope;
 
     /**
      * 换电套餐IDs

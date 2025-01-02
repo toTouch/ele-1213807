@@ -12,17 +12,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.ChannelActivity;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.InvitationActivity;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareMoneyActivity;
-import com.xiliulou.electricity.entity.ShareMoneyActivityPackage;
-import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -30,18 +20,7 @@ import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.ChannelActivityService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.InvitationActivityService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareActivityService;
-import com.xiliulou.electricity.service.ShareMoneyActivityPackageService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -60,11 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -123,7 +98,11 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
-    
+    @Autowired
+    private ShareActivityRuleService shareActivityRuleService;
+    @Autowired
+    private CouponServiceImpl couponService;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -600,7 +579,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     }
     
     @Override
-    public R checkActivity() {
+    public R checkActivity(String version) {
         Map<String, Integer> map = new HashMap<>();
         map.put("shareMoneyActivity", 0);
         map.put("shareActivity", 0);
@@ -638,6 +617,22 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareActivity shareActivity = shareActivityService.queryOnlineActivity(tenantId, userInfo.getFranchiseeId());
         if (Objects.isNull(shareActivity)) {
             map.put("shareActivity", 1);
+        }
+        if (StringUtils.isEmpty(version) && Objects.nonNull(shareActivity)){
+            List<ShareActivityRule> shareActivityRules = shareActivityRuleService.queryByActivity(shareActivity.getId());
+            if (CollectionUtils.isNotEmpty(shareActivityRules)){
+                shareActivityRules.forEach(shareActivityRule -> {
+                    List<Coupon> coupons = couponService.queryListByIdsFromDB(shareActivityRule.getCoupons());
+                    if (CollectionUtils.isEmpty(coupons)){
+                        map.put("shareActivity", 1);
+                    }
+                    if (CollectionUtils.isNotEmpty(coupons)){
+                        if (coupons.stream().noneMatch(coupon -> coupon.getDiscountType().equals(Coupon.FULL_REDUCTION))){
+                            map.put("shareActivity", 1);
+                        }
+                    }
+                });
+            }
         }
         
         //渠道活动
@@ -748,23 +743,24 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         if (CollectionUtils.isEmpty(activityList)) {
             return null;
         }
-        
+    
         // 如果有加盟商，则查加盟商的活动
         List<ShareMoneyActivity> list = activityList.stream()
                 .filter(activity -> Objects.nonNull(activity.getFranchiseeId()) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && Objects.equals(
                         activity.getFranchiseeId().longValue(), franchiseeId)).collect(Collectors.toList());
-        
+    
         if (CollectionUtils.isEmpty(list)) {
             // 如果没有加盟商，则查租户的活动
-            list = activityList.stream().filter(activity -> Objects.isNull(activity.getFranchiseeId()) || Objects.equals(franchiseeId, NumberConstant.ZERO_L))
+            list = activityList.stream().filter(activity -> Objects.isNull(activity.getFranchiseeId()) || Objects.equals(activity.getFranchiseeId(), NumberConstant.ZERO))
                     .collect(Collectors.toList());
         }
-        
-        if (CollectionUtils.isNotEmpty(list)) {
-            return list.get(0);
+    
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
         }
-        
-        return null;
+    
+        // 上架活动唯一
+        return list.get(0);
     }
 }
 

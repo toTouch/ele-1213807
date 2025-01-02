@@ -30,7 +30,7 @@ public class OtaFileConfig {
     private String sha256Value;
     
     /**
-     * 文件类型 1--核心板 2--子板 3--旧核心板 4--旧子板
+     * 文件类型 1--核心板 2--子板 3--旧核心板 4--旧子板 5--旧六合一 6--新六合一
      */
     private Integer type;
     
@@ -42,36 +42,33 @@ public class OtaFileConfig {
     
     public static final Integer DEL_DEL = 1;
     
-    public static final Integer TYPE_CORE_BOARD = 1;
+    public static final int TYPE_CORE_BOARD = 1;
     
-    public static final Integer TYPE_SUB_BOARD = 2;
+    public static final int TYPE_SUB_BOARD = 2;
     
-    public static final Integer TYPE_OLD_CORE_BOARD = 3;
+    public static final int TYPE_OLD_CORE_BOARD = 3;
     
-    public static final Integer TYPE_OLD_SUB_BOARD = 4;
-    
-    /**
-     * 六合一核心板类型
-     */
-    public static final Integer TYPE_SIX_IN_ONE_CORE_BOARD = 5;
+    public static final int TYPE_OLD_SUB_BOARD = 4;
     
     /**
-     * 六合一子板类型
+     * 旧六合一(六合一不区分核心板和子板,以子板文件进行升级)
      */
-    public static final Integer TYPE_SIX_IN_ONE_SUB_BOARD = 6;
+    public static final int TYPE_SIX_SUB_BOARD = 5;
     
     /**
-     * 版本号： 旧版 >= 50
+     * 新六合一(六合一不区分核心板和子板,以子板文件进行升级)
      */
-    public static final Double MIN_OLD_BOARD_VERSION = 50.0;
+    public static final int TYPE_NEW_SIX_SUB_BOARD = 6;
     
-    /**
-     * 版本号： 10 =< 六合一版 < 20
-     */
-    public static final Double MAX_SIX_IN_ONE_BOARD_VERSION = 20.0;
+    public static final Integer VERSION_0 = 0;
     
-    /**
-     * 版本号： 新版 < 10
-     */
-    public static final Double MIX_SIX_IN_ONE_BOARD_VERSION = 10.0;
+    public static final Integer VERSION_10 = 10;
+    
+    public static final Integer VERSION_20 = 20;
+    
+    public static final Integer VERSION_30 = 30;
+    
+    public static final Integer VERSION_50 = 50;
+    
+    public static final Integer VERSION_60 = 60;
 }

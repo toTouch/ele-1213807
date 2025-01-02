@@ -199,10 +199,11 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     /**
      * <p>
-     *    Description: queryIdsBySnArray
+     * Description: queryIdsBySnArray
      * </p>
-     * @param snList snList
-     * @param tenantId tenantId
+     *
+     * @param snList             snList
+     * @param tenantId           tenantId
      * @param sourceFranchiseeId sourceFranchiseeId
      * @return java.util.List<java.lang.Long>
      * <p>Project: ElectricityCarMapper</p>
@@ -211,6 +212,17 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      * <a herf="https://benyun.feishu.cn/wiki/GrNjwBNZkipB5wkiws2cmsEDnVU#S5pYdtn2ooNnzqxWFbxcqGownbe">12.8 资产调拨（2条优化点)</a>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
-    */
+     */
     List<ElectricityCarBO> selectListBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
+    
+    
+    /**
+     * 根据用户id批量查询
+     *
+     * @param tenantId
+     * @param uidList
+     * @author caobotao.cbt
+     * @date 2024/11/26 13:35
+     */
+    List<ElectricityCar> selectListByTenantIdAndUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.installment;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentDeductionRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
@@ -10,10 +11,13 @@ import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordSe
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -50,12 +54,16 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
     @Override
     public R<List<InstallmentDeductionRecordVO>> listForPage(InstallmentDeductionRecordQuery installmentDeductionRecordQuery) {
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordMapper.selectPage(installmentDeductionRecordQuery);
+        if (CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return R.ok(Collections.emptyList());
+        }
         
         List<InstallmentDeductionRecordVO> collect = installmentDeductionRecords.parallelStream().map(installmentDeductionRecord -> {
             InstallmentDeductionRecordVO recordVO = new InstallmentDeductionRecordVO();
             BeanUtils.copyProperties(installmentDeductionRecord, recordVO);
             
-            recordVO.setFranchiseeName(franchiseeService.queryByIdFromCache(installmentDeductionRecord.getFranchiseeId()).getName());
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(installmentDeductionRecord.getFranchiseeId());
+            recordVO.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             return recordVO;
         }).collect(Collectors.toList());
         return R.ok(collect);

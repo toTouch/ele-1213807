@@ -34,4 +34,9 @@ public class BatteryMembercardRefundOrderDetailVO {
      * 租期单位 0：分钟，1：天
      */
     private Integer rentUnit;
+    
+    /**
+     * 使用天数券增加的套餐天数
+     */
+    private Integer daysFromDayCoupon;
 }

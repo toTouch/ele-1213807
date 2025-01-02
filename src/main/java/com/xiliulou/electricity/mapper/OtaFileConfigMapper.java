@@ -68,4 +68,5 @@ public interface OtaFileConfigMapper extends BaseMapper<OtaFileConfig> {
     
     Integer insertOrupdate(OtaFileConfig otaFileConfig);
     
+    List<OtaFileConfig> selectListByTypes(@Param("types") List<Integer> types);
 }

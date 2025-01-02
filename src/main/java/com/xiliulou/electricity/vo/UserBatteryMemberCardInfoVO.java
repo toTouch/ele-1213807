@@ -120,6 +120,11 @@ public class UserBatteryMemberCardInfoVO {
      * 套餐到期时间，格式：x天 x时，比如：0天 10小时
      */
     private String expireTimeStr;
+    
+    /**
+     * 用户剩余套餐冻结次数，-1为不限制，0以上为次数
+     */
+    private Integer unusedFreezeCount;
 
     public static final Integer NO = 0;
     public static final Integer YES = 1;

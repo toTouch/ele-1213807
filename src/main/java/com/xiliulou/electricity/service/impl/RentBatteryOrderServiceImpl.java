@@ -1550,6 +1550,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return rentBatteryOrderMapper.selectListByOrderIdList(returnOrderIdList);
     }
     
+    @Override
+    public Boolean isRendReturnOrder(String orderId) {
+        List<String> rentReturnList = BusinessType.getRentReturnList().stream().map(String::valueOf).collect(Collectors.toList());
+        return rentReturnList.stream().anyMatch(orderId::startsWith);
+    }
+    
     
     private static String ruleAllotCell(UserInfo userInfo, List<ElectricityCabinetBox> usableBoxes) {
         //如果存在多个电量满电且相同的电池，取充电器电压最高的

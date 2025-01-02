@@ -31,8 +31,10 @@ import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.FreezeTimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -145,7 +147,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 .carServiceFee(lateFeeAmount).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.asyncHandleUserOperateRecord(eleUserOperateRecord);
         //清除逾期用户备注
-        overdueUserRemarkPublish.publish(uid, OverdueType.CAR.getCode(),tenantId);
+        overdueUserRemarkPublish.publish(uid, OverdueType.CAR.getCode(), tenantId);
         return true;
     }
     
@@ -201,8 +203,8 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 CarRentalPackageOrderFreezePo orderFreezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(slippageEntity.getUid());
                 if (ObjectUtils.isNotEmpty(orderFreezePo) && RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode().equals(orderFreezePo.getStatus())) {
                     // 1. 更改订单冻结表数据
-                    carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false,
-                            optUid);
+                    carRentalPackageOrderFreezeService
+                            .enableFreezeRentOrderByUidAndPackageOrderNo(slippageEntity.getRentalPackageOrderNo(), slippageEntity.getUid(), false, optUid);
                 }
                 
                 // 赋值会员更新
@@ -211,10 +213,14 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 memberTermUpdateEntity.setId(memberTermEntity.getId());
                 memberTermUpdateEntity.setUpdateUid(optUid);
                 memberTermUpdateEntity.setUpdateTime(now);
-                // 提前启用、计算差额
-                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (now - freezeEntity.getApplyTime());
-                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
-                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTime);
+                
+                // 计算差额
+                Pair<Boolean, Long> diffTimePair = FreezeTimeUtils.calculateRemainingFrozenDays(freezeEntity.getApplyTerm(), freezeEntity.getAuditTime(), now);
+                // 如果当前滞纳金缴纳时间已经超过了冻结启用时间，则非提前启用，无需减去剩余未使用的冻结天数
+                if (diffTimePair.getLeft()) {
+                    memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTimePair.getRight());
+                    memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTimePair.getRight());
+                }
                 
                 carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
                 

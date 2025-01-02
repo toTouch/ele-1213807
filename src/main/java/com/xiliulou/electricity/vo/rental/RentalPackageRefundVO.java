@@ -65,4 +65,9 @@ public class RentalPackageRefundVO implements Serializable {
      * @see YesNoEnum#getCode()
      */
     private Integer compelOffLine;
+    
+    /**
+     * <p>租金退款，该套餐使用的天数券天数 </p>
+    */
+    private Integer daysFromDayCoupon;
 }
