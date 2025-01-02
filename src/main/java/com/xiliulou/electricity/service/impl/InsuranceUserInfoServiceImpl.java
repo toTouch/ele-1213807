@@ -750,8 +750,8 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理!");
         }
 
-        // 用户已有未生效保险
         List<InsuranceOrder> insuranceOrders = insuranceOrderService.queryByUid(query.getUid(), query.getType());
+        // 用户是否有未生效保险
         if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_EFFECTIVE)).collect(Collectors.toList()))) {
             return R.fail("402015", "当前用户已有未生效的保险订单，请前往【保险购买记录】查看详情。");
         }
@@ -766,10 +766,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_SUCCESS).tenantId(TenantContextHolder.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName())
                 .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
-        // 存在未出险的保险订单，续费新的保险订单定义为未生效
-        if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_USE)).collect(Collectors.toList()))){
+        // 如意存在未出险的保险订单&已经支付成功的，续费新的保险订单为未生效
+        if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_USE)
+                && Objects.equals(item.getStatus(), InsuranceOrder.STATUS_SUCCESS)).collect(Collectors.toList()))) {
             insuranceOrder.setIsUse(InsuranceOrder.NOT_EFFECTIVE);
-        }else {
+        } else {
             // 未出险
             insuranceOrder.setIsUse(InsuranceOrder.NOT_USE);
             // 更新保险绑定关系
