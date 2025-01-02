@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,17 +27,21 @@ public class ExchangeUnFinishedOrderAssertProcess extends AbstractExchangeCommon
     @Resource
     private ElectricityCabinetOrderService electricityCabinetOrderService;
 
+    @Resource
+    private RentBatteryOrderService rentBatteryOrderService;
+
     @Override
     public void process(ProcessContext<ExchangeAssertProcessDTO> context) {
         UserInfo userInfo = context.getProcessModel().getUserInfo();
 
-        RentBatteryOrder rentBatteryOrder = context.getProcessModel().getChainObject().getRentBatteryOrder();
+        //  是否存在未完成的订单
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(userInfo.getUid());
         if (Objects.nonNull(rentBatteryOrder)) {
             if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
                 breakChain(context, "100023", "存在未完成租电订单，不能自助开仓");
                 return;
             } else if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-                breakChain(context, "100023", "存在未完成租电订单，不能自助开仓");
+                breakChain(context, "100024", "存在未完成退电电订单，不能自助开仓");
                 return;
             }
         }
