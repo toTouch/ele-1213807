@@ -3351,7 +3351,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(usingOrder.getMemberCardId());
                     // 如果是可退套餐,且未过可退期，则可退
                     if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)
-                            && usingOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000 <= System.currentTimeMillis()) {
+                            && usingOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000 >= System.currentTimeMillis()) {
                         item.setRentRefundFlag(true);
                         return;
                     }
