@@ -63,21 +63,21 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     @Override
     public void insertElectricityCabinetBoxLock(ElectricityCabinetBoxLock cabinetBoxLock) {
         if (Objects.isNull(cabinetBoxLock)) {
-            log.error("ElectricityCabinetBoxLockService Error! cabinetBoxLock is null");
+            log.warn("ElectricityCabinetBoxLockService Warn! cabinetBoxLock is null");
             return;
         }
         Integer eid = cabinetBoxLock.getElectricityCabinetId();
         if (Objects.isNull(eid)) {
-            log.error("ElectricityCabinetBoxLockService Error! eid is null");
+            log.warn("ElectricityCabinetBoxLockService Warn! eid is null");
             return;
         }
         if (Objects.isNull(cabinetBoxLock.getCellNo())) {
-            log.error("ElectricityCabinetBoxLockService Error! cellNo is null, eid is {}", eid);
+            log.warn("ElectricityCabinetBoxLockService Warn! cellNo is null, eid is {}", eid);
             return;
         }
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet)) {
-            log.error("ElectricityCabinetBoxLockService Error! electricityCabinet is null, eid is {}", eid);
+            log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinet is null, eid is {}", eid);
             return;
         }
 
@@ -92,17 +92,17 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     @Override
     public void updateElectricityCabinetBoxLock(Integer eid, String cellNo) {
         if (Objects.isNull(eid)) {
-            log.error("ElectricityCabinetBoxLockService Error! updateElectricityCabinetBoxLock.eid is null");
+            log.warn("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.eid is null");
             return;
         }
 
         if (StrUtil.isEmpty(cellNo)) {
-            log.error("ElectricityCabinetBoxLockService Error! updateElectricityCabinetBoxLock.cellNo is null");
+            log.warn("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.cellNo is null");
             return;
         }
         ElectricityCabinetBoxLock electricityCabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, cellNo);
         if (Objects.isNull(electricityCabinetBoxLock)) {
-            log.error("ElectricityCabinetBoxLockService Error! electricityCabinetBoxLock is null. eid is {}.cellNo is {}", eid, cellNo);
+            log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is null. eid is {}.cellNo is {}", eid, cellNo);
             return;
         }
         ElectricityCabinetBoxLock updateBoxLock = new ElectricityCabinetBoxLock();
