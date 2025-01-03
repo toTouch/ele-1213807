@@ -387,7 +387,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     
     @Slave
     @Override
-    public Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid) throws BizException{
+    public Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid, boolean hasAssets) throws BizException{
         Boolean autoReviewOrNot = Boolean.TRUE;
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(tenantId);
         
@@ -403,14 +403,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         
         // 校验申请冻结的天数是否合规
-        if (Objects.isNull(electricityConfig.getPackageFreezeDays()) || Objects.isNull(electricityConfig.getPackageFreezeCount()) || Objects.equals(
+        Integer packageFreezeDays = hasAssets ? electricityConfig.getPackageFreezeDaysWithAssets() : electricityConfig.getPackageFreezeDays();
+        if (Objects.isNull(packageFreezeDays) || Objects.isNull(electricityConfig.getPackageFreezeCount()) || Objects.equals(
                 electricityConfig.getPackageFreezeCount(), 0)) {
             if (Objects.isNull(days) || days > ElectricityConfig.FREEZE_DAYS_MAX) {
                 log.info("FREEZE DAYS CHECK！can not auto review. uid={}", uid);
                 throw new BizException("301033", "超出每次最长天数，请修改");
             }
         } else {
-            if (Objects.isNull(days) || days > electricityConfig.getPackageFreezeDays()) {
+            if (Objects.isNull(days) || days > packageFreezeDays) {
                 throw new BizException("301033", "超出每次最长天数，请修改");
             }
         }

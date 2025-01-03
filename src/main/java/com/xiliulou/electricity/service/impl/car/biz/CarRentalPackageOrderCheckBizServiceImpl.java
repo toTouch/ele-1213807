@@ -28,7 +28,7 @@ public class CarRentalPackageOrderCheckBizServiceImpl implements CarRentalPackag
     private final ElectricityConfigService electricityConfigService;
     
     @Override
-    public R<Boolean> checkFreezeLimit(Integer tenantId, Long uid, Integer freezeDays) {
+    public R<Boolean> checkFreezeLimit(Integer tenantId, Long uid, Integer freezeDays, boolean hasAssets) {
         
         // 校验次数限制
         try {
@@ -38,7 +38,7 @@ public class CarRentalPackageOrderCheckBizServiceImpl implements CarRentalPackag
             }
             
             //校验冻结天数
-            Boolean autoReview = electricityConfigService.checkFreezeAutoReviewAndDays(tenantId, freezeDays, uid);
+            Boolean autoReview = electricityConfigService.checkFreezeAutoReviewAndDays(tenantId, freezeDays, uid, hasAssets);
             
             return R.ok(autoReview);
         } catch (BizException e) {
