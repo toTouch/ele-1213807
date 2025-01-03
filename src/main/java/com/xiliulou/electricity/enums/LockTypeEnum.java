@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings("all")
 public enum LockTypeEnum {
 
-    ARTIFICIAL_LOCK(0, "人为锁仓"),
-    SYSTEM_LOCK(1, "系统锁仓"),
+    SYSTEM_LOCK(0, "系统锁仓"),
+    ARTIFICIAL_LOCK(1, "人为锁仓"),
     ;
 
     private final Integer code;
