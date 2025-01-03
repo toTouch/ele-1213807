@@ -3293,7 +3293,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
         // 查询用户基本信息
         CompletableFuture<Void> queryBasicInfo = CompletableFuture.runAsync(() -> userInfoList.forEach(item -> {
-            item.setBasicInfo(getEleProBasicInfo(item));
+            item.setBasicInfo(getEleBasicInfoPro(item));
         }), threadPool).exceptionally(e -> {
             log.error("ELE ERROR! queryBasicInfo for pro error!", e);
             return null;
@@ -3306,7 +3306,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<Long, String> userBatterySnMap = electricityBatteryService.listUserBatteryByUidList(uidList, tenantId);
     
         CompletableFuture<Void> queryBatteryInfo = CompletableFuture.runAsync(() -> userInfoList.forEach(item -> {
-            item.setBatteryInfo(getEleProBatteryInfo(item, userShortBatteryMap, userBatterySnMap));
+            item.setBatteryInfo(getEleBatteryInfoPro(item, userShortBatteryMap, userBatterySnMap));
         }), threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery info for pro error!", e);
             return null;
@@ -3392,7 +3392,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userEleInfoVOS);
     }
     
-    private UserBasicInfoEleProVO getEleProBasicInfo(UserEleInfoProVO userEleInfoProVO) {
+    private UserBasicInfoEleProVO getEleBasicInfoPro(UserEleInfoProVO userEleInfoProVO) {
         UserBasicInfoEleProVO basicInfo = UserBasicInfoEleProVO.builder().name(userEleInfoProVO.getName()).phone(userEleInfoProVO.getPhone())
                 .batteryDepositStatus(userEleInfoProVO.getBatteryDepositStatus()).build();
         UserInfo userInfo = this.queryByUidFromCache(userEleInfoProVO.getUid());
@@ -3421,7 +3421,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return basicInfo;
     }
     
-    private DetailsBatteryInfoProVO getEleProBatteryInfo(UserEleInfoProVO userEleInfoProVO, Map<Long, List<String>> userShortBatteryMap, Map<Long, String> userBatterySnMap) {
+    private DetailsBatteryInfoProVO getEleBatteryInfoPro(UserEleInfoProVO userEleInfoProVO, Map<Long, List<String>> userShortBatteryMap, Map<Long, String> userBatterySnMap) {
         Long uid = userEleInfoProVO.getUid();
         DetailsBatteryInfoProVO detailsBatteryInfoProVO = DetailsBatteryInfoProVO.builder().memberCardId(userEleInfoProVO.getMemberCardId()).build();
         
@@ -3440,7 +3440,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             detailsBatteryInfoProVO.setBatteryModels(userShortBatteryMap.get(uid));
         }
         
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(uid);
         if (MapUtils.isNotEmpty(userBatterySnMap) && userBatterySnMap.containsKey(uid)) {
             detailsBatteryInfoProVO.setBatterySn(userBatterySnMap.get(uid));
         }
