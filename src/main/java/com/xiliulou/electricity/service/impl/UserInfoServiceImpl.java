@@ -30,7 +30,6 @@ import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
@@ -53,7 +52,6 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserAuthMessage;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -3304,8 +3302,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 查询用户电池、电池型号及当前套餐相关信息
         // 用户绑定的电池型号对应的短型号
         Map<Long, List<String>> userShortBatteryMap = userBatteryTypeService.listShortBatteryByUidList(uidList, tenantId);
+        // 查询用户电池
+        Map<Long, String> userBatterySnMap = electricityBatteryService.listUserBatteryByUidList(uidList, tenantId);
+    
         CompletableFuture<Void> queryBatteryInfo = CompletableFuture.runAsync(() -> userInfoList.forEach(item -> {
-            item.setBatteryInfo(getEleProBatteryInfo(item, userShortBatteryMap));
+            item.setBatteryInfo(getEleProBatteryInfo(item, userShortBatteryMap, userBatterySnMap));
         }), threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user battery info for pro error!", e);
             return null;
@@ -3349,6 +3350,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<String, Double> finalOrderPayTransAmtMap = orderPayTransAmtMap;
         Map<String, EleDepositOrder> finalEleDepositOrderMap = eleDepositOrderMap;
         Map<String, List<EleRefundOrder>> finalEleRefundOrderMap = eleRefundOrderMap;
+    
         CompletableFuture<Void> queryDepositInfo = CompletableFuture.runAsync(() -> userInfoList.forEach(item -> {
             item.setEleDepositRefund(getEleDepositInfoPro(item, finalUserBatteryDepositMap, finalOrderPayTransAmtMap, finalEleDepositOrderMap, finalEleRefundOrderMap));
         }), threadPool).exceptionally(e -> {
@@ -3369,11 +3371,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
     
-        Map<Long, Boolean> noUsingRefundMap = getEleNoUsingOrderPro(uidList, tenantId);
         Map<Long, UserBatteryMemberCard> finalUserBatteryMemberCardMap = userBatteryMemberCardMap;
         Map<String, ElectricityMemberCardOrder> finalUsingOrderMap = usingOrderMap;
+    
         CompletableFuture<Void> rentRefundInfo = CompletableFuture.runAsync(() -> userInfoList.forEach(item -> {
-            item.setRentRefundFlag(getEleRentRefundFlagPro(item, finalUserBatteryMemberCardMap, finalUsingOrderMap, noUsingRefundMap));
+            item.setRentRefundFlag(getEleRentRefundFlagPro(item, finalUserBatteryMemberCardMap, finalUsingOrderMap, uidList, tenantId));
         }), threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user rentRefundFlag for pro error!", e);
             return null;
@@ -3419,7 +3421,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return basicInfo;
     }
     
-    private DetailsBatteryInfoProVO getEleProBatteryInfo(UserEleInfoProVO userEleInfoProVO, Map<Long, List<String>> userShortBatteryMap) {
+    private DetailsBatteryInfoProVO getEleProBatteryInfo(UserEleInfoProVO userEleInfoProVO, Map<Long, List<String>> userShortBatteryMap, Map<Long, String> userBatterySnMap) {
         Long uid = userEleInfoProVO.getUid();
         DetailsBatteryInfoProVO detailsBatteryInfoProVO = DetailsBatteryInfoProVO.builder().memberCardId(userEleInfoProVO.getMemberCardId()).build();
         
@@ -3439,8 +3441,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(uid);
-        if (Objects.nonNull(electricityBattery)) {
-            detailsBatteryInfoProVO.setBatterySn(electricityBattery.getSn());
+        if (MapUtils.isNotEmpty(userBatterySnMap) && userBatterySnMap.containsKey(uid)) {
+            detailsBatteryInfoProVO.setBatterySn(userBatterySnMap.get(uid));
         }
         
         return detailsBatteryInfoProVO;
@@ -3504,7 +3506,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     private Boolean getEleRentRefundFlagPro(UserEleInfoProVO userEleInfoProVO, Map<Long, UserBatteryMemberCard> finalUserBatteryMemberCardMap,
-            Map<String, ElectricityMemberCardOrder> finalUsingOrderMap, Map<Long, Boolean> noUsingRefundMap) {
+            Map<String, ElectricityMemberCardOrder> finalUsingOrderMap, List<Long> uidList, Integer tenantId) {
         boolean rentRefundFlag = true;
         Long uid = userEleInfoProVO.getUid();
         if (MapUtils.isEmpty(finalUserBatteryMemberCardMap)) {
@@ -3537,6 +3539,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         if (!rentRefundFlag) {
+            Map<Long, Boolean> noUsingRefundMap = getEleNoUsingOrderPro(uidList, tenantId);
             rentRefundFlag = !MapUtils.isEmpty(noUsingRefundMap) && noUsingRefundMap.get(uid);
         }
         
