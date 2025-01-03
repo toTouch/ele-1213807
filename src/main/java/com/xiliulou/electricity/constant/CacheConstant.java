@@ -913,5 +913,7 @@ public interface CacheConstant {
      * 租户下加盟互通配置缓存key
      */
     String MUTUAL_EXCHANGE_CONFIG_KEY = "mutual_exchange_config:";
+    
+    String LOCK_USER_DAY_COUPON_USE_SCOPE = "lock_user_day_coupon_use_scope:%s:%s:%s";
 }
 

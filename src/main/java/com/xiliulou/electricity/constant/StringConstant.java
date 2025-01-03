@@ -26,5 +26,8 @@ public interface StringConstant {
     
     String SPACES = "\\s+";
 
+    String EMPTY_JSON_ARR="[]";
+
+
     String UNDERLINE = "_";
 }

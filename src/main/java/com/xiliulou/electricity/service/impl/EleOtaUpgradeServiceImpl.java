@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.EleOtaUpgradeService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.vo.OtaUpgradeInfoVo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -144,7 +145,7 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             Integer fileType = null;
             if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_OLD)) {
                 fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_OLD_CORE_BOARD : OtaFileConfig.TYPE_OLD_SUB_BOARD;
-            } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW)) {
+            } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW) && !sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW_SIX)) {
                 fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_CORE_BOARD : OtaFileConfig.TYPE_SUB_BOARD;
             } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_SIX)) {
                 fileType = OtaFileConfig.TYPE_SIX_SUB_BOARD;
@@ -174,7 +175,11 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             eleOtaUpgradeHistory.setCellNo(String.valueOf(cellNo));
             eleOtaUpgradeHistory.setElectricityCabinetId(Long.valueOf(eid));
             eleOtaUpgradeHistory.setType(type);
-            eleOtaUpgradeHistory.setUpgradeVersion(queryOtaVersionByEidAndCellNo(fileType));
+            String upgradeVersion = null;
+            if (Objects.nonNull(fileType)) {
+                upgradeVersion = queryOtaVersionByEidAndCellNo(fileType);
+            }
+            eleOtaUpgradeHistory.setUpgradeVersion(Objects.isNull(upgradeVersion) ? StringUtils.EMPTY : upgradeVersion);
             eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, type));
             eleOtaUpgradeHistory.setStatus(EleOtaUpgrade.STATUS_INIT);
             eleOtaUpgradeHistory.setSessionId(sessionId);

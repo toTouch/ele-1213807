@@ -131,7 +131,7 @@ public class EleDisableMemberCardRecord {
      * 审核员ID
      */
     private Long auditorId;
-
+    
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
@@ -141,4 +141,7 @@ public class EleDisableMemberCardRecord {
     public static final Integer DISABLE_CARD_LIMIT_TIME = 1;
     
     public static final Integer STATUS_MEMBER_CARD_DISABLE_ROLLBACK = 4;
+    
+    public static final Integer SOURCE_BACKGROUND = 0;
+    public static final Integer SOURCE_USER = 1;
 }

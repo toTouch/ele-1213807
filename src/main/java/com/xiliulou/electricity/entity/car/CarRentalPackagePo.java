@@ -138,6 +138,12 @@ public class CarRentalPackagePo extends BasicCarPo {
      */
     private BigDecimal lateFee;
     
+    
+    /**
+     * 冻结滞纳金
+     */
+    private BigDecimal freezeLateFee;
+    
     /**
      * 套餐限制
      * <pre>
@@ -172,9 +178,9 @@ public class CarRentalPackagePo extends BasicCarPo {
     
     /**
      * <p>
-     *    Description: 优惠劵组id,JSON数组格式
+     * Description: 优惠劵组id,JSON数组格式
      * </p>
-    */
+     */
     private String couponArrays;
     
     /**
@@ -226,7 +232,7 @@ public class CarRentalPackagePo extends BasicCarPo {
         Set<Long> result = new HashSet<>();
         if (StrUtil.isNotBlank(this.couponArrays)) {
             List<Long> longs = JsonUtil.fromJsonArray(this.couponArrays, Long.class);
-            if (!CollectionUtils.isEmpty(longs)){
+            if (!CollectionUtils.isEmpty(longs)) {
                 result.addAll(longs);
             }
         }

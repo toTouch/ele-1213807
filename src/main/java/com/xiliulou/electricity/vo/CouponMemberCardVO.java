@@ -21,4 +21,9 @@ public class CouponMemberCardVO {
      * 套餐名称
      */
     private String name;
+    
+    /**
+     * 优惠券id
+     */
+    private Long couponId;
 }

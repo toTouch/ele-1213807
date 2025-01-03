@@ -356,8 +356,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean insertPackage(CarRentalPackageOptModel optModel) {
-        if (!ObjectUtils.allNotNull(optModel, optModel.getCreateUid(), optModel.getTenantId(), optModel.getName()) || !BasicEnum.isExist(optModel.getType(),
-                RentalPackageTypeEnum.class)) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getCreateUid(), optModel.getTenantId(), optModel.getName()) || !BasicEnum
+                .isExist(optModel.getType(), RentalPackageTypeEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         
@@ -376,7 +376,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         
         if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds())
                 || optModel.getCouponIds().size() > COUPON_MAX_LIMIT)) {
-            throw new BizException("300833", "优惠劵最多支持发6张");
+            throw new BizException("300833", "优惠劵最多支持发10张");
         }
         
         if (Objects.equals(optModel.getIsUserGroup(), YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds())
@@ -479,6 +479,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setRefundLimit(entity.getRentRebateTerm());
         batteryMemberCardEntity.setFreeDeposite(entity.getFreeDeposit());
         batteryMemberCardEntity.setServiceCharge(entity.getLateFee());
+        // 冻结滞纳金
+        batteryMemberCardEntity.setFreezeServiceCharge(entity.getFreezeLateFee());
         batteryMemberCardEntity.setRemark(entity.getRemark());
         batteryMemberCardEntity.setBusinessType(BatteryMemberCard.BUSINESS_TYPE_BATTERY_CAR);
         batteryMemberCardEntity.setDelFlag(DelFlagEnum.OK.getCode());
@@ -583,20 +585,30 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (!Objects.isNull(carRentalPackageVo) && !CollectionUtils.isEmpty(couponIds)) {
             List<CarCouponNamePO> list = couponService.queryListByIdsFromCache(couponIds);
             //转化PO到VO
-            List<CarCouponVO> collect = list.stream().map(m -> {
+            List<CarCouponVO> collect = list.stream().filter(f->f.getDiscountType().equals(Coupon.FULL_REDUCTION)).map(m -> {
+                CarCouponVO couponVO = new CarCouponVO();
+                BeanUtils.copyProperties(m, couponVO);
+                return couponVO;
+            }).collect(Collectors.toList());
+
+            List<CarCouponVO> arr = list.stream().map(m -> {
                 CarCouponVO couponVO = new CarCouponVO();
                 BeanUtils.copyProperties(m, couponVO);
                 return couponVO;
             }).collect(Collectors.toList());
             
             carRentalPackageVo.setCoupons(collect);
+            carRentalPackageVo.setArrayCoupons(arr);
             carRentalPackageVo.setCouponIds(couponIds);
             
             if (!CollectionUtils.isEmpty(collect)) {
-                CarCouponVO couponVO = collect.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
-                carRentalPackageVo.setCouponName(couponVO.getName());
-                carRentalPackageVo.setGiveCouponAmount(couponVO.getAmount());
-                carRentalPackageVo.setCouponId(couponVO.getId());
+                CarCouponVO couponVO = collect.stream().filter(c -> Objects.equals(c.getDiscountType(), Coupon.FULL_REDUCTION)).max(Comparator.comparing(CarCouponVO::getAmount))
+                        .orElse(collect.get(0));
+                if (Objects.nonNull(couponVO)) {
+                    carRentalPackageVo.setCouponName(couponVO.getName());
+                    carRentalPackageVo.setGiveCouponAmount(couponVO.getAmount());
+                    carRentalPackageVo.setCouponId(couponVO.getId());
+                }
             }
         }
         return carRentalPackageVo;
