@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.enums;
 
+import cn.hutool.core.collection.CollUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -23,8 +26,15 @@ public enum LockTypeEnum {
 
     private final String desc;
 
+    public static List<Integer> list = CollUtil.newArrayList();
+
+    @PostConstruct
+    public void init() {
+        list.add(SYSTEM_LOCK.getCode());
+        list.add(ARTIFICIAL_LOCK.getCode());
+    }
 
     public static Boolean lockTypeCodeByDefined(Integer code) {
-        return Arrays.stream(LockTypeEnum.values()).filter(item -> Objects.equals(code, ARTIFICIAL_LOCK.getCode()) || Objects.equals(code, SYSTEM_LOCK.getCode())).collect(Collectors.toList()).contains(code);
+        return list.contains(code);
     }
 }
