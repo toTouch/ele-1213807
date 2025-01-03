@@ -71,10 +71,18 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             log.warn("ElectricityCabinetBoxLockService Warn! eid is null");
             return;
         }
-        if (Objects.isNull(cabinetBoxLock.getCellNo())) {
+        String cellNo = cabinetBoxLock.getCellNo();
+        if (Objects.isNull(cellNo)) {
             log.warn("ElectricityCabinetBoxLockService Warn! cellNo is null, eid is {}", eid);
             return;
         }
+
+        ElectricityCabinetBoxLock electricityCabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, cellNo);
+        if (Objects.nonNull(electricityCabinetBoxLock)) {
+            log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is exists. eid is {}.cellNo is {}", eid, cellNo);
+            return;
+        }
+
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet)) {
             log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinet is null, eid is {}", eid);
