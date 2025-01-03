@@ -3168,12 +3168,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return electricityMemberCardOrderMapper.selectListOrderByExternalAgreementNo(externalAgreementNo);
     }
     
-    @Slave
-    @Override
-    public List<ElectricityMemberCardOrder> listByUidAndUseStatus(List<Long> uidList, Integer tenantId, Integer useStatus, List<Integer> payTypeList) {
-        return electricityMemberCardOrderMapper.selectListByUidAndUseStatus(uidList, tenantId, useStatus, payTypeList);
-    }
-    
     @Override
     public void sendUserCoupon(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
         if (StringUtils.isBlank(memberCardOrder.getCouponIds()) && Objects.isNull(memberCardOrder.getSendCouponId())) {
