@@ -948,16 +948,15 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             if (Objects.isNull(insuranceOrder)) {
                 // 没有承接保险
                 insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
-                this.updateInsuranceUserInfoById(insuranceUserInfo);
             } else {
                 // 未出险，用户新绑定的保险订单
                 insuranceUserInfo.setIsUse(InsuranceOrder.NOT_USE);
                 insuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
-                this.updateInsuranceUserInfoById(insuranceUserInfo);
+                insuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
                 //更新承接保险订单状态=未出险
                 insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
             }
-
+            this.updateInsuranceUserInfoById(insuranceUserInfo);
         }
     }
 
