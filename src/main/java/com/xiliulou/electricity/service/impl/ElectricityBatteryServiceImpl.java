@@ -1851,32 +1851,32 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Slave
     @Override
-    public Map<Long, String> listUserBatteryByUidList(List<Long> uidList, Integer tenantId) {
+    public Map<Long, ElectricityBattery> listUserBatteryByUidList(List<Long> uidList, Integer tenantId) {
         List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.selectLUserBatteryByUidList(uidList, tenantId);
         if (CollectionUtils.isEmpty(electricityBatteryList)) {
             return null;
         }
-        
+    
         Map<Long, List<ElectricityBattery>> listMap = electricityBatteryList.stream().filter(item -> Objects.nonNull(item.getUid()))
                 .collect(Collectors.groupingBy(ElectricityBattery::getUid, Collectors.toList()));
         if (MapUtil.isEmpty(listMap)) {
             return null;
         }
-        
-        Map<Long, String> userBatteryMap = new HashMap<>(listMap.size());
+    
+        Map<Long, ElectricityBattery> userBatteryMap = new HashMap<>(listMap.size());
         listMap.forEach((uid, batteryList) -> {
             if (CollectionUtils.isEmpty(batteryList)) {
                 return;
             }
-            
+        
             // 按createTime降序排序
             batteryList.sort(Comparator.comparing(ElectricityBattery::getCreateTime).reversed());
             ElectricityBattery battery = batteryList.get(0);
             if (Objects.nonNull(battery)) {
-                userBatteryMap.put(uid, battery.getSn());
+                userBatteryMap.put(uid, battery);
             }
         });
-        
+    
         return userBatteryMap;
     }
     

@@ -178,5 +178,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     Integer existsByBatteryType(String batteryType, Integer tenantId);
     
-    Map<Long, String> listUserBatteryByUidList(List<Long> uidList, Integer tenantId);
+    Map<Long, ElectricityBattery> listUserBatteryByUidList(List<Long> uidList, Integer tenantId);
 }

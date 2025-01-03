@@ -1,19 +1,14 @@
 package com.xiliulou.electricity.vo.userinfo;
 
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
-import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import lombok.Data;
 
-import java.util.List;
-
 /**
- * @author: Kenneth
- * @Date: 2023/8/21 19:25
- * @Description:
+ * @author HeYafeng
+ * @date 2025/1/3 19:37:49
  */
-
 @Data
-public class UserCarRentalPackageVO {
+public class UserCarRentalPackageProVO {
     
     /**
      * 用户ID
@@ -29,11 +24,6 @@ public class UserCarRentalPackageVO {
      * 用户电话
      */
     private String phone;
-    
-    /**
-     * 邀请人
-     */
-    private String inviterUserName;
     
     /**
      * 用户可用状态 0--启用，1--禁用
@@ -108,16 +98,6 @@ public class UserCarRentalPackageVO {
     private Long packageExpiredTime;
     
     /**
-     * 增值服务状态 保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效
-     */
-    private Integer insuranceStatus;
-    
-    /**
-     * 增值服务到期时间
-     */
-    private Long insuranceExpiredTime;
-    
-    /**
      * 所属加盟商
      */
     private Long franchiseeId;
@@ -128,22 +108,23 @@ public class UserCarRentalPackageVO {
     private String franchiseeName;
     
     /**
-     * 用户认证时间
+     * 所属门店
      */
-    private Long userAuthTime;
+    private Long storeId;
     
     /**
-     * 套餐购买次数
+     * 所属加盟商名称
      */
-    private Integer payCount;
+    private String storeName;
     
     /**
-     * 用户所属分组
+     * 用户会员全量信息
      */
-    private List<UserInfoGroupIdAndNameVO> groupList;
-    
+    private UserMemberInfoVo userMemberInfoVo;
     
     public static Integer FREE_OF_CHARGE = 2;
+    
     public static Integer PAID_IN = 1;
+    
     public static Integer UNPAID = 0;
 }

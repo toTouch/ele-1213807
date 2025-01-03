@@ -633,6 +633,11 @@ public class JsonAdminUserInfoController extends BaseController {
         return userInfoService.queryCarRentalList(userInfoQuery);
     }
     
+    /**
+     * @description 运维小程序租车会员列表
+     * @date 2025/1/3 21:02:44
+     * @author HeYafeng
+     */
     @GetMapping(value = "/admin/userInfo/carRentalList/pro")
     public R queryCarRentalListForPro(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
@@ -772,7 +777,9 @@ public class JsonAdminUserInfoController extends BaseController {
     }
     
     /**
-     * 运维小程序换电会员列表查询
+     * @description 运维小程序换电会员列表
+     * @date 2025/1/3 21:02:44
+     * @author HeYafeng
      */
     @GetMapping(value = "/admin/userInfo/eleList/pro")
     public R queryEleListForPro(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "uid", required = false) Long uid,
