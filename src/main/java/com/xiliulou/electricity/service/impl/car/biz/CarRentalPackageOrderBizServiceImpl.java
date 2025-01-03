@@ -2822,11 +2822,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageVO.setRejectReasonForReturnVehicle(rejectReasonForReturnVehicle);
         rentalPackageVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
         
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         // 设置用户剩余冻结次数
         try {
-            rentalPackageVO.setUnusedFreezeCount(userInfoExtraService.getUnusedFreezeCount(tenantId, uid));
+            rentalPackageVO.setUnusedFreezeCount(userInfoExtraService.getUnusedFreezeCount(electricityConfig, uid));
         } catch (BizException e) {
             return R.fail(e.getErrCode(), e.getErrMsg());
+        }
+        
+        // 设置用户可申请冻结的最大天数
+        if (Objects.nonNull(electricityConfig)) {
+            boolean hasAssets = checkUserHasAssets(userInfo.getUid(), userInfo.getTenantId(), rentalPackageType);
+            rentalPackageVO.setMaxFreezeDays(hasAssets ? electricityConfig.getPackageFreezeDaysWithAssets() : electricityConfig.getPackageFreezeDays());
         }
         
         return R.ok(rentalPackageVO);

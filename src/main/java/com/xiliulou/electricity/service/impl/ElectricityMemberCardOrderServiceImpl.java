@@ -3257,10 +3257,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setStoreId(userInfo.getStoreId());
         userBatteryMemberCardInfoVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.NO);
         
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        // 设置用户剩余冻结次数
         try {
-            userBatteryMemberCardInfoVO.setUnusedFreezeCount(userInfoExtraService.getUnusedFreezeCount(userInfo.getTenantId(), userInfo.getUid()));
+            userBatteryMemberCardInfoVO.setUnusedFreezeCount(userInfoExtraService.getUnusedFreezeCount(electricityConfig, userInfo.getUid()));
         } catch (BizException e) {
             return Triple.of(false, e.getErrCode(), e.getErrMsg());
+        }
+        
+        // 设置用户可申请冻结的最大天数
+        if (Objects.nonNull(electricityConfig)) {
+            boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(userInfo.getUid(), userInfo.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
+            userBatteryMemberCardInfoVO.setMaxFreezeDays(hasAssets ? electricityConfig.getPackageFreezeDaysWithAssets() : electricityConfig.getPackageFreezeDays());
         }
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
