@@ -985,7 +985,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             //  续费同类型未禁用的保险
             franchiseeInsurance = franchiseeInsuranceService.querySameInsuranceType(userInfo.getTenantId(), userInfo.getFranchiseeId(), query.getType(), franchiseeInsurance.getSimpleBatteryType(), franchiseeInsurance.getCarModelId());
             if (Objects.isNull(franchiseeInsurance)) {
-                return R.fail("402017", "当前保险已禁用，并且无同类型的保险，如需续费请前往【保险配置】处理!");
+                return R.fail("402017", "当前保险已禁用，并且无同类型的保险，如需续费请前往【保险配置】处理");
             }
         }
 
