@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
 import com.xiliulou.electricity.enums.LockTypeEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -145,24 +146,38 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
 
             // 移除锁仓列表
-            removeLockBox(electricityCabinet.getId(), eleCellVo.getCell_no());
+            removeLockBox(electricityCabinet.getId(), eleCellVo);
         }
     }
 
-    private void removeLockBox(Integer eid, String cellNo) {
-        serviceWrapper.execute(() -> {
-            boxLockService.updateElectricityCabinetBoxLock(eid, cellNo);
-        });
+    private void removeLockBox(Integer eid, EleCellVO eleCellVo) {
+        TtlTraceIdSupport.set(eleCellVo.getSessionId());
+        try {
+            serviceWrapper.execute(() -> {
+                boxLockService.updateElectricityCabinetBoxLock(eid, eleCellVo.getCell_no());
+            });
+        } catch (Exception e) {
+            log.error("removeLockBox Error! sessionId is {}", eleCellVo.getSessionId());
+        } finally {
+            TtlTraceIdSupport.clear();
+        }
     }
 
     private void saveLockBox(ElectricityCabinet electricityCabinet, EleCellVO eleCellVo) {
         // 这里只保存锁仓类型为人工和系统的
-        if (LockTypeEnum.lockTypeCodeByDefined(eleCellVo.getLockType())) {
-            serviceWrapper.execute(() -> {
-                ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(eleCellVo.getCell_no())
-                        .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime()).build();
-                boxLockService.insertElectricityCabinetBoxLock(cabinetBoxLock);
-            });
+        TtlTraceIdSupport.set(eleCellVo.getSessionId());
+        try {
+            if (LockTypeEnum.lockTypeCodeByDefined(eleCellVo.getLockType())) {
+                serviceWrapper.execute(() -> {
+                    ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(eleCellVo.getCell_no())
+                            .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime()).build();
+                    boxLockService.insertElectricityCabinetBoxLock(cabinetBoxLock);
+                });
+            }
+        } catch (Exception e) {
+            log.error("saveLockBox Error! sessionId is {}", eleCellVo.getSessionId());
+        } finally {
+            TtlTraceIdSupport.clear();
         }
     }
 
@@ -200,6 +215,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
          * 在位检测 1：打开 0：关闭
          */
         private Integer is_battery_exit;
+
+        private String sessionId;
     }
 }
 
