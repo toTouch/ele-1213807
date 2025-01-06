@@ -15,7 +15,11 @@ public class ElectricityCabinetBoxLockPageVO {
 
     private String name;
 
-    private Long eid;
+    /**
+     * 所属换电柜柜Id
+     */
+    private Integer electricityCabinetId;
+
 
     private String cellNo;
     /**
