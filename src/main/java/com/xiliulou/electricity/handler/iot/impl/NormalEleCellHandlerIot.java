@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -169,6 +170,9 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         try {
             if (LockTypeEnum.lockTypeCodeByDefined(eleCellVo.getLockType())) {
                 serviceWrapper.execute(() -> {
+                    if (StrUtil.isEmpty(eleCellVo.getCell_no())) {
+                        log.error("SaveLockBox Error! cellNo is empty,sessionId is {}", eleCellVo.getSessionId());
+                    }
                     ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(eleCellVo.getCell_no()))
                             .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime()).build();
                     boxLockService.insertElectricityCabinetBoxLock(cabinetBoxLock);

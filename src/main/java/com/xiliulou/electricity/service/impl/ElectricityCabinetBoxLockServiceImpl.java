@@ -21,7 +21,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.aop.framework.AopContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -59,25 +59,28 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     @Resource
     private RedisService redisService;
 
+    @Resource
+    private ApplicationContext applicationContext;
+
     @Override
     public void insertElectricityCabinetBoxLock(ElectricityCabinetBoxLock cabinetBoxLock) {
         if (Objects.isNull(cabinetBoxLock)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! cabinetBoxLock is null");
+            log.error("ElectricityCabinetBoxLockService Warn! cabinetBoxLock is null");
             return;
         }
         Integer eid = cabinetBoxLock.getElectricityCabinetId();
         if (Objects.isNull(eid)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! eid is null");
-            return;
-        }
-        Integer cellNo = cabinetBoxLock.getCellNo();
-        if (Objects.isNull(cellNo)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! cellNo is null, eid is {}", eid);
+            log.error("ElectricityCabinetBoxLockService Warn! eid is null");
             return;
         }
 
-        ElectricityCabinetBoxLockService boxLockService = (ElectricityCabinetBoxLockService) AopContext.currentProxy();
-        ElectricityCabinetBoxLock electricityCabinetBoxLock = boxLockService.selectBoxLockByEidAndCell(eid, cellNo);
+        Integer cellNo = cabinetBoxLock.getCellNo();
+        if (Objects.isNull(cellNo)) {
+            log.error("ElectricityCabinetBoxLockService Warn! cellNo is null, eid is {}", eid);
+            return;
+        }
+
+        ElectricityCabinetBoxLock electricityCabinetBoxLock = applicationContext.getBean(ElectricityCabinetBoxLockService.class).selectBoxLockByEidAndCell(eid, cellNo);
         if (Objects.nonNull(electricityCabinetBoxLock)) {
             log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is exists. eid is {}.cellNo is {}", eid, cellNo);
             return;
@@ -100,16 +103,15 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     @Override
     public void updateElectricityCabinetBoxLock(Integer eid, String cellNo) {
         if (Objects.isNull(eid)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.eid is null");
+            log.error("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.eid is null");
             return;
         }
 
         if (StrUtil.isEmpty(cellNo)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.cellNo is null");
+            log.error("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.cellNo is null");
             return;
         }
-        ElectricityCabinetBoxLockService boxLockService = (ElectricityCabinetBoxLockService) AopContext.currentProxy();
-        ElectricityCabinetBoxLock electricityCabinetBoxLock = boxLockService.selectBoxLockByEidAndCell(eid, Integer.valueOf(cellNo));
+        ElectricityCabinetBoxLock electricityCabinetBoxLock = applicationContext.getBean(ElectricityCabinetBoxLockService.class).selectBoxLockByEidAndCell(eid, Integer.valueOf(cellNo));
         if (Objects.isNull(electricityCabinetBoxLock)) {
             log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is null. eid is {}.cellNo is {}", eid, cellNo);
             return;
