@@ -43,4 +43,13 @@ public class ElectricityCabinetBoxLockPageVO {
     private String storeName;
 
     private Integer tenantId;
+
+    /**
+     * 设备名称
+     */
+    private String deviceName;
+    /**
+     * 设备产品
+     */
+    private String productKey;
 }

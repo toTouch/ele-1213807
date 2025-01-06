@@ -143,6 +143,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
 
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
+            vo.setProductKey(Objects.nonNull(electricityCabinet) ? electricityCabinet.getProductKey() : null);
+            vo.setDeviceName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getDeviceName() : null);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
             Store store = storeService.queryByIdFromCache(item.getStoreId());
