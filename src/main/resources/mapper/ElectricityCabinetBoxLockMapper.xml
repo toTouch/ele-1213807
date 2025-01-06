@@ -71,13 +71,13 @@
         <if test="address != null and address != ''">
             and address like concat('%',#{address},'%')
         </if>
-        <if test="lockType != null and lockType != ''">
+        <if test="lockType != null">
             and lock_type = #{lockType}
         </if>
-        <if test="areaId != null and areaId != ''">
+        <if test="areaId != null">
             and area_id = #{areaId}
         </if>
-        <if test="franchiseeId != null and franchiseeId != ''">
+        <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size() > 0">
@@ -86,7 +86,7 @@
                 #{franchiseeId}
             </foreach>
         </if>
-        <if test="storeId != null and storeId != ''">
+        <if test="storeId != null">
             and store_id = #{storeId}
         </if>
         <if test="lockStatusChangeTimeStart != null">
@@ -112,13 +112,13 @@
         <if test="address != null and address != ''">
             and address like concat('%',#{address},'%')
         </if>
-        <if test="lockType != null and lockType != ''">
+        <if test="lockType != null">
             and lock_type = #{lockType}
         </if>
-        <if test="areaId != null and areaId != ''">
+        <if test="areaId != null">
             and area_id = #{areaId}
         </if>
-        <if test="franchiseeId != null and franchiseeId != ''">
+        <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size() > 0">
@@ -127,7 +127,7 @@
                 #{franchiseeId}
             </foreach>
         </if>
-        <if test="storeId != null and storeId != ''">
+        <if test="storeId != null">
             and store_id = #{storeId}
         </if>
         <if test="lockStatusChangeTimeStart != null">
