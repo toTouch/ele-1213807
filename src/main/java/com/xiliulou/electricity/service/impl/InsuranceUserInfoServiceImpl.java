@@ -991,4 +991,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         return R.ok(franchiseeInsurance);
     }
+
+    @Override
+    @Slave
+    public List<InsuranceUserInfo> listByUid(Long uid) {
+        return baseMapper.selectListByUid(uid);
+    }
 }

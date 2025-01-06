@@ -76,4 +76,6 @@ public interface InsuranceUserInfoService {
     void userInsuranceExpireAutoConvert(InsuranceUserInfo item);
 
     R renewalUserInsuranceInfoCheck(InsuranceUserInfoQuery query);
+
+    List<InsuranceUserInfo> listByUid(Long uid);
 }
