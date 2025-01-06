@@ -2999,7 +2999,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
                 }
-                
+
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(item.getUid());
+                item.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
+
                 threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));
             });
         }, threadPool).exceptionally(e -> {
