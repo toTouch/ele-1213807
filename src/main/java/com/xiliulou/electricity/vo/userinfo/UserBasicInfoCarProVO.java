@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo;
+package com.xiliulou.electricity.vo.userinfo;
 
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import lombok.Data;
  * @mood
  */
 @Data
-public class DetailsUserInfoProVO {
+public class UserBasicInfoCarProVO {
     
     private Long franchiseeId;
     

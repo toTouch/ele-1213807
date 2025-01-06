@@ -117,6 +117,8 @@ public class UserCarRentalPackageProVO {
      */
     private String storeName;
     
+    UserBasicInfoCarProVO basicInfo;
+    
     /**
      * 用户会员全量信息
      */
