@@ -45,7 +45,7 @@ public class ElectricityCabinetBoxLock {
     /**
      * 仓门号
      */
-    private String cellNo;
+    private Integer cellNo;
 
     /**
      * 锁仓类型 0--人为禁用 1--系统禁用 2--待检中

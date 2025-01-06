@@ -71,7 +71,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             log.warn("ElectricityCabinetBoxLockService Warn! eid is null");
             return;
         }
-        String cellNo = cabinetBoxLock.getCellNo();
+        Integer cellNo = cabinetBoxLock.getCellNo();
         if (Objects.isNull(cellNo)) {
             log.warn("ElectricityCabinetBoxLockService Warn! cellNo is null, eid is {}", eid);
             return;
@@ -108,7 +108,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             log.warn("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.cellNo is null");
             return;
         }
-        ElectricityCabinetBoxLock electricityCabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, cellNo);
+        ElectricityCabinetBoxLock electricityCabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, Integer.valueOf(cellNo));
         if (Objects.isNull(electricityCabinetBoxLock)) {
             log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is null. eid is {}.cellNo is {}", eid, cellNo);
             return;
@@ -217,7 +217,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             }
 
             // 查看锁仓记录
-            ElectricityCabinetBoxLock cabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(electricityCabinet.getId(), String.valueOf(list.get(0)));
+            ElectricityCabinetBoxLock cabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(electricityCabinet.getId(), list.get(0));
             if (Objects.isNull(cabinetBoxLock)) {
                 log.info("EnableBoxCell Info! cabinetBoxLock is null, eid is {}, cellNo is {}", eid, cellNo);
                 return R.fail("402012", "当前仓门已经启用，请刷新后查看");

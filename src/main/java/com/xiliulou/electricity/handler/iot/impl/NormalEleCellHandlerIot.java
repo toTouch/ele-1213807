@@ -169,7 +169,7 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         try {
             if (LockTypeEnum.lockTypeCodeByDefined(eleCellVo.getLockType())) {
                 serviceWrapper.execute(() -> {
-                    ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(eleCellVo.getCell_no())
+                    ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(eleCellVo.getCell_no()))
                             .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime()).build();
                     boxLockService.insertElectricityCabinetBoxLock(cabinetBoxLock);
                 });

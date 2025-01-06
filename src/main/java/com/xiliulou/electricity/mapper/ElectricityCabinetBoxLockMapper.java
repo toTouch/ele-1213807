@@ -12,7 +12,7 @@ public interface ElectricityCabinetBoxLockMapper {
 
     void insertEleLockBox(@Param("boxLock") ElectricityCabinetBoxLock boxLock);
 
-    ElectricityCabinetBoxLock selectBoxLockByEidAndCell(@Param("eid") Integer eid,@Param("cellNo") String cellNo);
+    ElectricityCabinetBoxLock selectBoxLockByEidAndCell(@Param("eid") Integer eid, @Param("cellNo") Integer cellNo);
 
     void updateEleLockBox(@Param("boxLock") ElectricityCabinetBoxLock updateBoxLock);
 
