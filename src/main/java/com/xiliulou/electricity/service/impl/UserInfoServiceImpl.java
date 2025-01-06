@@ -590,6 +590,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
                     }
                 }
+    
+                DetailsUserInfoProVO detailsUserInfoProVO = new DetailsUserInfoProVO();
+                detailsUserInfoProVO.setFranchiseeId(item.getFranchiseeId());
+                detailsUserInfoProVO.setStoreId(item.getStoreId());
             });
         }, threadPool).exceptionally(e -> {
             log.error("The carSn list ERROR! query carSn error!", e);

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * (UserBatteryDeposit)表服务接口
@@ -67,4 +68,6 @@ public interface UserBatteryDepositService {
     Integer update(UserBatteryDeposit userBatteryDeposit);
     
     Integer deleteById(Long id);
+    
+    List<UserBatteryDeposit> listByUidList(Integer tenantId, List<Long> uidList);
 }

@@ -18,6 +18,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 换电柜电池表(ElectricityBattery)表数据库访问层

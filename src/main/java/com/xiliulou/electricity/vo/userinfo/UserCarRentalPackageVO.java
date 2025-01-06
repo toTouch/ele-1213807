@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.vo.userinfo;
 
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
-import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
-import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import lombok.Data;
 
@@ -144,15 +142,6 @@ public class UserCarRentalPackageVO {
      */
     private List<UserInfoGroupIdAndNameVO> groupList;
     
-    /**
-     * 用户基本信息
-     */
-    private DetailsUserInfoVo basicInfo;
-    
-    /**
-     * 用户会员全量信息
-     */
-    private UserMemberInfoVo userMemberInfoVo;
     
     public static Integer FREE_OF_CHARGE = 2;
     public static Integer PAID_IN = 1;

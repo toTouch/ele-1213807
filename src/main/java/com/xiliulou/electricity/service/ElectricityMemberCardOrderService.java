@@ -174,6 +174,4 @@ public interface ElectricityMemberCardOrderService {
      * @return 套餐订单
      */
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
-    
-    List<ElectricityMemberCardOrder> listByUidAndUseStatus(Long uid, Integer tenantId, Integer useStatus, List<Integer> payTypeList);
 }
