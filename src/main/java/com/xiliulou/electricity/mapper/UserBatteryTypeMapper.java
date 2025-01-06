@@ -27,4 +27,6 @@ public interface UserBatteryTypeMapper extends BaseMapper<UserBatteryType> {
     List<UserBatteryType> selectListByUid(Long uid);
     
     Integer deleteByUidAndBatteryTypes(@Param("uid") Long uid, @Param("batteryTypes") List<String> batteryTypes);
+    
+    List<UserBatteryType> selectListByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
 }

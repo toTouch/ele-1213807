@@ -68,4 +68,6 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
     List<EleDepositOrderVO> selectListSuperAdminPage(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
     
     EleDepositOrder selectLastEnterpriseDeposit(@Param("uid") Long uid);
+    
+    List<EleDepositOrder> selectListByOrderIdList(@Param("tenantId") Integer tenantId, @Param("orderIdList") List<String> orderIdList);
 }
