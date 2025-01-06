@@ -20,17 +20,17 @@ import java.util.Set;
 public class BatteryRecycleCancelResultVO {
     
     /**
-     * 录入条数
+     * 取消成功条数
      */
     private Integer successCount;
     
     /**
-     * 录入失败条数
+     * 取消失败条数
      */
     private Integer failCount;
     
     /**
-     * 录入失败电池sn列表
+     * 失败电池sn列表
      */
     private Set<String> failBatterySnList;
 }
