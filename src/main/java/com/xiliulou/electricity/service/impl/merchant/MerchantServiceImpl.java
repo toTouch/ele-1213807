@@ -1205,7 +1205,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         // 逾期用户数量
         CompletableFuture<Void> overdueUserInfo = CompletableFuture.runAsync(() -> {
-            List<MerchantOverdueUserCountBO> merchantOverdueUserCountBOList = merchantJoinRecordService.listOverdueUserCount(merchantIdList);
+            List<MerchantOverdueUserCountBO> merchantOverdueUserCountBOList = merchantJoinRecordService.listOverdueUserCount(merchantIdList, System.currentTimeMillis());
             Map<Long, MerchantOverdueUserCountBO> merchantOverdueUserCountBOMap = new HashMap<>();
             if (ObjectUtils.isNotEmpty(merchantOverdueUserCountBOList)) {
                 merchantOverdueUserCountBOMap = merchantOverdueUserCountBOList.stream().filter(item -> Objects.nonNull(item) && Objects.nonNull(item.getMerchantId()))

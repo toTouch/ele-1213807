@@ -726,8 +726,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
 
     @Override
     @Slave
-    public List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList) {
-        return merchantJoinRecordMapper.selectListOverdueCount(merchantIdList);
+    public List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList, long currentTime) {
+        return merchantJoinRecordMapper.selectListOverdueCount(merchantIdList, currentTime);
     }
 
     @Override

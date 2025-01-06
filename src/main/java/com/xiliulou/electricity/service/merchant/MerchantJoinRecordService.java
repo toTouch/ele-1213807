@@ -139,5 +139,5 @@ public interface MerchantJoinRecordService {
     
     MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId);
 
-    List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList);
+    List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList, long currentTime);
 }

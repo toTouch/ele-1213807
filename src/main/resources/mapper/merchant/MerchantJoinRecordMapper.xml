@@ -658,7 +658,7 @@
     <select id="selectListOverdueCount"
             resultType="com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO">
         select tmjr.merchant_id,
-               count(distinct tmjr.join_uid) as 'overdueUserCount'
+               count(1) as 'overdueUserCount'
         from t_merchant_join_record tmjr
         left join t_user_battery_member_card tubmc on tmjr.join_uid = tubmc.uid
         <where>
@@ -678,7 +678,7 @@
 
     <select id="countOverdueUserTotal" resultType="java.lang.Integer">
         select
-            count(distinct tmjr.join_uid)
+            count(1)
         from t_merchant_join_record tmjr
         left join t_user_battery_member_card tubmc on tmjr.join_uid = tubmc.uid
         <where>

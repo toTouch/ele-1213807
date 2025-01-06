@@ -91,7 +91,7 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     List<MerchantStatisticsUserVO> selectListEmployeeJoinNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);
 
-    List<MerchantOverdueUserCountBO> selectListOverdueCount(@Param("merchantIdList") Set<Long> merchantIdList);
+    List<MerchantOverdueUserCountBO> selectListOverdueCount(@Param("merchantIdList") Set<Long> merchantIdList,@Param("currentTime") long currentTime);
 
     Integer countOverdueUserTotal(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
 }
