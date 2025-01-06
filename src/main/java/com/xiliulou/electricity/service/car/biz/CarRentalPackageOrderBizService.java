@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
@@ -212,12 +213,12 @@ public interface CarRentalPackageOrderBizService {
     /**
      * 根据资产类型,租户，uid，查询用户是否存在对应的资产
      *
-     * @param uid
+     * @param userInfo
      * @param tenantId
      * @param assetType
      * @return
      */
-    boolean checkUserHasAssets(Long uid, Integer tenantId, Integer assetType);
+    boolean checkUserHasAssets(UserInfo userInfo, Integer tenantId, Integer assetType);
     
     Integer dayCouponCount(String orderNo);
 }

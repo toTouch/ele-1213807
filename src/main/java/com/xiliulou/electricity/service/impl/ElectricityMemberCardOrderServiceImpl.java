@@ -762,16 +762,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(user.getUid(), user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
-        if (Objects.equals(ElectricityConfig.DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS,
-                electricityConfig.getAllowFreezeWithAssets()) && hasAssets) {
-            throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
-        }
-        
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.warn("DISABLE MEMBER CARD WARN! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(userInfo, user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
+        if (Objects.equals(ElectricityConfig.DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS,
+                electricityConfig.getAllowFreezeWithAssets()) && hasAssets) {
+            throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -1313,12 +1313,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.warn("PAUSE BATTERY MEMBER CARD WARN! user exist battery service fee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100000", "存在电池服务费");
         }
-
+        
         R<Object> checkR = userInfoExtraService.checkFreezeCount(TenantContextHolder.getTenantId(), uid);
         if (!checkR.isSuccess()) {
             return checkR;
         }
-
+        
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId(uid))
                 .memberCardName(batteryMemberCard.getName()).batteryMemberCardId(userBatteryMemberCard.getMemberCardId()).phone(userInfo.getPhone()).userName(userInfo.getName())
                 .status(UserBatteryMemberCard.MEMBER_CARD_DISABLE).tenantId(userInfo.getTenantId()).uid(uid).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
@@ -1379,7 +1379,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
-
+        
         // 增加用户冻结次数
         userInfoExtraService.changeFreezeCountForUser(uid, UserInfoExtraConstant.ADD_FREEZE_COUNT);
         
@@ -1930,7 +1930,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 }
                 
                 BigDecimal serviceFee = BigDecimal.ZERO;
-                if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(freezeServiceCharge)){
+                if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(freezeServiceCharge)) {
                     serviceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays()));
                 }
                 
@@ -1949,8 +1949,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
                     EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
                     eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
-                    eleBatteryServiceFeeOrderUpdate.setPayAmount(
-                            freezeServiceCharge.multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays())));
+                    eleBatteryServiceFeeOrderUpdate.setPayAmount(freezeServiceCharge.multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays())));
                     eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(
                             userBatteryMemberCard.getDisableMemberCardTime() + eleDisableMemberCardRecord.getChooseDays() * 24 * 60 * 60 * 1000L);
                     eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -1967,7 +1966,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             offset += size;
         }
     }
-
+    
     
     private String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid + RandomUtil.randomNumbers(6);
@@ -3267,7 +3266,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         // 设置用户可申请冻结的最大天数
         if (Objects.nonNull(electricityConfig)) {
-            boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(userInfo.getUid(), userInfo.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
+            boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(userInfo, userInfo.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
             userBatteryMemberCardInfoVO.setMaxFreezeDays(hasAssets ? electricityConfig.getPackageFreezeDaysWithAssets() : electricityConfig.getPackageFreezeDays());
         }
         
