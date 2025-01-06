@@ -24,6 +24,8 @@ public class BatteryRecyclePageRequest {
     private Long offset;
     
     private String sn;
+
+    private List<String> snList;
     
     private String batchNo;
     

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantScanCodeRecordVO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author HeYafeng
@@ -136,4 +138,6 @@ public interface MerchantJoinRecordService {
     Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest);
     
     MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId);
+
+    List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList);
 }

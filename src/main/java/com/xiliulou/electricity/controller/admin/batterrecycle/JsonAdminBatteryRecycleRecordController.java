@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.batterrecycle;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleCancelRequest;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleSaveOrUpdateRequest;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecyclePageRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -12,11 +13,13 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -62,13 +65,42 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         
         return returnTripleResult(batteryRecycleRecordService.save(saveRequest, user.getUid()));
     }
+
+    /**
+     * 取消
+     */
+    @PostMapping("/admin/battery/recycle/cancel")
+    public R cancel(@RequestBody @Validated(CreateGroup.class) BatteryRecycleCancelRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+
+            request.setFranchiseeIdList(franchiseeIds);
+        }
+
+        request.setTenantId(TenantContextHolder.getTenantId());
+
+        return returnTripleResult(batteryRecycleRecordService.cancel(request, batteryRecycleRecordService.listBySnList(request)));
+    }
     
     
     /**
      * 分页查询
      */
     @GetMapping("/admin/battery/recycle/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "sn", required = false) String sn,
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "snList", required = false) List<String> snList,
             @RequestParam(value = "batchNo", required = false) String batchNo, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -100,14 +132,20 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         if (Objects.nonNull(franchiseeId)) {
             franchiseeIds.add(franchiseeId);
         }
+
         BatteryRecyclePageRequest request = BatteryRecyclePageRequest.builder().size(size).offset(offset).batchNo(batchNo).status(status).electricityCabinetId(electricityCabinetId)
-                .franchiseeIdList(franchiseeIds).startTime(startTime).endTime(endTime).sn(sn).tenantId(TenantContextHolder.getTenantId()).build();
-        
+                .franchiseeIdList(franchiseeIds).snList(snList).startTime(startTime).endTime(endTime).tenantId(TenantContextHolder.getTenantId()).build();
+
+        if (CollectionUtils.isNotEmpty(snList) && snList.size() == 1) {
+            request.setSn(snList.get(0));
+            request.setSnList(Collections.EMPTY_LIST);
+        }
+
         return R.ok(batteryRecycleRecordService.listByPage(request));
     }
     
     @GetMapping("/admin/battery/recycle/pageCount")
-    public R pageCount( @RequestParam(value = "sn", required = false) String sn,
+    public R pageCount( @RequestParam(value = "snList", required = false) List<String> snList,
             @RequestParam(value = "batchNo", required = false) String batchNo, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -132,7 +170,12 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
             franchiseeIds.add(franchiseeId);
         }
         BatteryRecyclePageRequest request = BatteryRecyclePageRequest.builder().batchNo(batchNo).status(status).electricityCabinetId(electricityCabinetId)
-                .franchiseeIdList(franchiseeIds).startTime(startTime).endTime(endTime).sn(sn).tenantId(TenantContextHolder.getTenantId()).build();
+                .franchiseeIdList(franchiseeIds).startTime(startTime).endTime(endTime).snList(snList).tenantId(TenantContextHolder.getTenantId()).build();
+
+        if (CollectionUtils.isNotEmpty(snList) && snList.size() == 1) {
+            request.setSn(snList.get(0));
+            request.setSnList(Collections.EMPTY_LIST);
+        }
         
         return R.ok(batteryRecycleRecordService.countTotal(request));
     }

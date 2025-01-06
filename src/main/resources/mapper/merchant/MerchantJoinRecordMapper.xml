@@ -654,6 +654,48 @@
         </where>
         group by month_date
     </select>
+
+    <select id="selectListOverdueCount"
+            resultType="com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO">
+        select tmjr.merchant_id,
+               count(distinct tmjr.join_uid) as 'overdueUserCount'
+        from t_merchant_join_record tmjr
+        left join t_user_battery_member_card tubmc on tmjr.join_uid = tubmc.uid
+        <where>
+            tmjr.del_flag = 0
+            and tmjr.status = 2
+            and tubmc.member_card_expire_time &lt;= #{currentTime}
+
+            <if test="merchantIdList != null and merchantIdList.size() > 0">
+                and tmjr.merchant_id in
+                <foreach collection="merchantIdList" close=")" open="(" item="merchantId" separator=",">
+                    #{merchantId}
+                </foreach>
+            </if>
+        </where>
+        group by tmjr.merchant_id
+    </select>
+
+    <select id="countOverdueUserTotal" resultType="java.lang.Integer">
+        select
+            count(distinct tmjr.join_uid)
+        from t_merchant_join_record tmjr
+        left join t_user_battery_member_card tubmc on tmjr.join_uid = tubmc.uid
+        <where>
+            tmjr.del_flag = 0
+            and tmjr.status = 2
+            <if test="merchantId != null">
+                and tmjr.merchant_id = #{merchantId}
+            </if>
+
+            <if test="tenantId != null">
+                and tmjr.tenant_id = #{tenantId}
+            </if>
+
+            and tubmc.member_card_expire_time &lt;= #{currentTime}
+
+        </where>
+    </select>
 </mapper>
 
 

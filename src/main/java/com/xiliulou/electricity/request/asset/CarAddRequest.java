@@ -34,7 +34,7 @@ public class CarAddRequest {
     /**
      * 车牌号
      */
-    @Size(max = 9, message = "车牌号输入长度超限，最长9位，请检查!", groups = {CreateGroup.class})
+    @Size(max = 10, message = "车牌号输入长度超限，最长10位，请检查!", groups = {CreateGroup.class})
     private String licensePlateNumber;
     
     /**

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.batteryRecycle;
 
 import com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord;
+import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleCancelRequest;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleSaveOrUpdateRequest;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecyclePageRequest;
 import com.xiliulou.electricity.vo.recycle.BatteryRecycleVO;
@@ -27,4 +28,8 @@ public interface BatteryRecycleRecordService {
     List<BatteryRecycleRecord> listNotLockedRecord(Integer tenantId, Long maxId, Long size);
     
     Integer updateById(BatteryRecycleRecord batteryRecycleRecord);
+
+    Triple<Boolean, String, Object> cancel(BatteryRecycleCancelRequest request, List<BatteryRecycleRecord> batteryRecycleRecords);
+
+    List<BatteryRecycleRecord> listBySnList(BatteryRecycleCancelRequest request);
 }
