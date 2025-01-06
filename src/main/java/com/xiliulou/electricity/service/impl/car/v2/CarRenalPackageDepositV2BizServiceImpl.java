@@ -640,7 +640,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 // 是否存在未生效的保险
                 InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(memberTermEntity.getUid(), memberTermEntity.getRentalPackageType(), InsuranceOrder.NOT_EFFECTIVE);
                 if (Objects.nonNull(insuranceOrder)) {
-                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                 }
             }
             // 删除会员期限表信息

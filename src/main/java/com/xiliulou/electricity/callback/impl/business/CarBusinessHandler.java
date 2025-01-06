@@ -206,7 +206,7 @@ public class CarBusinessHandler implements BusinessHandler {
 
                 InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType(), InsuranceOrder.NOT_EFFECTIVE);
                 if (Objects.nonNull(insuranceOrder)){
-                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                 }
             }
             // 删除会员期限表信息

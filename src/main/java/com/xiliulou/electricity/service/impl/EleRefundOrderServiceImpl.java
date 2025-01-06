@@ -394,7 +394,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     // 是否存在未生效的保险
                     InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
                     if (Objects.nonNull(insuranceOrder)) {
-                        insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                        insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                     }
                 }
                 
@@ -712,7 +712,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 // 是否存在未生效的保险
                 InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
                 if (Objects.nonNull(insuranceOrder)){
-                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                 }
             }
             
@@ -1305,7 +1305,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
             if (Objects.nonNull(insuranceOrder)){
-                insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
             }
         }
         
@@ -1516,7 +1516,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 // 是否存在未生效的保险
                 InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
                 if (Objects.nonNull(insuranceOrder)){
-                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                 }
             }
             
@@ -1573,7 +1573,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     // 是否存在未生效的保险
                     InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
                     if (Objects.nonNull(insuranceOrder)){
-                        insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                        insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                     }
                 }
                 

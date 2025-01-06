@@ -240,7 +240,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
 
                 InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
                 if (Objects.nonNull(insuranceOrder)) {
-                    insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                 }
             }
             

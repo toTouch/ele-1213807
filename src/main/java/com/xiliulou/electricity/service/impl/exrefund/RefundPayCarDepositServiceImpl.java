@@ -185,7 +185,7 @@ public class RefundPayCarDepositServiceImpl implements RefundPayService {
                     // 是否存在未生效的保险
                     InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(memberTermUpdateEntity.getUid(), memberTermUpdateEntity.getRentalPackageType(), InsuranceOrder.NOT_EFFECTIVE);
                     if (Objects.nonNull(insuranceOrder)){
-                        insuranceOrderService.updateUseStatusForRefund(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                        insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
                     }
                 }
                 // 清理user信息/解绑车辆/解绑电池
