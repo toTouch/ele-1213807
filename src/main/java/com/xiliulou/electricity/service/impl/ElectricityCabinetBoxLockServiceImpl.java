@@ -82,21 +82,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
 
         ElectricityCabinetBoxLock electricityCabinetBoxLock = applicationContext.getBean(ElectricityCabinetBoxLockService.class).selectBoxLockByEidAndCell(eid, cellNo);
         if (Objects.nonNull(electricityCabinetBoxLock)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is exists. eid is {}.cellNo is {}", eid, cellNo);
             return;
         }
 
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(eid);
-        if (Objects.isNull(electricityCabinet)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinet is null, eid is {}", eid);
-            return;
-        }
-
-        cabinetBoxLock.setAddress(electricityCabinet.getAddress()).setSn(electricityCabinet.getSn())
-                .setAreaId(electricityCabinet.getAreaId()).setCreateTime(System.currentTimeMillis())
-                .setName(electricityCabinet.getName())
-                .setUpdateTime(System.currentTimeMillis()).setTenantId(electricityCabinet.getTenantId())
-                .setStoreId(electricityCabinet.getStoreId()).setFranchiseeId(electricityCabinet.getFranchiseeId());
         electricityCabinetBoxLockMapper.insertEleLockBox(cabinetBoxLock);
     }
 
@@ -113,7 +101,6 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         }
         ElectricityCabinetBoxLock electricityCabinetBoxLock = applicationContext.getBean(ElectricityCabinetBoxLockService.class).selectBoxLockByEidAndCell(eid, Integer.valueOf(cellNo));
         if (Objects.isNull(electricityCabinetBoxLock)) {
-            log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is null. eid is {}.cellNo is {}", eid, cellNo);
             return;
         }
 
@@ -142,10 +129,6 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         return electricityCabinetBoxLocks.stream().map(item -> {
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
-
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
-            vo.setProductKey(Objects.nonNull(electricityCabinet) ? electricityCabinet.getProductKey() : null);
-            vo.setDeviceName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getDeviceName() : null);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
             Store store = storeService.queryByIdFromCache(item.getStoreId());

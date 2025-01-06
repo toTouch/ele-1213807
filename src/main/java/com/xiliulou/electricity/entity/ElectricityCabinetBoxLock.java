@@ -29,6 +29,15 @@ public class ElectricityCabinetBoxLock {
     private Long id;
 
     /**
+     * 物联网productKey
+     */
+    private String productKey;
+    /**
+     * 物联网deviceName
+     */
+    private String deviceName;
+
+    /**
      * 换电柜名称
      */
     private String name;

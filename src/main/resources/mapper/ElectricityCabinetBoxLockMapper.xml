@@ -4,12 +4,15 @@
 
     <sql id="baseSql">
         id
+        ,product_key,device_name
         ,name,sn,electricity_cabinet_id,cell_no,lock_type,lock_reason,lock_status_change_time,address,area_id,tenant_id,franchisee_id,store_id,create_time,update_time
     </sql>
 
     <insert id="insertEleLockBox">
         INSERT INTO t_electricity_cabinet_box_lock
         (id,
+         product_key,
+         device_name,
          name,
          sn,
          electricity_cabinet_id,
@@ -25,6 +28,8 @@
          create_time,
          update_time)
         VALUES (#{boxLock.id},
+                #{boxLock.productKey},
+                #{boxLock.deviceName},
                 #{boxLock.name},
                 #{boxLock.sn},
                 #{boxLock.electricityCabinetId},

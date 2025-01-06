@@ -179,7 +179,12 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
                         return;
                     }
                     ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(eleCellVo.getCell_no()))
-                            .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime()).build();
+                            .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime())
+                            .address(electricityCabinet.getAddress()).sn(electricityCabinet.getSn())
+                            .areaId(electricityCabinet.getAreaId()).createTime(System.currentTimeMillis())
+                            .name(electricityCabinet.getName()).deviceName(electricityCabinet.getDeviceName()).productKey(electricityCabinet.getProductKey())
+                            .updateTime(System.currentTimeMillis()).tenantId(electricityCabinet.getTenantId())
+                            .storeId(electricityCabinet.getStoreId()).franchiseeId(electricityCabinet.getFranchiseeId()).build();
                     boxLockService.insertElectricityCabinetBoxLock(cabinetBoxLock);
                 });
             }
