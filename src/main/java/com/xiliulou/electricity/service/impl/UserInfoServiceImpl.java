@@ -75,6 +75,7 @@ import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.query.UserOauthBindListQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.user.BindBatteryRequest;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
@@ -148,6 +149,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DetailsBatteryInfoProVO;
 import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
+import com.xiliulou.electricity.vo.DetailsUserInfoProVO;
 import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.EleDepositRefundVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -588,6 +590,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
                     }
                 }
+    
+                DetailsUserInfoProVO detailsUserInfoProVO = new DetailsUserInfoProVO();
+                detailsUserInfoProVO.setFranchiseeId(item.getFranchiseeId());
+                detailsUserInfoProVO.setStoreId(item.getStoreId());
             });
         }, threadPool).exceptionally(e -> {
             log.error("The carSn list ERROR! query carSn error!", e);
@@ -780,6 +786,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 处理租车/车店一体押金状态 和 当前套餐冻结状态
         List<UserCarRentalPackageProVO> userCarRentalPackageVOList = Lists.newArrayList();
         List<Long> uidList = new ArrayList<>(userCarRentalPackageDOList.size());
+        List<UserOauthBindListQuery> userOauthBindListQueryList = new ArrayList<>(userCarRentalPackageDOList.size());
         Integer tenantId = TenantContextHolder.getTenantId();
     
         for (UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList) {
@@ -804,38 +811,64 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         
             userCarRentalPackageVOList.add(userCarRentalPackageVO);
-        }
     
+            Long uid = userCarRentalPackageDO.getUid();
+            uidList.add(uid);
+    
+            UserOauthBindListQuery query = UserOauthBindListQuery.builder().tenantId(tenantId).uid(uid).phone(userCarRentalPackageDO.getPhone()).build();
+            userOauthBindListQueryList.add(query);
+        }
+        
+        // 查询认证信息
+        Map<Integer, UserOauthBind> sourceMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(userOauthBindListQueryList)) {
+            List<UserOauthBind> userOauthBinds = userOauthBindService.listByUidAndPhoneList(userOauthBindListQueryList);
+            if (CollectionUtils.isNotEmpty(userOauthBinds)) {
+                sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()
+                        .collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
+            }
+        }
+        
         // 获取用户电池相关信息
         Map<Long, ElectricityBattery> userBatteryMap = electricityBatteryService.listUserBatteryByUidList(uidList, tenantId);
-        CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> {
-            userCarRentalPackageVOList.forEach(item -> {
-                // 获取用户电池信息
-                if (MapUtils.isNotEmpty(userBatteryMap) && userBatteryMap.containsKey(item.getUid())) {
-                    ElectricityBattery electricityBattery = userBatteryMap.get(item.getUid());
-                    item.setBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
-                    item.setBatteryModel(Objects.isNull(electricityBattery) ? "" : electricityBattery.getModel());
-                }
-            
-                // 获取用户所属加盟商
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-                item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-            
-                // 用户所属门店
-                UserInfo userInfo = queryByUidFromCache(item.getUid());
-                if (Objects.nonNull(userInfo.getStoreId())) {
-                    item.setStoreId(userInfo.getStoreId());
-                    Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
-                    item.setStoreName(Objects.isNull(store) ? "" : store.getName());
-                }
-            
-                // 套餐信息
-                CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(item.getPackageId());
-                if (Objects.nonNull(carRentalPackagePo)) {
-                    item.setPackageName(carRentalPackagePo.getName());
-                }
-            });
-        }, threadPoolPro).exceptionally(e -> {
+    
+        Map<Integer, UserOauthBind> finalSourceMap = sourceMap;
+        CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
+            // 获取用户电池信息
+            if (MapUtils.isNotEmpty(userBatteryMap) && userBatteryMap.containsKey(item.getUid())) {
+                ElectricityBattery electricityBattery = userBatteryMap.get(item.getUid());
+                item.setBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
+                item.setBatteryModel(Objects.isNull(electricityBattery) ? "" : electricityBattery.getModel());
+            }
+        
+            // 获取用户所属加盟商
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        
+            // 用户所属门店
+            UserInfo userInfo = queryByUidFromCache(item.getUid());
+            if (Objects.nonNull(userInfo.getStoreId())) {
+                item.setStoreId(userInfo.getStoreId());
+                Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
+                item.setStoreName(Objects.isNull(store) ? "" : store.getName());
+            }
+        
+            // 套餐信息
+            CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(item.getPackageId());
+            if (Objects.nonNull(carRentalPackagePo)) {
+                item.setPackageName(carRentalPackagePo.getName());
+            }
+
+            DetailsUserInfoProVO detailsUserInfoProVO = new DetailsUserInfoProVO();
+            detailsUserInfoProVO.setFranchiseeId(item.getFranchiseeId());
+            detailsUserInfoProVO.setStoreId(item.getStoreId());
+            if (MapUtils.isNotEmpty(finalSourceMap)) {
+                detailsUserInfoProVO.setBindWX(
+                        this.getIsBindThird(finalSourceMap.get(UserOauthBind.SOURCE_WX_PRO)) ? UserOauthBind.STATUS_BIND_VX : UserOauthBind.STATUS_UN_BIND_VX);
+                detailsUserInfoProVO.setBindAlipay(
+                        this.getIsBindThird(finalSourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
+            }
+        }), threadPoolPro).exceptionally(e -> {
             log.error("Query user battery info error for car rental pro.", e);
             return null;
         });
