@@ -44,5 +44,5 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
      * @return 自动审核校验结果，true-自动审核，false-人工审核
      * @throws BizException 若捕获到BizException，直接将其code、message组合成失败结果返回给前端即可
      */
-    Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid, boolean hasAssets) throws BizException;
+    Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid, boolean hasAssets, Integer source) throws BizException;
 }

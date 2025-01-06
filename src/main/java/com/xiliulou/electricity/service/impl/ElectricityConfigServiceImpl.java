@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
+import com.xiliulou.electricity.enums.CheckFreezeDaysSourceEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -282,10 +283,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
         
         electricityConfigMapper.update(electricityConfig);
-
+        
         // 清理缓存
         redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
-
+        
         operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
     }
@@ -389,7 +390,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     
     @Slave
     @Override
-    public Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid, boolean hasAssets) throws BizException{
+    public Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid, boolean hasAssets, Integer source) throws BizException {
         Boolean autoReviewOrNot = Boolean.TRUE;
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(tenantId);
         
@@ -398,23 +399,23 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         
         // 校验是否可以自动审核
-        if (Objects.isNull(electricityConfig.getFreezeAutoReviewDays()) || electricityConfig.getFreezeAutoReviewDays() == 0
-                || electricityConfig.getFreezeAutoReviewDays() < days) {
+        if (Objects.isNull(electricityConfig.getFreezeAutoReviewDays()) || electricityConfig.getFreezeAutoReviewDays() == 0 || electricityConfig.getFreezeAutoReviewDays() < days) {
             log.info("FREEZE AUTO REVIEW CHECK！can not auto review. uid={}", uid);
             autoReviewOrNot = Boolean.FALSE;
         }
         
         // 校验申请冻结的天数是否合规
         Integer packageFreezeDays = hasAssets ? electricityConfig.getPackageFreezeDaysWithAssets() : electricityConfig.getPackageFreezeDays();
-        if (Objects.isNull(packageFreezeDays) || Objects.isNull(electricityConfig.getPackageFreezeCount()) || Objects.equals(
-                electricityConfig.getPackageFreezeCount(), 0)) {
+        if (Objects.isNull(packageFreezeDays) || Objects.isNull(electricityConfig.getPackageFreezeCount()) || Objects.equals(electricityConfig.getPackageFreezeCount(), 0)) {
             if (Objects.isNull(days) || days > ElectricityConfig.FREEZE_DAYS_MAX) {
                 log.info("FREEZE DAYS CHECK！can not auto review. uid={}", uid);
-                throw new BizException("301033", "超出每次最长天数，请修改");
+                throw Objects.equals(source, CheckFreezeDaysSourceEnum.TINY_APP.getCode()) ? new BizException("301033", "超出每次最长天数，请修改")
+                        : new BizException("301034", "冻结天数最多为" + ElectricityConfig.FREEZE_DAYS_MAX);
             }
         } else {
             if (Objects.isNull(days) || days > packageFreezeDays) {
-                throw new BizException("301033", "超出每次最长天数，请修改");
+                throw Objects.equals(source, CheckFreezeDaysSourceEnum.TINY_APP.getCode()) ? new BizException("301033", "超出每次最长天数，请修改")
+                        : new BizException("301034", "冻结天数最多为" + packageFreezeDays);
             }
         }
         

@@ -68,6 +68,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CheckFreezeDaysSourceEnum;
 import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.OverdueType;
@@ -876,7 +877,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 校验冻结申请是否可自动审核及申请天数是否合规
-        Boolean autoReviewOrNot = electricityConfigService.checkFreezeAutoReviewAndDays(userInfo.getTenantId(), disableCardDays, userInfo.getUid(), hasAssets);
+        Boolean autoReviewOrNot = electricityConfigService.checkFreezeAutoReviewAndDays(userInfo.getTenantId(), disableCardDays, userInfo.getUid(), hasAssets,
+                CheckFreezeDaysSourceEnum.TINY_APP.getCode());
         
         String generateOrderId = generateOrderId(user.getUid());
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId)
@@ -1229,6 +1231,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("admin saveUserMemberCard  WARN! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(userInfo, user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
+        try {
+            electricityConfigService.checkFreezeAutoReviewAndDays(userInfo.getTenantId(), days, uid, hasAssets, CheckFreezeDaysSourceEnum.BACK.getCode());
+        } catch (BizException e) {
+            return R.fail(e.getErrCode(), e.getErrMsg());
         }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {

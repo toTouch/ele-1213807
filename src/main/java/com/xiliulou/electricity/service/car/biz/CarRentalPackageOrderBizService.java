@@ -148,7 +148,7 @@ public interface CarRentalPackageOrderBizService {
      * @return
      */
     Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid,
-            String userName);
+            String userName, Integer checkFreezeDays);
     
     /**
      * 根据用户ID及订单编码，退租购买的订单申请

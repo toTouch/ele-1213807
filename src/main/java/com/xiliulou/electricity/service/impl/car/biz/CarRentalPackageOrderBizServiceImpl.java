@@ -1906,7 +1906,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid,
-            String userName) {
+            String userName, Integer checkFreezeDays) {
         if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo, applyTerm, systemDefinitionEnum)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -1959,7 +1959,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
         
-        R<Boolean> checkFreezeLimit = carRentalPackageOrderCheckBizService.checkFreezeLimit(tenantId, uid, applyTerm, hasAssets);
+        R<Boolean> checkFreezeLimit = carRentalPackageOrderCheckBizService.checkFreezeLimit(tenantId, uid, applyTerm, hasAssets, checkFreezeDays);
         
         if (!checkFreezeLimit.isSuccess()) {
             log.info("checkFreezeLimit fail msg={}", checkFreezeLimit.getErrMsg());

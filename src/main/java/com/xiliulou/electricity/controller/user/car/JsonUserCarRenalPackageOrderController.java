@@ -123,7 +123,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         
         Boolean freezeFlag = carRentalPackageOrderBizService
                 .freezeRentOrder(tenantId, user.getUid(), freezeRentOrderoptReq.getPackageOrderNo(), freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyReason(),
-                        SystemDefinitionEnum.WX_APPLET, user.getUid(), user.getUsername());
+                        SystemDefinitionEnum.WX_APPLET, user.getUid(), user.getUsername(), CheckFreezeDaysSourceEnum.TINY_APP.getCode());
         
         return R.ok(freezeFlag);
         
