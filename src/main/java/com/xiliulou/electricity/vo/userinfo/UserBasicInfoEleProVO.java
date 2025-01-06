@@ -48,4 +48,15 @@ public class UserBasicInfoEleProVO {
     
     private EnterpriseChannelUserVO enterpriseChannelUserInfo;
     
+    
+    /**
+     * 是否可解绑微信 0：不可解绑 1：可解绑
+     */
+    private Integer bindWX;
+    
+    /**
+     * 是否可解绑微信 0：不可解绑 1：可解绑
+     */
+    private Integer bindAlipay;
+    
 }

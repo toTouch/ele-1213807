@@ -74,6 +74,11 @@ public class UserEleInfoProVO {
     private Integer batteryRentStatus;
     
     /**
+     * 可用状态（0-禁用，1-可用）
+     */
+    private Integer usableStatus;
+    
+    /**
      * 租金是否可退
      */
     private Boolean rentRefundFlag;
