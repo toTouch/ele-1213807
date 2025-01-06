@@ -269,8 +269,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     
     @Slave
     @Override
-    public List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList) {
-        return userOauthBindMapper.selectListByUidAndPhoneList(queryList);
+    public List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList, Integer tenantId) {
+        return userOauthBindMapper.selectListByUidAndPhoneList(queryList, tenantId);
     }
     
     @Override

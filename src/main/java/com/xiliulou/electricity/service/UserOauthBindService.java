@@ -169,5 +169,5 @@ public interface UserOauthBindService {
      */
     boolean checkExistBind(Long uid, Integer tenantId);
     
-    List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList);
+    List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList, Integer tenantId);
 }

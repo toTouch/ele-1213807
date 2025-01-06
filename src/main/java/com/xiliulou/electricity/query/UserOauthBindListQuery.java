@@ -11,8 +11,6 @@ import lombok.Data;
 @Data
 public class UserOauthBindListQuery {
     
-    private Integer tenantId;
-    
     private Long uid;
     
     private String phone;
