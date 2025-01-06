@@ -3329,7 +3329,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
     
-        return R.ok(userEleInfoVOS);
+        return R.ok(userInfoList);
     }
     
     private DetailsBatteryInfoProVO getEleBatteryInfoPro(UserEleInfoProVO userEleInfoProVO, Map<Long, List<String>> userShortBatteryMap, Map<Long, ElectricityBattery> userBatteryMap) {
