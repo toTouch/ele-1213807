@@ -714,6 +714,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
                 
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
+
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(item.getUid());
+                item.setRemark(Objects.isNull(userInfoExtra) ? null : userInfoExtra.getRemark());
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user group info error!", e);
