@@ -12,8 +12,11 @@ import lombok.Getter;
 @SuppressWarnings("all")
 public enum LockTypeEnum {
 
+    EXCEPTION_LOCK(-1, " 业务异常锁仓"),
     SYSTEM_LOCK(0, "系统锁仓"),
     ARTIFICIAL_LOCK(1, "人为锁仓"),
+    WAITING(2, "待检中"),
+    FULL_CHECK(3, "全面检测"),
     ;
 
     private final Integer code;
