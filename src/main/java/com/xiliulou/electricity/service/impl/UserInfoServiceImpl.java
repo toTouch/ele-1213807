@@ -2325,10 +2325,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setInviterName(queryFinalInviterUserName(uid));
         // 邀请人来源
         vo.setInviterSource(inviterSource);
+
         // 是否限制换电套餐购买次数
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
-        vo.setEleLimit(
-                Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
+        vo.setEleLimit(Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
         vo.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
         return R.ok(vo);
     }
