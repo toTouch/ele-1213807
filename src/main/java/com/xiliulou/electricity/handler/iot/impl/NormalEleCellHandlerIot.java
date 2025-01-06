@@ -172,6 +172,11 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
                 serviceWrapper.execute(() -> {
                     if (StrUtil.isEmpty(eleCellVo.getCell_no())) {
                         log.error("SaveLockBox Error! cellNo is empty,sessionId is {}", eleCellVo.getSessionId());
+                        return;
+                    }
+                    if (Objects.isNull(eleCellVo.getLockReason())) {
+                        log.warn("SaveLockBox warn! lockReason is empty,sessionId is {}", eleCellVo.getSessionId());
+                        return;
                     }
                     ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(eleCellVo.getCell_no()))
                             .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime()).build();

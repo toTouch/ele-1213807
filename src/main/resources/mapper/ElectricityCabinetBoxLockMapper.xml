@@ -95,6 +95,7 @@
         <if test="lockStatusChangeTimeEnd != null">
             and lock_status_change_time &lt;=#{lockStatusChangeTimeEnd}
         </if>
+        order by id desc
         limit #{offset},#{size}
     </select>
 
