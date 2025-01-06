@@ -4,7 +4,7 @@
 
     <sql id="baseSql">
         id
-        ,name,sn,electricity_cabinet_id,cell_no,lock_type,lock_reason,lock_status_change_time,address,area_id,tenant_id,franchisee_id,store_id,del_flag,create_time,update_time
+        ,name,sn,electricity_cabinet_id,cell_no,lock_type,lock_reason,lock_status_change_time,address,area_id,tenant_id,franchisee_id,store_id,create_time,update_time
     </sql>
 
     <insert id="insertEleLockBox">
@@ -22,7 +22,6 @@
          tenant_id,
          franchisee_id,
          store_id,
-         del_flag,
          create_time,
          update_time)
         VALUES (#{boxLock.id},
@@ -38,16 +37,14 @@
                 #{boxLock.tenantId},
                 #{boxLock.franchiseeId},
                 #{boxLock.storeId},
-                #{boxLock.delFlag},
                 #{boxLock.createTime},
                 #{boxLock.updateTime})
     </insert>
 
-    <update id="updateEleLockBox">
-        UPDATE t_electricity_cabinet_box_lock
-        set del_flag    = #{boxLock.delFlag},
-            update_time = #{boxLock.updateTime}
-        where id = #{boxLock.id}
+    <update id="deleteEleLockBox">
+        delete
+        from t_electricity_cabinet_box_lock
+        where id = #{id}
     </update>
 
 
@@ -57,14 +54,14 @@
         <include refid="baseSql"/>
         from t_electricity_cabinet_box_lock
         where electricity_cabinet_id = #{eid}
-        and cell_no = #{cellNo} and del_flag=0 limit 1
+        and cell_no = #{cellNo}  limit 1
     </select>
 
     <select id="listCabinetBoxLock" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBoxLock">
         select
         <include refid="baseSql"/>
         from t_electricity_cabinet_box_lock
-        where del_flag=0 and tenant_id = #{tenantId}
+        where  tenant_id = #{tenantId}
         <if test="name != null and name != ''">
             and name like concat('%',#{name},'%')
         </if>
@@ -104,7 +101,7 @@
     <select id="countCabinetBoxLock" resultType="java.lang.Long">
         select count(1)
         from t_electricity_cabinet_box_lock
-        where del_flag=0 and tenant_id = #{tenantId}
+        where tenant_id = #{tenantId}
         <if test="name != null and name != ''">
             and name like concat('%',#{name},'%')
         </if>

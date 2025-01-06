@@ -14,7 +14,7 @@ public interface ElectricityCabinetBoxLockMapper {
 
     ElectricityCabinetBoxLock selectBoxLockByEidAndCell(@Param("eid") Integer eid, @Param("cellNo") Integer cellNo);
 
-    void updateEleLockBox(@Param("boxLock") ElectricityCabinetBoxLock updateBoxLock);
+    void deleteEleLockBox(@Param("id") Long id);
 
     List<ElectricityCabinetBoxLock> listCabinetBoxLock(ElectricityCabinetBoxLockPageQuery query);
 

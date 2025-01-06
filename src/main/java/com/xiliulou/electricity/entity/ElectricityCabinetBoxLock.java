@@ -80,11 +80,6 @@ public class ElectricityCabinetBoxLock {
     private Long storeId;
 
     /**
-     * 是否删除（0-正常，1-删除）
-     */
-    private Integer delFlag;
-
-    /**
      * 创建时间
      */
     private Long createTime;

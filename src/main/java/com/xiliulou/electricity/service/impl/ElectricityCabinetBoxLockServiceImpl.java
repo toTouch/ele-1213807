@@ -91,7 +91,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
 
         cabinetBoxLock.setAddress(electricityCabinet.getAddress()).setSn(electricityCabinet.getSn())
                 .setAreaId(electricityCabinet.getAreaId()).setCreateTime(System.currentTimeMillis())
-                .setDelFlag(ElectricityCabinetBoxLock.DEL_NORMAL).setName(electricityCabinet.getName())
+                .setName(electricityCabinet.getName())
                 .setUpdateTime(System.currentTimeMillis()).setTenantId(electricityCabinet.getTenantId())
                 .setStoreId(electricityCabinet.getStoreId()).setFranchiseeId(electricityCabinet.getFranchiseeId());
         electricityCabinetBoxLockMapper.insertEleLockBox(cabinetBoxLock);
@@ -113,11 +113,8 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is null. eid is {}.cellNo is {}", eid, cellNo);
             return;
         }
-        ElectricityCabinetBoxLock updateBoxLock = new ElectricityCabinetBoxLock();
-        updateBoxLock.setUpdateTime(System.currentTimeMillis());
-        updateBoxLock.setId(electricityCabinetBoxLock.getId());
-        updateBoxLock.setDelFlag(ElectricityCabinetBoxLock.DEL_DEL);
-        electricityCabinetBoxLockMapper.updateEleLockBox(updateBoxLock);
+
+        electricityCabinetBoxLockMapper.deleteEleLockBox(electricityCabinetBoxLock.getId());
     }
 
     @Override
