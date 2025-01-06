@@ -864,8 +864,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             basicInfo.setFranchiseeId(item.getFranchiseeId());
             basicInfo.setStoreId(item.getStoreId());
             if (MapUtils.isNotEmpty(finalUserOauthMap) && finalUserOauthMap.containsKey(uid)) {
-                List<UserOauthBind> sourceMap = finalUserOauthMap.get(uid);
-                if (CollectionUtils.isNotEmpty(sourceMap)) {
+                List<UserOauthBind> userOauthBinds = finalUserOauthMap.get(uid);
+                Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()
+                        .collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
+                if (MapUtils.isNotEmpty(sourceMap)) {
                     basicInfo.setBindWX(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_WX_PRO)) ? UserOauthBind.STATUS_BIND_VX : UserOauthBind.STATUS_UN_BIND_VX);
                     basicInfo.setBindAlipay(
                             this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
@@ -3281,10 +3283,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.nonNull(enterpriseChannelUserVO)) {
                 basicInfo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
             }
-            
+    
             if (MapUtils.isNotEmpty(finalUserOauthMap) && finalUserOauthMap.containsKey(uid)) {
-                List<UserOauthBind> sourceMap = finalUserOauthMap.get(uid);
-                if (CollectionUtils.isNotEmpty(sourceMap)) {
+                List<UserOauthBind> userOauthBinds = finalUserOauthMap.get(uid);
+                Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()
+                        .collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
+                if (MapUtils.isNotEmpty(sourceMap)) {
                     basicInfo.setBindWX(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_WX_PRO)) ? UserOauthBind.STATUS_BIND_VX : UserOauthBind.STATUS_UN_BIND_VX);
                     basicInfo.setBindAlipay(
                             this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
