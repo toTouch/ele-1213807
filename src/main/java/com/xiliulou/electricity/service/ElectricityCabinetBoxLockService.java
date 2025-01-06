@@ -53,4 +53,13 @@ public interface ElectricityCabinetBoxLockService {
      * @return R
      */
     R enableBoxCell(EleOuterCommandQuery eleOuterCommandQuery);
+
+    /**
+     * 查询仓门
+     *
+     * @param eid    eid
+     * @param cellNo cellNo
+     * @return ElectricityCabinetBoxLock
+     */
+    ElectricityCabinetBoxLock selectBoxLockByEidAndCell(Integer eid, Integer cellNo);
 }

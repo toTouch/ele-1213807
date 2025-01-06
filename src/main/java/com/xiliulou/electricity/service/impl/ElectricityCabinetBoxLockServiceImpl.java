@@ -3,10 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -21,9 +21,8 @@ import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -77,7 +76,8 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             return;
         }
 
-        ElectricityCabinetBoxLock electricityCabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, cellNo);
+        ElectricityCabinetBoxLockService boxLockService = (ElectricityCabinetBoxLockService) AopContext.currentProxy();
+        ElectricityCabinetBoxLock electricityCabinetBoxLock = boxLockService.selectBoxLockByEidAndCell(eid, cellNo);
         if (Objects.nonNull(electricityCabinetBoxLock)) {
             log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is exists. eid is {}.cellNo is {}", eid, cellNo);
             return;
@@ -108,7 +108,8 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             log.warn("ElectricityCabinetBoxLockService Warn! updateElectricityCabinetBoxLock.cellNo is null");
             return;
         }
-        ElectricityCabinetBoxLock electricityCabinetBoxLock = electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, Integer.valueOf(cellNo));
+        ElectricityCabinetBoxLockService boxLockService = (ElectricityCabinetBoxLockService) AopContext.currentProxy();
+        ElectricityCabinetBoxLock electricityCabinetBoxLock = boxLockService.selectBoxLockByEidAndCell(eid, Integer.valueOf(cellNo));
         if (Objects.isNull(electricityCabinetBoxLock)) {
             log.warn("ElectricityCabinetBoxLockService Warn! electricityCabinetBoxLock is null. eid is {}.cellNo is {}", eid, cellNo);
             return;
@@ -118,6 +119,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     }
 
     @Override
+    @Slave
     public List<ElectricityCabinetBoxLockPageVO> queryList(ElectricityCabinetBoxLockPageQuery query) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -148,6 +150,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     }
 
     @Override
+    @Slave
     public Long queryCount(ElectricityCabinetBoxLockPageQuery query) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -226,5 +229,11 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
+    }
+
+    @Override
+    @Slave
+    public ElectricityCabinetBoxLock selectBoxLockByEidAndCell(Integer eid, Integer cellNo) {
+        return electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, cellNo);
     }
 }
