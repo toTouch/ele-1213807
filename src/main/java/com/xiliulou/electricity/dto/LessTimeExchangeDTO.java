@@ -28,4 +28,9 @@ public class LessTimeExchangeDTO {
 
 
     private final Integer code;
+
+    /**
+     * 小程序版本号
+     */
+    private String version;
 }

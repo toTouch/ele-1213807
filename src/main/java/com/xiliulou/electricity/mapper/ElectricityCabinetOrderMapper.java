@@ -56,16 +56,14 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     List<ElectricityCabinetOrderVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
     
     Integer existSameCabinetCellSameTimeOpenExchangeOrder(@Param("id") Long id, @Param("electricityCabinetId") Integer electricityCabinetId, @Param("oldCellNo") Integer oldCellNo);
-    
-    ElectricityCabinetOrder selectLatelyExchangeOrder(@Param("uid") Long uid, @Param("currentTime") Long currentTime);
-    
 
-    
     List<ElectricityCabinetOrder> selectListByOrderIdList(@Param("orderIdList") Set<String> exchangeOrderIdList);
 
     List<ElectricityCabinetOrder> existExchangeOrderInSameCabinetAndCell(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eid") Integer eid);
 
     ElectricityCabinetOrder selectLatelyExchangeOrder(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("currentTime") Long currentTime);
+
+    ElectricityCabinetOrder selectLatelyExchangeOrderByDate(@Param("uid") Long uid, @Param("currentTime") Long currentTime);
 
 
 }
