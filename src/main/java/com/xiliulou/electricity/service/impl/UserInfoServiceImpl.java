@@ -861,8 +861,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         
             UserBasicInfoCarProVO basicInfo = new UserBasicInfoCarProVO();
+            basicInfo.setUid(uid);
+            basicInfo.setPhone(item.getPhone());
+            basicInfo.setName(item.getName());
             basicInfo.setFranchiseeId(item.getFranchiseeId());
             basicInfo.setStoreId(item.getStoreId());
+            if (Objects.nonNull(franchisee)) {
+                basicInfo.setModelType(franchisee.getModelType());
+            }
             if (MapUtils.isNotEmpty(finalUserOauthMap) && finalUserOauthMap.containsKey(uid)) {
                 List<UserOauthBind> userOauthBinds = finalUserOauthMap.get(uid);
                 Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()

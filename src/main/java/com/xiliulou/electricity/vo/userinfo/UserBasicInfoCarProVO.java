@@ -10,9 +10,17 @@ import lombok.Data;
 @Data
 public class UserBasicInfoCarProVO {
     
+    private Long uid;
+    
+    private String name;
+    
+    private String phone;
+    
     private Long franchiseeId;
     
     private Long storeId;
+    
+    private Integer modelType;
     
     /**
      * 是否可解绑微信 0：不可解绑 1：可解绑
