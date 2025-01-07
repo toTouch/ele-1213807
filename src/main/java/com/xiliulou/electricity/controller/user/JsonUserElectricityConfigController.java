@@ -22,7 +22,7 @@ public class JsonUserElectricityConfigController {
     /**
      * 获取系统设置信息
      */
-    @GetMapping("/user/ElectricityConfig/detail")
+    @GetMapping("/user/electricityConfig/detail")
     public R getElectricityConfig() {
         return R.ok(ElectricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId()));
     }
