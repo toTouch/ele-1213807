@@ -2169,7 +2169,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Integer batteryRentStatus = userInfo.getBatteryRentStatus();
             return Objects.nonNull(batteryRentStatus) && Objects.equals(batteryRentStatus, UserInfo.BATTERY_RENT_STATUS_YES);
         } else if (CarRentalPackageOrderBizServiceImpl.CAR_AND_ELE.equals(assetType)) {
-            return checkUserHasAssets(userInfo, tenantId, CarRentalPackageOrderBizServiceImpl.CAR) || checkUserHasAssets(userInfo, tenantId, CarRentalPackageOrderBizServiceImpl.ELE);
+            return checkUserHasAssets(userInfo, tenantId, CarRentalPackageOrderBizServiceImpl.CAR) || checkUserHasAssets(userInfo, tenantId,
+                    CarRentalPackageOrderBizServiceImpl.ELE);
         }
         return false;
     }
@@ -2648,9 +2649,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 设置用户可申请冻结的最大天数
         if (Objects.nonNull(electricityConfig)) {
             boolean hasAssets = checkUserHasAssets(userInfo, userInfo.getTenantId(), rentalPackageType);
-            rentalPackageVO.setMaxFreezeDays(
-                    (hasAssets || Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) ? electricityConfig.getPackageFreezeDaysWithAssets()
-                            : electricityConfig.getPackageFreezeDays());
+            rentalPackageVO.setMaxFreezeDays(hasAssets ? electricityConfig.getPackageFreezeDaysWithAssets() : electricityConfig.getPackageFreezeDays());
         }
         
         return R.ok(rentalPackageVO);
