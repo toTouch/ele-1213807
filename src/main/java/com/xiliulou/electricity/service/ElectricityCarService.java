@@ -181,10 +181,11 @@ public interface ElectricityCarService {
     
     /**
      * <p>
-     *    Description: queryIdsBySnArray
+     * Description: queryIdsBySnArray
      * </p>
-     * @param snList snList
-     * @param tenantId tenantId
+     *
+     * @param snList             snList
+     * @param tenantId           tenantId
      * @param sourceFranchiseeId sourceFranchiseeId
      * @return java.util.List<java.lang.Long>
      * <p>Project: ElectricityCarService</p>
@@ -192,9 +193,20 @@ public interface ElectricityCarService {
      * <p>Company: www.xiliulou.com</p>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
-    */
-    Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
+     */
+    Map<String, Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
     
     
     R editV2(CarUpdateRequest carUpdateRequest, Long uid);
+    
+    /**
+     * 根据租户id+用户id批量查询
+     *
+     * @param tenantId
+     * @param uidList
+     * @author caobotao.cbt
+     * @date 2024/11/26 11:47
+     */
+    List<ElectricityCar> queryListByTenantIdAndUidList(Integer tenantId, List<Long> uidList);
+    
 }

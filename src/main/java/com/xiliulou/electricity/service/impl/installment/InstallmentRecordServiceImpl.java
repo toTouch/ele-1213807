@@ -102,7 +102,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             
             // 设置加盟商名称
             Franchisee franchisee = franchiseeService.queryByIdFromCache(installmentRecord.getFranchiseeId());
-            installmentRecordVO.setFranchiseeName(franchisee.getName());
+            installmentRecordVO.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
             // 设置套餐信息
             setPackageMessage(installmentRecordVO, installmentRecord);

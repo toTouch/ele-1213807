@@ -1099,4 +1099,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         
         return R.ok();
     }
+    
+    @Slave
+    @Override
+    public List<ElectricityCar> queryListByTenantIdAndUidList(Integer tenantId, List<Long> uidList) {
+        return electricityCarMapper.selectListByTenantIdAndUidList(tenantId,uidList);
+    }
 }

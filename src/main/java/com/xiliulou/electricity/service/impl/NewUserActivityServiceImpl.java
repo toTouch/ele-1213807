@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -12,13 +12,16 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.mapper.NewUserActivityMapper;
+import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityPageQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
+import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
-import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -26,8 +29,11 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NewUserActivityVO;
 import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
+import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +41,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -50,19 +56,22 @@ import java.util.Objects;
 public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Resource
 	NewUserActivityMapper newUserActivityMapper;
-
+	
 	@Autowired
 	RedisService redisService;
-
+	
 	@Autowired
 	CouponService couponService;
-
+	
 	@Autowired
 	UserService userService;
 	
+	@Resource
+	private UserCouponMapper userCouponMapper;
+	
 	@Autowired
 	private AssertPermissionService assertPermissionService;
-
+	
 	/**
 	 * 通过ID查询单条数据从缓存
 	 *
@@ -76,18 +85,18 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		if (Objects.nonNull(newUserActivityCache)) {
 			return newUserActivityCache;
 		}
-
+		
 		//缓存没有再查数据库
 		NewUserActivity newUserActivity = newUserActivityMapper.selectById(id);
 		if (Objects.isNull(newUserActivity)) {
 			return null;
 		}
-
+		
 		//放入缓存
 		redisService.saveWithHash(CacheConstant.NEW_USER_ACTIVITY_CACHE + id, newUserActivity);
 		return newUserActivity;
 	}
-
+	
 	/**
 	 * 新增数据
 	 *
@@ -95,7 +104,6 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	 * @return 实例对象
 	 */
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public R insert(NewUserActivityAddAndUpdateQuery newUserActivityAddAndUpdateQuery) {
 		//创建账号
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -103,43 +111,55 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			log.error("Coupon  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-
+		
+		if (CollectionUtils.isNotEmpty(newUserActivityAddAndUpdateQuery.getCouponArrays()) && newUserActivityAddAndUpdateQuery.getCouponArrays().size() > NumberConstant.NUMBER_10){
+			return R.fail("ELECTRICITY.10302", "单个奖励条件最多10张");
+		}
+		
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-
+		
 		//查询该租户是否有新人活动，有则不能添加
 		int count = newUserActivityMapper.selectCount(new LambdaQueryWrapper<NewUserActivity>()
 				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
 		if (count > 0) {
 			return R.fail("ELECTRICITY.00200", "该租户已有启用中的新人活动，请勿重复添加");
 		}
-
+		
 		NewUserActivity newUserActivity = new NewUserActivity();
-		BeanUtils.copyProperties(newUserActivityAddAndUpdateQuery, newUserActivity);
+		BeanUtils.copyProperties(newUserActivityAddAndUpdateQuery, newUserActivity,IGNORE_ATTRIBUTES);
 		newUserActivity.setUid(user.getUid());
 		newUserActivity.setUserName(user.getUsername());
 		newUserActivity.setCreateTime(System.currentTimeMillis());
 		newUserActivity.setUpdateTime(System.currentTimeMillis());
 		newUserActivity.setTenantId(tenantId);
-
+		newUserActivity.setCoupons(newUserActivityAddAndUpdateQuery.getCouponArrays(),newUserActivityAddAndUpdateQuery.getCouponId());
+		List<CarCouponNamePO> couponNamePOS = couponService.queryListByIdsFromCache(newUserActivityAddAndUpdateQuery.getCouponArrays());
+		
+		//适配单个优惠券的情况,如果有减免券,获取金额最大的减免券为单个优惠券
+		Optional.ofNullable(couponNamePOS)
+				.flatMap(carCouponNamePOS -> carCouponNamePOS.stream().filter(f-> Objects.equals(f.getDiscountType(), Coupon.FULL_REDUCTION)).max(Comparator.comparing(CarCouponNamePO::getAmount)))
+				.ifPresent(carCouponNamePO -> newUserActivity.setCouponId(carCouponNamePO.getId().intValue()));
+		//适配单个优惠券的情况,如果没有减免券,获取天数最大的天数券为单个优惠券
+		Optional.ofNullable(newUserActivity.getCouponId())
+				.flatMap(id -> Optional.ofNullable(couponNamePOS))
+				.flatMap(carCouponNamePOS -> carCouponNamePOS.stream().filter(f-> Objects.equals(f.getDiscountType(), Coupon.DAY_VOUCHER)).max(Comparator.comparing(CarCouponNamePO::getCount)))
+				.ifPresent(carCouponNamePO -> newUserActivity.setCouponId(carCouponNamePO.getId().intValue()));
+		
 		if (Objects.isNull(newUserActivity.getType())) {
 			newUserActivity.setType(NewUserActivity.SYSTEM);
 		}
-
+		
 		int insert = newUserActivityMapper.insert(newUserActivity);
-
-		DbUtils.dbOperateSuccessThen(insert, () -> {
+		
+		if (insert > 0) {
 			//更新缓存
 			redisService.saveWithHash(CacheConstant.NEW_USER_ACTIVITY_CACHE + newUserActivity.getId(), newUserActivity);
-			return null;
-		});
-
-		if (insert > 0) {
 			return R.ok(newUserActivity.getId());
 		}
 		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
-
+	
 	/**
 	 * 修改数据(暂只支持上下架）
 	 *
@@ -154,13 +174,13 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", newUserActivityAddAndUpdateQuery.getId());
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
-
+		
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 		if(!Objects.equals(oldNewUserActivity.getTenantId(),tenantId)){
 			return R.ok();
 		}
-
+		
 		//查询该租户是否有邀请活动，有则不能启用
 		if (Objects.equals(newUserActivityAddAndUpdateQuery.getStatus(), NewUserActivity.STATUS_ON)) {
 			int count = newUserActivityMapper.selectCount(new LambdaQueryWrapper<NewUserActivity>()
@@ -169,24 +189,24 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 				return R.fail("ELECTRICITY.00200", "该租户已有启用中的新人活动，请勿重复添加");
 			}
 		}
-
+		
 		NewUserActivity newUserActivity = new NewUserActivity();
-		BeanUtil.copyProperties(newUserActivityAddAndUpdateQuery, newUserActivity);
+		BeanUtil.copyProperties(newUserActivityAddAndUpdateQuery, newUserActivity,IGNORE_ATTRIBUTES);
 		newUserActivity.setUpdateTime(System.currentTimeMillis());
-
+		
 		int update = newUserActivityMapper.updateById(newUserActivity);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
 			redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + oldNewUserActivity.getId());
 			return null;
 		});
-
+		
 		if (update > 0) {
 			return R.ok();
 		}
 		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
-
+	
 	@Slave
 	@Override
 	public R queryList(NewUserActivityQuery newUserActivityQuery) {
@@ -200,21 +220,28 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		if (ObjectUtil.isEmpty(newUserActivityList)) {
 			return R.ok(newUserActivityList);
 		}
-
+		
 		List<NewUserActivityVO> newUserActivityVOList = new ArrayList<>();
 		for (NewUserActivity newUserActivity : newUserActivityList) {
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
-			BeanUtils.copyProperties(newUserActivity, newUserActivityVO);
-
-			if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(newUserActivity.getCouponId())) {
-				newUserActivityVO.setCoupon(couponService.queryByIdFromCache(newUserActivity.getCouponId()));
+			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
+			
+			if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
+				//兼容单个优惠券的情况，先查看单个优惠券
+				Integer couponId = newUserActivity.getCouponId();
+				Optional.ofNullable(couponId).flatMap(id-> Optional.ofNullable(couponService.queryByIdFromCache(id)))
+						.ifPresent(newUserActivityVO::setCoupon);
+				//设置所有的优惠券
+				List<Long> couponIds = newUserActivity.getCoupons();
+				List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue())).collect(Collectors.toList());
+				Optional.of(coupons).ifPresent(newUserActivityVO::setCouponArrays);
 			}
-
+			
 			newUserActivityVOList.add(newUserActivityVO);
 		}
 		return R.ok(newUserActivityVOList);
 	}
-
+	
 	@Slave
 	@Override
 	public R queryCount(NewUserActivityQuery newUserActivityQuery) {
@@ -227,7 +254,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	}
 	
 	
-
+	
 	@Slave
 	@Override
 	public R queryInfo(Integer id) {
@@ -236,97 +263,134 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId={} ", id);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
-
+		
 		if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
 			if (Objects.isNull(newUserActivity.getCouponId())) {
 				return R.ok(newUserActivity);
 			}
-
+			
 			Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
 			if (Objects.isNull(coupon)) {
 				log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
 				return R.ok(newUserActivity);
 			}
-
+			
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
-			BeanUtils.copyProperties(newUserActivity, newUserActivityVO);
+			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
 			newUserActivityVO.setCoupon(coupon);
-
+			
+			List<Coupon> coupons = Optional.ofNullable(newUserActivity.getCoupons())
+					.orElse(List.of()).stream().map(couponId -> couponService.queryByIdFromCache(couponId.intValue())).collect(Collectors.toList());
+			newUserActivityVO.setCouponArrays(coupons);
+			
 			return R.ok(newUserActivityVO);
-
+			
 		}
-
+		
 		return R.ok(newUserActivity);
 	}
-
+	
 	@Slave
 	@Override
-	public R queryNewUserActivity() {
+	public R queryNewUserActivity(String version) {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-
+		
 		//用户
 		Long uid = SecurityUtils.getUid();
 		if (Objects.isNull(uid)) {
 			log.error("queryNewUserActivity  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-
-
+		
+		
 		//查询用户注册时间，超过一分钟非注册登录则不弹出
 		User user=userService.queryByUidFromCache(uid);
 		if (Objects.isNull(user)) {
 			log.error("queryNewUserActivity  ERROR! not found user ! uid:{}",uid);
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-
-
+		
+		
 		if(user.getCreateTime()+60*1000L<System.currentTimeMillis()){
-//			log.error("USER NOT NEW USER ! uid:{}",uid);
+			//			log.error("USER NOT NEW USER ! uid:{}",uid);
 			return R.ok();
 		}
-
-
+		
+		
 		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
 				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
 		if (Objects.isNull(newUserActivity)) {
 			log.info("queryInfo Activity INFO! not found Activity,tenantId={}", tenantId);
 			return R.ok();
 		}
-
-
+		
+		
 		if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
-			if (Objects.isNull(newUserActivity.getCouponId())) {
+			if (Objects.isNull(newUserActivity.getCouponId()) && newUserActivity.getCoupons().isEmpty()) {
 				return R.ok(newUserActivity);
 			}
-
-			Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
-			if (Objects.isNull(coupon)) {
-				log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
-				return R.ok(newUserActivity);
-			}
+			UserCouponQuery build = UserCouponQuery.builder().uid(uid).status(UserCoupon.STATUS_UNUSED).build();
+			List<UserCouponVO> userCouponList = Optional.ofNullable(userCouponMapper.queryList(build)).orElse(List.of());
+			Map<Integer, Long> collect = userCouponList.stream().collect(Collectors.toMap(UserCouponVO::getCouponId, UserCouponVO::getDeadline, (v1, v2) -> v1));
 
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
-			BeanUtils.copyProperties(newUserActivity, newUserActivityVO);
-			newUserActivityVO.setCoupon(coupon);
+			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
 
+			if (Objects.isNull(newUserActivity.getCoupons())){
+				return R.ok(newUserActivityVO);
+			}
+
+			List<Coupon> coupons = newUserActivity.getCoupons().stream().map(couponId -> {
+
+				Coupon query = couponService.queryByIdFromCache(couponId.intValue());
+				LocalDateTime queryNow = LocalDateTime.now().plusDays(query.getDays());
+				query.setDeadline(TimeUtils.convertTimeStamp(queryNow));
+
+				if (collect.containsKey(query.getId())){
+					query.setDeadline(collect.get(query.getId()));
+				}
+				return query;
+			}).collect(Collectors.toList());
+
+			Optional<Coupon> max = coupons.stream().filter(coupon -> Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)).max(Comparator.comparing(Coupon::getAmount));
+			max.ifPresent(newUserActivityVO::setCoupon);
+
+			if (Objects.isNull(newUserActivityVO.getCoupon()) && StringUtils.isEmpty(version)){
+				log.warn("The old version of the Mini Program is compatible with the coupon of the day");
+				return R.ok();
+			}
+
+			if (Objects.nonNull(newUserActivityVO.getCoupon())){
+				Coupon coupon = newUserActivityVO.getCoupon();
+				LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+				coupon.setDeadline(TimeUtils.convertTimeStamp(now));
+				if (collect.containsKey(coupon.getId())){
+					coupon.setDeadline(collect.get(coupon.getId()));
+				}
+				newUserActivityVO.setCoupon(coupon);
+			}
+
+
+
+			
+			newUserActivityVO.setCouponArrays(coupons);
+			
 			return R.ok(newUserActivityVO);
-
+			
 		}
-
+		
 		return R.ok(newUserActivity);
 	}
-
+	
 	@Override
 	public NewUserActivity queryActivity() {
 		Integer tenantId = TenantContextHolder.getTenantId();
-
-		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
+		
+		return newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
 				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
-
-		return newUserActivity;
 	}
-
+	
 	@Override
 	public NewUserActivity selectByCouponId(Long id) {
 		return newUserActivityMapper.selectByCouponId(id);
@@ -346,19 +410,19 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	 * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
 	 * @since V1.0 2024/3/14
 	 */
-    @Override
-    public R<?> removeById(Long id) {
-	    NewUserActivity oldNewUserActivity = queryByIdFromCache(Math.toIntExact(id));
-	    if (Objects.isNull(oldNewUserActivity)) {
-		    log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", id);
-		    return R.fail("ELECTRICITY.0069", "未找到活动");
-	    }
+	@Override
+	public R<?> removeById(Long id) {
+		NewUserActivity oldNewUserActivity = queryByIdFromCache(Math.toIntExact(id));
+		if (Objects.isNull(oldNewUserActivity)) {
+			log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", id);
+			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
 		int count = this.newUserActivityMapper.removeById(id,TenantContextHolder.getTenantId().longValue());
 		DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id),(identification)->{
 			redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + identification);
 		});
-        return R.ok(count);
-    }
+		return R.ok(count);
+	}
 	
 	@Override
 	public List<ShareAndUserActivityVO> listNewUserActivity(NewUserActivityPageQuery query) {

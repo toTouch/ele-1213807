@@ -121,6 +121,7 @@ import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.FreezeTimeUtils;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
@@ -915,7 +916,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 // 保存用户押金对应的电池型号
                 List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
                 if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                    userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+                    userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                 }
             } else {
                 BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
@@ -1550,10 +1551,16 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
                 memberTermUpdateEntity.setId(memberTermEntity.getId());
                 memberTermUpdateEntity.setUpdateTime(now);
-                // 提前启用、计算差额
-                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (now - freezeEntity.getApplyTime());
-                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
-                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTime);
+                
+//                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (now - freezeEntity.getApplyTime());
+//                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
+//                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTime);
+                Pair<Boolean, Long> diffTimePair = FreezeTimeUtils.calculateRemainingFrozenDays(freezeEntity.getApplyTerm(), freezeEntity.getAuditTime(), now);
+                // 如果当前滞纳金缴纳时间已经超过了冻结启用时间，则非提前启用，无需减去剩余未使用的冻结天数
+                if (diffTimePair.getLeft()) {
+                    memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTimePair.getRight());
+                    memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTimePair.getRight());
+                }
                 
                 carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
                 
@@ -1771,9 +1778,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         if (Objects.equals(EleBatteryServiceFeeOrder.STATUS_SUCCESS, status)) {
-            Long memberCardExpireTime;
-            Long orderExpireTime;
-            Long cardDays = 0L;
+            long memberCardExpireTime;
+            long orderExpireTime;
+            long cardDays = 0L;
             
             // 用户套餐是否启用，若已启用  停卡时间取停卡记录中的停卡时间；未启用 取userBatteryMemberCard中的停卡时间。因为系统启用时会清除用户的停卡时间
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
@@ -1830,7 +1837,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             if (Objects.isNull(enableMemberCardRecord)) {
                 EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                         .memberCardName(eleDisableMemberCardRecord.getMemberCardName()).enableTime(System.currentTimeMillis()).enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
-                        .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS).disableDays(cardDays.intValue()).disableTime(eleDisableMemberCardRecord.getCreateTime())
+                        .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS).disableDays((int) cardDays).disableTime(eleDisableMemberCardRecord.getCreateTime())
                         .franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).phone(userInfo.getPhone())
                         .serviceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee()).createTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).uid(userInfo.getUid())
                         .userName(userInfo.getName()).orderId(userBatteryMemberCard.getOrderId()).updateTime(System.currentTimeMillis()).build();

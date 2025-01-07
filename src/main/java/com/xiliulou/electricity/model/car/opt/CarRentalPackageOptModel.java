@@ -194,6 +194,13 @@ public class CarRentalPackageOptModel implements Serializable {
      */
     private BigDecimal lateFee;
     
+    
+    
+    /**
+     * 冻结滞纳金
+     */
+    private BigDecimal freezeLateFee;
+    
     /**
      * 套餐限制
      * <pre>
@@ -271,7 +278,7 @@ public class CarRentalPackageOptModel implements Serializable {
     private Integer isUserGroup;
     
     
-    public static final Integer COUPON_MAX_LIMIT = 6;
+    public static final Integer COUPON_MAX_LIMIT = 10;
     
     public static final Integer USER_GROUP_MAX_LIMIT = 10;
 }

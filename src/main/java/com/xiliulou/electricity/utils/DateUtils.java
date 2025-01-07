@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -82,7 +82,8 @@ public class DateUtils {
     }
     
     public static long getTimeAgoStartTime(int day) {
-        return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+        return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))
+                * 1000;
     }
     
     public static long getTimeAgoEndTime(int day) {
@@ -100,7 +101,8 @@ public class DateUtils {
      * 获取本月第N天的开始时间戳
      */
     public static long getDayOfMonthStartTime(int dayOfMonth) {
-        return LocalDateTime.of(LocalDateTime.now().toLocalDate().withDayOfMonth(dayOfMonth), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+        return LocalDateTime.of(LocalDateTime.now().toLocalDate().withDayOfMonth(dayOfMonth), LocalTime.MIN)
+                .toEpochSecond(ZoneOffset.of("+8")) * 1000;
     }
     
     /**
@@ -147,7 +149,7 @@ public class DateUtils {
     
     //时间格式化
     public static String parseTimeToStringDate(Long timeStamp) {
-        return DateUtil.format(new Date(timeStamp), "YYYY-MM-dd HH:mm:ss");
+        return DateUtil.format(new Date(timeStamp), "YYYY-MM-dd HH:mm:ss.SS");
     }
     
     /**
@@ -179,12 +181,21 @@ public class DateUtils {
      *
      * @param beginTime 开始时间戳，毫秒
      * @param endTime   结束时间戳，毫秒
-     * @return
      */
     public static long diffDay(long beginTime, long endTime) {
-        long days = TimeUnit.MILLISECONDS.toDays(endTime - beginTime) + 1;
-        return days;
+        //        long days = TimeUnit.MILLISECONDS.toDays(endTime - beginTime) + 1;
+        
+        long totalMilliseconds = endTime - beginTime;
+        long fullDays = TimeUnit.MILLISECONDS.toDays(totalMilliseconds);
+        
+        // 如果剩余的毫秒数大于0（不是整点天数），则天数加1
+        if (totalMilliseconds % TimeUnit.DAYS.toMillis(1) > 0) {
+            fullDays += 1;
+        }
+        
+        return fullDays;
     }
+    
     
     public static long diffDayV2(long beginTime, long endTime) {
         long days = TimeUnit.MILLISECONDS.toDays((endTime - 1) - beginTime) + 1;
@@ -202,8 +213,9 @@ public class DateUtils {
      */
     public static boolean hasOverlap(long leftStartDate, long leftEndDate, long rightStartDate, long rightEndDate) {
         
-        return ((leftStartDate >= rightStartDate) && leftStartDate < rightEndDate) || ((leftStartDate > rightStartDate) && leftStartDate <= rightEndDate) || (
-                (rightStartDate >= leftStartDate) && rightStartDate < leftEndDate) || ((rightStartDate > leftStartDate) && rightStartDate <= leftEndDate);
+        return ((leftStartDate >= rightStartDate) && leftStartDate < rightEndDate) || ((leftStartDate > rightStartDate)
+                && leftStartDate <= rightEndDate) || ((rightStartDate >= leftStartDate) && rightStartDate < leftEndDate)
+                || ((rightStartDate > leftStartDate) && rightStartDate <= leftEndDate);
         
     }
     
@@ -269,7 +281,9 @@ public class DateUtils {
      */
     public static Long getMonthEndTimeStampByDate(Long timeStamp) {
         LocalDate localDate = Instant.ofEpochMilli(timeStamp).atZone(ZoneOffset.of("+8")).toLocalDate();
-        return Date.from(localDate.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX).atZone(ZoneOffset.of("+8")).toInstant()).getTime();
+        return Date.from(
+                localDate.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX).atZone(ZoneOffset.of("+8"))
+                        .toInstant()).getTime();
         // return LocalDateTime.of(localDate, LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }
     
@@ -384,23 +398,24 @@ public class DateUtils {
     /**
      * 剩余时间戳转化为剩余 x天 x时
      */
-    public static String convertExpireTime(long expireTime) {
-        Instant now = Instant.now();
-        Instant target = Instant.ofEpochMilli(expireTime);
-        Duration duration = Duration.between(now, target);
-        
-        if (duration.isNegative()) {
+    public static String convertExpireTime(Long expireTime) {
+        if (Objects.isNull(expireTime) || expireTime <= 0) {
             return "0天0小时";
+        }
+    
+        long duration = expireTime - System.currentTimeMillis();
+        if (duration <= 0) {
+            return "0天0小时";
+        }
+    
+        long hours = duration / 1000 / 60 / 60;
+        if (hours < 1) {
+            return "不足1小时";
         } else {
-            long hours = duration.toHours();
             long days = hours / 24;
             hours = hours % 24;
-            
-            if (hours < 1) {
-                return "不足1小时";
-            } else {
-                return days + "天" + hours + "小时";
-            }
+            return days + "天" + hours + "小时";
         }
     }
+    
 }

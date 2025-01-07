@@ -110,9 +110,14 @@ public class BatteryMemberCardAndTypeVO {
     private Integer freeDeposite;
     
     /**
-     * 服务费
+     * 套餐过期服务费
      */
     private BigDecimal serviceCharge;
+    
+    /**
+     * 套餐冻结服务费
+     */
+    private BigDecimal freezeServiceCharge;
     
     /**
      * 备注

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
@@ -131,9 +132,10 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     /**
      * 不限制时间停启卡
      */
+    @Deprecated
     @PutMapping("user/memberCard/openOrDisableMemberCard")
     public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus) {
-        return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
+        return R.fail("000001", "小程序版本过低，请升级小程序");
     }
     
     /**
@@ -145,7 +147,11 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     @PutMapping("user/memberCard/disableMemberCardForLimitTime")
     public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays,
             @RequestParam(value = "disableDeadline", required = false) Long disableDeadline, @RequestParam(value = "applyReason", required = false) String applyReason) {
-        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays, disableDeadline, applyReason);
+        try {
+            return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays, disableDeadline, applyReason);
+        } catch (BizException e) {
+            return R.fail(e.getErrCode(), e.getErrMsg());
+        }
     }
     
     /**

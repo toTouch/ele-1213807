@@ -50,7 +50,7 @@ public interface ShareMoneyActivityService {
     
     R activityInfo();
     
-    R checkActivity();
+    R checkActivity(String version);
     
     R checkActivityStatusOn();
     
