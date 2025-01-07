@@ -3097,35 +3097,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setOrderId(electricityCabinetOrder.getOrderId());
         return Triple.of(true, null, vo);
     }
-    
-    @Override
-    public R openFullCell(OpenFullCellQuery query) {
-        //        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
-        //                .tenantId(electricityCabinet.getTenantId()).msg("自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
-        //                .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-        //        electricityCabinetOrderOperHistoryService.insert(history);
 
-        //        ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
-        //        electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
-        //        electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        //        electricityCabinetOrderUpdate.setRemark("自助开仓");
-        //        update(electricityCabinetOrderUpdate);
-        
-        ElectricityCabinetOrder electricityCabinetOrder = queryByOrderId(query.getOrderId());
-        if (Objects.isNull(electricityCabinetOrder)) {
-            log.warn("self open cell WARN! not found order,orderId={} ", query.getOrderId());
-            return R.fail("ELECTRICITY.0015", "未找到订单");
-        }
-        
-        // 换电柜
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
-        if (Objects.isNull(electricityCabinet)) {
-            log.warn("self open cell WARN! not found electricityCabinet ！electricityCabinetId={}", electricityCabinetOrder.getElectricityCabinetId());
-            return R.fail("ELECTRICITY.0005", "未找到换电柜");
-        }
-        
-        return null;
-    }
     
     @Override
     @Slave

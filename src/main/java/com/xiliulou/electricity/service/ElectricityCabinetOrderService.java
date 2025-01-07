@@ -111,7 +111,7 @@ public interface ElectricityCabinetOrderService {
     
     R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
     
-    R openFullCell(OpenFullCellQuery query);
+
     
     List<ElectricityCabinetOrder> listByOrderIdList(Set<String> exchangeOrderIdList);
     
