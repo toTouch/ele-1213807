@@ -21,7 +21,7 @@ import java.util.Objects;
  */
 
 @Slf4j
-@Service
+@Service("newCellOpenFailOrderHandler")
 public class NewCellOpenFailOrderHandler extends AbstractFailOrderHandler {
 
     @Resource

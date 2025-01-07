@@ -22,7 +22,7 @@ import java.util.Objects;
  * @Date: 2025/01/07
  */
 
-@Service
+@Service("lastExchangeOrderSuccessHandler")
 @Slf4j
 public class LastExchangeOrderSuccessHandler extends AbstractSuccessOrderHandler {
 

@@ -28,7 +28,7 @@ import java.util.Objects;
  * @Date: 2025/01/07
  */
 
-@Service
+@Service("oldCellOpenFailOrderHandler")
 @Slf4j
 public class OldCellOpenFailOrderHandler extends AbstractFailOrderHandler {
 
