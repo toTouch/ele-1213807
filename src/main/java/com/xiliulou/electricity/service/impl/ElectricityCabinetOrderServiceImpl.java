@@ -62,6 +62,7 @@ import com.xiliulou.electricity.query.SelectionExchangeCheckQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.electricity.service.exchange.AbstractOrderHandler;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
@@ -225,6 +226,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Resource
     private LessTimeExchangeService lessTimeExchangeService;
+
+    @Resource
+    private AbstractOrderHandler abstractOrderHandler;
     
     /**
      * 修改数据
@@ -1335,7 +1339,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         // 多次换电拦截
         if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-            LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).code(OrderCheckEnum.CHECK.getCode()).build();
+            LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).version(exchangeQuery.getVersion()).code(OrderCheckEnum.CHECK.getCode()).build();
             Pair<Boolean, ExchangeUserSelectVO> pair = lessTimeExchangeService.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO);
             if (pair.getLeft()) {
                 // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
@@ -1564,7 +1568,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 选仓取电流程
         String userBindingBatterySn = electricityBattery.getSn();
-        String sessionId = lessTimeExchangeService.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
+        String sessionId = abstractOrderHandler.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
                 cabinetOrder.getOldCellNo().toString());
         vo.setIsBatteryInCell(LessScanConstant.BATTERY_IN_CELL);
         vo.setSessionId(sessionId);
@@ -2694,7 +2698,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         // 自主开仓特殊场景校验
-        if (!lessTimeExchangeService.isSatisfySelfOpenCondition(electricityCabinetOrder.getOrderId(), electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getCreateTime(), query.getCellNo())) {
+        if (!abstractOrderHandler.isSatisfySelfOpenCondition(electricityCabinetOrder.getOrderId(), electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getCreateTime(), query.getCellNo())) {
             log.warn("selfOpenCell.existNewOperRecord, orderId is {}", electricityCabinetOrder.getOrderId());
             return R.fail("100667", "用户自主开仓，系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
         }

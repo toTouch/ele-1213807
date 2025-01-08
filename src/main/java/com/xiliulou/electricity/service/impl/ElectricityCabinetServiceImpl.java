@@ -6,13 +6,11 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.iot.model.v20180120.GetDeviceStatusResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -34,14 +32,12 @@ import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.DeviceReportConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
-import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.dto.ExchangeAssertProcessDTO;
 import com.xiliulou.electricity.dto.ExchangeChainDTO;
@@ -118,6 +114,7 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.exchange.AbstractOrderHandler;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
@@ -143,10 +140,8 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
-import io.undertow.server.session.SessionIdGenerator;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -230,9 +225,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * 吞电池优化版本
      */
     private static final String ELE_CABINET_VERSION = "2.1.7";
-    
-    //    @Value("${testFactory.tenantId}")
-    //    private Integer testFactoryTenantId;
     
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
@@ -440,7 +432,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private ProcessController processController;
 
     @Resource
-    private LessTimeExchangeService lessTimeExchangeService;
+    private AbstractOrderHandler abstractOrderHandler;
 
     /**
      * 根据主键ID集获取柜机基本信息
@@ -5615,6 +5607,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     ExchangeAssertProcessDTO.builder().eid(quickExchangeQuery.getEid()).cellNo(quickExchangeQuery.getCellNo()).userInfo(userInfo)
                             .chainObject(new ExchangeChainDTO()).build()).needBreak(false).build();
             // 校验
+            @SuppressWarnings("unchecked")
             ProcessContext<ExchangeAssertProcessDTO> process = processController.process(processContext);
             if (process.getNeedBreak()) {
                 log.warn("QuickExchange Warn! BreakReason is {}", JsonUtil.toJson(process.getResult()));
@@ -5643,7 +5636,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
             // 获取满电仓
-            Triple<Boolean, String, Object> getFullCellBox = lessTimeExchangeService.allocateFullBatteryBox(cabinet, userInfo, franchisee);
+            Triple<Boolean, String, Object> getFullCellBox = abstractOrderHandler.allocateFullBatteryBox(cabinet, userInfo, franchisee);
             if (!getFullCellBox.getLeft()) {
                 return R.fail("100216", "换电柜暂无满电电池");
             }

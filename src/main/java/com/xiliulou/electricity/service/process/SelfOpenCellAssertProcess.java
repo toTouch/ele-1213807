@@ -6,8 +6,8 @@ import com.xiliulou.electricity.dto.ExchangeAssertProcessDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.LessTimeExchangeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.exchange.AbstractOrderHandler;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class SelfOpenCellAssertProcess extends AbstractExchangeCommonHandler imp
     private RedisService redisService;
 
     @Resource
-    private LessTimeExchangeService lessTimeExchangeService;
+    private AbstractOrderHandler abstractOrderHandler;
 
     @Resource
     private RentBatteryOrderService rentBatteryOrderService;
@@ -70,7 +70,7 @@ public class SelfOpenCellAssertProcess extends AbstractExchangeCommonHandler imp
         }
 
         // 自主开仓条件校验
-        if (!lessTimeExchangeService.isSatisfySelfOpenCondition(dto.getOrderId(), dto.getEid(), lastRentBatteryOrder.getCreateTime(), dto.getCellNo())) {
+        if (!abstractOrderHandler.isSatisfySelfOpenCondition(dto.getOrderId(), dto.getEid(), lastRentBatteryOrder.getCreateTime(), dto.getCellNo())) {
             log.warn("selfOpenCellAssertProcess WARN! not found order,orderId={} ", dto.getOrderId());
             breakChain(context, "100667", "用户自主开仓，系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
             return;
