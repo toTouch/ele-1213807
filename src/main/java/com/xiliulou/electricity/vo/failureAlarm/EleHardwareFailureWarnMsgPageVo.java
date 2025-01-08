@@ -152,4 +152,19 @@ public class EleHardwareFailureWarnMsgPageVo {
      * 柜机编号
      */
     private String cabinetSn;
+    
+    /**
+     * 批次号
+     */
+    private String batchNo;
+    
+    /**
+     * 处理状态  0--待处理 1--处理中 2--已处理  3--忽略 4--转工单 5--自动恢复
+     */
+    private Integer handleStatus;
+    
+    /**
+     * 处理结果的备注
+     */
+    private String remark;
 }

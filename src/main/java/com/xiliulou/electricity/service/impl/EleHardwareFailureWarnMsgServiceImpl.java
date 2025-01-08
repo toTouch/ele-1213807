@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
@@ -11,10 +12,12 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.message.MessageCenterConfig;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.SiteNotifyConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.note.MessageCenterConstant;
 import com.xiliulou.electricity.constant.note.TenantNoteConstant;
+import com.xiliulou.electricity.dto.message.MessageDTO;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -32,6 +35,7 @@ import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmTypeEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureWarnMsgStatusEnum;
 import com.xiliulou.electricity.mapper.EleHardwareFailureWarnMsgMapper;
 import com.xiliulou.electricity.mapper.FailureAlarmMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureWarnMsgPageQueryModel;
@@ -56,6 +60,7 @@ import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -131,6 +136,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     
     @Resource
     private MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    
+    @Resource
+    private RocketMqService rocketMqService;
     
     @Resource
     private MsgPlatformRetrofitService msgPlatformRetrofitService;
@@ -750,6 +758,9 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 Long finalNoteNum = noteNum;
                 xllThreadPoolExecutorService.execute(() -> {
                     sendLowerNoteNotice(warnNoteCallBack, finalNoteNum);
+    
+                    // 发送短信提醒至站内信
+                    sendNoteLowerToSite(warnNoteCallBack.getTenantId(), finalNoteNum, warnNoteCallBack.getAlarmId());
                 });
                 
                 break;
@@ -758,6 +769,30 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         return Triple.of(true, null, null);
     }
+    
+    /**
+     * 发送短信至站内信
+     *
+     * @param tenantId
+     * @param noteNum
+     * @param alarmId
+     */
+    private void sendNoteLowerToSite(Integer tenantId, Long noteNum, String alarmId) {
+        log.info("ELE WARN MSG INFO! send note lower to site, alarmId={}", alarmId);
+        
+        MessageDTO msg = new MessageDTO();
+        msg.setTenantId(Long.valueOf(tenantId));
+        msg.setCode(SiteNotifyConstant.note_lower_code);
+        msg.setNotifyTime(System.currentTimeMillis());
+        
+        Map<String,Object> context = new HashMap<>();
+        context.put("type", SiteNotifyConstant.note_lower_type);
+        context.put("count", noteNum);
+        msg.setContext(context);
+        
+        rocketMqService.sendAsyncMsg(MqProducerConstant.AUX_MQ_TOPIC_NAME, JsonUtil.toJson(msg), MqProducerConstant.MQ_TOPIC_SITE_MESSAGE_TAG_NAME);
+    }
+    
     
     public void warnNoteNoticeFail(WarnNoteCallBack warnNoteCallBack) {
         log.warn("WARN NOTE NOTICE FAIL ERROR, msg = {}", warnNoteCallBack);

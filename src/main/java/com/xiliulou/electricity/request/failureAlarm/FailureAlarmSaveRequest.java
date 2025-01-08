@@ -47,7 +47,7 @@ public class FailureAlarmSaveRequest {
     private Integer grade;
     
     /**
-     * 设备分类：1-电池  2-换电柜
+     * 设备分类：1-电池  2-换电柜 3-平台通知
      */
     @Range(min = 1, max = 7, message = "等级不存在")
     @NotNull(message = "设备分类不能为空", groups = {CreateGroup.class, UpdateGroup.class})
