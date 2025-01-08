@@ -40,10 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -346,18 +344,10 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             if (Objects.nonNull(userBatteryMemberCardUpdate.getId())) {
                 userBatteryMemberCardUpdateById = userBatteryMemberCardUpdate.getId();
             }
-            
+    
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                List<String> userBatteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
-                if (CollectionUtils.isNotEmpty(userBatteryTypeList)) {
-                    batteryTypeList = batteryTypeList.stream().filter(t -> !userBatteryTypeList.contains(t)).collect(Collectors.toList());
-                }
-                
-                if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                    userBatteryTypes = userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo);
-                    userBatteryTypeService.batchInsert(userBatteryTypes);
-                }
+                userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
             }
             
             serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
@@ -524,24 +514,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                 }
                 
                 // 更新用户电池型号
-                Set<String> totalBatteryTypes = new HashSet<>();
-                if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
-                    totalBatteryTypes.addAll(userBindBatteryTypes);
-                }
-                
-                List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-                if (CollectionUtils.isNotEmpty(memberCardBatteryTypes)) {
-                    totalBatteryTypes.addAll(memberCardBatteryTypes);
-                }
-                if (CollectionUtils.isNotEmpty(totalBatteryTypes)) {
-                    // 封装UserBatteryType回滚数据
-                    insertUserBatteryTypeListForRollBack = userBatteryTypeService.listByUid(memberCardOrder.getUid());
-                    
-                    userBatteryTypeService.deleteByUid(memberCardOrder.getUid());
-                    
-                    userBatteryTypes = userBatteryTypeService.buildUserBatteryType(new ArrayList<>(totalBatteryTypes), userInfo);
-                    userBatteryTypeService.batchInsert(userBatteryTypes);
-                }
+                userBatteryTypeService.updateUserBatteryType(memberCardOrder, userInfo);
             } else {
                 UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
                 userBatteryMemberCardPackage.setUid(userInfo.getUid());

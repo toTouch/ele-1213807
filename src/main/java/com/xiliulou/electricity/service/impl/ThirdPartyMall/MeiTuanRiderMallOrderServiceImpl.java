@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -52,20 +53,26 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDeta
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.thirdPartyMall.MtBatteryDepositVO;
+import com.xiliulou.electricity.vo.thirdPartyMall.MtMemberCarBatteryTypeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -673,13 +680,31 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
         } else {
             // 未缴纳押金：押金金额取自未兑换订单的套餐中最大的押金金额
-            BatteryDepositBO batteryDepositBO = this.queryMaxPackageDeposit(userInfo.getPhone(), userInfo.getTenantId());
-            if (Objects.nonNull(batteryDepositBO)) {
-                vo.setPackageId(batteryDepositBO.getPackageId());
-                vo.setFranchiseeId(batteryDepositBO.getFranchiseeId());
-                vo.setBatteryDeposit(batteryDepositBO.getDeposit());
-                vo.setFreeDeposit(batteryDepositBO.getFreeDeposit());
+            List<BatteryDepositBO> batteryDepositBOList = this.queryMaxPackageDeposit(userInfo.getPhone(), userInfo.getTenantId());
+            if (CollectionUtils.isEmpty(batteryDepositBOList)) {
+                return R.ok(vo);
             }
+            
+            // 封装相同押金金额套餐的电池型号返回给用户，由用户自己选择要交的押金
+            List<MtMemberCarBatteryTypeVO> midBatteryTypes = new ArrayList<>();
+            for (BatteryDepositBO batteryDepositBO : batteryDepositBOList) {
+                if (Objects.isNull(vo.getFranchiseeId())) {
+                    vo.setFranchiseeId(batteryDepositBO.getFranchiseeId());
+                }
+                
+                if (Objects.isNull(vo.getBatteryDeposit())) {
+                    vo.setBatteryDeposit(batteryDepositBO.getDeposit());
+                }
+                
+                MtMemberCarBatteryTypeVO midBatteryType = new MtMemberCarBatteryTypeVO();
+                midBatteryType.setPackageId(batteryDepositBO.getPackageId());
+                midBatteryType.setFreeDeposit(batteryDepositBO.getFreeDeposit());
+                midBatteryType.setBatteryTypes(batteryDepositBO.getBatteryTypes());
+                
+                midBatteryTypes.add(midBatteryType);
+            }
+            
+            vo.setMidBatteryTypes(CollectionUtils.isEmpty(midBatteryTypes) ? Collections.emptyList() : midBatteryTypes);
         }
         
         return R.ok(vo);
@@ -687,41 +712,88 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Slave
     @Override
-    public BatteryDepositBO queryMaxPackageDeposit(String phone, Integer tenantId) {
+    public List<BatteryDepositBO> queryMaxPackageDeposit(String phone, Integer tenantId) {
         List<Long> packageIds = meiTuanRiderMallOrderMapper.selectAllNoUsePackageId(phone, tenantId);
         if (CollectionUtils.isEmpty(packageIds)) {
+            return Collections.emptyList();
+        }
+        
+        Set<Long> packageIdSet = packageIds.stream().filter(packageId -> Objects.nonNull(packageId) && packageId > 0).collect(Collectors.toSet());
+        List<BatteryDepositBO> batteryDepositBOList = packageIdSet.stream().map(packageId -> batteryMemberCardService.queryByIdFromCache(packageId)).filter(Objects::nonNull)
+                .map(batteryMemberCard -> BatteryDepositBO.builder().packageId(batteryMemberCard.getId()).franchiseeId(batteryMemberCard.getFranchiseeId())
+                        .deposit(batteryMemberCard.getDeposit()).freeDeposit(batteryMemberCard.getFreeDeposite()).build()).collect(Collectors.toList());
+        
+        // 找到最大deposit值
+        Optional<BigDecimal> maxDeposit = batteryDepositBOList.stream().map(BatteryDepositBO::getDeposit).max(BigDecimal::compareTo);
+        if (maxDeposit.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        List<BatteryDepositBO> result;
+        BigDecimal maxDepositValue = maxDeposit.get();
+        List<BatteryDepositBO> maxDepositBOList = batteryDepositBOList.stream().filter(bo -> bo.getDeposit().compareTo(maxDepositValue) == 0).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(maxDepositBOList)) {
+            return Collections.emptyList();
+        }
+        
+        if (Objects.equals(maxDepositBOList.size(), 1)) {
+            return maxDepositBOList;
+        }
+        
+        // 判断押金类型是否相同
+        Map<Integer, List<BatteryDepositBO>> depositTypeMap = maxDepositBOList.stream().collect(Collectors.groupingBy(BatteryDepositBO::getFreeDeposit));
+        if (MapUtils.isEmpty(depositTypeMap)) {
+            return Collections.emptyList();
+        }
+        
+        if (depositTypeMap.size() > 1) {
+            // 返回免押的押金类型
+            List<BatteryDepositBO> freeBatteryDepositBOList = depositTypeMap.get(BatteryMemberCard.FREE_DEPOSIT);
+            result = rebuildBatteryDepositBOList(freeBatteryDepositBOList, tenantId);
+        } else {
+            result = rebuildBatteryDepositBOList(maxDepositBOList, tenantId);
+        }
+        
+        if (CollectionUtils.isNotEmpty(result)) {
+            result = result.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        }
+        
+        return result;
+    }
+    
+    private List<BatteryDepositBO> rebuildBatteryDepositBOList(List<BatteryDepositBO> batteryDepositBOList, Integer tenantId) {
+        if (CollectionUtils.isEmpty(batteryDepositBOList)) {
             return null;
         }
         
-        BatteryDepositBO maxBatteryDepositBO = null;
-        for (Long packageId : packageIds) {
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
-            if (Objects.isNull(batteryMemberCard)) {
-                continue;
-            }
-            
-            if (Objects.isNull(maxBatteryDepositBO)) {
-                maxBatteryDepositBO = new BatteryDepositBO();
-            }
-            
-            if (Objects.isNull(maxBatteryDepositBO.getDeposit())) {
-                maxBatteryDepositBO.setPackageId(batteryMemberCard.getId());
-                maxBatteryDepositBO.setFranchiseeId(batteryMemberCard.getFranchiseeId());
-                maxBatteryDepositBO.setDeposit(batteryMemberCard.getDeposit());
-                maxBatteryDepositBO.setFreeDeposit(batteryMemberCard.getFreeDeposite());
-                continue;
-            }
-            
-            if (batteryMemberCard.getDeposit().compareTo(maxBatteryDepositBO.getDeposit()) > 0 || (batteryMemberCard.getDeposit().compareTo(maxBatteryDepositBO.getDeposit()) == 0
-                    && Objects.equals(batteryMemberCard.getFreeDeposite(), BatteryMemberCard.FREE_DEPOSIT))) {
-                maxBatteryDepositBO.setPackageId(packageId);
-                maxBatteryDepositBO.setFranchiseeId(batteryMemberCard.getFranchiseeId());
-                maxBatteryDepositBO.setDeposit(batteryMemberCard.getDeposit());
-                maxBatteryDepositBO.setFreeDeposit(batteryMemberCard.getFreeDeposite());
-            }
+        List<Long> memberCardIds = batteryDepositBOList.stream().map(BatteryDepositBO::getPackageId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(memberCardIds)) {
+            return null;
         }
         
-        return maxBatteryDepositBO;
+        List<MemberCardBatteryType> batteryTypeList = memberCardBatteryTypeService.listByMemberCardIds(tenantId, memberCardIds);
+        if (CollectionUtils.isEmpty(batteryTypeList)) {
+            return null;
+        }
+        
+        // key-memberCardId, value-batteryType的List
+        Map<Long, List<String>> midBatteryTypeMap = batteryTypeList.stream().filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(MemberCardBatteryType::getMid, Collectors.mapping(MemberCardBatteryType::getBatteryType, Collectors.toList())));
+        if (MapUtils.isEmpty(midBatteryTypeMap)) {
+            return null;
+        }
+        
+        return batteryDepositBOList.stream().map(item -> {
+            Long packageId = item.getPackageId();
+            BatteryDepositBO bo = null;
+            if (midBatteryTypeMap.containsKey(packageId)) {
+                bo = new BatteryDepositBO();
+                BeanUtils.copyProperties(item, bo);
+                bo.setBatteryTypes(midBatteryTypeMap.get(packageId));
+            }
+            
+            return bo;
+        }).collect(Collectors.toList());
     }
     
     @Slave

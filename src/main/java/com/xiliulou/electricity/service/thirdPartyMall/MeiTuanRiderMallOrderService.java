@@ -34,7 +34,7 @@ public interface MeiTuanRiderMallOrderService {
     
     R queryBatteryDeposit(Long uid);
     
-    BatteryDepositBO queryMaxPackageDeposit(String phone, Integer tenantId);
+    List<BatteryDepositBO> queryMaxPackageDeposit(String phone, Integer tenantId);
     
     MtBatteryPackageBO queryBatteryPackageInfo(OrderQuery query);
 }

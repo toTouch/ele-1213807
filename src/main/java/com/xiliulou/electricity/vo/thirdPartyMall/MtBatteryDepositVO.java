@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo.thirdPartyMall;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -21,6 +22,9 @@ public class MtBatteryDepositVO {
      */
     private Integer batteryDepositStatus;
     
+    /**
+     * 押金金额
+     */
     private BigDecimal batteryDeposit;
     
     /**
@@ -29,18 +33,13 @@ public class MtBatteryDepositVO {
     private Integer batteryDepositPayType;
     
     /**
-     * 是否免押 0--是 1--否
-     */
-    private Integer freeDeposit;
-    
-    /**
-     * 套餐ID
-     */
-    private Long packageId;
-    
-    /**
      * 退押状态
      */
     private Integer refundStatus;
+    
+    /**
+     * 套餐电池型号
+     */
+    List<MtMemberCarBatteryTypeVO> midBatteryTypes;
     
 }

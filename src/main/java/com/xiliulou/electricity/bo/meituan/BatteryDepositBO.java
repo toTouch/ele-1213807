@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -33,4 +34,6 @@ public class BatteryDepositBO {
      * 是否免押 0--是 1--否
      */
     private Integer freeDeposit;
+    
+    private List<String> batteryTypes;
 }
