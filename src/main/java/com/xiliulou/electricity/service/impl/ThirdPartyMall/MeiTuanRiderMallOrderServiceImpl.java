@@ -300,6 +300,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return Triple.of(false, "120146", "订单兑换失败，请联系客服处理");
             }
             
+            // 兑换成功，给用户发放优惠券
+            electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
+            
             // 给第三方推送用户套餐信息
             pushDataToThirdService.asyncPushUserMemberCardToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), tenantId, uid,
                     meiTuanRiderMallOrder.getMeiTuanOrderId(), MeiTuanRiderMallConstant.MEI_TUAN_ORDER);
