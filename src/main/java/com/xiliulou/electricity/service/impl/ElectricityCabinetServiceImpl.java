@@ -431,8 +431,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private ProcessController processController;
 
-    @Resource
-    private AbstractOrderHandler abstractOrderHandler;
+    private LessTimeExchangeService lessTimeExchangeService;
+
+
 
     /**
      * 根据主键ID集获取柜机基本信息
@@ -5636,7 +5637,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
             // 获取满电仓
-            Triple<Boolean, String, Object> getFullCellBox = abstractOrderHandler.allocateFullBatteryBox(cabinet, userInfo, franchisee);
+            Triple<Boolean, String, Object> getFullCellBox = lessTimeExchangeService.allocateFullBatteryBox(cabinet, userInfo, franchisee);
             if (!getFullCellBox.getLeft()) {
                 return R.fail("100216", "换电柜暂无满电电池");
             }
