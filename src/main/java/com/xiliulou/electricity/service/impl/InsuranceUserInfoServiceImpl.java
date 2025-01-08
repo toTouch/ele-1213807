@@ -631,15 +631,18 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setUid(userInfo.getUid());
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
-        // 过期存在承接保险订单
-        if (Objects.nonNull(query.getInsuranceExpireTime()) && query.getInsuranceExpireTime() <= System.currentTimeMillis() && Objects.nonNull(insuranceOrder)) {
-            existNotUseInsuranceOrder(updateInsuranceUserInfo, insuranceOrder);
-        } else {
-            updateInsuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
-        }
-        // 已出险 存在承接保险订单
-        if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceOrder)) {
-            existNotUseInsuranceOrder(updateInsuranceUserInfo, insuranceOrder);
+        if (Objects.nonNull(insuranceOrder)){
+            // 存在承接保险订单
+            if (Objects.nonNull(query.getInsuranceExpireTime()) && query.getInsuranceExpireTime() <= System.currentTimeMillis() || Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE)){
+                existNotUseInsuranceOrder(updateInsuranceUserInfo, insuranceOrder);
+            }
+        }else {
+            if (Objects.nonNull(query.getInsuranceExpireTime()) && query.getInsuranceExpireTime() <= System.currentTimeMillis()) {
+                updateInsuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
+            }
+            if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE)) {
+                updateInsuranceUserInfo.setIsUse(query.getIsUse());
+            }
         }
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
 
