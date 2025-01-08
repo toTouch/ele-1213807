@@ -431,6 +431,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private ProcessController processController;
 
+    @Resource
     private LessTimeExchangeService lessTimeExchangeService;
 
 

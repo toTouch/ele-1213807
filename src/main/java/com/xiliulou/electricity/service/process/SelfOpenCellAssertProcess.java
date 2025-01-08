@@ -29,7 +29,6 @@ public class SelfOpenCellAssertProcess extends AbstractExchangeCommonHandler imp
     @Resource
     private RedisService redisService;
 
-
     @Resource
     LessTimeExchangeService lessTimeExchangeService;
 
