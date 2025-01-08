@@ -80,4 +80,24 @@ public class WarnMsgPageQueryModel {
      * 柜机Id
      */
     private Integer cabinetId;
+    
+    /**
+     * 批次号
+     */
+    private String batchNo;
+    
+    /**
+     * 消息可见(0-不可见， 1-可见)
+     */
+    private Integer msgVisible;
+    
+    /**
+     * 运作状态(0-启用， 1-禁用)
+     */
+    private Integer enableStatus;
+    
+    /**
+     * 处理方式：0--待处理 1--处理中 2--已处理  3--忽略 4--转工单 5--自动恢复
+     */
+    private Integer handleStatus;
 }
