@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordServi
 import com.xiliulou.electricity.service.exchange.AbstractOrderHandler;
 import com.xiliulou.electricity.service.exchange.fail.OrderStatusStrategy;
 import com.xiliulou.electricity.service.exchange.success.LastExchangeOrderSuccessHandler;
+import com.xiliulou.electricity.service.exchange.success.OrderProcessingStrategy;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
 import com.xiliulou.electricity.vo.ReturnBatteryLessTimeScanVo;
@@ -257,7 +258,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
             log.error("OrderV3 Error! lastExchangeSuccessHandler.userBindBattery is null, uid is {}", userInfo.getUid());
             return Pair.of(false, null);
         }
-        LastExchangeOrderSuccessHandler successHandler = applicationContext.getBean(LastOrderTypeEnum.getService(lastOrderType), LastExchangeOrderSuccessHandler.class);
+        OrderProcessingStrategy successHandler = applicationContext.getBean(LastOrderTypeEnum.getService(lastOrderType), OrderProcessingStrategy.class);
         return successHandler.processOrder(cabinet, electricityBattery, userInfo, rentBatteryOrder, lastOrder);
     }
 
