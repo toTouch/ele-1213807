@@ -31,7 +31,19 @@ public class NewCellOpenFailOrderHandler extends AbstractFailOrderHandler {
     private ElectricityBatteryService electricityBatteryService;
 
     @Override
-    Pair<Boolean, ExchangeUserSelectVO> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ElectricityCabinet cabinet, UserInfo userInfo, Integer code, Integer secondFlexibleRenewal, ExchangeUserSelectVO vo) {
+    Pair<Boolean, ExchangeUserSelectVO> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ElectricityCabinet cabinet, UserInfo userInfo, Integer code, Integer secondFlexibleRenewal) {
+
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
+        vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE);
+        vo.setLastExchangeIsSuccess(LessScanConstant.LAST_EXCHANGE_FAIL);
+
+        if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getNewCellNo())) {
+            // 新仓门不满足开仓条件
+            vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
+            log.warn("OrderV3 WARN!  newCellOpenFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
+            return Pair.of(true, vo);
+        }
+
         vo.setIsSatisfySelfOpen(LessScanConstant.IS_SATISFY_SELF_OPEN);
         vo.setCell(lastOrder.getNewCellNo());
         vo.setOrderId(lastOrder.getOrderId());

@@ -46,24 +46,29 @@ public class OldCellOpenFailOrderHandler extends AbstractFailOrderHandler {
 
 
     @Override
-    Pair<Boolean, ExchangeUserSelectVO> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ElectricityCabinet cabinet, UserInfo userInfo, Integer code, Integer secondFlexibleRenewal, ExchangeUserSelectVO vo) {
+    Pair<Boolean, ExchangeUserSelectVO> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ElectricityCabinet cabinet, UserInfo userInfo, Integer code, Integer secondFlexibleRenewal) {
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
+        vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE).setLastExchangeIsSuccess(LessScanConstant.LAST_EXCHANGE_FAIL);
 
-        vo.setOrderId(lastOrder.getOrderId());
-        vo.setIsSatisfySelfOpen(LessScanConstant.IS_SATISFY_SELF_OPEN);
+        if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getOldCellNo())) {
+            // 新仓门不满足开仓条件
+            vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
+            log.warn("OrderV3 WARN!  oldCellCheckFail is not SatisfySelfOpen, orderId is {}", lastOrder.getOrderId());
+            return Pair.of(true, vo);
+        }
+        vo.setOrderId(lastOrder.getOrderId()).setIsSatisfySelfOpen(LessScanConstant.IS_SATISFY_SELF_OPEN);
 
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("OrderV3 WARN!oldCellCheckFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
             // 不在仓，前端会自主开仓
-            vo.setIsBatteryInCell(LessScanConstant.BATTERY_NOT_CELL);
-            vo.setCell(lastOrder.getOldCellNo());
+            vo.setIsBatteryInCell(LessScanConstant.BATTERY_NOT_CELL).setCell(lastOrder.getOldCellNo());
             return Pair.of(true, vo);
         }
 
         String userBindingBatterySn = electricityBattery.getSn();
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
-
         log.info("OrderV3 INFO! oldCellCheckFail.cabinetBox is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
                 JsonUtil.toJson(lastOrder));
 

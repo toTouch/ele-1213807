@@ -32,16 +32,34 @@ public class LastRentOrderSuccessHandler extends AbstractSuccessOrderHandler {
 
 
     @Override
-    public Pair<Boolean, ExchangeUserSelectVO> lastExchangeHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, RentBatteryOrder rentBatteryOrder, UserInfo userInfo, ExchangeUserSelectVO vo) {
+    public Pair<Boolean, ExchangeUserSelectVO> lastExchangeHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, RentBatteryOrder rentBatteryOrder, UserInfo userInfo) {
         if (Objects.isNull(rentBatteryOrder)) {
-            log.error("OrderV3 Error! lastExchangeSuccessHandler.order is rentOrder, but rentOrder is null, uid is {}", userInfo.getUid());
+            log.error("OrderV3 Error! lastRentOrderSuccessHandler.order is rentOrder, but rentOrder is null, uid is {}", userInfo.getUid());
             return Pair.of(false, null);
+        }
+
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
+        vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE).setLastExchangeIsSuccess(LessScanConstant.LAST_EXCHANGE_SUCCESS).setCabinetName(cabinet.getName())
+                .setLastOrderType(LastOrderTypeEnum.LAST_RENT_ORDER.getCode());
+
+        // 上次换电成功，用户绑定电池不可能为空
+        if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
+            log.error("OrderV3 Error! lastRentOrderSuccessHandler userBindBattery is null, rentOrder is {}", rentBatteryOrder.getOrderId());
+            vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
+            return Pair.of(true, vo);
+        }
+
+        if (!isSatisfySelfOpenCondition(rentBatteryOrder.getOrderId(), rentBatteryOrder.getElectricityCabinetId(), rentBatteryOrder.getUpdateTime(),
+                rentBatteryOrder.getCellNo())) {
+            vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
+            log.warn("OrderV3 WARN! lastRentOrderSuccessHandler RentBatteryOrder is not SatisfySelfOpen, orderId is{}", rentBatteryOrder.getOrderId());
+            return Pair.of(true, vo);
         }
 
         vo.setOrderId(rentBatteryOrder.getOrderId()).setCell(rentBatteryOrder.getCellNo()).setIsSatisfySelfOpen(LessScanConstant.IS_SATISFY_SELF_OPEN);
 
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
-        log.info("OrderV3 INFO! LastRentSuccessHandler RentOrder cabinetBox is {}, rentBatteryOrder is {}",
+        log.info("OrderV3 INFO! lastRentOrderSuccessHandler RentOrder cabinetBox is {}, rentBatteryOrder is {}",
                 Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null", JsonUtil.toJson(rentBatteryOrder));
 
         // 上次租电成功，电池在仓，并且电池所在仓门=上个订单的新仓门

@@ -122,8 +122,8 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
                 Integer.valueOf(cabinetBox.getCellNo()), lastRentBatteryOrder.getCellNo())) {
             vo.setIsBatteryInCell(LessScanConstant.BATTERY_IN_CELL);
-
-            fixLastRentOrderIsSuccess(lastRentBatteryOrder, cabinetBox);
+            // 补充旧订单
+            fixLastReturnOrderIsSuccess(lastRentBatteryOrder, cabinetBox);
             return Pair.of(true, vo);
         } else {
             // 前端自主开仓
@@ -133,7 +133,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
 
     }
 
-    private void fixLastRentOrderIsSuccess(RentBatteryOrder lastRentBatteryOrder, ElectricityCabinetBox cabinetBox) {
+    private void fixLastReturnOrderIsSuccess(RentBatteryOrder lastRentBatteryOrder, ElectricityCabinetBox cabinetBox) {
         // 修改退电流程，补充操作记录
         RentBatteryOrder updateRentBattery = new RentBatteryOrder();
         updateRentBattery.setId(lastRentBatteryOrder.getId());
@@ -203,7 +203,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
                 RentBatteryOrder.TYPE_USER_RENT);
 
         if (Objects.isNull(lastOrder) && Objects.isNull(rentBatteryOrder)) {
-            log.warn("OrderV3 WARN! lessTimeExchangeTwoCountAssert.lastOrder and rentBatteryOrder is null, uid is {},scanTime is {}, startTime is {}, currentTime is {}", scanTime, uid, System.currentTimeMillis() - scanTime,
+            log.warn("OrderV3 WARN! lessTimeExchangeTwoCountAssert.lastOrder and rentBatteryOrder is null, uid is {}, scanTime is {}, startTime is {}, currentTime is {}", scanTime, uid, System.currentTimeMillis() - scanTime,
                     System.currentTimeMillis());
             return Pair.of(false, null);
         }
