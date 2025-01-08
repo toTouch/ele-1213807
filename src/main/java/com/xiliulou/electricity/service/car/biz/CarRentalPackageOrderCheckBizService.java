@@ -21,6 +21,6 @@ public interface CarRentalPackageOrderCheckBizService {
      * @author caobotao.cbt
      * @date 2024/11/20 09:44
      */
-    R<Boolean> checkFreezeLimit(Integer tenantId, Long uid, Integer freezeDays);
+    R<Boolean> checkFreezeLimit(Integer tenantId, Long uid, Integer freezeDays, boolean hasAssets, Integer checkFreezeDays);
     
 }
