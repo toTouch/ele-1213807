@@ -410,12 +410,12 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             if (Objects.isNull(days) || days > ElectricityConfig.FREEZE_DAYS_MAX) {
                 log.info("FREEZE DAYS CHECK！can not auto review. uid={}", uid);
                 throw Objects.equals(source, CheckFreezeDaysSourceEnum.TINY_APP.getCode()) ? new BizException("301033", "超出每次最长天数，请修改")
-                        : new BizException("301034", "冻结天数最多为" + ElectricityConfig.FREEZE_DAYS_MAX);
+                        : new BizException("301034", String.format("冻结天数最多为%d天", ElectricityConfig.FREEZE_DAYS_MAX));
             }
         } else {
             if (Objects.isNull(days) || days > packageFreezeDays) {
                 throw Objects.equals(source, CheckFreezeDaysSourceEnum.TINY_APP.getCode()) ? new BizException("301033", "超出每次最长天数，请修改")
-                        : new BizException("301034", "冻结天数最多为" + packageFreezeDays);
+                        : new BizException("301034", String.format("冻结天数最多为%d天", packageFreezeDays));
             }
         }
         
