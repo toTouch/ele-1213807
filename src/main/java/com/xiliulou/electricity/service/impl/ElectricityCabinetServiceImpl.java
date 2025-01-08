@@ -5637,7 +5637,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
             // 获取满电仓
-            Triple<Boolean, String, Object> getFullCellBox = lessTimeExchangeService.allocateFullBatteryBox(cabinet, userInfo, franchisee);
+            Triple<Boolean, String, Object> getFullCellBox = lessTimeExchangeService.allocateFullBatteryBoxService(cabinet, userInfo, franchisee);
             if (!getFullCellBox.getLeft()) {
                 return R.fail("100216", "换电柜暂无满电电池");
             }

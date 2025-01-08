@@ -24,6 +24,7 @@ import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
 import com.xiliulou.electricity.vo.ReturnBatteryLessTimeScanVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -236,6 +237,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         }
     }
 
+
     private Pair<Boolean, ExchangeUserSelectVO> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, UserInfo userInfo, Integer code, Integer secondFlexibleRenewal) {
         String orderStatus = lastOrder.getOrderStatus();
         if (StrUtil.isEmpty(orderStatus)) {
@@ -306,6 +308,22 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         }
         ExchangeUserSelectVO vo = ExchangeUserSelectVO.builder().isTheSameCabinet(LessScanConstant.NOT_SAME_CABINET).cabinetName(orderCabinet.getName()).build();
         return Pair.of(true, vo);
+    }
+
+
+    @Override
+    public String openFullBatteryCellHandlerService(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName, String oldCell) {
+        return openFullBatteryCellHandler(cabinetOrder, cabinet, cellNo, batteryName, oldCell);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> allocateFullBatteryBoxService(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee) {
+        return allocateFullBatteryBox(electricityCabinet, userInfo, franchisee);
+    }
+
+    @Override
+    public Boolean isSatisfySelfOpenConditionService(String orderId, Integer eid, Long startTime, Integer cell) {
+        return isSatisfySelfOpenCondition(orderId, eid, startTime, cell);
     }
 
 

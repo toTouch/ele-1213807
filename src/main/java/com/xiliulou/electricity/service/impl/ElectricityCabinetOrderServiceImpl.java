@@ -1563,7 +1563,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 选仓取电流程
         String userBindingBatterySn = electricityBattery.getSn();
-        String sessionId = lessTimeExchangeService.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
+        String sessionId = lessTimeExchangeService.openFullBatteryCellHandlerService(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
                 cabinetOrder.getOldCellNo().toString());
         vo.setIsBatteryInCell(LessScanConstant.BATTERY_IN_CELL);
         vo.setSessionId(sessionId);
@@ -2693,7 +2693,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         // 自主开仓特殊场景校验
-        if (!lessTimeExchangeService.isSatisfySelfOpenCondition(electricityCabinetOrder.getOrderId(), electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getCreateTime(), query.getCellNo())) {
+        if (!lessTimeExchangeService.isSatisfySelfOpenConditionService(electricityCabinetOrder.getOrderId(), electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getCreateTime(), query.getCellNo())) {
             log.warn("selfOpenCell.existNewOperRecord, orderId is {}", electricityCabinetOrder.getOrderId());
             return R.fail("100667", "用户自主开仓，系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
         }

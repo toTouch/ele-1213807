@@ -46,7 +46,7 @@ public interface LessTimeExchangeService {
      * @param oldCell      oldCell
      * @return String
      */
-    String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName, String oldCell);
+     String openFullBatteryCellHandlerService(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName, String oldCell);
 
 
     /**
@@ -59,7 +59,7 @@ public interface LessTimeExchangeService {
      * @param franchisee         franchisee
      * @return Triple
      */
-    Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee);
+    Triple<Boolean, String, Object> allocateFullBatteryBoxService(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee);
 
 
     /**
@@ -71,5 +71,5 @@ public interface LessTimeExchangeService {
      * @param cell cell
      * @return Boolean
      */
-    Boolean isSatisfySelfOpenCondition(String orderId, Integer eid, Long startTime, Integer cell);
+    Boolean isSatisfySelfOpenConditionService(String orderId, Integer eid, Long startTime, Integer cell);
 }
