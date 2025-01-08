@@ -81,4 +81,8 @@ public class RentalPackageVO implements Serializable {
      */
     private String rejectReasonForReturnVehicle;
     
+    /**
+     * 用户剩余套餐冻结次数，-1为不限制，0以上为次数
+     */
+    private Integer unusedFreezeCount;
 }

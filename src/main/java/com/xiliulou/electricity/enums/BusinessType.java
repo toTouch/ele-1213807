@@ -1,5 +1,8 @@
 package com.xiliulou.electricity.enums;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 业务类型枚举  业务类型定义 参考换电柜3.0需求文档 @王银
  */
@@ -114,5 +117,9 @@ public enum BusinessType {
     
     public Integer getBusiness() {
         return business;
+    }
+    
+    public static List<Integer> getRentReturnList() {
+        return Arrays.asList(BusinessType.RENT_BATTERY.business, BusinessType.RETURN_BATTERY.business);
     }
 }

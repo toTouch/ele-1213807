@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -141,7 +142,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             }).collect(Collectors.toList());
             if (!carCouponVOS.isEmpty()) {
                 carRentalPackageOrderVO.setCoupons(collect);
-                CarCouponVO couponVO = collect.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
+                CarCouponVO couponVO = collect.stream().filter(c -> Objects.equals(c.getDiscountType(), Coupon.FULL_REDUCTION)).max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
                 carRentalPackageOrderVO.setCouponId(couponVO.getId());
                 carRentalPackageOrderVO.setCouponName(couponVO.getName());
             }

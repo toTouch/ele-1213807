@@ -24,6 +24,9 @@ public class JsonAdminOtaFileConfigController {
     @Resource
     private OtaFileConfigService otaFileConfigService;
     
+    /**
+     * @param type 1--核心板 2--子板 3--旧核心板 4--旧子板 5--旧六合一 6--新六合一
+     */
     @PostMapping("admin/otaFileConfig/upload")
     public R otaFileConfigUpload(@RequestParam("file") MultipartFile file, @RequestParam("name") String name,
             @RequestParam("version") String version, @RequestParam(value = "type") Integer type) {

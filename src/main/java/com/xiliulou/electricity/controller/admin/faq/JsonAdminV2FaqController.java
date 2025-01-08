@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.faq;
 
+import com.xiliulou.common.sentinel.annotation.IdempotentCheck;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.faq.AdminFaqQuery;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqChangeTypeReq;
@@ -63,6 +64,7 @@ public class JsonAdminV2FaqController {
      * @date 2024/2/23 16:11
      */
     @PostMapping("/admin/faq/add/v2")
+    @IdempotentCheck(prefix = "faq")
     public R add(@RequestBody @Validated(value = CreateGroup.class) AdminFaqReq faqReq) {
         return faqV2Service.saveFaqQuery(faqReq);
     }
@@ -75,6 +77,7 @@ public class JsonAdminV2FaqController {
      * @date 2024/2/23 16:11
      */
     @PostMapping("/admin/faq/edit/v2")
+    @IdempotentCheck(prefix = "faq")
     public R edit(@RequestBody @Validated(value = UpdateGroup.class) AdminFaqReq faqReq) {
         return faqV2Service.updateFaqReq(faqReq);
     }

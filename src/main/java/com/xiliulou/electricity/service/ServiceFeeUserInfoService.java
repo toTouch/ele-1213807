@@ -28,8 +28,8 @@ public interface ServiceFeeUserInfoService {
     BigDecimal queryUserBatteryServiceFee(UserInfo userInfo);
     
     /**
-     * !!!注意!!!
-     * ——调用本方法时，传递的套餐对象 batteryMemberCard 应当为 <用户当前绑定的套餐>，不可传递 <用户新购买或新续费的套餐>
+     * 调用本方法时，参数 batteryMemberCard 已不再使用，可以传null，并同步修改减少各业务内的IO查询
+     * 等待其他业务修改大部分修改完成后可以将本方法的形参 BatteryMemberCard 去掉
      */
     Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo);
 

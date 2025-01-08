@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -421,8 +420,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Slave
     @Override
     public List<BatteryMemberCard> selectListByCouponId(Long couponId) {
-        return this.batteryMemberCardMapper.selectList(new LambdaQueryWrapper<BatteryMemberCard>().eq(BatteryMemberCard::getBusinessType, BatteryMemberCard.BUSINESS_TYPE_BATTERY)
-                .eq(BatteryMemberCard::getCouponId, couponId).eq(BatteryMemberCard::getDelFlag, BatteryMemberCard.DEL_NORMAL));
+        return this.batteryMemberCardMapper.selectListByCouponId(couponId, couponId.toString());
     }
     
     @Slave
@@ -1040,6 +1038,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setRefundLimit(query.getRefundLimit());
         batteryMemberCardUpdate.setFreeDeposite(query.getFreeDeposite());
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
+        batteryMemberCardUpdate.setFreezeServiceCharge(query.getFreezeServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
         batteryMemberCardUpdate.setAdvanceRenewal(query.getAdvanceRenewal());
         batteryMemberCardUpdate.setAdvanceRenewalDay(query.getAdvanceRenewalDay());
@@ -1401,7 +1400,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     private void dealCouponSearchVo(Integer couponId, String couponIds, BatteryMemberCardVO batteryMemberCardVO) {
         LinkedHashSet<Integer> couponIdSet = new LinkedHashSet<>();
-        ArrayList<CouponSearchVo> couponSearchVos = new ArrayList<>();
         batteryMemberCardVO.setAmount(BigDecimal.ZERO);
         if (Objects.nonNull(couponId)) {
             couponIdSet.add(couponId);
@@ -1410,6 +1408,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             couponIdSet.addAll(JsonUtil.fromJsonArray(couponIds, Integer.class));
         }
         
+        ArrayList<CouponSearchVo> couponSearchVos = new ArrayList<>();
+        ArrayList<CouponSearchVo> newCouponSearchVos = new ArrayList<>();
         couponIdSet.forEach(couponIdFromSet -> {
             CouponSearchVo couponSearchVo = new CouponSearchVo();
             Coupon coupon = couponService.queryByIdFromCache(couponIdFromSet);
@@ -1426,9 +1426,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 batteryMemberCardVO.setAmount(couponSearchVo.getAmount());
                 batteryMemberCardVO.setCouponName(couponSearchVo.getName());
             }
-            couponSearchVos.add(couponSearchVo);
+            
+            // TODO 兼容前端未做null值判断的BUG，旧小程序遍历的优惠券集合不返回天数券，此逻辑在小程序全部升级完毕后删除
+            if (!Objects.equals(couponSearchVo.getDiscountType(), Coupon.DAY_VOUCHER)) {
+                couponSearchVos.add(couponSearchVo);
+            }
+            newCouponSearchVos.add(couponSearchVo);
         });
         
+        batteryMemberCardVO.setNewCoupons(newCouponSearchVos);
         batteryMemberCardVO.setCoupons(couponSearchVos);
     }
     

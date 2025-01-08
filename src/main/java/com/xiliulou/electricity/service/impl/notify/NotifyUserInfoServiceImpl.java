@@ -89,7 +89,7 @@ public class NotifyUserInfoServiceImpl implements NotifyUserInfoService {
         
         NotifyUserInfo existByOpenId = notifyUserInfoMapper.selectByOpenId(request.getOpenId());
         if (Objects.nonNull(existByOpenId)) {
-            return R.fail("300870", "用户已存在");
+            return R.fail("300874", "用户已存在");
         }
         
         NotifyUserInfo existByPhone = notifyUserInfoMapper.selectByPhone(request.getPhone());

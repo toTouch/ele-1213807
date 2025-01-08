@@ -156,18 +156,25 @@ public class CouponServiceImpl implements CouponService {
             if (Objects.isNull(couponQuery.getAmount())) {
                 return R.fail("ELECTRICITY.0072", "减免金额不能为空");
             }
+            if (Objects.isNull(couponQuery.getSuperposition())){
+                return R.fail("ELECTRICITY.0071", "优惠券叠加使用方式不能为空");
+            }
         }
         
         if (Objects.equals(couponQuery.getDiscountType(), Coupon.DISCOUNT)) {
             if (Objects.isNull(couponQuery.getDiscount())) {
-                return R.fail("ELECTRICITY.0073", "打折折扣不能为空");
+                return R.fail("ELECTRICITY.0073", "折扣不能为空");
             }
         }
         
-        if (Objects.equals(couponQuery.getDiscountType(), Coupon.EXPERIENCE)) {
+        if (Objects.equals(couponQuery.getDiscountType(), Coupon.DAY_VOUCHER)) {
             if (Objects.isNull(couponQuery.getCount())) {
-                return R.fail("ELECTRICITY.0074", "天数不能为空");
+                return R.fail("ELECTRICITY.0074", "赠送天数不能为空");
             }
+            if (Objects.isNull(couponQuery.getUseScope())) {
+                return R.fail("ELECTRICITY.0075", "使用范围不能为空");
+            }
+            couponQuery.setSuperposition(Coupon.SUPERPOSITION_YES);
         }
         
         //检查优惠券名称是否已经存在
@@ -176,16 +183,17 @@ public class CouponServiceImpl implements CouponService {
         }
         
         // 可叠加时不能指定套餐
-        if (Coupon.SUPERPOSITION_YES.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
-            return R.fail("SYSTEM.0002", "参数不合法");
-        }
-        
-        //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
-        if (Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
-            //获取页面传递进来的套餐信息
-            Triple<Boolean, String, Object> packagesResult = verifyPackages(couponQuery);
-            if (Boolean.FALSE.equals(packagesResult.getLeft())) {
-                return R.fail("000076", (String) packagesResult.getRight());
+        if (!Objects.equals(couponQuery.getDiscountType(), Coupon.DAY_VOUCHER)) {
+            if (Coupon.SUPERPOSITION_YES.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
+                return R.fail("SYSTEM.0002", "参数不合法");
+            }
+            //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
+            if (Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
+                //获取页面传递进来的套餐信息
+                Triple<Boolean, String, Object> packagesResult = verifyPackages(couponQuery);
+                if (Boolean.FALSE.equals(packagesResult.getLeft())) {
+                    return R.fail("000076", (String) packagesResult.getRight());
+                }
             }
         }
         
@@ -203,12 +211,14 @@ public class CouponServiceImpl implements CouponService {
         
         int insert = couponMapper.insert(coupon);
         
-        //将该优惠券对应的套餐信息保存到数据库中, 优惠券类型为不可叠加，并且为指定得套餐使用
+        //将该优惠券对应的套餐信息保存到数据库中, 优惠券类型为不可叠加，并且为指定得套餐使用 ,且不是天数券
         //log.error("check issue, get coupon id when create coupon. coupon id = {}", coupon.getId());
-        if (Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
-            List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
-            if (!CollectionUtils.isEmpty(couponActivityPackages)) {
-                couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
+        if (!Objects.equals(couponQuery.getDiscountType(), Coupon.DAY_VOUCHER)) {
+            if (Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
+                List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(coupon.getId().longValue(), couponQuery);
+                if (!CollectionUtils.isEmpty(couponActivityPackages)) {
+                    couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
+                }
             }
         }
         
@@ -318,7 +328,6 @@ public class CouponServiceImpl implements CouponService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R update(CouponQuery couponQuery) {
         Coupon oldCoupon = queryByIdFromCache(couponQuery.getId());
         if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -350,13 +359,10 @@ public class CouponServiceImpl implements CouponService {
         couponUpdate.setUpdateTime(System.currentTimeMillis());
         
         int update = couponMapper.updateById(couponUpdate);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            //更新缓存
-            redisService.saveWithHash(CacheConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
-            return null;
-        });
         
         if (update > 0) {
+            //更新缓存
+            redisService.saveWithHash(CacheConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
             return R.ok();
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
@@ -453,6 +459,8 @@ public class CouponServiceImpl implements CouponService {
                 couponVO.setName(coupon.getName());
                 couponVO.setId(coupon.getId().longValue());
                 couponVO.setAmount(coupon.getAmount());
+                couponVO.setCount(coupon.getCount());
+                couponVO.setDiscountType(coupon.getDiscountType());
                 result.add(couponVO);
             }
         }
@@ -467,6 +475,14 @@ public class CouponServiceImpl implements CouponService {
         }
         
         return Objects.equals(couponFranchiseeId.longValue(), targetFranchiseeId);
+    }
+    
+    @Override
+    public List<Coupon> queryListByIdsFromDB(List<Long> couponIds) {
+        if (CollectionUtils.isEmpty(couponIds)) {
+            return List.of();
+        }
+        return couponMapper.selectListByIdsFromDB(couponIds);
     }
     
     public List<BatteryMemberCardVO> getAllBatteryPackages() {

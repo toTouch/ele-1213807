@@ -86,4 +86,9 @@ public interface RentBatteryOrderService {
     String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee, Double fullyCharged);
     
     List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList);
+    
+    /**
+     * 根据订单号判断是否租退电订单
+     */
+    Boolean isRendReturnOrder(String orderId);
 }

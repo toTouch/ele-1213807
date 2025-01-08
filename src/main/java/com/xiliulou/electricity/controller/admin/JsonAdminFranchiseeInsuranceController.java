@@ -197,6 +197,7 @@ public class JsonAdminFranchiseeInsuranceController extends BaseController {
      * @param franchiseeId
      * @return
      */
+    @Deprecated
     @GetMapping("admin/franchiseeInsurance/queryCanAddInsuranceBatteryType")
     public R queryCanAddInsuranceBatteryType(@RequestParam(value = "franchiseeId") Long franchiseeId) {
 

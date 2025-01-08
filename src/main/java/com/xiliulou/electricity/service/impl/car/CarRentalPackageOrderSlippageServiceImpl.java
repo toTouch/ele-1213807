@@ -229,4 +229,11 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
 
         return entity.getId();
     }
+    
+    @Slave
+    @Override
+    public List<CarRentalPackageOrderSlippagePo> queryListByPackageOrderNoAndType(List<String> rentalPackageOrderNos,
+            Integer type) {
+        return carRentalPackageOrderSlippageMapper.selectListByPackageOrderNosAndType(rentalPackageOrderNos, type);
+    }
 }
