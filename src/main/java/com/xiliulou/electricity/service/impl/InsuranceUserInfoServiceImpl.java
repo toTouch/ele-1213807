@@ -631,16 +631,15 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setUid(userInfo.getUid());
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
-        // 存在新的未承接保险订单
+        // 过期存在承接保险订单
+        if (Objects.nonNull(query.getInsuranceExpireTime()) && query.getInsuranceExpireTime() <= System.currentTimeMillis() && Objects.nonNull(insuranceOrder)) {
+            existNotUseInsuranceOrder(updateInsuranceUserInfo, insuranceOrder);
+        } else {
+            updateInsuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
+        }
+        // 已出险 存在承接保险订单
         if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceOrder)) {
-            updateInsuranceUserInfo.setInsuranceId(insuranceOrder.getInsuranceId());
-            updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
-            // 设置用户未出险
-            updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
-            // 时间为承接保险的到期时间+当前时间
-            updateInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
-            // 有未生效的保险设置为 未出险
-            this.updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
+            existNotUseInsuranceOrder(updateInsuranceUserInfo, insuranceOrder);
         }
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
 
@@ -662,6 +661,17 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         //新增操作记录
         operate(query, user, userInfo, oldInsuranceUserInfo, updateInsuranceUserInfo);
         return R.ok();
+    }
+
+    private void existNotUseInsuranceOrder(InsuranceUserInfo updateInsuranceUserInfo, InsuranceOrder insuranceOrder) {
+        updateInsuranceUserInfo.setInsuranceId(insuranceOrder.getInsuranceId());
+        updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+        // 设置用户未出险
+        updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+        // 时间为承接保险的到期时间+当前时间
+        updateInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+        // 有未生效的保险设置为 未出险
+        this.updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
     }
 
     private void operate(InsuranceUserInfoQuery query, TokenUser user, UserInfo userInfo, InsuranceUserInfoVo oldInsuranceUserInfo, InsuranceUserInfo updateInsuranceUserInfo) {
