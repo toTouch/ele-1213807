@@ -17,7 +17,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.exchange.AbstractOrderHandler;
 import com.xiliulou.electricity.service.exchange.fail.OrderStatusStrategy;
-import com.xiliulou.electricity.service.exchange.success.LastExchangeOrderSuccessHandler;
 import com.xiliulou.electricity.service.exchange.success.OrderProcessingStrategy;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
@@ -402,15 +401,15 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
 
     private Pair<Boolean, ExchangeUserSelectVO> lastExchangeSuccessHandlerOldVersion(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
                                                                                      UserInfo userInfo) {
-        // 上次成功不可能为空
-        if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
-            log.error("OrderOldV3 Error! lastExchangeSuccessHandler.userBindBattery is null, lastOrderId is {}", lastOrder.getOrderId());
-            throw new CustomBusinessException("上次换电成功，但是用户绑定电池为空");
-        }
-
         ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
         vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(LessScanConstant.LAST_EXCHANGE_SUCCESS);
+        // 上次换电成功，绑定不可能为空
+        if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
+            log.error("OrderOldV3 Error! lastExchangeSuccessHandler.userBindBattery is null, lastOrderId is {}", lastOrder.getOrderId());
+            vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
+            return Pair.of(true, vo);
+        }
 
         // 自主开仓条件校验
         if (!this.isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getNewCellNo())) {
