@@ -255,11 +255,12 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
 
     private Pair<Boolean, ExchangeUserSelectVO> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
                                                                            RentBatteryOrder rentBatteryOrder, UserInfo userInfo, Integer lastOrderType) {
-        if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
-            log.error("OrderV3 Error! lastExchangeSuccessHandler.userBindBattery is null, uid is {}", userInfo.getUid());
+        String service = LastOrderTypeEnum.getService(lastOrderType);
+        if (StrUtil.isEmpty(service)) {
+            log.error("OrderV3 ERROR! lastExchangeSuccessHandler.service is null, lastOrderType is {}", lastOrderType);
             return Pair.of(false, null);
         }
-        OrderProcessingStrategy successHandler = applicationContext.getBean(LastOrderTypeEnum.getService(lastOrderType), OrderProcessingStrategy.class);
+        OrderProcessingStrategy successHandler = applicationContext.getBean(service, OrderProcessingStrategy.class);
         return successHandler.processOrder(cabinet, electricityBattery, userInfo, rentBatteryOrder, lastOrder);
     }
 

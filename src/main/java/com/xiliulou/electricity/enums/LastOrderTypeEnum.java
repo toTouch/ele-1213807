@@ -24,6 +24,6 @@ public enum LastOrderTypeEnum {
     private final String service;
 
     public static String getService(Integer code) {
-        return Arrays.stream(LastOrderTypeEnum.values()).filter(item -> Objects.equals(code, item.getCode())).map(item -> item.getService()).findFirst().get();
+        return Arrays.stream(LastOrderTypeEnum.values()).filter(item -> Objects.equals(code, item.getCode())).map(item -> item.getService()).findFirst().orElse(null);
     }
 }
