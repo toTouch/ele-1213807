@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.ExchangeConfig;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.service.exchange.success.OrderProcessingStrategy
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
 import com.xiliulou.electricity.vo.ReturnBatteryLessTimeScanVo;
+import com.xiliulou.electricity.vo.WarnMsgVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -72,9 +75,11 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
     @Resource
     private EnterpriseUserCostRecordService enterpriseUserCostRecordService;
 
-
     @Resource
     ApplicationContext applicationContext;
+
+    @Resource
+    private RedisService redisService;
 
     /**
      * 多次扫码退电
@@ -138,6 +143,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         // 修改退电流程，补充操作记录
         RentBatteryOrder updateRentBattery = new RentBatteryOrder();
         updateRentBattery.setId(lastRentBatteryOrder.getId());
+        updateRentBattery.setElectricityBatterySn(cabinetBox.getSn());
         updateRentBattery.setCellNo(Integer.parseInt(cabinetBox.getCellNo()));
         updateRentBattery.setUpdateTime(System.currentTimeMillis());
         updateRentBattery.setRemark(ExchangeRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
@@ -147,11 +153,11 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         // 补充操作记录
         List<ElectricityCabinetOrderOperHistory> list = CollUtil.newArrayList();
         list.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                .orderId(lastRentBatteryOrder.getOrderId()).tenantId(lastRentBatteryOrder.getTenantId()).msg(cabinetBox.getCellNo() + LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CLOSE_CELL.getDesc())
+                .orderId(lastRentBatteryOrder.getOrderId()).tenantId(lastRentBatteryOrder.getTenantId()).msg(cabinetBox.getCellNo() + LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CLOSE_CELL.getResult())
                 .seq(LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CLOSE_CELL.getSeq()).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK)
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
         list.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                .orderId(lastRentBatteryOrder.getOrderId()).tenantId(lastRentBatteryOrder.getTenantId()).msg(cabinetBox.getCellNo() + LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CHECK.getDesc())
+                .orderId(lastRentBatteryOrder.getOrderId()).tenantId(lastRentBatteryOrder.getTenantId()).msg(LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CHECK.getResult())
                 .seq(LessScanSeqEnum.RETURN_BATTERY_TWO_SCAN_CHECK.getSeq()).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK)
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
         electricityCabinetOrderOperHistoryService.batchInsert(list);
@@ -162,6 +168,9 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         enterpriseRentRecordService.saveEnterpriseReturnRecord(lastRentBatteryOrder.getUid());
         //记录企业用户还电池记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), lastRentBatteryOrder);
+
+        // 删除redis缓存,防止首页还展示失败信息
+        redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + lastRentBatteryOrder.getOrderId());
     }
 
 
