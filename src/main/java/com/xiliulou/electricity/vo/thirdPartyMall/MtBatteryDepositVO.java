@@ -38,6 +38,16 @@ public class MtBatteryDepositVO {
     private Integer refundStatus;
     
     /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
+     * 是否免押 0--是 1--否
+     */
+    private Integer freeDeposit;
+    
+    /**
      * 套餐电池型号
      */
     List<MtMemberCarBatteryTypeVO> midBatteryTypes;

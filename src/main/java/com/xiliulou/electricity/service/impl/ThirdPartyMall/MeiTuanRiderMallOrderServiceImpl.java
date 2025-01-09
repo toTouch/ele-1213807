@@ -657,7 +657,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         Integer batteryDepositStatus = userInfo.getBatteryDepositStatus();
         vo.setBatteryDepositStatus(batteryDepositStatus);
-        
+    
         // 已缴纳押金
         if (Objects.equals(batteryDepositStatus, UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
@@ -665,18 +665,26 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.warn("QueryBatteryDeposit warn! not found userBatteryDeposit,uid={}", uid);
                 return R.fail("ELECTRICITY.00110", "用户押金信息不存在");
             }
-            
+        
             vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-            
+        
             Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(refundStatus)) {
                 vo.setRefundStatus(refundStatus);
             }
-            
+        
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(eleDepositOrder)) {
-                vo.setBatteryDepositPayType(eleDepositOrder.getPayType());
                 vo.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+                vo.setBatteryDepositPayType(eleDepositOrder.getPayType());
+            
+                Long batterMemberCardId = eleDepositOrder.getMid();
+                vo.setPackageId(batterMemberCardId);
+            
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(batterMemberCardId);
+                if (Objects.nonNull(batteryMemberCard)) {
+                    vo.setFreeDeposit(batteryMemberCard.getFreeDeposite());
+                }
             }
         } else {
             // 未缴纳押金：押金金额取自未兑换订单的套餐中最大的押金金额
@@ -696,15 +704,18 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     vo.setBatteryDeposit(batteryDepositBO.getDeposit());
                 }
                 
+                if (Objects.isNull(vo.getFreeDeposit())) {
+                    vo.setFreeDeposit(batteryDepositBO.getFreeDeposit());
+                }
+                
                 MtMemberCarBatteryTypeVO midBatteryType = new MtMemberCarBatteryTypeVO();
                 midBatteryType.setPackageId(batteryDepositBO.getPackageId());
-                midBatteryType.setFreeDeposit(batteryDepositBO.getFreeDeposit());
                 midBatteryType.setBatteryTypes(batteryDepositBO.getBatteryTypes());
                 
                 midBatteryTypes.add(midBatteryType);
             }
             
-            vo.setMidBatteryTypes(CollectionUtils.isEmpty(midBatteryTypes) ? Collections.emptyList() : midBatteryTypes);
+            vo.setMidBatteryTypes(CollectionUtils.isEmpty(midBatteryTypes) ? null : midBatteryTypes);
         }
         
         return R.ok(vo);
@@ -737,7 +748,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         if (Objects.equals(maxDepositBOList.size(), 1)) {
-            return maxDepositBOList;
+            return rebuildBatteryDepositBOList(maxDepositBOList, tenantId);
         }
         
         // 判断押金类型是否相同
@@ -747,7 +758,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         if (depositTypeMap.size() > 1) {
-            // 返回免押的押金类型
+            // 既有免押又有非免押的，返回免押的押金类型
             List<BatteryDepositBO> freeBatteryDepositBOList = depositTypeMap.get(BatteryMemberCard.FREE_DEPOSIT);
             result = rebuildBatteryDepositBOList(freeBatteryDepositBOList, tenantId);
         } else {

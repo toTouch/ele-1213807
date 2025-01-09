@@ -18,11 +18,6 @@ public class MtMemberCarBatteryTypeVO {
     private Long packageId;
     
     /**
-     * 是否免押 0--是 1--否
-     */
-    private Integer freeDeposit;
-    
-    /**
      * 套餐电池型号
      */
     private List<String> batteryTypes;
