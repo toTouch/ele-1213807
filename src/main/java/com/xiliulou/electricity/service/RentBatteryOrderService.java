@@ -81,7 +81,7 @@ public interface RentBatteryOrderService {
     
     Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo);
     
-    Integer existReturnOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell);
+    Integer existReturnRentOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell);
     
     String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee, Double fullyCharged);
     

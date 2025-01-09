@@ -84,14 +84,14 @@ public class AbstractOrderHandler {
                 return false;
             }
         }
-        Integer existReturnOrder = rentBatteryOrderService.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
-        if (Objects.nonNull(existReturnOrder)) {
-            log.warn("orderV3 warn! isSatisfySelfOpenCondition.existReturnOrder, orderId:{}", orderId);
+        Integer existReturnRentOrder = rentBatteryOrderService.existReturnRentOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
+        if (Objects.nonNull(existReturnRentOrder)) {
+            log.warn("orderV3 warn! isSatisfySelfOpenCondition.existReturnOrder, eid:{}, cell is {}", eid, cell);
             return false;
         }
         Integer existOpenRecord = electricityCabinetPhysicsOperRecordService.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
         if (Objects.nonNull(existOpenRecord)) {
-            log.warn("orderV3 warn! isSatisfySelfOpenCondition.existOpenRecord, orderId:{}", orderId);
+            log.warn("orderV3 warn! isSatisfySelfOpenCondition.existOpenRecord, eid:{}, cell is {}", eid, cell);
             return false;
         }
         return true;

@@ -312,11 +312,10 @@
         update t_rent_battery_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
     
-    <select id="existReturnOrderInSameCabinetAndCell" resultType="integer">
+    <select id="existReturnRentOrderInSameCabinetAndCell" resultType="integer">
         select 1
         from t_rent_battery_order
-        where type = 2
-          and electricity_cabinet_id = #{eid}
+        where  electricity_cabinet_id = #{eid}
           and cell_no = #{cell}
           and create_time &gt; #{startTime}
           and create_time &lt; #{endTime}

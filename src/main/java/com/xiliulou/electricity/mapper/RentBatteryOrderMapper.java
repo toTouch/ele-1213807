@@ -37,7 +37,7 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
-    Integer existReturnOrderInSameCabinetAndCell(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eid") Integer eid, @Param("cell") Integer cell);
+    Integer existReturnRentOrderInSameCabinetAndCell(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eid") Integer eid, @Param("cell") Integer cell);
     
     List<RentBatteryOrderVO> selectListSuperAdminPage(@Param("query") RentBatteryOrderQuery rentBatteryOrderQuery);
     
