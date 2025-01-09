@@ -5770,6 +5770,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         List<ElectricityCabinetSimpleVO> resultVo;
+        Set<String> set = new HashSet<>();
         // 若enableGeo为true，则从redis中获取位置信息。反之从数据库中查询柜机位置信息
         if (eleCommonConfig.isEnableGeo()) {
             GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = getGeoLocationGeoResults(electricityCabinetQuery);
@@ -5795,8 +5796,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
                 // 将公里数转化为米，返回给前端
                 electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
-                return assignAttribute3(electricityCabinetVO, electricityCabinet.getFullyCharged(), electricityCabinet.getBusinessTime());
-            }).filter(Objects::nonNull).collect(Collectors.toList());
+                return assignAttribute3(electricityCabinetVO, electricityCabinet.getFullyCharged(), electricityCabinet.getBusinessTime(), set);
+            }).filter(Objects::nonNull).sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList());
 
         } else {
             List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
@@ -5819,17 +5820,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVO.setDistance(e.getDistance());
                 electricityCabinetVO.setSn(e.getSn());
                 electricityCabinetVO.setServicePhone(e.getServicePhone());
-                return assignAttribute3(electricityCabinetVO, e.getFullyCharged(), e.getBusinessTime());
-            }).filter(Objects::nonNull).collect(Collectors.toList());
-
+                return assignAttribute3(electricityCabinetVO, e.getFullyCharged(), e.getBusinessTime(), set);
+            }).filter(Objects::nonNull).sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList());
         }
 
-        return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
+        return R.ok(ShowInfoByDistanceVO.builder().resultVo(resultVo)
+                .batteryVoltageSet(set).build());
     }
 
 
 
-    private ElectricityCabinetSimpleVO assignAttribute3(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
+    private ElectricityCabinetSimpleVO assignAttribute3(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime,Set set) {
 
         if (Objects.nonNull(e.getDistance())) {
             // 乘以10，向下取整，再除以10,保留一位小数
@@ -5870,6 +5871,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         // 电池伏数集合，前端过滤
         e.setBatteryVoltageList(buildBatteryTypeList(exchangeableList));
+
+        // 过滤重复集合
+        set.addAll(e.getBatteryVoltageList());
         return e;
     }
 
