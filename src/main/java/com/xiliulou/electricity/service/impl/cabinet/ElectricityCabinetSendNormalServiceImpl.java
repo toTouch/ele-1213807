@@ -47,6 +47,7 @@ public class ElectricityCabinetSendNormalServiceImpl implements ElectricityCabin
         Integer startId = 0;
         Integer size = 200;
         String operatorId = UUID.randomUUID().toString().replaceAll("-", "");
+        log.info("send normal command start operatorId：{}", operatorId);
 
         // 指定租户下发
         if (ObjectUtils.isNotEmpty(taskParam.getTenantIds())) {
@@ -75,6 +76,7 @@ public class ElectricityCabinetSendNormalServiceImpl implements ElectricityCabin
         while (true) {
             List<Integer> tenantIdList = tenantService.queryIdListByStartId(startId, size);
             if (ObjectUtils.isEmpty(tenantIdList)) {
+                log.info("send normal command end operatorId：{}", operatorId);
                 return;
             }
 
@@ -90,7 +92,6 @@ public class ElectricityCabinetSendNormalServiceImpl implements ElectricityCabin
 
             doSendNormalCommand(tenantIdList, operatorId, taskParam);
         }
-
     }
 
     private void doSendNormalCommand(List<Integer> tenantIdList, String operatorId, ElectricityCabinetSendNormalTask.SendNormalTaskParam taskParam) {
