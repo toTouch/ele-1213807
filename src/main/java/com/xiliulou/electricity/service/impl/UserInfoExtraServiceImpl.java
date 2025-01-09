@@ -753,8 +753,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public Integer getUnusedFreezeCount(Integer tenantId, Long uid) throws BizException {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+    public Integer getUnusedFreezeCount(ElectricityConfig electricityConfig, Long uid) throws BizException {
         if (Objects.isNull(electricityConfig)) {
             log.error("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", uid);
             throw new BizException("301031", "未找到租户配置信息");

@@ -225,10 +225,19 @@ public class ElectricityConfigAddAndUpdateQuery {
     
     /**
      * 与套餐冻结次数限制参数 packageFreezeCount 联动
-     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60，packageFreezeCount 为其他数值时根据 packageFreezeDays 限制申请冻结最大天数
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDaysHasAssets 为有资产情况下限制申请冻结最大天数
      */
     @Range(min = 1, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer packageFreezeDays;
+    
+    /**
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDaysWithAssets 为有资产情况下限制申请冻结最大天数
+     */
+    @Range(min = 1, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer packageFreezeDaysWithAssets;
     
     /**
      * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时

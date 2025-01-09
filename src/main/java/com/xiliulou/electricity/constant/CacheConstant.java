@@ -903,7 +903,7 @@ public interface CacheConstant {
      * 用户端及后台下单接口锁
      */
     String ELE_CACHE_PLACE_ORDER_LOCK_KEY = "ele_cache_place_order_lock_key:";
-    
+
     /**
      * 快捷换电命令下发结果缓存key
      */
@@ -922,5 +922,20 @@ public interface CacheConstant {
      */
     String RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY = "rent_return_allow_self_open_cell_time:";
 
+
+    /**
+     * 故障告警处理LOCK
+     */
+    String WARN_HANDLE_LOCK_KEY = "warn_handle_lock_key:";
+
+    /**
+     * 故障告警处理结果缓存
+     */
+    String WARN_HANDLE_RESULT = "warn_handle_result:%s:%s";
+
+    /**
+     * 标记电池缓存
+     */
+    String BATTERY_MARK_KEY= "battery_mark:%s:%s";
 }
 
