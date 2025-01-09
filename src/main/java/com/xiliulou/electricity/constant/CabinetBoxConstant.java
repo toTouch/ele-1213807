@@ -23,8 +23,4 @@ public class CabinetBoxConstant {
     public static final Integer LOCK_REASON_EXCEPTION = 1008;
     
     public static final Integer LOCK_REASON_OTHER = 50006;
-
-    public static final String APPLICATION_MODE_NORMAL_V = "NORMAL_V";
-
-    public static final String APPLICATION_MODE_NORMAL = "NORMAL";
 }

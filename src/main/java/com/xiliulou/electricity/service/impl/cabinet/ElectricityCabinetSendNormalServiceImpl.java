@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.dto.cabinet.ElectricityCabinetSendNormalDTO;
@@ -141,8 +141,8 @@ public class ElectricityCabinetSendNormalServiceImpl implements ElectricityCabin
             }
 
             // 检测柜机是否为normal/normal_v
-            if (!(Objects.equals(otherSetting.getApplicationMode(), CabinetBoxConstant.APPLICATION_MODE_NORMAL_V)
-                    || Objects.equals(otherSetting.getApplicationMode(), CabinetBoxConstant.APPLICATION_MODE_NORMAL))) {
+            if (!(Objects.equals(otherSetting.getApplicationMode(), EleCabinetConstant.APPLICATION_MODE_NORMAL_V)
+                    || Objects.equals(otherSetting.getApplicationMode(), EleCabinetConstant.APPLICATION_MODE_NORMAL))) {
                 return;
             }
 
