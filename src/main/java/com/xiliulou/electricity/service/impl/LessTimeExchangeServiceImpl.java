@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.*;
@@ -22,7 +21,6 @@ import com.xiliulou.electricity.service.exchange.success.OrderProcessingStrategy
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
 import com.xiliulou.electricity.vo.ReturnBatteryLessTimeScanVo;
-import com.xiliulou.electricity.vo.WarnMsgVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -31,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -193,7 +190,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         log.info("lessTimeExchangeTwoCountAssert Info! version is {}", exchangeDTO.getVersion());
 
         // 兼容以前的小程序旧版本
-        if (StrUtil.isEmpty(exchangeDTO.getVersion()) || VersionUtil.compareVersion(exchangeDTO.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
+        if (StrUtil.isEmpty(exchangeDTO.getVersion()) || VersionUtil.compareVersion(exchangeDTO.getVersion(), OrderQueryV3.TWO_SCAN_EXCHANGE_COMPATIBLE_RENT_SELF_OPEN) < 0) {
             return lessTimeExchangeTwoCountAssertOldVersion(userInfo, cabinet, electricityBattery, exchangeDTO);
         }
 
