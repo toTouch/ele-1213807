@@ -1344,30 +1344,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 筛选可换、可租、可退标签返回
         e.setLabel(electricityCabinetLabelHandler(e.getId(), exchangeableList, cabinetBoxList));
-
-        // 电池伏数集合，前端过滤
-        e.setBatteryVoltageList(buildBatteryTypeList(exchangeableList));
         return e;
     }
 
-    private List<String> buildBatteryTypeList(List<ElectricityCabinetBox> exchangeableList) {
-        if (CollUtil.isEmpty(exchangeableList)) {
-            return Collections.emptyList();
-        }
-        try {
-            return exchangeableList.stream().map(t -> {
-                String batteryType = t.getBatteryType();
-                if (StringUtil.isNotBlank(batteryType)) {
-                    String[] parts = batteryType.split("_");
-                    return parts[1].replace("V", "");
-                }
-                return null;
-            }).filter(StringUtil::isNotBlank).collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("User ShowInfoByDistanceV2 Error! box is {}", CollUtil.isEmpty(exchangeableList) ? null : JsonUtil.toJson(exchangeableList));
-            return Collections.emptyList();
-        }
-    }
 
 
     private void assignExchangeableBatteryType(List<ElectricityCabinetBox> exchangeableList, ElectricityCabinetVO e) {
@@ -5780,5 +5759,137 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         vo.setCode("0003");
         return R.ok(vo);
+    }
+
+
+    @Override
+    public R showInfoByDistanceV3(ElectricityCabinetQuery electricityCabinetQuery) {
+        Double distanceMax = Objects.isNull(eleCommonConfig.getShowDistance()) ? 50000D : eleCommonConfig.getShowDistance();
+        if (Objects.isNull(electricityCabinetQuery.getDistance()) || electricityCabinetQuery.getDistance() > distanceMax) {
+            electricityCabinetQuery.setDistance(distanceMax);
+        }
+
+        List<ElectricityCabinetSimpleVO> resultVo;
+        // 若enableGeo为true，则从redis中获取位置信息。反之从数据库中查询柜机位置信息
+        if (eleCommonConfig.isEnableGeo()) {
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = getGeoLocationGeoResults(electricityCabinetQuery);
+            if (geoRadius == null) {
+                return null;
+            }
+
+            resultVo = geoRadius.getContent().parallelStream().map(e -> {
+                ElectricityCabinetSimpleVO electricityCabinetVO = new ElectricityCabinetSimpleVO();
+
+                Integer eid = Integer.valueOf(e.getContent().getName());
+                ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
+                if (Objects.isNull(electricityCabinet) || !Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, electricityCabinet.getUsableStatus())) {
+                    return null;
+                }
+                electricityCabinetVO.setId(electricityCabinet.getId());
+                electricityCabinetVO.setName(electricityCabinet.getName());
+                electricityCabinetVO.setSn(electricityCabinet.getSn());
+                electricityCabinetVO.setServicePhone(electricityCabinet.getServicePhone());
+                electricityCabinetVO.setAddress(electricityCabinet.getAddress());
+                electricityCabinetVO.setOnlineStatus(electricityCabinet.getOnlineStatus());
+                electricityCabinetVO.setLatitude(e.getContent().getPoint().getY());
+                electricityCabinetVO.setLongitude(e.getContent().getPoint().getX());
+                // 将公里数转化为米，返回给前端
+                electricityCabinetVO.setDistance(e.getDistance().getValue() * 1000);
+                return assignAttribute3(electricityCabinetVO, electricityCabinet.getFullyCharged(), electricityCabinet.getBusinessTime());
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+
+        } else {
+            List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
+            if (CollectionUtils.isEmpty(electricityCabinetList)) {
+                return R.ok(Collections.emptyList());
+            }
+
+            resultVo = electricityCabinetList.parallelStream().map(e -> {
+                if (!Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, e.getUsableStatus())) {
+                    return null;
+                }
+                ElectricityCabinetSimpleVO electricityCabinetVO = new ElectricityCabinetSimpleVO();
+                electricityCabinetVO.setId(e.getId());
+                electricityCabinetVO.setName(e.getName());
+                electricityCabinetVO.setAddress(e.getAddress());
+                electricityCabinetVO.setLongitude(e.getLongitude());
+                electricityCabinetVO.setLatitude(e.getLatitude());
+                electricityCabinetVO.setOnlineStatus(e.getOnlineStatus());
+                electricityCabinetVO.setFullyElectricityBattery(e.getFullyElectricityBattery());
+                electricityCabinetVO.setDistance(e.getDistance());
+                electricityCabinetVO.setSn(e.getSn());
+                electricityCabinetVO.setServicePhone(e.getServicePhone());
+                return assignAttribute3(electricityCabinetVO, e.getFullyCharged(), e.getBusinessTime());
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+
+        }
+
+        return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
+    }
+
+
+
+    private ElectricityCabinetSimpleVO assignAttribute3(ElectricityCabinetSimpleVO e, Double fullyCharged, String businessTime) {
+
+        if (Objects.nonNull(e.getDistance())) {
+            // 乘以10，向下取整，再除以10,保留一位小数
+            e.setDistance(Math.floor(e.getDistance() * 10.0) / 10.0);
+        }
+
+        // 营业时间
+        if (StringUtils.isNotBlank(businessTime)) {
+            if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                //                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+            } else {
+                e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
+                int index = businessTime.indexOf("-");
+                if (!Objects.equals(index, -1) && index > 0) {
+                    e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                    e.setBeginTime(totalBeginTime);
+                    e.setEndTime(totalEndTime);
+                }
+            }
+        }
+
+        // 可用的仓数
+        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
+        if (CollectionUtils.isEmpty(cabinetBoxList)) {
+            return e;
+        }
+        // 可换电数量
+        List<ElectricityCabinetBox> exchangeableList = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).collect(Collectors.toList());
+        long exchangeableNumber = exchangeableList.size();
+        // 兼容2.0小程序首页显示问题
+        e.setFullyElectricityBattery((int) exchangeableNumber);
+
+        // 筛选可换、可租、可退标签返回
+        e.setLabel(electricityCabinetLabelHandler(e.getId(), exchangeableList, cabinetBoxList));
+
+        // 电池伏数集合，前端过滤
+        e.setBatteryVoltageList(buildBatteryTypeList(exchangeableList));
+        return e;
+    }
+
+
+    private List<String> buildBatteryTypeList(List<ElectricityCabinetBox> exchangeableList) {
+        if (CollUtil.isEmpty(exchangeableList)) {
+            return Collections.emptyList();
+        }
+        try {
+            return exchangeableList.stream().map(t -> {
+                String batteryType = t.getBatteryType();
+                if (StringUtil.isNotBlank(batteryType)) {
+                    String[] parts = batteryType.split("_");
+                    return parts[1].replace("V", "");
+                }
+                return null;
+            }).filter(StringUtil::isNotBlank).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("User ShowInfoByDistanceV2 Error! box is {}", CollUtil.isEmpty(exchangeableList) ? null : JsonUtil.toJson(exchangeableList));
+            return Collections.emptyList();
+        }
     }
 }

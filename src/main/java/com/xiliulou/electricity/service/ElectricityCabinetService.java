@@ -288,4 +288,6 @@ public interface ElectricityCabinetService {
     R quickExchage(QuickExchangeQuery quickExchangeQuery);
     
     R getQuickExchangeResult(String sessionId);
+
+    R showInfoByDistanceV3(ElectricityCabinetQuery electricityCabinetQuery);
 }
