@@ -20,10 +20,10 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class BatteryRecyclePageRequest {
-    @NotNull(message = "size不能为空", groups = {BatteryRecyclePageRequest.class})
+    @NotNull(message = "size不能为空", groups = {CreateGroup.class})
     private Long size;
 
-    @NotNull(message = "offset不能为空", groups = {BatteryRecyclePageRequest.class})
+    @NotNull(message = "offset不能为空", groups = {CreateGroup.class})
     private Long offset;
     
     private String sn;

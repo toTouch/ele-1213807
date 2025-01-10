@@ -100,7 +100,7 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
      * 分页查询
      */
     @PostMapping("/admin/battery/recycle/page")
-    public R page(@RequestBody @Validated(BatteryRecyclePageRequest.class) BatteryRecyclePageRequest request) {
+    public R page(@RequestBody @Validated(CreateGroup.class) BatteryRecyclePageRequest request) {
         if (request.getSize() < 0 || request.getSize() > 50) {
             request.setSize(10L);
         }
