@@ -26,6 +26,7 @@ import com.xiliulou.electricity.vo.asset.BatteryBrandModelVo;
 import com.xiliulou.electricity.vo.asset.BrandNameAndBatteryVShortVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -925,5 +926,45 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Override
     public List<BatteryModelDTO> listShortBatteryTypeByMemberIds(List<Long> memberCardIds, Integer tenantId) {
         return batteryModelMapper.selectListShortBatteryTypeByMemberIds(memberCardIds, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public List<String> transformBatteryTypes(List<String> batteryTypeList, Integer tenantId) {
+        List<BatteryModel> batteryModels = this.listBatteryModelByBatteryTypeList(batteryTypeList, tenantId);
+        List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
+        if (CollectionUtils.isEmpty(batteryModels) || CollectionUtils.isEmpty(batteryMaterials)) {
+            return batteryTypeList;
+        }
+        
+        Map<String, String> batteryShortMap = batteryModels.stream()
+                .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (String item1, String item2) -> item2));
+        Map<String, String> materialMap = batteryMaterials.stream()
+                .collect(Collectors.toMap(BatteryMaterial::getType, BatteryMaterial::getName, (String item1, String item2) -> item2));
+        if (MapUtils.isEmpty(batteryShortMap) || MapUtils.isEmpty(materialMap)) {
+            return batteryTypeList;
+        }
+    
+        // 升序排序
+    
+        return batteryTypeList.stream().map(batteryType -> {
+            String batteryShort = batteryShortMap.get(batteryType);
+            if (StringUtils.isBlank(batteryShort)) {
+                // 短型号为空，则保存原始型号
+                return batteryType;
+            }
+    
+            String[] split = batteryShort.split(SEPARATE);
+            if (ArrayUtils.isEmpty(split) || split.length < 2) {
+                // 短型号错误，则保存原始型号
+                return batteryType;
+            }
+    
+            String typeName = batteryType.substring(batteryType.indexOf(SEPARATOR, batteryType.indexOf(SEPARATOR) + 1) + 1, batteryType.lastIndexOf(SEPARATOR));
+            String materialName = materialMap.getOrDefault(typeName, "UNKNOWNAME");
+    
+            return split[0] + SEPARATE + materialName + SEPARATE + split[2] + "串";
+    
+        }).sorted(Comparator.comparing(item -> item.substring(0, 1))).collect(Collectors.toList());
     }
 }

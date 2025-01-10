@@ -33,6 +33,7 @@ import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetail
 import com.xiliulou.electricity.request.thirdPartyMall.NotifyMeiTuanDeliverReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -143,6 +144,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private ElectricityConfigService electricityConfigService;
+    
+    @Resource
+    private BatteryModelService batteryModelService;
     
     @Slave
     @Override
@@ -657,7 +661,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         Integer batteryDepositStatus = userInfo.getBatteryDepositStatus();
         vo.setBatteryDepositStatus(batteryDepositStatus);
-    
+        
         // 已缴纳押金
         if (Objects.equals(batteryDepositStatus, UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
@@ -665,22 +669,22 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.warn("QueryBatteryDeposit warn! not found userBatteryDeposit,uid={}", uid);
                 return R.fail("ELECTRICITY.00110", "用户押金信息不存在");
             }
-        
+            
             vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-        
+            
             Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(refundStatus)) {
                 vo.setRefundStatus(refundStatus);
             }
-        
+            
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(eleDepositOrder)) {
                 vo.setFranchiseeId(eleDepositOrder.getFranchiseeId());
                 vo.setBatteryDepositPayType(eleDepositOrder.getPayType());
-            
+                
                 Long batterMemberCardId = eleDepositOrder.getMid();
                 vo.setPackageId(batterMemberCardId);
-            
+                
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(batterMemberCardId);
                 if (Objects.nonNull(batteryMemberCard)) {
                     vo.setFreeDeposit(batteryMemberCard.getFreeDeposite());
@@ -800,7 +804,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             if (midBatteryTypeMap.containsKey(packageId)) {
                 bo = new BatteryDepositBO();
                 BeanUtils.copyProperties(item, bo);
-                bo.setBatteryTypes(midBatteryTypeMap.get(packageId));
+                bo.setBatteryTypes(batteryModelService.transformBatteryTypes(midBatteryTypeMap.get(packageId), tenantId));
             }
             
             return bo;
