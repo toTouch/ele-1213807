@@ -130,6 +130,7 @@ public class ElectricityCabinetSendNormalServiceImpl implements ElectricityCabin
             // 检测柜机是否在线
             boolean b = electricityCabinetService.deviceIsOnline(electricityCabinetVO.getProductKey(), electricityCabinetVO.getDeviceName(), electricityCabinetVO.getPattern());
             if (!b) {
+                log.warn("send normal command warn!  electricityCabinet is offline operatorId:{}, electricityCabinetId={}", operatorId, electricityCabinetVO.getId());
                 return;
             }
 
@@ -137,12 +138,14 @@ public class ElectricityCabinetSendNormalServiceImpl implements ElectricityCabin
             ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinetVO.getId(),
                     ElectricityCabinetOtherSetting.class);
             if (ObjectUtils.isEmpty(otherSetting) || ObjectUtils.isEmpty(otherSetting.getApplicationMode())) {
+                log.warn("send normal command warn! other setting is null operatorId:{}, electricityCabinetId={}", operatorId, electricityCabinetVO.getId());
                 return;
             }
 
             // 检测柜机是否为normal/normal_v
             if (!(Objects.equals(otherSetting.getApplicationMode(), EleCabinetConstant.APPLICATION_MODE_NORMAL_V)
                     || Objects.equals(otherSetting.getApplicationMode(), EleCabinetConstant.APPLICATION_MODE_NORMAL))) {
+                log.warn("send normal command warn! other setting is not normal/normal_v operatorId:{}, electricityCabinetId={}", operatorId, electricityCabinetVO.getId());
                 return;
             }
 
@@ -158,7 +161,7 @@ public class ElectricityCabinetSendNormalServiceImpl implements ElectricityCabin
 
             R sendCommandResult = electricityCabinetService.sendCommand(eleOuterCommandQuery);
             if (!sendCommandResult.isSuccess()) {
-                log.info("electricity cabinet send normal warn! cabinet send command fail operatorId:{}, cabinetId:{}, msg:{}", operatorId, electricityCabinetVO.getId(),
+                log.warn("electricity cabinet send normal warn! cabinet send command fail operatorId:{}, cabinetId:{}, msg:{}", operatorId, electricityCabinetVO.getId(),
                         sendCommandResult.getErrMsg());
                 return;
             }

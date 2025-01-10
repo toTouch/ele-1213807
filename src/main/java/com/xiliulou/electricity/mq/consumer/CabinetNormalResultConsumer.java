@@ -38,7 +38,7 @@ public class CabinetNormalResultConsumer implements RocketMQListener<String> {
 
             boolean flag = false;
 
-            // 下发指令相应成功修改回收记录为已锁仓
+            // 下发指令相应成功
             String result = redisService.get(CacheConstant.ELE_OPERATOR_CACHE_KEY + electricityCabinetSendNormalDTO.getSessionId());
             if (!StringUtils.isEmpty(result)) {
                 Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
