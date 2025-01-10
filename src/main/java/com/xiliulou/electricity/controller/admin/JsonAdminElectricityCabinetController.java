@@ -824,7 +824,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "longitude", required = false) Double longitude,
-                                                        @RequestParam(value = "latitude", required = false) Double latitude) {
+                                                        @RequestParam(value = "latitude", required = false) Double latitude, @RequestParam(value = "distance", required = false) Double distance) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -847,7 +847,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
         
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().id(id).name(name).status(Objects.isNull(status) ? NumberConstant.ONE : status)
-                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).latitude(latitude).longitude(longitude).build();
+                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).latitude(latitude).longitude(longitude).distance(distance).build();
         
         return electricityCabinetService.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
     }
