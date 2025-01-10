@@ -9,6 +9,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.BatteryTrackRecordMapper;
 import com.xiliulou.electricity.queue.BatteryTrackRecordBatchSaveQueueService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
+import com.xiliulou.electricity.service.EleBatteryMarkRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -45,6 +46,9 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     BatteryTrackRecordBatchSaveQueueService batteryTrackRecordBatchSaveQueueService;
 
     @Resource
+    private EleBatteryMarkRecordService eleBatteryMarkRecordService;
+
+    @Resource
     private RentBatteryOrderService rentBatteryOrderService;
 
     /**
@@ -56,6 +60,10 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     @Override
     public BatteryTrackRecord putBatteryTrackQueue(BatteryTrackRecord batteryTrackRecord) {
         batteryTrackRecordBatchSaveQueueService.putQueue(batteryTrackRecord);
+
+        // 检测标记电池
+        eleBatteryMarkRecordService.checkBatteryMark(batteryTrackRecord);
+
         return batteryTrackRecord;
     }
     
@@ -69,14 +77,14 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
         if (Objects.isNull(electricityBattery)) {
             return Pair.of(true, null);
         }
-    
+
         List<BatteryTrackRecord> recordList = batteryTrackRecordMapper.queryTrackRecordByCondition(sn, size, offset, TimeUtils.convertToStandardFormatTime(startTime),
                 TimeUtils.convertToStandardFormatTime(endTime));
-    
+
         List<BatteryTrackRecordVO> list = recordList.stream().map(item -> {
             BatteryTrackRecordVO vo = new BatteryTrackRecordVO();
             BeanUtils.copyProperties(item, vo);
-        
+
             String orderId = item.getOrderId();
             if (StringUtils.isNotBlank(orderId)) {
                 Boolean rendReturnOrder = rentBatteryOrderService.isRendReturnOrder(orderId);
@@ -86,10 +94,10 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
                     vo.setOrderType(OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER);
                 }
             }
-        
+
             return vo;
         }).collect(Collectors.toList());
-    
+
         return Pair.of(true, list);
     }
 

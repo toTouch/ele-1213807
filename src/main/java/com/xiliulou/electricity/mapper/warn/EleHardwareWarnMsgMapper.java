@@ -33,4 +33,17 @@ public interface EleHardwareWarnMsgMapper {
     int existByAlarmId(@Param("alarmId") String alarmId);
     
     int updateNoteFlagByAlarmId(@Param("alarmId") String alarmId, @Param("updateTime") long updateTime);
+    
+    List<String> selectListSignalIdByIdList(@Param("warnIdList") List<Long> warnIdList,@Param("handleStatus") Integer handleStatus);
+    
+    List<EleHardwareWarnMsg> selectListBySignalIdList(@Param("signalIdList") List<String> signalIdList,@Param("maxId") Long maxId,@Param("tenantId") Integer tenantId,@Param("size") Long size);
+    
+    int batchUpdateHandleStatus(@Param("idList") List<Long> warnIdList,@Param("status") Integer status,
+            @Param("batchNo") String batchNo,@Param("updateTime") long updateTime);
+    
+    List<EleHardwareWarnMsg> selectListHandlerRecordByPage(WarnMsgPageQueryModel queryModel);
+    
+    Integer countHandleRecordTotal(WarnMsgPageQueryModel queryModel);
+    
+    Integer existsByIdList(@Param("idList") List<Long> warnIdList);
 }

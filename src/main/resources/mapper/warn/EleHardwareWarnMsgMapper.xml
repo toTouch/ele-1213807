@@ -7,6 +7,17 @@
         WHERE alarm_id = #{alarmId}
     </update>
     
+    <update id="batchUpdateHandleStatus">
+        update t_ele_hardware_warn_msg
+        set handle_status = #{status},
+        batch_no = #{batchNo},
+        update_time = #{updateTime}
+        where id in
+        <foreach collection="idList" item="warnId" separator="," open="(" close=")">
+            #{warnId}
+        </foreach>
+    </update>
+    
     <select id="selectList" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
         SELECT
             tenant_id as 'tenantId',
@@ -22,8 +33,7 @@
             cabinet_id
     </select>
     
-    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.warn.EleHardwareWarnMsg">
-        SELECT
+    <sql id="column">
         t.id,
         t.cabinet_id,
         t.tenant_id,
@@ -43,7 +53,14 @@
         t.alarm_time,
         t.create_time,
         t.cabinet_sn,
-        t.order_id
+        t.order_id,
+        t.batch_no,
+        t.handle_status
+    </sql>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.warn.EleHardwareWarnMsg">
+        SELECT
+        <include refid="column"/>
         FROM
         t_ele_hardware_warn_msg t
         <include refid="filter"/>
@@ -115,6 +132,18 @@
             <if test="alarmFlag != null">
                 and t.alarm_flag  = #{alarmFlag}
             </if>
+    
+            <if test="handleStatus != null">
+                and t.handle_status  = #{handleStatus}
+            </if>
+    
+            <if test="msgVisible != null">
+                and t.msg_visible  = #{msgVisible}
+            </if>
+    
+            <if test="enableStatus != null">
+                and t.enable_status  = #{enableStatus}
+            </if>
             
             <if test="signalIdList != null and signalIdList.size() > 0">
                 and t.signal_id in
@@ -156,5 +185,66 @@
     
     <select id="existByAlarmId" resultType="java.lang.Integer">
         select count(1) from t_ele_hardware_warn_msg where alarm_id = #{alarmId} and send_note_flag = 0 LIMIT 1
+    </select>
+    
+    <select id="selectListSignalIdByIdList" resultType="java.lang.String">
+        select distinct signal_id from t_ele_hardware_warn_msg where id in
+        <foreach collection="warnIdList" separator="," close=")" open="(" item="warnId">
+            #{warnId}
+        </foreach>
+    </select>
+    
+    <select id="selectListBySignalIdList" resultType="com.xiliulou.electricity.entity.warn.EleHardwareWarnMsg">
+        select id, alarm_id, signal_id from t_ele_hardware_warn_msg
+        <where>
+            tenant_id = #{tenantId}
+            and handle_status in (0, 1)
+            and id > #{maxId}
+            <if test="signalIdList != null and signalIdList.size() > 0">
+                and signal_id in
+                <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
+                    #{signalId}
+                </foreach>
+            </if>
+        </where>
+        order by id
+    </select>
+    
+    <select id="selectListHandlerRecordByPage"
+        resultType="com.xiliulou.electricity.entity.warn.EleHardwareWarnMsg">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_ele_warn_handle_record r
+        inner join t_ele_hardware_warn_msg t on t.id = r.warn_id
+        <where>
+            r.tenant_id = #{tenantId}
+            <if test="batchNo != null and batchNo !=''">
+                and r.batch_no = #{batchNo}
+            </if>
+        </where>
+        order by t.create_time desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="countHandleRecordTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_ele_warn_handle_record r
+        inner join t_ele_hardware_warn_msg t on t.id = r.warn_id
+        <where>
+            r.tenant_id = #{tenantId}
+            <if test="batchNo != null and batchNo !=''">
+                and r.batch_no = #{batchNo}
+            </if>
+        </where>
+    </select>
+    
+    <select id="existsByIdList" resultType="java.lang.Integer">
+        select 1 from t_ele_hardware_warn_msg where id in
+        <foreach collection="idList" item="warnId" separator="," open="(" close=")">
+            #{warnId}
+        </foreach>
+        limit 1
     </select>
 </mapper>
