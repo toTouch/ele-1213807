@@ -99,17 +99,14 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
     /**
      * 分页查询
      */
-    @GetMapping("/admin/battery/recycle/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "snList", required = false) List<String> snList,
-            @RequestParam(value = "batchNo", required = false) String batchNo, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime) {
-        if (size < 0 || size > 50) {
-            size = 10L;
+    @PostMapping("/admin/battery/recycle/page")
+    public R page(@RequestBody @Validated(BatteryRecyclePageRequest.class) BatteryRecyclePageRequest request) {
+        if (request.getSize() < 0 || request.getSize() > 50) {
+            request.setSize(10L);
         }
         
-        if (offset < 0) {
-            offset = 0L;
+        if (request.getOffset() < 0) {
+            request.setOffset(0L);
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -129,26 +126,23 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
             }
         }
         
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeIds.add(franchiseeId);
+        if (Objects.nonNull(request.getFranchiseeId())) {
+            franchiseeIds.add(request.getFranchiseeId());
         }
 
-        BatteryRecyclePageRequest request = BatteryRecyclePageRequest.builder().size(size).offset(offset).batchNo(batchNo).status(status).electricityCabinetId(electricityCabinetId)
-                .franchiseeIdList(franchiseeIds).snList(snList).startTime(startTime).endTime(endTime).tenantId(TenantContextHolder.getTenantId()).build();
+        request.setFranchiseeIdList(franchiseeIds);
+        request.setTenantId(TenantContextHolder.getTenantId());
 
-        if (CollectionUtils.isNotEmpty(snList) && snList.size() == 1) {
-            request.setSn(snList.get(0));
+        if (CollectionUtils.isNotEmpty(request.getSnList()) && request.getSnList().size() == 1) {
+            request.setSn(request.getSnList().get(0));
             request.setSnList(Collections.EMPTY_LIST);
         }
 
         return R.ok(batteryRecycleRecordService.listByPage(request));
     }
     
-    @GetMapping("/admin/battery/recycle/pageCount")
-    public R pageCount( @RequestParam(value = "snList", required = false) List<String> snList,
-            @RequestParam(value = "batchNo", required = false) String batchNo, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime) {
+    @PostMapping("/admin/battery/recycle/pageCount")
+    public R pageCount(@RequestBody BatteryRecyclePageRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -165,15 +159,16 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         }
-    
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeIds.add(franchiseeId);
-        }
-        BatteryRecyclePageRequest request = BatteryRecyclePageRequest.builder().batchNo(batchNo).status(status).electricityCabinetId(electricityCabinetId)
-                .franchiseeIdList(franchiseeIds).startTime(startTime).endTime(endTime).snList(snList).tenantId(TenantContextHolder.getTenantId()).build();
 
-        if (CollectionUtils.isNotEmpty(snList) && snList.size() == 1) {
-            request.setSn(snList.get(0));
+        if (Objects.nonNull(request.getFranchiseeId())) {
+            franchiseeIds.add(request.getFranchiseeId());
+        }
+
+        request.setFranchiseeIdList(franchiseeIds);
+        request.setTenantId(TenantContextHolder.getTenantId());
+
+        if (CollectionUtils.isNotEmpty(request.getSnList()) && request.getSnList().size() == 1) {
+            request.setSn(request.getSnList().get(0));
             request.setSnList(Collections.EMPTY_LIST);
         }
         
