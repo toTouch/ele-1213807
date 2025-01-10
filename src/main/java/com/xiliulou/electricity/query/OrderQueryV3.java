@@ -30,7 +30,7 @@ public class OrderQueryV3 {
     private Integer exchangeBatteryType;
     
     /**
-     * 如果不是同一个柜机，重新扫码换电不拦截，1
+     * 如果不是同一个柜机，重新扫码换电不拦截(1:是一个柜机)
      */
     private Integer isReScanExchange;
     
