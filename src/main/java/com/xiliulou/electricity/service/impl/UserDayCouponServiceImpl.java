@@ -103,7 +103,7 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 return R.fail("400006","该优惠券非天数券，请选择其他优惠券");
             }
 
-            if (!Objects.equals(Long.valueOf(userCoupon.getFranchiseeId()), info.getFranchiseeId())) {
+            if (!(Objects.nonNull(userCoupon.getFranchiseeId()) && Objects.equals(Long.valueOf(userCoupon.getFranchiseeId()), info.getFranchiseeId()))) {
                 return R.fail("402031", "加盟商不一致");
             }
             
