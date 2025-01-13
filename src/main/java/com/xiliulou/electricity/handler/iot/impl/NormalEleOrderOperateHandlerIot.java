@@ -55,6 +55,8 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
      */
     public static final String RENT_RETURN_ORDER_SELF_OPEN_CABINET_VERSION = "2.3.11";
 
+    public static Integer OLD_CABINET_SELF_OPEN_SEQ = 50;
+
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -84,7 +86,12 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                     if (VersionUtil.compareVersion(electricityCabinet.getVersion(), RENT_RETURN_ORDER_SELF_OPEN_CABINET_VERSION) >= 0) {
                         seq = eleOrderOperateVO.getSeq();
                     } else {
-                        seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
+                        // 柜机旧版本，兼容租电/退电的自主开仓操作记录
+                        if (eleOrderOperateVO.getSeq() >= OLD_CABINET_SELF_OPEN_SEQ) {
+                            seq = eleOrderOperateVO.getSeq();
+                        } else {
+                            seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
+                        }
                     }
                 }
             }
