@@ -103,14 +103,17 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 return R.fail("400006","该优惠券非天数券，请选择其他优惠券");
             }
 
-            if (!(Objects.nonNull(userCoupon.getFranchiseeId()) && Objects.equals(Long.valueOf(userCoupon.getFranchiseeId()), info.getFranchiseeId()))) {
-                return R.fail("402031", "加盟商不一致");
-            }
-            
+
             Coupon coupon = couponService.queryByIdFromDB(userCoupon.getCouponId());
             if (Objects.isNull(coupon)) {
                 return R.fail("400007","请选择正确的优惠券使用");
             }
+
+            if (!(Objects.nonNull(coupon.getFranchiseeId()) && Objects.equals(Long.valueOf(coupon.getFranchiseeId()), info.getFranchiseeId()))) {
+                return R.fail("402031", "加盟商不一致");
+            }
+
+
             DayCouponUseScope useScope = DayCouponUseScope.getByCode(coupon.getUseScope());
             //判断套餐相关
             Long uid = userInfo.getUid();
