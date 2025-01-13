@@ -970,6 +970,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         ServiceFeeUserInfo insertOrUpdateServiceFeeUserInfo = ServiceFeeUserInfo.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .uid(user.getUid()).updateTime(System.currentTimeMillis()).build();
         
+        // 更新用户滞纳金关联数据的操作在自动审核时，并且已租电池时会有两次更新操作，但是在先有逻辑下不好优化
         serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
         
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
