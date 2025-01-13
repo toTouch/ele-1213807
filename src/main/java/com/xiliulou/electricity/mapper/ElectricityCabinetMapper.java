@@ -143,4 +143,8 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinetBO> selectListBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
     
     List<ElectricityCabinetVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+
+    List<ElectricityCabinetVO> selectListLowPowerPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    Integer countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
 }
