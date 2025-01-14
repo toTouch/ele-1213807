@@ -4238,7 +4238,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetMapBO.setLatitude(electricityCabinetTemp.getLatitude());
                 electricityCabinetMapBO.setOnlineStatus(electricityCabinetTemp.getOnlineStatus());
                 electricityCabinetMapBO.setUsableStatus(electricityCabinetTemp.getUsableStatus());
-                
+                electricityCabinetMapBO.setPowerType(electricityCabinetTemp.getPowerType());
                 return electricityCabinetMapBO;
                 
             }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -4309,6 +4309,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetListMapVO.setBoxNum(boxNum);
             electricityCabinetListMapVO.setBatteryNum(batteryNum);
             electricityCabinetListMapVO.setUnusableBoxNum(unusableBoxNum);
+            electricityCabinetListMapVO.setPowerType(cabinet.getPowerType());
             
             assembleCabinetList.add(electricityCabinetListMapVO);
         });
@@ -4323,8 +4324,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer unusableCount = (int) assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).count();
         
         Integer offLineCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
-        
-        // 0-全部、1-少电、2-多电、3-锁仓、4-离线
+
+        Integer reversePowerTypeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getPowerType(), NumberConstant.ONE)).count();
+
+
+        // 0-全部、1-少电、2-多电、3-锁仓、4-离线、5-反向供电
         List<ElectricityCabinetListMapVO> rspList = new ArrayList<>();
         switch (cabinetQuery.getStatus()) {
             default:
@@ -4343,6 +4347,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             case 4:
                 rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).collect(Collectors.toList());
                 break;
+            case 5:
+                rspList = assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getPowerType(), NumberConstant.ONE)).collect(Collectors.toList());
+                break;
         }
         
         if (CollectionUtils.isEmpty(rspList)) {
@@ -4350,7 +4357,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         ElectricityCabinetMapVO rsp = ElectricityCabinetMapVO.builder().totalCount(totalCount).lowChargeCount(lowChargeCount).fullChargeCount(fullChargeCount)
-                .unusableCount(unusableCount).offLineCount(offLineCount).electricityCabinetListMapVOList(rspList).build();
+                .unusableCount(unusableCount).reversePowerTypeCount(reversePowerTypeCount).offLineCount(offLineCount).electricityCabinetListMapVOList(rspList).build();
         
         return R.ok(rsp);
     }

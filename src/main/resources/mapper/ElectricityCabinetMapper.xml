@@ -1057,7 +1057,7 @@
     </select>
     
     <select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO">
-        select tec.id, tec.name, tec.address, tec.longitude, tec.latitude, tec.online_status, tece.battery_count_type
+        select tec.id, tec.name, tec.address, tec.longitude, tec.latitude, tec.online_status, tece.battery_count_type, tec.power_type
         from t_electricity_cabinet tec
         left join t_electricity_cabinet_extra tece on tece.eid=tec.id
         where tec.del_flag=0
