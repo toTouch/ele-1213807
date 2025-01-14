@@ -4268,7 +4268,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetMapBO.setLatitude(electricityCabinetTemp.getLatitude());
                 electricityCabinetMapBO.setOnlineStatus(electricityCabinetTemp.getOnlineStatus());
                 electricityCabinetMapBO.setUsableStatus(electricityCabinetTemp.getUsableStatus());
-
+                electricityCabinetMapBO.setPowerType(electricityCabinetTemp.getPowerType());
                 return electricityCabinetMapBO;
 
             }).filter(Objects::nonNull).collect(Collectors.toList());
