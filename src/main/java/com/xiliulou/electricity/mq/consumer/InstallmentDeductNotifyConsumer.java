@@ -115,7 +115,14 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
             }
             
             // 已成功续费套餐，不需再执行后续逻辑
-            if (Objects.equals(installmentRecord.getPaidInstallment(), issue)) {
+            Integer paidInstallment = installmentRecord.getPaidInstallment();
+            if (Objects.isNull(paidInstallment)) {
+                log.error("INSTALLMENT RENEW CONSUMER. paidInstallment is null, Something has gone wrong and needs to be resolved immediately. externalAgreementNo={}", externalAgreementNo);
+                return;
+            }
+            
+            // 套餐续费成功之后才会修改已支付期数，出现如下场景代表本期已续费成功
+            if (paidInstallment >= issue) {
                 return;
             }
             
@@ -140,7 +147,7 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
                     installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
                 }
                 installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-                installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
+                installmentRecordUpdate.setPaidInstallment(paidInstallment + 1);
                 installmentRecordService.update(installmentRecordUpdate);
                 
                 if (Objects.equals(installmentRecord.getInstallmentNo(), issue)) {
