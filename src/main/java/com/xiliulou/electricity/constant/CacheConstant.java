@@ -829,7 +829,7 @@ public interface CacheConstant {
     /**
      * 分期套餐代扣后处理逻辑锁
      */
-    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
+    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d:%d";
     
     /**
      * 设备信息缓存

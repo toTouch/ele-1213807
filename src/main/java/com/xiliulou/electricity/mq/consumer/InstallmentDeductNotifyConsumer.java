@@ -121,7 +121,7 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
             
             // 加锁避免多续费，因为获取锁失败的处理不可重试，若重试会导致多续费套餐，只要有一个消息获取到锁走了后续处理套餐就能续费成功，若续费失败代表数据异常重试也是继续失败
             // 锁不可释放，重试间隔为5s，去间隔时间三倍加锁不释放可以极大程度避免同一期续费两次套餐
-            if (!redisService.setNx(String.format(CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK, uid), "1", 15 * 1000L, false)) {
+            if (!redisService.setNx(String.format(CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK, uid, issue), "1", 15 * 1000L, false)) {
                 return;
             }
             
