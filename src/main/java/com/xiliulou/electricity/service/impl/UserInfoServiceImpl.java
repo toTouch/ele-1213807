@@ -3516,6 +3516,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(batteryMemberCard)) {
             isRentRefund = false;
         }
+    
+        if ((Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.NO))) {
+            isRentRefund = false;
+        }
         
         if (MapUtils.isEmpty(finalUsingOrderMap) || !finalUsingOrderMap.containsKey(userBatteryMemberCard.getOrderId())) {
             isRentRefund = false;
