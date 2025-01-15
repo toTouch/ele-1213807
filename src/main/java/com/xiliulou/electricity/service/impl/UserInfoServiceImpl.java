@@ -3571,9 +3571,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 noUsingRefundMap.put(uid, false);
                 if (Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)) {
                     noUsingRefundMap.put(uid, true);
+                    break;
                 }
-                
-                break;
             }
         });
         
