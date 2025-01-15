@@ -3504,36 +3504,27 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     private Boolean getEleRentRefundFlagPro(UserEleInfoProVO userEleInfoProVO, Map<Long, UserBatteryMemberCard> finalUserBatteryMemberCardMap,
             Map<String, ElectricityMemberCardOrder> finalUsingOrderMap, Map<Long, Boolean> noUsingRefundMap) {
         Long uid = userEleInfoProVO.getUid();
+        boolean isRentRefund = false;
         
-        boolean isRentRefund = !MapUtils.isEmpty(finalUserBatteryMemberCardMap) && finalUserBatteryMemberCardMap.containsKey(uid);
-        
-        UserBatteryMemberCard userBatteryMemberCard = finalUserBatteryMemberCardMap.get(uid);
-        if (Objects.isNull(userBatteryMemberCard)) {
-            isRentRefund = false;
-        }
-        
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            isRentRefund = false;
-        }
-        
-        if ((Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.NO))) {
-            isRentRefund = false;
-        }
-        
-        if (MapUtils.isEmpty(finalUsingOrderMap) || !finalUsingOrderMap.containsKey(userBatteryMemberCard.getOrderId())) {
-            isRentRefund = false;
-        }
-        
-        ElectricityMemberCardOrder usingOrder = finalUsingOrderMap.get(userBatteryMemberCard.getOrderId());
-        if (Objects.isNull(usingOrder)) {
-            isRentRefund = false;
-        }
-    
-        // 如果套餐未过期，且是可退套餐,且未过可退期，则可退
-        if (userBatteryMemberCard.getMemberCardExpireTime() >= System.currentTimeMillis() && Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)
-                && usingOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L >= System.currentTimeMillis()) {
-            isRentRefund = true;
+        if (MapUtils.isNotEmpty(finalUserBatteryMemberCardMap) && finalUserBatteryMemberCardMap.containsKey(uid)) {
+            UserBatteryMemberCard userBatteryMemberCard = finalUserBatteryMemberCardMap.get(uid);
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                ElectricityMemberCardOrder usingOrder = null;
+                if (MapUtils.isNotEmpty(finalUsingOrderMap) && finalUsingOrderMap.containsKey(userBatteryMemberCard.getOrderId())) {
+                    usingOrder = finalUsingOrderMap.get(userBatteryMemberCard.getOrderId());
+                }
+                
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.nonNull(batteryMemberCard)) {
+                    // 如果套餐未过期，且是可退套餐,且未过可退期，则可退
+                    if (Objects.nonNull(usingOrder)) {
+                        if (userBatteryMemberCard.getMemberCardExpireTime() >= System.currentTimeMillis() && Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)
+                                && usingOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L >= System.currentTimeMillis()) {
+                            isRentRefund = true;
+                        }
+                    }
+                }
+            }
         }
         
         if (!isRentRefund) {
