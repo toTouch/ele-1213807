@@ -320,4 +320,10 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         return userBatteryMemberCardPackageMapper.selectLastEnterprisePackageByUid(uid);
     }
     
+    @Slave
+    @Override
+    public List<UserBatteryMemberCardPackageBO> listByUidList(List<Long> uidList, Integer tenantId) {
+        return userBatteryMemberCardPackageMapper.selectListByUidList(uidList, tenantId);
+    }
+    
 }

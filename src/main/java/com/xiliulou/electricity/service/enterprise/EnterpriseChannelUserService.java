@@ -124,4 +124,6 @@ public interface EnterpriseChannelUserService {
     Triple<Boolean, String, Object> channelUserExitForAdmin(EnterpriseUserAdminExitCheckRequest request);
     
     int existsRenewCloseUser(Long id);
+    
+    List<EnterpriseChannelUserVO> listByUidList(List<Long> uidList, Integer tenantId);
 }

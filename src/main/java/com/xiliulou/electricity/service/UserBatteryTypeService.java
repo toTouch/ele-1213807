@@ -1,12 +1,12 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * (UserBatteryType)表服务接口
@@ -39,4 +39,9 @@ public interface UserBatteryTypeService {
     List<UserBatteryType> listByUid(Long uid);
     
     Integer deleteByUidAndBatteryTypes(Long uid, List<String> batteryTypes);
+    
+    /**
+     * 根据uidList查询其电池型号对应的短型号
+     */
+    Map<Long, List<String>> listShortBatteryByUidList(List<Long> uidList, Integer tenantId);
 }

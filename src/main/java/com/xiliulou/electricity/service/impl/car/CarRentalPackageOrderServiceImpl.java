@@ -473,4 +473,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         return carRentalPackageOrderMapper.selectListByOrderNos(tenantId,orderNos);
     }
     
+    @Slave
+    @Override
+    public List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus) {
+        return carRentalPackageOrderMapper.selectListByUidAndUseStatus(uidList, useStatus);
+    }
+    
 }

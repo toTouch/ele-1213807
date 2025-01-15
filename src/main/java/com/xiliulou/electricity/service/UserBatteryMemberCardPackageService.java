@@ -47,4 +47,6 @@ public interface UserBatteryMemberCardPackageService {
     List<UserBatteryMemberCardPackage> queryChannelListByUid(Long uid);
     
     UserBatteryMemberCardPackageBO queryEnterprisePackageByUid(Long uid);
+    
+    List<UserBatteryMemberCardPackageBO> listByUidList(List<Long> uidList, Integer tenantId);
 }
