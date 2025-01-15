@@ -873,6 +873,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
             
+            // TODO SJP 优化点，外部查询了套餐订单，里面又查了一次，还有考虑在生成套餐订单时保存好有效天数
             unionTradeOrderService.manageMemberCardOrderV2(memberCardOrder.getOrderId(), ElectricityTradeOrder.STATUS_SUCCESS, userInfo);
         } else {
             // 下述校验在上文的绑定第一期套餐方法内部做了，故在此处校验
