@@ -3529,16 +3529,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(usingOrder)) {
             isRentRefund = false;
         }
-        
-        // 如果是可退套餐,且未过可退期，则可退
-        if (Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)
+    
+        // 如果套餐未过期，且是可退套餐,且未过可退期，则可退
+        if (userBatteryMemberCard.getMemberCardExpireTime() >= System.currentTimeMillis() && Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)
                 && usingOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L >= System.currentTimeMillis()) {
             isRentRefund = true;
-        }
-        
-        // 如果套餐已过期，则不可退
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-            isRentRefund = false;
         }
         
         if (!isRentRefund) {
