@@ -3236,9 +3236,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 封装用户列表
         List<UserEleInfoProVO> userInfoList = userEleInfoVOS.stream().map(item -> {
             Long uid = item.getUid();
-        
+    
             UserEleInfoProVO eleInfoProVO = UserEleInfoProVO.builder().uid(item.getUid()).name(item.getName()).phone(item.getPhone()).memberCardId(item.getMemberCardId())
-                    .memberCardExpireTime(item.getMemberCardExpireTime()).remainingNumber(item.getRemainingNumber()).batteryRentStatus(item.getBatteryRentStatus()).build();
+                    .memberCardExpireTime(item.getMemberCardExpireTime()).remainingNumber(item.getRemainingNumber()).batteryDepositStatus(item.getBatteryDepositStatus())
+                    .batteryRentStatus(item.getBatteryRentStatus()).usableStatus(item.getUsableStatus()).build();
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
             if (Objects.nonNull(batteryMemberCard)) {
                 eleInfoProVO.setMemberCardName(batteryMemberCard.getName());
