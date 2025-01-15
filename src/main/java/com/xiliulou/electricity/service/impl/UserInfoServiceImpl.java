@@ -3392,12 +3392,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 usingOrderMap = usingOrderList.stream().collect(Collectors.toMap(ElectricityMemberCardOrder::getOrderId, Function.identity(), (item1, item2) -> item2));
             }
         }
+        // 待使用订单是否有可退套餐
+        Map<Long, Boolean> noUsingRefundMap = getEleNoUsingOrderPro(uidList, tenantId);
     
         Map<Long, UserBatteryMemberCard> finalUserBatteryMemberCardMap = userBatteryMemberCardMap;
         Map<String, ElectricityMemberCardOrder> finalUsingOrderMap = usingOrderMap;
     
         CompletableFuture<Void> rentRefundInfo = CompletableFuture.runAsync(
-                () -> userInfoList.forEach(item -> item.setRentRefundFlag(getEleRentRefundFlagPro(item, finalUserBatteryMemberCardMap, finalUsingOrderMap, uidList, tenantId))),
+                () -> userInfoList.forEach(item -> item.setRentRefundFlag(getEleRentRefundFlagPro(item, finalUserBatteryMemberCardMap, finalUsingOrderMap, noUsingRefundMap))),
                 threadPoolPro).exceptionally(e -> {
             log.error("ELE ERROR! query user rentRefundFlag for pro error!", e);
             return null;
@@ -3500,43 +3502,43 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     private Boolean getEleRentRefundFlagPro(UserEleInfoProVO userEleInfoProVO, Map<Long, UserBatteryMemberCard> finalUserBatteryMemberCardMap,
-            Map<String, ElectricityMemberCardOrder> finalUsingOrderMap, List<Long> uidList, Integer tenantId) {
+            Map<String, ElectricityMemberCardOrder> finalUsingOrderMap, Map<Long, Boolean> noUsingRefundMap) {
         Long uid = userEleInfoProVO.getUid();
-        if (MapUtils.isEmpty(finalUserBatteryMemberCardMap) || !finalUserBatteryMemberCardMap.containsKey(uid)) {
-            return judgeNoUsingRentRefund(uidList, tenantId, uid);
-        }
+        
+        boolean isRentRefund = !MapUtils.isEmpty(finalUserBatteryMemberCardMap) && finalUserBatteryMemberCardMap.containsKey(uid);
         
         UserBatteryMemberCard userBatteryMemberCard = finalUserBatteryMemberCardMap.get(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
-            return judgeNoUsingRentRefund(uidList, tenantId, uid);
+            isRentRefund = false;
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            return judgeNoUsingRentRefund(uidList, tenantId, uid);
+            isRentRefund = false;
         }
         
         if (MapUtils.isEmpty(finalUsingOrderMap) || !finalUsingOrderMap.containsKey(userBatteryMemberCard.getOrderId())) {
-            return judgeNoUsingRentRefund(uidList, tenantId, uid);
+            isRentRefund = false;
         }
         
         ElectricityMemberCardOrder usingOrder = finalUsingOrderMap.get(userBatteryMemberCard.getOrderId());
         if (Objects.isNull(usingOrder)) {
-            return judgeNoUsingRentRefund(uidList, tenantId, uid);
+            isRentRefund = false;
         }
         
         // 如果是可退套餐,且未过可退期，则可退
         if (Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)
                 && usingOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L >= System.currentTimeMillis()) {
-            return true;
+            isRentRefund = true;
         }
         
-        return false;
-    }
-    
-    private Boolean judgeNoUsingRentRefund(List<Long> uidList, Integer tenantId, Long uid) {
-        Map<Long, Boolean> noUsingRefundMap = getEleNoUsingOrderPro(uidList, tenantId);
-        return !MapUtils.isEmpty(noUsingRefundMap) && noUsingRefundMap.get(uid);
+        if (!isRentRefund) {
+            if (MapUtils.isNotEmpty(noUsingRefundMap) && noUsingRefundMap.containsKey(uid)) {
+                isRentRefund = noUsingRefundMap.get(uid);
+            }
+        }
+        
+        return isRentRefund;
     }
     
     private Map<Long, Boolean> getEleNoUsingOrderPro(List<Long> uidList, Integer tenantId) {
@@ -3545,16 +3547,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         }
         
-        Map<Long, Boolean> noUsingRefundMap = new HashMap<>();
         Map<Long, List<UserBatteryMemberCardPackageBO>> noUsingMap = noUsingOrderList.stream()
                 .collect(Collectors.groupingBy(UserBatteryMemberCardPackageBO::getUid, Collectors.toList()));
         if (MapUtils.isEmpty(noUsingMap)) {
             return null;
         }
         
+        Map<Long, Boolean> noUsingRefundMap = new HashMap<>();
         noUsingMap.forEach((uid, noUsingList) -> {
+            boolean refundFlag = false;
             if (CollectionUtils.isEmpty(noUsingList)) {
-                noUsingRefundMap.put(uid, false);
                 return;
             }
             
@@ -3568,12 +3570,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     continue;
                 }
                 
-                noUsingRefundMap.put(uid, false);
                 if (Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)) {
-                    noUsingRefundMap.put(uid, true);
+                    refundFlag = true;
                     break;
                 }
             }
+            noUsingRefundMap.put(uid, refundFlag);
         });
         
         return noUsingRefundMap;
