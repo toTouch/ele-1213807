@@ -622,9 +622,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                               @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
                               @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
                               @RequestParam(value = "storeId", required = false) Long storeId,
-                              @RequestParam(value = "areaId", required = false) Long areaId,
-                              @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
-                              @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
+                              @RequestParam(value = "areaId", required = false) Long areaId) {
 
         if (size < 0 || size > 50) {
             size = 10;
@@ -672,9 +670,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                                    @RequestParam(value = "address", required = false) String address,
                                    @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                    @RequestParam(value = "storeId", required = false) Long storeId,
-                                   @RequestParam(value = "areaId", required = false) Long areaId,
-                                   @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
-                                   @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
+                                   @RequestParam(value = "areaId", required = false) Long areaId) {
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -700,7 +696,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         // 统计时间设置为昨日 统计换电次数及活跃度
         long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
 
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().areaId(areaId).stockStatus(stockStatus).warehouseId(warehouseId).powerType(EleCabinetConstant.POWER_TYPE_BACKUP)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().areaId(areaId).powerType(EleCabinetConstant.POWER_TYPE_BACKUP)
                 .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
