@@ -1002,7 +1002,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, idList, System.currentTimeMillis());
         }
         
-        log.error("channel User Exit Check success, uid={}, msg={}", request.getUid());
+        log.info("channel User Exit Check success, uid={}, msg={}", request.getUid());
         
         return Triple.of(true, null, null);
     }

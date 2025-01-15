@@ -15,13 +15,13 @@
     <select id="selectByUid" resultType="string">
         select battery_type
         from t_user_battery_type
-        where uid = #{uid}
+        where uid = #{uid} and del_flag = 0
     </select>
     
     <select id="selectOneByUid" resultType="string">
         select battery_type
         from t_user_battery_type
-        where uid = #{uid}
+        where uid = #{uid} and del_flag = 0
         order by id limit 1
     </select>
     
@@ -34,7 +34,7 @@
                update_time,
                tenant_id
         from t_user_battery_type
-        where uid = #{uid}
+        where uid = #{uid} and del_flag = 0
     </select>
     
     <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserBatteryType">
