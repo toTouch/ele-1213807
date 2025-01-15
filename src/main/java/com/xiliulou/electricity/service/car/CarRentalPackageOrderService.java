@@ -234,4 +234,5 @@ public interface CarRentalPackageOrderService {
      */
     List<CarRentalPackageOrderPo> queryListByOrderNo(Integer tenantId,List<String> orderNos);
     
+    List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus);
 }
