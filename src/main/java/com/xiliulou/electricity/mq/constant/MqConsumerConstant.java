@@ -49,6 +49,11 @@ public interface MqConsumerConstant {
      * 电池回收消费组
      */
     String BATTERY_RECYCLE_GROUP = "BATTERY_RECYCLE_GROUP";
+
+    /**
+     * 电池回收消费组
+     */
+    String CABINET_NORMAL_RESULT_GROUP = "CABINET_NORMAL_RESULT_GROUP";
     
     /**
      * 分账订单退款消费组
