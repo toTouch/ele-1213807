@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 /**
@@ -11,6 +14,9 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReturnBatteryLessTimeScanVo {
     
     /**
@@ -37,6 +43,14 @@ public class ReturnBatteryLessTimeScanVo {
      * 是否进入多次换电
      */
     private Integer isEnterMoreExchange;
-    
-    
+
+    /**
+     * 是否同一柜机，0false 1true
+     */
+    private Integer isTheSameCabinet;
+
+    /**
+     * 柜机名称
+     */
+    private String cabinetName;
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
+import com.xiliulou.electricity.vo.ReturnBatteryLessTimeScanVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -20,7 +21,7 @@ public interface LessTimeExchangeService {
      * @param cabinet  cabinet
      * @return Pair
      */
-    Pair<Boolean, Object> lessTimeReturnBatteryHandler(UserInfo userInfo, ElectricityCabinet cabinet);
+    Pair<Boolean, ReturnBatteryLessTimeScanVo> lessTimeReturnBatteryHandler(UserInfo userInfo, ElectricityCabinet cabinet);
 
     /**
      * 二次扫码换电/选仓换电 兼容租电成功电池未取走

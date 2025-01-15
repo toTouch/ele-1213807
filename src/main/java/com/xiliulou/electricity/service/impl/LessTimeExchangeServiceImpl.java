@@ -86,7 +86,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
      * @return Pair
      */
     @Override
-    public Pair<Boolean, Object> lessTimeReturnBatteryHandler(UserInfo userInfo, ElectricityCabinet cabinet) {
+    public Pair<Boolean, ReturnBatteryLessTimeScanVo> lessTimeReturnBatteryHandler(UserInfo userInfo, ElectricityCabinet cabinet) {
         // 5分钟内是否有退电订单
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.parseLong(exchangeConfig.getScanTime());
 
@@ -97,6 +97,14 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
                     System.currentTimeMillis());
             return Pair.of(false, null);
         }
+
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        // 扫码柜机和订单不是同一个柜机进行处理
+        if (!Objects.equals(lastRentBatteryOrder.getElectricityCabinetId(), cabinet.getId())) {
+            log.warn("ReturnBattery Check WARN! scan eid not equal order eid, eid is {}, scanEid is {}", lastRentBatteryOrder.getElectricityCabinetId(), cabinet.getId());
+            return returnScanCabinetNotEqualOrderCabinetHandler(userInfo, electricityBattery, lastRentBatteryOrder.getElectricityCabinetId());
+        }
+
 
         ReturnBatteryLessTimeScanVo vo = new ReturnBatteryLessTimeScanVo();
         vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE);
@@ -109,8 +117,6 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         }
 
         vo.setIsSatisfySelfOpen(LessScanConstant.IS_SATISFY_SELF_OPEN).setCell(lastRentBatteryOrder.getCellNo()).setOrderId(lastRentBatteryOrder.getOrderId());
-
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("ReturnBattery Check WARN! userBindingBatterySn is null, uid is {}", userInfo.getUid());
@@ -134,6 +140,30 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
             return Pair.of(true, vo);
         }
 
+    }
+
+    private Pair<Boolean, ReturnBatteryLessTimeScanVo> returnScanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityBattery electricityBattery, Integer electricityCabinetId) {
+        // 用户绑定的电池为空，走正常退电
+        if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
+            log.warn("ReturnBattery Check WARN! scan eid not equal order eid, userBindingBatterySn is null, uid is {}", userInfo.getUid());
+            return Pair.of(false, null);
+        }
+
+        //  用户绑定的电池是在上一个订单的柜机中
+        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), electricityCabinetId);
+        if (Objects.isNull(cabinetBox)) {
+            log.warn("ReturnBattery Check WARN! userBindingBatterySnEid not equal orderEid , sn is {}, eid is {}", electricityBattery.getSn(), electricityCabinetId);
+            return Pair.of(false, null);
+        }
+
+        // 返回柜机名称和重新扫码标识
+        ElectricityCabinet orderCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(orderCabinet)) {
+            log.error("ReturnBattery Check ERROR! cabinet is null, eid is {}", electricityCabinetId);
+            return Pair.of(false, null);
+        }
+        ReturnBatteryLessTimeScanVo vo = ReturnBatteryLessTimeScanVo.builder().isTheSameCabinet(LessScanConstant.NOT_SAME_CABINET).cabinetName(orderCabinet.getName()).build();
+        return Pair.of(true, vo);
     }
 
     private void fixLastReturnOrderIsSuccess(RentBatteryOrder lastRentBatteryOrder, ElectricityCabinetBox cabinetBox) {

@@ -2089,7 +2089,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             // 多次退电判断
-            Pair<Boolean, Object> pair = lessTimeExchangeService.lessTimeReturnBatteryHandler(userInfo, electricityCabinet);
+            Pair<Boolean, ReturnBatteryLessTimeScanVo> pair = lessTimeExchangeService.lessTimeReturnBatteryHandler(userInfo, electricityCabinet);
             if (pair.getLeft()) {
                 return R.ok(pair.getRight());
             }
