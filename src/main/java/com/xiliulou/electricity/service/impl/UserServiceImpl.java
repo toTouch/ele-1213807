@@ -40,6 +40,7 @@ import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
+import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -64,6 +65,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
+import com.xiliulou.electricity.service.retrofit.AuxRetrofitService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -95,7 +97,6 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -105,9 +106,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.StringConstant.SPACE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 
 /**
  * (User)表服务实现类
@@ -199,6 +197,9 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private InstallmentSearchApiService installmentSearchApiService;
+    
+    @Resource
+    private AuxRetrofitService auxRetrofitService;
     
     
     /**
@@ -760,6 +761,9 @@ public class UserServiceImpl implements UserService {
                 // 删除用户对应的认证信息
                 userOauthBindService.deleteByUid(uid, tenantId);
             }
+    
+            // 删除运维小程序常用功能排序数据
+            auxRetrofitService.deleteFeatureSort(FeatureSortReq.builder().tenantId(tenantId).uid(uid).build());
             
         }
         return Pair.of(true, null);

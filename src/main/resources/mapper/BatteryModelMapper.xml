@@ -216,7 +216,7 @@
     </select>
     
     <select id="selectListBatteryModelByBatteryTypeList" resultMap="BatteryModelMap">
-        select id, battery_type,capacity from t_battery_model
+        select id, battery_type,capacity,battery_v_short from t_battery_model
         where del_flag=0
         <if test="batteryTypeList != null and batteryTypeList.size > 0">
             and battery_type in

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -84,6 +85,12 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         }
         
         return delete;
+    }
+    
+    @Slave
+    @Override
+    public List<UserBatteryDeposit> listByUidList(Integer tenantId, List<Long> uidList) {
+        return userBatteryDepositMapper.selectListByUidList(tenantId, uidList);
     }
     
     /**

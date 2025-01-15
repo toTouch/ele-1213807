@@ -377,4 +377,13 @@
         order by tero.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
+    
+    <select id="selectListByOrderIdList" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
+        select id, refund_order_no, order_id, pay_amount, refund_amount, status, err_msg, tenant_id, member_card_owe_number, refund_order_type, franchisee_id, store_id,
+        create_time, update_time
+        from t_ele_refund_order where order_id in
+        <foreach collection="orderIdList" item="orderId" index="index" open="(" close=")" separator=",">
+            #{orderId}
+        </foreach>
+    </select>
 </mapper>

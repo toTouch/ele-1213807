@@ -17,7 +17,9 @@ import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.AuxRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -96,6 +98,9 @@ public class StoreServiceImpl implements StoreService {
     ElectricityCarModelService electricityCarModelService;
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
+    @Resource
+    private AuxRetrofitService auxRetrofitService;
 
     /**
      * 根据车辆<code>SN</code>码获取门店信息
@@ -401,6 +406,9 @@ public class StoreServiceImpl implements StoreService {
 
             //删除门店详情
             storeDetailService.deleteByStoreId(store.getId());
+    
+            // 删除运维小程序常用功能排序数据
+            auxRetrofitService.deleteFeatureSort(FeatureSortReq.builder().tenantId(store.getTenantId()).uid(store.getUid()).build());
 
             return null;
         });
