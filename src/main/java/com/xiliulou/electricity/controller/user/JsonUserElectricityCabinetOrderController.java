@@ -238,15 +238,6 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.bluetoothExchangeCheck(productKey, deviceName));
     }
     
-    
-    /**
-     * todo 打开满电仓取电接口，为快捷换电预留
-     * @param query
-     * @return
-     */
-    @PostMapping("/user/electricityCabinetOrder/openFullCell")
-    public R openFullCell(@RequestBody @Validated OpenFullCellQuery query) {
-        return electricityCabinetOrderService.openFullCell(query);
-    }
+
     
 }

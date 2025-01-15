@@ -279,5 +279,6 @@ public class ElectricityCabinetOrder {
     
     public static final Integer NEW_CELL = 1;
 
+    public static final Integer NEW_AND_OLD_CELL = 2;
 
 }

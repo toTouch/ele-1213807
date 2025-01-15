@@ -916,6 +916,13 @@ public interface CacheConstant {
 
     String LOCK_USER_DAY_COUPON_USE_SCOPE = "lock_user_day_coupon_use_scope:%s:%s:%s";
 
+
+    /**
+     * 租电/退电允许自主开仓时间
+     */
+    String RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY = "rent_return_allow_self_open_cell_time:";
+
+
     /**
      * 故障告警处理LOCK
      */
