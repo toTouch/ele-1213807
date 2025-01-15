@@ -13,20 +13,29 @@ import lombok.Data;
 @Data
 @Builder
 public class ExchangeAssertProcessDTO {
-    
+
     private UserInfo userInfo;
-    
+
     /**
      * 柜机id
      */
     private Integer eid;
-    
+
     /**
      * 仓门号
      */
     private Integer cellNo;
-    
-    
+
+    /**
+     * 订单号
+     */
+    private String orderId;
+
+    /**
+     * 自主开仓的key
+     */
+    private String selfOpenCellKey;
+
     /**
      * 责任链内部存储，后续业务使用
      */
