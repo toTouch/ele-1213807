@@ -930,25 +930,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     /**
-     * 当前订单是否可退
+     * 当前订单是否已失效/已退租
      */
     private Map<Long, Boolean> getUsingRentedOrderPro(List<Long> uidList, Integer tenantId) {
         if (CollectionUtils.isEmpty(uidList)) {
             return null;
         }
-    
+        
         List<String> orderNoList = new ArrayList<>();
-        List<CarRentalPackageMemberTermPo> termList = new ArrayList<>();
         uidList.forEach(uid -> {
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (Objects.isNull(memberTermEntity)) {
                 return;
             }
-        
-            orderNoList.add(memberTermEntity.getRentalPackageOrderNo());
-            termList.add(memberTermEntity);
-        });
     
+            orderNoList.add(memberTermEntity.getRentalPackageOrderNo());
+        });
+        
+        
         if (CollectionUtils.isEmpty(orderNoList)) {
             return null;
         }
@@ -958,38 +957,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         }
     
-        Map<Long, CarRentalPackageMemberTermPo> usingMap = termList.stream().collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, Function.identity(), (k1, k2) -> k1));
-    
         Map<Long, Boolean> usingRentRefundFlagMap = new HashMap<>();
         packageOrderPoList.forEach(item -> {
             Integer useState = item.getUseState();
-            Long uid = item.getUid();
             if (Objects.equals(useState, UseStateEnum.IN_USE.getCode())) {
-                usingRentRefundFlagMap.put(uid, true);
-            
-                if (MapUtils.isEmpty(usingMap) || !usingMap.containsKey(uid)) {
-                    return;
-                }
-            
-                CarRentalPackageMemberTermPo memberTermEntity = usingMap.get(uid);
-                if (Objects.isNull(memberTermEntity)) {
-                    return;
-                }
-            
-                // 过期不可退
-                if (ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() < System.currentTimeMillis()) {
-                    usingRentRefundFlagMap.put(uid, false);
-                }
-            
-                // 过了可退期不可退
-                if (usingRentRefundFlagMap.get(uid) && YesNoEnum.YES.getCode().equals(item.getRentRebate()) && item.getRentRebateEndTime() < System.currentTimeMillis()) {
-                    usingRentRefundFlagMap.put(uid, false);
-                }
+                usingRentRefundFlagMap.put(item.getUid(), true);
             } else {
-                usingRentRefundFlagMap.put(uid, false);
+                usingRentRefundFlagMap.put(item.getUid(), false);
             }
         });
-    
+        
         return usingRentRefundFlagMap;
     }
     
