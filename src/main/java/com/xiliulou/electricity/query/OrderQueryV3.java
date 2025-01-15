@@ -66,5 +66,5 @@ public class OrderQueryV3 {
     /**
      * 二次扫码兼容小程序旧版本
      */
-    public static final String TWO_SCAN_EXCHANGE_COMPATIBLE_RENT_SELF_OPEN="3.3.28";
+    public static final String TWO_SCAN_EXCHANGE_COMPATIBLE_RENT_SELF_OPEN="3.3.29";
 }

@@ -53,7 +53,7 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     /**
      * 租电自主开仓操作记录中间版本； 柜机版本，用来兼容旧版本操作记录
      */
-    public static final String RENT_RETURN_ORDER_SELF_OPEN_CABINET_VERSION = "2.3.11";
+    public static final String RENT_RETURN_ORDER_SELF_OPEN_CABINET_VERSION = "2.3.14";
 
     public static Integer OLD_CABINET_SELF_OPEN_SEQ = 50;
 
