@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -19,16 +20,17 @@ import java.util.Objects;
 @Data
 @Slf4j
 public class ProcessController {
-    
-    
-    private ExchangeProcessChain processChain = null;
-    
+
+
+    private Map<Integer, ExchangeProcessChain> processMap = null;
+
+
     @SuppressWarnings("all")
     public ProcessContext process(ProcessContext<ExchangeAssertProcessDTO> context) {
         // 自检
         preCheck(context);
         // 扩展预留，根据枚举code不同，判定的责任链不同
-        List<ExchangeAssertProcess<ExchangeAssertProcessDTO>> processList = processChain.getProcessList(context.getCode());
+        List<ExchangeAssertProcess<ExchangeAssertProcessDTO>> processList = processMap.get(context.getCode()).getProcessList();
         for (ExchangeAssertProcess process : processList) {
             // handler
             process.process(context);
@@ -48,7 +50,7 @@ public class ProcessController {
             throw new CustomBusinessException("责任链数据模型为空");
         }
         
-        List<ExchangeAssertProcess<ExchangeAssertProcessDTO>> processList = processChain.getProcessList(context.getCode());
+        List<ExchangeAssertProcess<ExchangeAssertProcessDTO>> processList = processMap.get(context.getCode()).getProcessList();
         if (CollUtil.isEmpty(processList)) {
             log.warn("ProcessController Warn! processList is null , code is {}", context.getCode());
             throw new CustomBusinessException("责任链为空");
