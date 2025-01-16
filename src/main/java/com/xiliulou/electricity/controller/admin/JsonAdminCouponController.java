@@ -311,5 +311,17 @@ public class JsonAdminCouponController extends BaseController {
             return R.ok(carRentalPackageService.count(qryModel));
         }
     }
-    
+
+
+    /**
+     * 编辑优惠券禁用状态
+     *
+     * @param id    id
+     * @param state state
+     * @return R
+     */
+    @GetMapping("/admin/coupon/update/state")
+    public R editEnablesState(@RequestParam("id") Long id, @RequestParam("state") Integer state) {
+        return couponService.editEnablesState(id, state);
+    }
 }

@@ -62,4 +62,6 @@ public interface CouponService {
     Boolean isSameFranchisee(Integer couponFranchiseeId, Long targetFranchiseeId);
     
     List<Coupon> queryListByIdsFromDB(List<Long> couponIds);
+
+    R editEnablesState(Long id,Integer state);
 }

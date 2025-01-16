@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -8,14 +9,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponActivityPackage;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.NewUserActivity;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -34,16 +28,20 @@ import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +96,9 @@ public class CouponServiceImpl implements CouponService {
     
     @Resource
     private FranchiseeService franchiseeService;
+
+    @Resource
+    private AssertPermissionService assertPermissionService;
     
     /**
      * 通过ID查询单条数据从缓存
@@ -587,6 +588,8 @@ public class CouponServiceImpl implements CouponService {
             log.warn("find the car rental packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
             return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
         }
+        // todo 不允许删除，提示语“删除失败，优惠券已绑定优惠券包
+
         
         Coupon couponUpdate = new Coupon();
         couponUpdate.setId(id.intValue());
@@ -601,5 +604,70 @@ public class CouponServiceImpl implements CouponService {
         });
         operateRecordUtil.record(null, coupon);
         return Triple.of(true, "", "删除成功！");
+    }
+
+
+    @Override
+    public R editEnablesState(Long id, Integer state) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
+        Coupon coupon = queryByIdFromCache(id.intValue());
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("120124", "找不到优惠券");
+        }
+
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(user);
+        if (!pair.getLeft()) {
+            log.warn("editEnablesState WARN! Franchisees is null");
+            return R.ok();
+        }
+
+        Integer franchiseeId = coupon.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && !pair.getRight().contains(franchiseeId.longValue())) {
+            return R.fail( "120240", "当前加盟商无权限操作");
+        }
+
+        ShareActivityRule shareActivityRule = shareActivityRuleService.selectByCouponId(id);
+        if (Objects.nonNull(shareActivityRule)) {
+            return R.fail("402016", "禁用失败，优惠券已绑定用户邀请活动");
+        }
+
+        // 注册活动
+        NewUserActivity newUserActivity = newUserActivityService.selectByCouponId(id);
+        if (Objects.nonNull(newUserActivity)) {
+            return  R.fail("402016", "禁用失败，优惠券已绑定用户邀请活动");
+        }
+
+        //检查是否绑定到换电套餐
+        List<BatteryMemberCard> batteryMemberCardList = batteryMemberCardService.selectListByCouponId(id);
+        if (CollUtil.isNotEmpty(batteryMemberCardList)) {
+            return  R.fail( "402017", "禁用失败，优惠券已绑定套餐");
+        }
+
+        //检查是否绑定到租车或车电一体套餐
+        List<CarRentalPackagePo> carRentalPackagePos = carRentalPackageService.findByCouponId(id);
+        if (CollUtil.isNotEmpty(carRentalPackagePos)) {
+            return  R.fail("402017", "禁用失败，优惠券已绑定套餐");
+        }
+
+        // todo 已绑定优惠券包，提示“禁用失败，优惠券已绑定优惠券包
+
+
+
+        Coupon couponUpdate = new Coupon();
+        couponUpdate.setId(id.intValue());
+        couponUpdate.setEnabledState(state);
+        couponUpdate.setUpdateTime(System.currentTimeMillis());
+        couponMapper.updateById(couponUpdate);
+
+        redisService.delete(CacheConstant.COUPON_CACHE + id);
+        return R.ok();
+
     }
 }
