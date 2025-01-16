@@ -3767,7 +3767,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             // 判断是否缴纳押金
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (!(Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
-                    || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode()))) {
+                    || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) || Objects.isNull(userBatteryDeposit)) {
                 log.warn("user bind battery warn! not pay deposit! uid={} ", userInfo.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }
