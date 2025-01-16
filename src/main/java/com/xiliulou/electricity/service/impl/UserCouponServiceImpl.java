@@ -344,6 +344,9 @@ public class UserCouponServiceImpl implements UserCouponService {
             log.warn("Coupon  ERROR! not found coupon ! couponId={} ", id);
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
+        if (Objects.equals(coupon.getEnabledState(), Coupon.COUPON_UNABLE_STATUS)) {
+            return R.fail("402015", "优惠券已禁用");
+        }
 
         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).couponId(coupon.getId())
                 .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
@@ -853,6 +856,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), tenantId)) {
             log.warn("Coupon  ERROR! not found coupon ! couponId={} ", request.getCouponId());
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
+        }
+        if (Objects.equals(coupon.getEnabledState(), Coupon.COUPON_UNABLE_STATUS)){
+            return R.fail("402015", "优惠券已禁用");
         }
 
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();

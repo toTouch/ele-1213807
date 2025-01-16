@@ -179,8 +179,10 @@ public class JsonAdminCouponController extends BaseController {
         
         return returnTripleResult(couponService.deleteById(id, franchiseeIds));
     }
-    
-    //列表查询
+
+    /**
+     * 列表查询
+     */
     @GetMapping(value = "/admin/coupon/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "discountType", required = false) Integer discountType,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name,

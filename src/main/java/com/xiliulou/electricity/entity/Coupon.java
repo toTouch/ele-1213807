@@ -128,6 +128,12 @@ public class Coupon {
      */
     @TableField(exist = false)
     private Integer isGet;
+
+
+    /**
+     * 是否启用；0禁用,1启用
+     */
+    private Integer enabledState;
     
     /**
      * -1 -- 不限制,0 -- 租车，1 -- 租电，2 -- 车电一体
@@ -167,5 +173,12 @@ public class Coupon {
     public static final Integer APPLY_TYPE_SHARE = 1;
     //普通活动优惠券
     public static final Integer APPLY_TYPE_DEFAULT = 2;
+
+
+    /**
+     * 优惠券禁用状态
+     */
+    public static final Integer COUPON_UNABLE_STATUS = 0;
+
 
 }
