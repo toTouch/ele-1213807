@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.entity.CouponPackage;
+
 /**
  * @Description: CouponPackageMapper
  * @Author: renhang
@@ -7,4 +9,8 @@ package com.xiliulou.electricity.mapper;
  */
 
 public interface CouponPackageMapper {
+
+    void saveCouponPackage(CouponPackage couponPackage);
+
+    CouponPackage selectCouponPackageById(Long id);
 }

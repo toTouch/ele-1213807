@@ -1,5 +1,9 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.entity.CouponPackageItem;
+
+import java.util.List;
+
 /**
  * @Description: CouponPackageMapper
  * @Author: renhang
@@ -9,4 +13,6 @@ package com.xiliulou.electricity.mapper;
 public interface CouponPackageItemMapper {
 
     Integer existsCouponBindPackage(Long couponId);
+
+    void savePackItemBatch(List<CouponPackageItem> itemList);
 }

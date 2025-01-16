@@ -1,5 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.CouponPackageItem;
+
+import java.util.List;
+
 /**
  * @Description: CouponPackageService
  * @Author: renhang
@@ -17,4 +21,10 @@ public interface CouponPackageItemService {
 
     Integer existsCouponBindPackage(Long couponId);
 
+    /**
+     * @param itemList CouponPackageItem
+     * @return:
+     */
+
+    void batchSavePackItem(List<CouponPackageItem> itemList);
 }

@@ -9,4 +9,16 @@
         where del_flag = 0
           and coupon_id = #{couponId} limit 1
     </select>
+
+
+    <insert id="savePackItemBatch">
+        insert into t_coupon_package_item
+        (coupon_id,package_id,coupon_name,discount_type,discount,effect,days,count,del_flag,create_time,update_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.couponId},#{item.packageId},#{item.couponName},#{item.discountType},#{item.discount},#{item.effect},#{item.days},#{item.count},#{item.delFlag},#{item.createTime},#{item.updateTime})
+        </foreach>
+    </insert>
+
+
 </mapper>

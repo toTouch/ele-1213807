@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
 
+import com.xiliulou.electricity.entity.CouponPackageItem;
 import com.xiliulou.electricity.mapper.CouponPackageItemMapper;
 import com.xiliulou.electricity.service.CouponPackageItemService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author : renhang
@@ -21,5 +23,10 @@ public class CouponPackageItemServiceImpl implements CouponPackageItemService {
     @Override
     public Integer existsCouponBindPackage(Long couponId) {
         return couponPackageItemMapper.existsCouponBindPackage(couponId);
+    }
+
+    @Override
+    public void batchSavePackItem(List<CouponPackageItem> itemList) {
+        couponPackageItemMapper.savePackItemBatch(itemList);
     }
 }

@@ -39,7 +39,7 @@ public class CouponPackage {
     /**
      * 是否可购买 0:否,1:是
      */
-    private Boolean isCanBuy;
+    private Integer isCanBuy;
 
     /**
      * 创建用户名
@@ -66,10 +66,6 @@ public class CouponPackage {
      */
     private Long franchiseeId;
 
-    /**
-     * 门店ID
-     */
-    private Integer storeId;
 
     /**
      * 创建时间
@@ -80,4 +76,14 @@ public class CouponPackage {
      * 更新时间
      */
     private Long updateTime;
+
+
+    /**
+     * 可以购买
+     */
+    public static final Integer CAN_BUY = 1;
+
+
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 }

@@ -2,5 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.CouponPackageMapper">
 
+    <sql id="baseSql">
+        id
+        ,  name,
+               coupon_count,
+               is_can_buy,
+               user_name,
+               amount,
+               del_flag,
+               tenant_id,
+               franchisee_id,
+               create_time,
+               update_time
+    </sql>
 
+    <insert id="saveCouponPackage">
+        insert into t_coupon_package (name, coupon_count, is_can_buy, user_name, amount, del_flag, tenant_id,
+                                      franchisee_id, create_time, update_time)
+        values (#{name}, #{couponCount}, #{isCanBuy}, #{userName}, #{amount}, #{delFlag}, #{tenantId},
+                #{franchiseeId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <select id="selectCouponPackageById" resultType="com.xiliulou.electricity.entity.CouponPackage">
+        select
+        <include refid="baseSql"/>
+        from t_coupon_package
+        where id = #{id}
+    </select>
 </mapper>
