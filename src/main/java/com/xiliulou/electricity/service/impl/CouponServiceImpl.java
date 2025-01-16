@@ -17,17 +17,11 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.mapper.CouponMapper;
+import com.xiliulou.electricity.mapper.CouponPackageItemMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CouponActivityPackageService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.NewUserActivityService;
-import com.xiliulou.electricity.service.OldUserActivityService;
-import com.xiliulou.electricity.service.ShareActivityRuleService;
-import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -99,7 +93,12 @@ public class CouponServiceImpl implements CouponService {
 
     @Resource
     private AssertPermissionService assertPermissionService;
-    
+
+    @Resource
+    private CouponPackageItemService packageItemService;
+    @Autowired
+    private CouponPackageItemMapper couponPackageItemMapper;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -233,9 +232,9 @@ public class CouponServiceImpl implements CouponService {
     /**
      * 检查是否存在同名优惠券
      *
-     * @param couponName
-     * @param tenantId
-     * @return
+     * @param couponName couponName
+     * @param tenantId tenantId
+     * @return boolean
      */
     private boolean isExistCouponName(String couponName, Integer tenantId) {
         Coupon coupon = new Coupon();
@@ -588,9 +587,12 @@ public class CouponServiceImpl implements CouponService {
             log.warn("find the car rental packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
             return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
         }
-        // todo 不允许删除，提示语“删除失败，优惠券已绑定优惠券包
+        // 优惠券已绑定优惠券包
+        Integer existsCouponBindPackage = couponPackageItemMapper.existsCouponBindPackage(id);
+        if (Objects.nonNull(existsCouponBindPackage)) {
+            return Triple.of(false, "402019", "删除失败，优惠券已绑定优惠券包");
+        }
 
-        
         Coupon couponUpdate = new Coupon();
         couponUpdate.setId(id.intValue());
         couponUpdate.setDelFlag(Coupon.DEL_DEL);
@@ -630,7 +632,7 @@ public class CouponServiceImpl implements CouponService {
 
         Integer franchiseeId = coupon.getFranchiseeId();
         if (Objects.nonNull(franchiseeId) && !pair.getRight().contains(franchiseeId.longValue())) {
-            return R.fail( "120240", "当前加盟商无权限操作");
+            return R.fail("120240", "当前加盟商无权限操作");
         }
 
         ShareActivityRule shareActivityRule = shareActivityRuleService.selectByCouponId(id);
@@ -641,23 +643,26 @@ public class CouponServiceImpl implements CouponService {
         // 注册活动
         NewUserActivity newUserActivity = newUserActivityService.selectByCouponId(id);
         if (Objects.nonNull(newUserActivity)) {
-            return  R.fail("402016", "禁用失败，优惠券已绑定用户邀请活动");
+            return R.fail("402016", "禁用失败，优惠券已绑定用户邀请活动");
         }
 
         //检查是否绑定到换电套餐
         List<BatteryMemberCard> batteryMemberCardList = batteryMemberCardService.selectListByCouponId(id);
         if (CollUtil.isNotEmpty(batteryMemberCardList)) {
-            return  R.fail( "402017", "禁用失败，优惠券已绑定套餐");
+            return R.fail("402017", "禁用失败，优惠券已绑定套餐");
         }
 
         //检查是否绑定到租车或车电一体套餐
         List<CarRentalPackagePo> carRentalPackagePos = carRentalPackageService.findByCouponId(id);
         if (CollUtil.isNotEmpty(carRentalPackagePos)) {
-            return  R.fail("402017", "禁用失败，优惠券已绑定套餐");
+            return R.fail("402017", "禁用失败，优惠券已绑定套餐");
         }
 
-        // todo 已绑定优惠券包，提示“禁用失败，优惠券已绑定优惠券包
-
+        // 已绑定优惠券包，提示“禁用失败，优惠券已绑定优惠券包
+        Integer existsCouponBindPackage = packageItemService.existsCouponBindPackage(id);
+        if (Objects.nonNull(existsCouponBindPackage)) {
+            return R.fail("402018", "禁用失败，优惠券已绑定优惠券包");
+        }
 
 
         Coupon couponUpdate = new Coupon();
