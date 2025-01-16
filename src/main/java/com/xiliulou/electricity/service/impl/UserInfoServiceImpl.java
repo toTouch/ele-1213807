@@ -28,6 +28,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
+import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleAuthEntry;
@@ -894,8 +895,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         });
     
         // 查询用户全量信息
-        userCarRentalPackageVOList.forEach(item -> item.setUserMemberInfoVo(carRentalPackageMemberTermBizService.queryUserMemberInfo(tenantId, item.getUid())));
-    
+        CarUserMemberInfoProDTO carUserMemberInfoProDTO = carRentalPackageMemberTermBizService.queryUserMemberInfoForProPreSelect(tenantId, uidList);
+        CompletableFuture<Void> queryUserMemberInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
+            item.setUserMemberInfoVo(carRentalPackageMemberTermBizService.queryUserMemberInfoForPro(tenantId, item.getUid(), uidList, carUserMemberInfoProDTO));
+        }), threadPoolPro).exceptionally(e -> {
+            log.error("Query user member info error for car rental pro.", e);
+            return null;
+        });
+                
         // 使用中订单是否可退
         Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, tenantId);
         // 待使用订单是否有可退套餐
@@ -919,7 +926,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         });
     
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo, queryUserMemberInfo);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

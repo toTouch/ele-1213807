@@ -1,8 +1,12 @@
 package com.xiliulou.electricity.service.car.biz;
 
+import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.reqparam.opt.carpackage.ExpirePackageOrderReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
+
+import java.util.List;
 
 /**
  * 租车套餐会员期限业务聚合 Service
@@ -87,5 +91,8 @@ public interface CarRentalPackageMemberTermBizService {
     @Deprecated
     void expirePackageOrder(Integer offset, Integer size);
     
+    CarUserMemberInfoProDTO queryUserMemberInfoForProPreSelect(Integer tenantId, List<Long> uidList);
+    
+    UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO);
     
 }

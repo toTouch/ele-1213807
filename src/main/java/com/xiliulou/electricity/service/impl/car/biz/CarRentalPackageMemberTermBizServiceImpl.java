@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.car.biz;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
+import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 import com.xiliulou.electricity.entity.EleUserOperateRecord;
@@ -63,6 +64,7 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -79,6 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -653,6 +656,183 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         return memberInfoVo;
     }
     
+    @Override
+    public CarUserMemberInfoProDTO queryUserMemberInfoForProPreSelect(Integer tenantId, List<Long> uidList) {
+        // 1.查询会员期限
+        List<CarRentalPackageMemberTermPo> memberTermList = uidList.stream().map(uid -> carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid))
+                .filter(Objects::nonNull).collect(Collectors.toList());
+        Map<Long, CarRentalPackageMemberTermPo> userMemberTermMap = null;
+        // 2.会员期限套餐订单信息
+        Map<String, CarRentalPackageOrderPo> userUsingPackageOrderMap = null;
+        // 3.会员期限套餐信息
+        Map<Long, CarRentalPackagePo> userUsingCarPackageMap = new HashMap<>();
+        // 4.会员期限押金订单信息
+        Map<String, CarRentalPackageDepositPayPo> userUsingDepositMap = null;
+        // 5.套餐车辆型号信息
+        Map<Long, ElectricityCarModel> usingPackageCarModelMap = new HashMap<>();
+        // 6.用户车辆信息
+        Map<Long, ElectricityCar> userCarMap = new HashMap<>();
+        // 7. 滞纳金
+        Map<Long, BigDecimal> userLateFeeMap = new HashMap<>();
+        
+        if (!CollectionUtils.isEmpty(memberTermList)) {
+            userMemberTermMap = memberTermList.stream().collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, Function.identity(), (v1, v2) -> v1));
+            
+            List<String> packageOrderNoList = memberTermList.stream().map(CarRentalPackageMemberTermPo::getRentalPackageOrderNo).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(packageOrderNoList)) {
+                List<CarRentalPackageOrderPo> usingOrderList = carRentalPackageOrderService.queryListByOrderNo(tenantId, packageOrderNoList);
+                
+                if (!CollectionUtils.isEmpty(usingOrderList)) {
+                    userUsingPackageOrderMap = usingOrderList.stream().collect(Collectors.toMap(CarRentalPackageOrderPo::getOrderNo, Function.identity(), (v1, v2) -> v1));
+                }
+            }
+    
+            memberTermList.forEach(item -> {
+                Long uid = item.getUid();
+                CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(item.getRentalPackageId());
+                if (Objects.nonNull(rentalPackageEntity)) {
+                    userUsingCarPackageMap.put(uid, rentalPackageEntity);
+                }
+        
+                ElectricityCarModel carModel = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
+                if (Objects.nonNull(carModel)) {
+                    usingPackageCarModelMap.put(rentalPackageEntity.getId(), carModel);
+                }
+            });
+            
+            List<String> depositOrderNoList = memberTermList.stream().map(CarRentalPackageMemberTermPo::getDepositPayOrderNo).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(depositOrderNoList)) {
+                List<CarRentalPackageDepositPayPo> usingDepositList = carRentalPackageDepositPayService.listByOrders(tenantId, depositOrderNoList);
+                if (!CollectionUtils.isEmpty(usingDepositList)) {
+                    userUsingDepositMap = usingDepositList.stream().collect(Collectors.toMap(CarRentalPackageDepositPayPo::getOrderNo, Function.identity(), (v1, v2) -> v1));
+    
+                    List<Long> packageIdList = usingDepositList.stream().map(CarRentalPackageDepositPayPo::getRentalPackageId).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(packageIdList)) {
+                        packageIdList.forEach(packageId ->{
+                            carRentalPackageService.selectById(packageId);
+                        });
+                    }
+                }
+            }
+        }
+        
+        List<ElectricityCar> carList = carService.listNoDelByUidList(tenantId, uidList);
+        if (!CollectionUtils.isEmpty(carList)) {
+            userCarMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity(), (v1, v2) -> v1));
+        }
+        
+        uidList.forEach(uid -> {
+            BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
+            if (Objects.nonNull(lateFeeAmount)) {
+                userLateFeeMap.put(uid, lateFeeAmount);
+            }
+        });
+    
+        return CarUserMemberInfoProDTO.builder().memberTermList(memberTermList).userMemberTermMap(userMemberTermMap).userUsingPackageOrderMap(userUsingPackageOrderMap)
+                .userUsingCarPackageMap(userUsingCarPackageMap).userUsingDepositMap(userUsingDepositMap).usingPackageCarModelMap(usingPackageCarModelMap).userCarMap(userCarMap)
+                .userLateFeeMap(userLateFeeMap).build();
+    }
+    @Override
+    public UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO) {
+        if (Objects.isNull(carUserMemberInfoProDTO)) {
+            return null;
+        }
+    
+        // 1.查询会员期限
+        List<CarRentalPackageMemberTermPo> memberTermList = carUserMemberInfoProDTO.getMemberTermList();
+        Map<Long, CarRentalPackageMemberTermPo> userMemberTermMap = carUserMemberInfoProDTO.getUserMemberTermMap();
+        // 2.会员期限套餐订单信息
+        Map<String, CarRentalPackageOrderPo> userUsingPackageOrderMap = carUserMemberInfoProDTO.getUserUsingPackageOrderMap();
+        // 3.会员期限套餐信息
+        Map<Long, CarRentalPackagePo> userUsingCarPackageMap = carUserMemberInfoProDTO.getUserUsingCarPackageMap();
+        // 4.会员期限押金订单信息
+        Map<String, CarRentalPackageDepositPayPo> userUsingDepositMap = carUserMemberInfoProDTO.getUserUsingDepositMap();
+        // 5.套餐车辆型号信息
+        Map<Long, ElectricityCarModel> usingPackageCarModelMap = carUserMemberInfoProDTO.getUsingPackageCarModelMap();
+        // 6.用户车辆信息
+        Map<Long, ElectricityCar> userCarMap = carUserMemberInfoProDTO.getUserCarMap();
+        // 7. 滞纳金
+        Map<Long, BigDecimal> userLateFeeMap = carUserMemberInfoProDTO.getUserLateFeeMap();
+    
+        if (MapUtils.isEmpty(userMemberTermMap) || userMemberTermMap.containsKey(uid)) {
+            return null;
+        }
+    
+        CarRentalPackageMemberTermPo memberTermEntity = userMemberTermMap.get(uid);
+        if (Objects.isNull(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+            return null;
+        }
+    
+        Long rentalPackageId = memberTermEntity.getRentalPackageId();
+        String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
+        String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
+        Integer rentalPackageType = memberTermEntity.getRentalPackageType();
+        Integer franchiseeId = memberTermEntity.getFranchiseeId();
+        Integer storeId = memberTermEntity.getStoreId();
+    
+        boolean rentalPackageEntityFlag = true;
+        // 套餐信息
+        CarRentalPackagePo rentalPackageEntity = null;
+        if (MapUtils.isNotEmpty(userUsingCarPackageMap) && userUsingCarPackageMap.containsKey(rentalPackageId)) {
+            rentalPackageEntity = userUsingCarPackageMap.get(rentalPackageId);
+        }
+    
+        // 套餐订单信息
+        CarRentalPackageOrderPo rentalPackageOrderEntity = null;
+        if (MapUtils.isNotEmpty(userUsingPackageOrderMap) && userUsingPackageOrderMap.containsKey(rentalPackageOrderNo)) {
+            rentalPackageOrderEntity = userUsingPackageOrderMap.get(rentalPackageOrderNo);
+        }
+    
+        // 押金缴纳信息
+        CarRentalPackageDepositPayPo depositPayEntity = null;
+        if (MapUtils.isNotEmpty(userUsingDepositMap) && userUsingDepositMap.containsKey(depositPayOrderNo)) {
+            depositPayEntity = userUsingDepositMap.get(depositPayOrderNo);
+        }
+    
+        if (Objects.isNull(rentalPackageEntity)) {
+            rentalPackageEntityFlag = false;
+            rentalPackageEntity = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
+        }
+    
+        // 车辆型号信息
+        ElectricityCarModel carModelEntity = null;
+        if (MapUtils.isNotEmpty(usingPackageCarModelMap) && Objects.nonNull(rentalPackageEntity) && usingPackageCarModelMap.containsKey(rentalPackageEntity.getId())) {
+            carModelEntity = usingPackageCarModelMap.get(rentalPackageEntity.getId());
+        }
+    
+        // 用户车辆信息
+        ElectricityCar carEntity = null;
+        if (MapUtils.isNotEmpty(userCarMap) && userCarMap.containsKey(uid)) {
+            carEntity = userCarMap.get(uid);
+        }
+    
+        // 加盟商信息
+        Franchisee franchiseeEntity = franchiseeService.queryByIdFromCache(Long.valueOf(franchiseeId));
+    
+        // 门店信息
+        Store storeEntity = storeService.queryByIdFromCache(Long.valueOf(storeId));
+    
+        // 套餐对应的电池型号信息、用户电池信息
+        List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = null;
+        List<BatteryModel> batteryModelEntityList = null;
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+            carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageEntity.getId());
+            if (!CollectionUtils.isEmpty(carBatteryRelEntityList)) {
+                List<String> batteryTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());
+                batteryModelEntityList = batteryModelService.selectByBatteryTypes(tenantId, batteryTypes);
+            }
+        }
+    
+        // 获取滞纳金
+        BigDecimal lateFeeAmount = null;
+        if (MapUtils.isNotEmpty(userLateFeeMap) && userLateFeeMap.containsKey(uid)) {
+            lateFeeAmount = userLateFeeMap.get(uid);
+        }
+    
+        return buildUserMemberInfoVo(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity, depositPayEntity, carModelEntity, carEntity,
+                franchiseeEntity, storeEntity, rentalPackageEntityFlag, lateFeeAmount);
+    }
+    
     /**
      * 构建返回值信息
      *
@@ -677,16 +857,22 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         userMemberInfoVo.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
         userMemberInfoVo.setStatus(memberTermEntity.getStatus());
-        userMemberInfoVo.setFranchiseeId(franchiseeEntity.getId().intValue());
-        userMemberInfoVo.setFranchiseeName(franchiseeEntity.getName());
-        userMemberInfoVo.setStoreId(storeEntity.getId().intValue());
-        userMemberInfoVo.setStoreName(storeEntity.getName());
-        userMemberInfoVo.setCarModelId(carModelEntity.getId());
-        userMemberInfoVo.setCarModelName(carModelEntity.getName());
+        if (Objects.nonNull(franchiseeEntity)) {
+            userMemberInfoVo.setFranchiseeId(franchiseeEntity.getId().intValue());
+            userMemberInfoVo.setFranchiseeName(franchiseeEntity.getName());
+        }
+        if (Objects.nonNull(storeEntity)) {
+            userMemberInfoVo.setStoreId(storeEntity.getId().intValue());
+            userMemberInfoVo.setStoreName(storeEntity.getName());
+        }
+        if (Objects.nonNull(carModelEntity)) {
+            userMemberInfoVo.setCarModelId(carModelEntity.getId());
+            userMemberInfoVo.setCarModelName(carModelEntity.getName());
+        }
         userMemberInfoVo.setResidue(memberTermEntity.getResidue());
         userMemberInfoVo.setLateFeeAmount(lateFeeAmount);
         // 退租不退押，不显示套餐信息
-        if (rentalPackageEntityFlag) {
+        if (rentalPackageEntityFlag && Objects.nonNull(rentalPackageEntity)) {
             userMemberInfoVo.setRentalPackageId(rentalPackageEntity.getId());
             userMemberInfoVo.setRentalPackageName(rentalPackageEntity.getName());
         }

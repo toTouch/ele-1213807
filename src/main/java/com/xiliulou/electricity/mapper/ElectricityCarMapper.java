@@ -225,4 +225,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      * @date 2024/11/26 13:35
      */
     List<ElectricityCar> selectListByTenantIdAndUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
+    
+    List<ElectricityCar> selectListNoDelByUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
 }
