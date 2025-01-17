@@ -68,6 +68,10 @@ public class CouponPackageItem {
      */
     private Integer superposition;
 
+    /**
+     * 租户ID
+     */
+    private Integer tenantId;
 
     /**
      * 创建时间

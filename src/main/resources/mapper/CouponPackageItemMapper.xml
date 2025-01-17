@@ -15,10 +15,10 @@
 
     <insert id="savePackItemBatch">
         insert into t_coupon_package_item
-        (coupon_id,package_id,coupon_name,discount_type,discount,effect,days,count,superposition,create_time,update_time)
+        (coupon_id,package_id,coupon_name,discount_type,discount,effect,days,count,superposition,tenant_id,create_time,update_time)
         values
         <foreach collection="list" item="item" separator=",">
-            (#{item.couponId},#{item.packageId},#{item.couponName},#{item.discountType},#{item.discount},#{item.effect},#{item.days},#{item.superposition},#{item.count},#{item.createTime},#{item.updateTime})
+            (#{item.couponId},#{item.packageId},#{item.couponName},#{item.discountType},#{item.discount},#{item.effect},#{item.days},#{item.superposition},#{item.count},#{tenantId},#{item.createTime},#{item.updateTime})
         </foreach>
     </insert>
 

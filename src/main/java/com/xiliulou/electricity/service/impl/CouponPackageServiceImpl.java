@@ -106,7 +106,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
             CouponPackageItem.CouponPackageItemBuilder itemBuilder = CouponPackageItem.builder().couponId(item.getCouponId())
                     .couponName(coupon.getName()).discountType(coupon.getDiscountType()).superposition(coupon.getSuperposition())
-                    .days(coupon.getDays()).count(item.getCount()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
+                    .days(coupon.getDays()).count(item.getCount()).tenantId(coupon.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
             if (Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)) {
                 // 减免券
                 itemBuilder.discount(coupon.getAmount().doubleValue()).effect(String.format("减免%s元", coupon.getAmount()));
