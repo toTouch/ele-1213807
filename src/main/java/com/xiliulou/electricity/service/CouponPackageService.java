@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
+import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
 
 /**
  * @Description: CouponPackageService
@@ -21,4 +22,20 @@ public interface CouponPackageService {
     R addOrEdit(CouponPackageEditQuery query);
 
 
+    /**
+     * 编辑回显获取详情
+     *
+     * @param packageId packageId
+     * @return: @return {@link CouponPackageDetailsVO }
+     */
+
+    CouponPackageDetailsVO editEcho(Long packageId);
+
+    /**
+     * 删除优惠券包
+     *
+     * @param packageId packageId
+     * @return:
+     */
+    void del(Long packageId);
 }

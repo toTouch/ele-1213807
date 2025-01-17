@@ -4,10 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
 import com.xiliulou.electricity.service.CouponPackageService;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -34,6 +31,31 @@ public class JsonAdminCouponPackageController {
     @PostMapping(value = "addOrEdit")
     public R addOrEdit(@RequestBody @Validated CouponPackageEditQuery query) {
         return couponPackageService.addOrEdit(query);
+    }
+
+
+    /**
+     * 编辑回显
+     *
+     * @param packageId query
+     * @return R
+     */
+    @GetMapping(value = "editEcho")
+    public R editEcho(@RequestParam("packageId") Long packageId) {
+        return R.ok(couponPackageService.editEcho(packageId));
+    }
+
+
+    /**
+     * 删除
+     *
+     * @param packageId query
+     * @return R
+     */
+    @GetMapping(value = "del")
+    public R del(@RequestParam("packageId") Long packageId) {
+        couponPackageService.del(packageId);
+        return R.ok();
     }
 
 

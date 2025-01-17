@@ -17,4 +17,6 @@ public interface CouponPackageItemMapper {
     void savePackItemBatch(List<CouponPackageItem> itemList);
 
     void deletePackItemByPackageId(Long packageId);
+
+    List<CouponPackageItem> selectListCouponPackageItemByPackageId(Long packageId);
 }

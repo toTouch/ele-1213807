@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
@@ -13,6 +14,7 @@ import com.xiliulou.electricity.service.CouponPackageService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author : renhang
@@ -61,7 +64,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
             CouponPackageItem.CouponPackageItemBuilder itemBuilder = CouponPackageItem.builder().couponId(item.getCouponId())
                     .couponName(coupon.getName()).discountType(coupon.getDiscountType()).superposition(coupon.getSuperposition())
-                    .days(coupon.getDays()).count(item.getCount()).delFlag(CouponPackageItem.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
+                    .days(coupon.getDays()).count(item.getCount()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
             if (Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)) {
                 // 减免券
                 itemBuilder.discount(coupon.getAmount().doubleValue()).effect(String.format("减免%s元", coupon.getAmount()));
@@ -99,7 +102,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         }
 
         CouponPackage.CouponPackageBuilder packageBuilder = CouponPackage.builder().name(query.getName()).couponCount(sumCount.get()).isCanBuy(query.getIsCanBuy()).amount(BigDecimal.valueOf(query.getAmount()))
-                .userName(user.getUsername()).delFlag(CouponPackage.DEL_NORMAL).tenantId(TenantContextHolder.getTenantId())
+                .userName(user.getUsername()).tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(query.getFranchiseeId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
 
         Long packageId = null;
@@ -116,7 +119,6 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
             CouponPackage updateCouponPackage = packageBuilder.id(couponPackage.getId()).build();
             couponPackageMapper.updateCouponPackage(updateCouponPackage);
-
             // 删除优惠券包下的优惠券
             packageItemService.deletePackItemByPackageId(couponPackage.getId());
         }
@@ -131,5 +133,35 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         return R.ok();
     }
 
+    @Override
+    public CouponPackageDetailsVO editEcho(Long packageId) {
+        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(packageId);
+        if (Objects.isNull(couponPackage)) {
+            throw new BizException("402025", "优惠券包不存在");
+        }
+        // CouponPackageDetailsVO
+        CouponPackageDetailsVO couponPackageDetailsVO = CouponPackageDetailsVO.builder().id(couponPackage.getId()).name(couponPackage.getName()).count(couponPackage.getCouponCount())
+                .franchiseeId(couponPackage.getFranchiseeId()).isCanBuy(couponPackage.getIsCanBuy()).amount(couponPackage.getAmount().doubleValue()).build();
 
+        List<CouponPackageItem> couponPackageItemList = packageItemService.listCouponPackageItemByPackageId(packageId);
+        if (CollUtil.isEmpty(couponPackageItemList)) {
+            return couponPackageDetailsVO;
+        }
+        couponPackageDetailsVO.setItemDetailsVOList(couponPackageItemList.stream().map(item -> {
+            return BeanUtil.copyProperties(item, CouponPackageDetailsVO.CouponPackageItemDetailsVO.class);
+        }).collect(Collectors.toList()));
+
+        return couponPackageDetailsVO;
+    }
+
+    @Override
+    public void del(Long packageId) {
+        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(packageId);
+        if (Objects.isNull(couponPackage)) {
+            throw new BizException("402025", "优惠券包不存在");
+        }
+
+        couponPackageMapper.deleteCouponPackageById(packageId);
+        packageItemService.deletePackItemByPackageId(packageId);
+    }
 }

@@ -9,7 +9,6 @@
                is_can_buy,
                user_name,
                amount,
-               del_flag,
                tenant_id,
                franchisee_id,
                create_time,
@@ -17,9 +16,9 @@
     </sql>
 
     <insert id="saveCouponPackage">
-        insert into t_coupon_package (name, coupon_count, is_can_buy, user_name, amount, del_flag, tenant_id,
+        insert into t_coupon_package (name, coupon_count, is_can_buy, user_name, amount, tenant_id,
                                       franchisee_id, create_time, update_time)
-        values (#{name}, #{couponCount}, #{isCanBuy}, #{userName}, #{amount}, #{delFlag}, #{tenantId},
+        values (#{name}, #{couponCount}, #{isCanBuy}, #{userName}, #{amount}, #{tenantId},
                 #{franchiseeId}, #{createTime}, #{updateTime})
     </insert>
 
@@ -41,9 +40,6 @@
         <if test="amount != null">
             amount = #{amount},
         </if>
-        <if test="delFlag != null">
-            del_flag = #{delFlag},
-        </if>
         <if test="tenantId != null">
             tenant_id = #{tenantId},
         </if>
@@ -62,4 +58,11 @@
         from t_coupon_package
         where id = #{id}
     </select>
+
+    <delete id="deleteCouponPackageById">
+        delete
+        from t_coupon_package
+        where id = #{id}
+    </delete>
+
 </mapper>

@@ -51,10 +51,6 @@ public class CouponPackage {
      */
     private BigDecimal amount;
 
-    /**
-     * 0:正常 1:删除
-     */
-    private Integer delFlag;
 
     /**
      * 租户ID

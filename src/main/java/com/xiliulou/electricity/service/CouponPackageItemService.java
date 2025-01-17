@@ -37,4 +37,14 @@ public interface CouponPackageItemService {
      */
 
     void deletePackItemByPackageId(Long packageId);
+
+
+    /**
+     * 获取优惠券包下的优惠券
+     *
+     * @param packageId packageId
+     * @return: @return {@link List }<{@link CouponPackageItem }>
+     */
+
+    List<CouponPackageItem> listCouponPackageItemByPackageId(Long packageId);
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.CouponPackageItem;
 import com.xiliulou.electricity.mapper.CouponPackageItemMapper;
 import com.xiliulou.electricity.service.CouponPackageItemService;
@@ -21,6 +22,7 @@ public class CouponPackageItemServiceImpl implements CouponPackageItemService {
     private CouponPackageItemMapper couponPackageItemMapper;
 
     @Override
+    @Slave
     public Integer existsCouponBindPackage(Long couponId) {
         return couponPackageItemMapper.existsCouponBindPackage(couponId);
     }
@@ -33,5 +35,11 @@ public class CouponPackageItemServiceImpl implements CouponPackageItemService {
     @Override
     public void deletePackItemByPackageId(Long packageId) {
         couponPackageItemMapper.deletePackItemByPackageId(packageId);
+    }
+
+    @Override
+    @Slave
+    public List<CouponPackageItem> listCouponPackageItemByPackageId(Long packageId) {
+        return couponPackageItemMapper.selectListCouponPackageItemByPackageId(packageId);
     }
 }

@@ -2,28 +2,40 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.CouponPackageItemMapper">
 
+    <sql id="basicSql">
+        id
+        , coupon_id, package_id, coupon_name, discount_type, discount, effect, days, count, superposition, create_time, update_time
+    </sql>
 
     <select id="existsCouponBindPackage" resultType="integer">
         select 1
         from t_coupon_package_item
-        where del_flag = 0
-          and coupon_id = #{couponId} limit 1
+        where coupon_id = #{couponId} limit 1
     </select>
-
 
     <insert id="savePackItemBatch">
         insert into t_coupon_package_item
-        (coupon_id,package_id,coupon_name,discount_type,discount,effect,days,count,del_flag,create_time,update_time)
+        (coupon_id,package_id,coupon_name,discount_type,discount,effect,days,count,superposition,create_time,update_time)
         values
         <foreach collection="list" item="item" separator=",">
-            (#{item.couponId},#{item.packageId},#{item.couponName},#{item.discountType},#{item.discount},#{item.effect},#{item.days},#{item.count},#{item.delFlag},#{item.createTime},#{item.updateTime})
+            (#{item.couponId},#{item.packageId},#{item.couponName},#{item.discountType},#{item.discount},#{item.effect},#{item.days},#{item.superposition},#{item.count},#{item.createTime},#{item.updateTime})
         </foreach>
     </insert>
 
-    <update id="deletePackItemByPackageId">
-        update t_coupon_package_item
-        set del_flag = 1
+    <delete id="deletePackItemByPackageId">
+        delete
+        from t_coupon_package_item
         where package_id = #{packageId}
-    </update>
+    </delete>
+
+
+    <select id="selectListCouponPackageItemByPackageId"
+            resultType="com.xiliulou.electricity.entity.CouponPackageItem">
+        select
+        <include refid="basicSql"/>
+        from t_coupon_package_item
+        where package_id =#{packageId}
+    </select>
+
 
 </mapper>
