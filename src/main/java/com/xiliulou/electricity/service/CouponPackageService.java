@@ -75,4 +75,13 @@ public interface CouponPackageService {
      */
 
     R appointRelease(CouponPackageAppointReleaseRequest request);
+
+    /**
+     * 查询批量下发结果
+     *
+     * @param sessionId sessionId
+     * @return: @return {@link R }
+     */
+
+    R queryBatchReleaseStatus(String sessionId);
 }

@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 @Service
+@SuppressWarnings("all")
 public class CouponPackageServiceImpl implements CouponPackageService {
 
     @Resource
@@ -418,6 +419,14 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             userCouponService.batchInsert(userCouponList);
         });
 
+        return R.ok();
+    }
+
+    @Override
+    public R queryBatchReleaseStatus(String sessionId) {
+        if (!redisService.hasKey(String.format(CacheConstant.COUPON_PACKAGE_BATCH_RELEASE_RESULT_KEY, sessionId))) {
+            return R.fail("402027", "券包正在发送中，请稍后再试");
+        }
         return R.ok();
     }
 }

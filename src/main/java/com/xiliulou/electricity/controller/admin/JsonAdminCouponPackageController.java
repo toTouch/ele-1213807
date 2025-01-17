@@ -111,4 +111,17 @@ public class JsonAdminCouponPackageController {
     public R appointRelease(@RequestBody @Validated CouponPackageAppointReleaseRequest request) {
         return couponPackageService.appointRelease(request);
     }
+
+
+    /**
+     * 轮训批量下发结果查询
+     *
+     * @param sessionId sessionId
+     * @return: @return {@link R }
+     */
+
+    @GetMapping(value = "queryStatus")
+    public R queryBatchReleaseStatus(@RequestParam("sessionId") String sessionId) {
+        return couponPackageService.queryBatchReleaseStatus(sessionId);
+    }
 }
