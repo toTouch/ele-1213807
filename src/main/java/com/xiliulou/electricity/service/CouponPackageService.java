@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
 import com.xiliulou.electricity.query.CouponPackagePageQuery;
+import com.xiliulou.electricity.request.CouponPackageAppointReleaseRequest;
 import com.xiliulou.electricity.request.CouponPackageBatchReleaseRequest;
 import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
 
@@ -65,4 +66,13 @@ public interface CouponPackageService {
      * @return: @return {@link R }
      */
     R batchRelease(CouponPackageBatchReleaseRequest request);
+
+    /**
+     * 指定用户下发
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+
+    R appointRelease(CouponPackageAppointReleaseRequest request);
 }

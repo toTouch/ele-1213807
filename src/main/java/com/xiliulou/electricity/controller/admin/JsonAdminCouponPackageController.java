@@ -4,6 +4,7 @@ import com.xiliulou.common.sentinel.annotation.IdempotentCheck;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
 import com.xiliulou.electricity.query.CouponPackagePageQuery;
+import com.xiliulou.electricity.request.CouponPackageAppointReleaseRequest;
 import com.xiliulou.electricity.request.CouponPackageBatchReleaseRequest;
 import com.xiliulou.electricity.service.CouponPackageService;
 import org.springframework.validation.annotation.Validated;
@@ -93,9 +94,21 @@ public class JsonAdminCouponPackageController {
      */
 
     @PostMapping(value = "batchRelease")
-    @IdempotentCheck(prefix = "coupon_pack_release")
+    @IdempotentCheck(prefix = "coupon_pack_batch_release")
     public R batchRelease(@RequestBody @Validated CouponPackageBatchReleaseRequest request) {
         return couponPackageService.batchRelease(request);
     }
 
+
+    /**
+     * 指定用户方法下发优惠券包
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+    @PostMapping(value = "appointRelease")
+    @IdempotentCheck(prefix = "coupon_pack_appoint_release")
+    public R appointRelease(@RequestBody @Validated CouponPackageAppointReleaseRequest request) {
+        return couponPackageService.appointRelease(request);
+    }
 }
