@@ -22,9 +22,19 @@ public interface CouponPackageItemService {
     Integer existsCouponBindPackage(Long couponId);
 
     /**
+     * 批量插入
+     *
      * @param itemList CouponPackageItem
-     * @return:
      */
 
     void batchSavePackItem(List<CouponPackageItem> itemList);
+
+    /**
+     * 删除优惠券包下的优惠券
+     *
+     * @param packageId 优惠券包id
+     * @return:
+     */
+
+    void deletePackItemByPackageId(Long packageId);
 }

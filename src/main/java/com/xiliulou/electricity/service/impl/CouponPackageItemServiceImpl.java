@@ -29,4 +29,9 @@ public class CouponPackageItemServiceImpl implements CouponPackageItemService {
     public void batchSavePackItem(List<CouponPackageItem> itemList) {
         couponPackageItemMapper.savePackItemBatch(itemList);
     }
+
+    @Override
+    public void deletePackItemByPackageId(Long packageId) {
+        couponPackageItemMapper.deletePackItemByPackageId(packageId);
+    }
 }

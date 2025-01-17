@@ -23,6 +23,39 @@
                 #{franchiseeId}, #{createTime}, #{updateTime})
     </insert>
 
+    <update id="updateCouponPackage">
+        update t_coupon_package
+        set
+        <if test="name != null">
+            name = #{name},
+        </if>
+        <if test="couponCount != null">
+            coupon_count = #{couponCount},
+        </if>
+        <if test="isCanBuy != null">
+            is_can_buy = #{isCanBuy},
+        </if>
+        <if test="userName != null">
+            user_name = #{userName},
+        </if>
+        <if test="amount != null">
+            amount = #{amount},
+        </if>
+        <if test="delFlag != null">
+            del_flag = #{delFlag},
+        </if>
+        <if test="tenantId != null">
+            tenant_id = #{tenantId},
+        </if>
+        <if test="franchiseeId != null">
+            franchisee_id = #{franchiseeId},
+        </if>
+        <if test="updateTime != null">
+            update_time = #{updateTime}
+        </if>
+        where id=#{id}
+    </update>
+
     <select id="selectCouponPackageById" resultType="com.xiliulou.electricity.entity.CouponPackage">
         select
         <include refid="baseSql"/>

@@ -13,4 +13,6 @@ public interface CouponPackageMapper {
     void saveCouponPackage(CouponPackage couponPackage);
 
     CouponPackage selectCouponPackageById(Long id);
+
+    void updateCouponPackage(CouponPackage updateCouponPackage);
 }

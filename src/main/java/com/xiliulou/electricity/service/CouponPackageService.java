@@ -12,19 +12,13 @@ import com.xiliulou.electricity.query.CouponPackageEditQuery;
 public interface CouponPackageService {
 
     /**
-     * 新增优惠券包
+     * 新增/编辑优惠券包
      *
      * @param query query
      * @return: @return {@link R }
      */
 
-    R add(CouponPackageEditQuery query);
+    R addOrEdit(CouponPackageEditQuery query);
 
-    /**
-     * 编辑优惠券包
-     *
-     * @param query query
-     * @return R
-     */
-    R edit(CouponPackageEditQuery query);
+
 }

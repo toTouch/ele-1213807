@@ -17,7 +17,6 @@ import javax.annotation.Resource;
  * @Author: renhang
  * @Date: 2025/01/16
  */
-
 @RestController
 @RequestMapping("/admin/couponPackage")
 public class JsonAdminCouponPackageController {
@@ -27,26 +26,16 @@ public class JsonAdminCouponPackageController {
 
 
     /**
-     * 新增优惠券包
+     * 新增/编辑优惠券包
      *
      * @param query query
      * @return R
      */
-    @PostMapping(value = "add")
-    public R add(@RequestBody @Validated CouponPackageEditQuery query) {
-        return couponPackageService.add(query);
+    @PostMapping(value = "addOrEdit")
+    public R addOrEdit(@RequestBody @Validated CouponPackageEditQuery query) {
+        return couponPackageService.addOrEdit(query);
     }
 
 
-    /**
-     * 编辑优惠券包
-     *
-     * @param query query
-     * @return R
-     */
-    @PostMapping(value = "edit")
-    public R edit(@RequestBody @Validated CouponPackageEditQuery query) {
-        return couponPackageService.edit(query);
-    }
 
 }

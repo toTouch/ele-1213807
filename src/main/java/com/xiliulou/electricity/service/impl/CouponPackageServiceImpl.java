@@ -40,8 +40,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
     private CouponPackageItemService packageItemService;
 
 
-    private void checkCouponAndBuild(List<CouponPackageEditQuery.CouponPackageItemQuery> list, Long franchiseeId, List<CouponPackageItem> itemList, AtomicReference<Integer> sumCount) {
-
+    private void checkCouponAndBuildPackageItem(List<CouponPackageEditQuery.CouponPackageItemQuery> list, Long franchiseeId, List<CouponPackageItem> itemList, AtomicReference<Integer> sumCount) {
         list.forEach(item -> {
             Coupon coupon = couponService.queryByIdFromCache(item.getCouponId().intValue());
             if (Objects.isNull(coupon)) {
@@ -59,12 +58,10 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             if (Objects.equals(coupon.getDelFlag(), Coupon.DEL_DEL)) {
                 throw new BizException("402022", errorMsgName + "优惠券已删除，请检查选择的优惠券状态");
             }
-            sumCount.updateAndGet(v -> v + item.getCount());
 
-            CouponPackageItem.CouponPackageItemBuilder itemBuilder = CouponPackageItem.builder().couponId(item.getCouponId()).couponName(coupon.getName())
-                    .discountType(coupon.getDiscountType())
-                    .days(coupon.getDays()).count(item.getCount()).delFlag(CouponPackageItem.DEL_NORMAL).createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis());
+            CouponPackageItem.CouponPackageItemBuilder itemBuilder = CouponPackageItem.builder().couponId(item.getCouponId())
+                    .couponName(coupon.getName()).discountType(coupon.getDiscountType()).superposition(coupon.getSuperposition())
+                    .days(coupon.getDays()).count(item.getCount()).delFlag(CouponPackageItem.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
             if (Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)) {
                 // 减免券
                 itemBuilder.discount(coupon.getAmount().doubleValue()).effect(String.format("减免%s元", coupon.getAmount()));
@@ -75,12 +72,14 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 throw new BizException("402023", "不支持的优惠券");
             }
             itemList.add(itemBuilder.build());
+
+            sumCount.updateAndGet(v -> v + item.getCount());
         });
     }
 
 
     @Override
-    public R add(CouponPackageEditQuery query) {
+    public R addOrEdit(CouponPackageEditQuery query) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -93,44 +92,43 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         // 优惠券校验（加盟商，禁用，删除）
         List<CouponPackageItem> itemList = CollUtil.newArrayList();
         AtomicReference<Integer> sumCount = new AtomicReference<>(0);
-        checkCouponAndBuild(query.getItemList(), query.getFranchiseeId(), itemList, sumCount);
+        checkCouponAndBuildPackageItem(query.getItemList(), query.getFranchiseeId(), itemList, sumCount);
 
         if (CollUtil.isEmpty(itemList)) {
             return R.fail("402024", "优惠券为空");
         }
 
-        CouponPackage couponPackage = CouponPackage.builder().name(query.getName()).couponCount(sumCount.get()).isCanBuy(query.getIsCanBuy()).amount(BigDecimal.valueOf(query.getAmount()))
+        CouponPackage.CouponPackageBuilder packageBuilder = CouponPackage.builder().name(query.getName()).couponCount(sumCount.get()).isCanBuy(query.getIsCanBuy()).amount(BigDecimal.valueOf(query.getAmount()))
                 .userName(user.getUsername()).delFlag(CouponPackage.DEL_NORMAL).tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(query.getFranchiseeId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        couponPackageMapper.saveCouponPackage(couponPackage);
+                .franchiseeId(query.getFranchiseeId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
+
+        Long packageId = null;
+        if (Objects.isNull(query.getId())) {
+            CouponPackage couponPackage = packageBuilder.build();
+            couponPackageMapper.saveCouponPackage(couponPackage);
+            packageId = couponPackage.getId();
+        } else {
+            CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(query.getId());
+            if (Objects.isNull(couponPackage)) {
+                return R.fail("402025", "优惠券包不存在");
+            }
+            packageId = couponPackage.getId();
+
+            CouponPackage updateCouponPackage = packageBuilder.id(couponPackage.getId()).build();
+            couponPackageMapper.updateCouponPackage(updateCouponPackage);
+
+            // 删除优惠券包下的优惠券
+            packageItemService.deletePackItemByPackageId(couponPackage.getId());
+        }
 
         // 批量insert coupon item
+        Long finalPackageId = packageId;
         itemList.forEach(item -> {
-            item.setPackageId(couponPackage.getId());
+            item.setPackageId(finalPackageId);
         });
         packageItemService.batchSavePackItem(itemList);
 
         return R.ok();
-    }
-
-    @Override
-    public R edit(CouponPackageEditQuery query) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if (Objects.equals(query.getIsCanBuy(), CouponPackage.CAN_BUY) && Objects.isNull(query.getAmount())) {
-            return R.fail("402020", "可购买时，购买金额不能为空");
-        }
-
-        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(query.getId());
-        if (Objects.isNull(couponPackage)) {
-            return R.fail("402025", "优惠券包不存在");
-        }
-
-
-        return null;
     }
 
 

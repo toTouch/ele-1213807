@@ -64,6 +64,11 @@ public class CouponPackageItem {
     private Integer count;
 
     /**
+     * 是否可叠加 0：否，1：是
+     */
+    private Integer superposition;
+
+    /**
      * 0:正常 1:删除
      */
     private Integer delFlag;

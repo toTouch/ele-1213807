@@ -15,4 +15,6 @@ public interface CouponPackageItemMapper {
     Integer existsCouponBindPackage(Long couponId);
 
     void savePackItemBatch(List<CouponPackageItem> itemList);
+
+    void deletePackItemByPackageId(Long packageId);
 }

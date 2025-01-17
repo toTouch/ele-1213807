@@ -20,5 +20,10 @@
         </foreach>
     </insert>
 
+    <update id="deletePackItemByPackageId">
+        update t_coupon_package_item
+        set del_flag = 1
+        where package_id = #{packageId}
+    </update>
 
 </mapper>
