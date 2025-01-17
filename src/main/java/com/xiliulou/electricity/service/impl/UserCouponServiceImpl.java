@@ -1053,4 +1053,9 @@ public class UserCouponServiceImpl implements UserCouponService {
             sendCouponToUser(userCouponDTO);
         });
     }
+
+    @Override
+    public void batchInsert(List<UserCoupon> userCouponList) {
+        userCouponMapper.batchInsert(userCouponList);
+    }
 }

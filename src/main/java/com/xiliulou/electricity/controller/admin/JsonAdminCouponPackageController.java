@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.common.sentinel.annotation.IdempotentCheck;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
 import com.xiliulou.electricity.query.CouponPackagePageQuery;
+import com.xiliulou.electricity.request.CouponPackageBatchReleaseRequest;
 import com.xiliulou.electricity.service.CouponPackageService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -80,6 +82,20 @@ public class JsonAdminCouponPackageController {
     @PostMapping(value = "pageCount")
     public R pageCount(@RequestBody CouponPackagePageQuery query) {
         return couponPackageService.pageCount(query);
+    }
+
+
+    /**
+     * 批量用户方法下发优惠券包
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+
+    @PostMapping(value = "batchRelease")
+    @IdempotentCheck(prefix = "coupon_pack_release")
+    public R batchRelease(@RequestBody @Validated CouponPackageBatchReleaseRequest request) {
+        return couponPackageService.batchRelease(request);
     }
 
 }

@@ -2,31 +2,44 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ConcurrentHashSet;
+import cn.hutool.core.lang.UUID;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.CouponPackageItemBO;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CouponPackageMapper;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
 import com.xiliulou.electricity.query.CouponPackagePageQuery;
-import com.xiliulou.electricity.service.CouponPackageItemService;
-import com.xiliulou.electricity.service.CouponPackageService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.request.CouponPackageBatchReleaseRequest;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CouponPackageBatchReleaseVO;
 import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
 import com.xiliulou.electricity.vo.CouponPackagePageVO;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -35,6 +48,7 @@ import java.util.stream.Collectors;
  * @description CouponPackageServiceImpl
  * @date : 2025-01-16 14:59
  **/
+@Slf4j
 @Service
 public class CouponPackageServiceImpl implements CouponPackageService {
 
@@ -52,6 +66,21 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
     @Resource
     private FranchiseeService franchiseeService;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
+    private UserCouponService userCouponService;
+
+    @Resource
+    private RedisService redisService;
+
+    TtlXllThreadPoolExecutorServiceWrapper execute = TtlXllThreadPoolExecutorsSupport.get(
+            XllThreadPoolExecutors.newFixedThreadPool("COUPON_PACKAGE_RELEASE_POOL", 3, "coupon_package_release_thread"));
 
 
     private void checkCouponAndBuildPackageItem(List<CouponPackageEditQuery.CouponPackageItemQuery> list, Long franchiseeId, List<CouponPackageItem> itemList, AtomicReference<Integer> sumCount) {
@@ -136,9 +165,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
         // 批量insert coupon item
         Long finalPackageId = packageId;
-        itemList.forEach(item -> {
-            item.setPackageId(finalPackageId);
-        });
+        itemList.forEach(item -> item.setPackageId(finalPackageId));
         packageItemService.batchSavePackItem(itemList);
 
         return R.ok();
@@ -158,9 +185,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         if (CollUtil.isEmpty(couponPackageItemList)) {
             return couponPackageDetailsVO;
         }
-        couponPackageDetailsVO.setItemDetailsVOList(couponPackageItemList.stream().map(item -> {
-            return BeanUtil.copyProperties(item, CouponPackageDetailsVO.CouponPackageItemDetailsVO.class);
-        }).collect(Collectors.toList()));
+        couponPackageDetailsVO.setItemDetailsVOList(couponPackageItemList.stream().map(item -> BeanUtil.copyProperties(item, CouponPackageDetailsVO.CouponPackageItemDetailsVO.class)).collect(Collectors.toList()));
 
         return couponPackageDetailsVO;
     }
@@ -240,5 +265,107 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             return Pair.of(false, Collections.emptyList());
         }
         return assertPermissionService.assertPermissionByPair(user);
+    }
+
+
+    @Override
+    public R batchRelease(CouponPackageBatchReleaseRequest request) {
+        Set<String> phoneSet = new HashSet<>(JsonUtil.fromJsonArray(request.getJsonPhones(), String.class));
+        if (CollectionUtils.isEmpty(phoneSet)) {
+            return R.fail("ELECTRICITY.0007", "手机号不可以为空");
+        }
+
+        //增加优惠劵发放人Id
+        Long operateUid = SecurityUtils.getUid();
+        if (Objects.isNull(operateUid)) {
+            log.warn("CouponPackage BatchRelease Warn! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        User operateUser = userService.queryByUidFromCache(operateUid);
+        if (Objects.isNull(operateUser)) {
+            log.warn("CouponPackage BatchRelease Warn! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(request.getPackageId());
+        if (Objects.isNull(couponPackage)) {
+            R.fail("402025", "优惠券包不存在");
+        }
+
+        List<CouponPackageItem> packageItemList = packageItemService.listCouponPackageItemByPackageId(couponPackage.getId());
+        if (CollUtil.isEmpty(packageItemList)) {
+            R.fail("402026", "优惠券包下的优惠券为空");
+        }
+
+        Set<User> existUserSet = new ConcurrentHashSet<>();
+        Set<String> notExistUserSet = new ConcurrentHashSet<>();
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        phoneSet.parallelStream().forEach(e -> {
+            User user = userService.queryByUserPhone(e, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+            if (Objects.isNull(user)) {
+                notExistUserSet.add(e);
+            } else {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+                user.setName(userInfo.getName());
+                existUserSet.add(user);
+            }
+        });
+
+        CouponPackageBatchReleaseVO vo = CouponPackageBatchReleaseVO.builder()
+                .sessionId(UUID.fastUUID().toString(true))
+                .notExistPhones(notExistUserSet)
+                .isRequest(existUserSet.isEmpty() ? CouponPackageBatchReleaseVO.IS_REQUEST_NO : CouponPackageBatchReleaseVO.IS_REQUEST_YES)
+                .build();
+        execute.execute(() -> batchReleaseHandler(existUserSet, packageItemList, vo.getSessionId(), operateUid));
+
+        return R.ok(vo);
+    }
+
+
+    private void batchReleaseHandler(Set<User> existsPhone, List<CouponPackageItem> packageItemList, String sessionId, Long operateUid) {
+        Iterator<User> iterator = existsPhone.iterator();
+
+        List<UserCoupon> userCouponList = new ArrayList<>();
+        int maxSize = 300;
+        int size = 0;
+
+        while (iterator.hasNext()) {
+            if (size >= maxSize) {
+                userCouponService.batchInsert(userCouponList);
+                userCouponList.clear();
+                size = 0;
+                continue;
+            }
+            User user = iterator.next();
+            packageItemList.stream().forEach(item -> {
+                UserCoupon userCoupon = new UserCoupon();
+                userCoupon.setSource(UserCoupon.TYPE_SOURCE_ADMIN_SEND);
+                userCoupon.setCouponId(item.getCouponId().intValue());
+                userCoupon.setName(item.getCouponName());
+                userCoupon.setDiscountType(item.getDiscountType());
+                userCoupon.setUid(user.getUid());
+                userCoupon.setPhone(user.getPhone());
+                userCoupon.setDeadline(TimeUtils.convertTimeStamp(LocalDateTime.now().plusDays(item.getDays())));
+                userCoupon.setCreateTime(System.currentTimeMillis());
+                userCoupon.setUpdateTime(System.currentTimeMillis());
+                userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
+                userCoupon.setDelFlag(UserCoupon.DEL_NORMAL);
+                userCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
+                userCoupon.setTenantId(user.getTenantId());
+                userCoupon.setCouponType(CouponTypeEnum.BATCH_RELEASE.getCode());
+                userCoupon.setCouponWay(operateUid);
+                userCouponList.add(userCoupon);
+            });
+            size++;
+        }
+
+        if (CollUtil.isNotEmpty(userCouponList)) {
+            userCouponService.batchInsert(userCouponList);
+        }
+
+        log.info("Coupon Package Batch Release Success! sessionId is {} size is {}", sessionId, existsPhone.size());
+        redisService.set(String.format(CacheConstant.COUPON_PACKAGE_BATCH_RELEASE_RESULT_KEY, sessionId), "1", 60L, TimeUnit.SECONDS);
     }
 }

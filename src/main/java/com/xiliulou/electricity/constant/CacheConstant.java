@@ -937,5 +937,10 @@ public interface CacheConstant {
      * 标记电池缓存
      */
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
+
+    /**
+     * 优惠券包下发结果缓存key
+     */
+    String COUPON_PACKAGE_BATCH_RELEASE_RESULT_KEY= "coupon_package_batch_release:%s";
 }
 

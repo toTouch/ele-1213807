@@ -3,9 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
 import com.xiliulou.electricity.query.CouponPackagePageQuery;
+import com.xiliulou.electricity.request.CouponPackageBatchReleaseRequest;
 import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
-
-import java.util.List;
 
 /**
  * @Description: CouponPackageService
@@ -58,4 +57,12 @@ public interface CouponPackageService {
      * @return: @return {@link R }
      */
     R<Integer> pageCount(CouponPackagePageQuery query);
+
+    /**
+     * 批量下发优惠券包
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+    R batchRelease(CouponPackageBatchReleaseRequest request);
 }
