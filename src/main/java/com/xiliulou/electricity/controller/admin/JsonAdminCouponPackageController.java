@@ -2,12 +2,12 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
+import com.xiliulou.electricity.query.CouponPackagePageQuery;
 import com.xiliulou.electricity.service.CouponPackageService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-
 
 /**
  * @Description: 优惠券包Controller
@@ -59,5 +59,27 @@ public class JsonAdminCouponPackageController {
     }
 
 
+    /**
+     * 分页list
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+    @PostMapping(value = "pageList")
+    public R pageList(@RequestBody CouponPackagePageQuery query) {
+        return couponPackageService.pageList(query);
+    }
+
+
+    /**
+     * 分页count
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+    @PostMapping(value = "pageCount")
+    public R pageCount(@RequestBody CouponPackagePageQuery query) {
+        return couponPackageService.pageCount(query);
+    }
 
 }

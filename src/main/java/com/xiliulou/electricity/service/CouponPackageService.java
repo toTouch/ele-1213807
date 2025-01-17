@@ -2,7 +2,10 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
+import com.xiliulou.electricity.query.CouponPackagePageQuery;
 import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
+
+import java.util.List;
 
 /**
  * @Description: CouponPackageService
@@ -38,4 +41,21 @@ public interface CouponPackageService {
      * @return:
      */
     void del(Long packageId);
+
+    /**
+     * 分页list
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+
+    R pageList(CouponPackagePageQuery query);
+
+    /**
+     * 分页count
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+    R<Integer> pageCount(CouponPackagePageQuery query);
 }

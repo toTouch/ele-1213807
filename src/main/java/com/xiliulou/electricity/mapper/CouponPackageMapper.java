@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.CouponPackage;
+import com.xiliulou.electricity.query.CouponPackagePageQuery;
+
+import java.util.List;
 
 /**
  * @Description: CouponPackageMapper
@@ -17,4 +20,8 @@ public interface CouponPackageMapper {
     void updateCouponPackage(CouponPackage updateCouponPackage);
 
     void deleteCouponPackageById(Long packageId);
+
+    List<CouponPackage> selectPageCouponPackage(CouponPackagePageQuery query);
+
+    Integer selectCountCouponPackage(CouponPackagePageQuery query);
 }

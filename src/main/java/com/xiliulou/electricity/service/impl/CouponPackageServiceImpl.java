@@ -3,25 +3,30 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponPackage;
-import com.xiliulou.electricity.entity.CouponPackageItem;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.CouponPackageItemBO;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.CouponPackageMapper;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
+import com.xiliulou.electricity.query.CouponPackagePageQuery;
 import com.xiliulou.electricity.service.CouponPackageItemService;
 import com.xiliulou.electricity.service.CouponPackageService;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
+import com.xiliulou.electricity.vo.CouponPackagePageVO;
 import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -41,6 +46,12 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
     @Resource
     private CouponPackageItemService packageItemService;
+
+    @Resource
+    private AssertPermissionService assertPermissionService;
+
+    @Resource
+    private FranchiseeService franchiseeService;
 
 
     private void checkCouponAndBuildPackageItem(List<CouponPackageEditQuery.CouponPackageItemQuery> list, Long franchiseeId, List<CouponPackageItem> itemList, AtomicReference<Integer> sumCount) {
@@ -163,5 +174,71 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
         couponPackageMapper.deleteCouponPackageById(packageId);
         packageItemService.deletePackItemByPackageId(packageId);
+    }
+
+    @Override
+    public R pageList(CouponPackagePageQuery query) {
+        Pair<Boolean, List<Long>> checkPermission = preCheckPermission();
+        if (!checkPermission.getLeft()) {
+            return R.ok(CollUtil.newArrayList());
+        }
+
+        query.setFranchiseeIds(checkPermission.getRight());
+        query.setTenantId(TenantContextHolder.getTenantId());
+
+        List<CouponPackage> packageList = couponPackageMapper.selectPageCouponPackage(query);
+        if (CollUtil.isEmpty(packageList)) {
+            return R.ok(Collections.emptyList());
+        }
+
+        // 聚合
+        List<Long> packageIdList = packageList.stream().map(CouponPackage::getId).collect(Collectors.toList());
+        List<CouponPackageItemBO> packageItemList = packageItemService.listCouponPackageItemByPackageIds(packageIdList);
+        Map<Long, CouponPackageItemBO> packageItemBoMap = new HashMap<>(10);
+        if (CollUtil.isEmpty(packageItemList)) {
+            packageItemBoMap =
+                    packageItemList.stream().collect(Collectors.toMap(CouponPackageItemBO::getPackageId, item -> item, (k1, k2) -> k1));
+        }
+
+        Map<Long, CouponPackageItemBO> finalPackageItemBoMap = packageItemBoMap;
+        return R.ok(packageList.stream().map(item -> {
+            CouponPackagePageVO vo = BeanUtil.copyProperties(item, CouponPackagePageVO.class);
+
+            CouponPackageItemBO itemBO = finalPackageItemBoMap.get(item.getId());
+            if (Objects.nonNull(itemBO)) {
+                vo.setCouponNameStr(itemBO.getCouponNameStr());
+                vo.setEffectStr(itemBO.getEffectStr());
+            }
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            vo.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+
+            return vo;
+        }).collect(Collectors.toList()));
+    }
+
+
+    @Override
+    @Slave
+    public R<Integer> pageCount(CouponPackagePageQuery query) {
+        Pair<Boolean, List<Long>> checkPermission = preCheckPermission();
+        if (!checkPermission.getLeft()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        query.setFranchiseeIds(checkPermission.getRight());
+        query.setTenantId(TenantContextHolder.getTenantId());
+        return R.ok(couponPackageMapper.selectCountCouponPackage(query));
+    }
+
+
+    private Pair<Boolean, List<Long>> preCheckPermission() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return Pair.of(false, Collections.emptyList());
+        }
+        return assertPermissionService.assertPermissionByPair(user);
     }
 }

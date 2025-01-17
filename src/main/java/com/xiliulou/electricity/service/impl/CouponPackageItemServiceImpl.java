@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
 
+import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.CouponPackageItemBO;
 import com.xiliulou.electricity.entity.CouponPackageItem;
 import com.xiliulou.electricity.mapper.CouponPackageItemMapper;
 import com.xiliulou.electricity.service.CouponPackageItemService;
@@ -41,5 +43,14 @@ public class CouponPackageItemServiceImpl implements CouponPackageItemService {
     @Slave
     public List<CouponPackageItem> listCouponPackageItemByPackageId(Long packageId) {
         return couponPackageItemMapper.selectListCouponPackageItemByPackageId(packageId);
+    }
+
+    @Override
+    @Slave
+    public List<CouponPackageItemBO> listCouponPackageItemByPackageIds(List<Long> packageIds) {
+        if (CollUtil.isEmpty(packageIds)) {
+            return CollUtil.newArrayList();
+        }
+        return couponPackageItemMapper.selectListCouponPackageItemByPackageIds(packageIds);
     }
 }

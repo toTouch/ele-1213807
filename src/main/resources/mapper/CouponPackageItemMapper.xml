@@ -37,5 +37,16 @@
         where package_id =#{packageId}
     </select>
 
+    <select id="selectListCouponPackageItemByPackageIds"
+            resultType="com.xiliulou.electricity.bo.CouponPackageItemBO">
+        select
+        package_id as 'packageId',group_concat(coupon_name) as 'couponNameStr',group_concat(effect) as 'effectStr'
+        from t_coupon_package_item
+        where package_id in
+        <foreach collection="packageIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        group by package_id
+    </select>
 
 </mapper>

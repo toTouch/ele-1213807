@@ -65,4 +65,49 @@
         where id = #{id}
     </delete>
 
+
+    <select id="selectPageCouponPackage" resultType="com.xiliulou.electricity.entity.CouponPackage">
+        select
+        <include refid="baseSql"/>
+        from t_coupon_package
+        where tenant_id = #{tenantId}
+        <if test="packageName != null">
+            name like concat('%',#{packageName},'%')
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="inCanBuy != null">
+            and is_can_buy = #{inCanBuy}
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by id desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="selectCountCouponPackage" resultType="integer">
+        select count(1)
+        from t_coupon_package
+        where tenant_id = #{tenantId}
+        <if test="packageName != null">
+            name like concat('%',#{packageName},'%')
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="inCanBuy != null">
+            and is_can_buy = #{inCanBuy}
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
 </mapper>

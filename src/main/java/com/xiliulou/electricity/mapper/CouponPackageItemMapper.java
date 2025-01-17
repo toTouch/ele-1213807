@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.bo.CouponPackageItemBO;
 import com.xiliulou.electricity.entity.CouponPackageItem;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface CouponPackageItemMapper {
     void deletePackItemByPackageId(Long packageId);
 
     List<CouponPackageItem> selectListCouponPackageItemByPackageId(Long packageId);
+
+    List<CouponPackageItemBO> selectListCouponPackageItemByPackageIds(List<Long> packageIds);
 }

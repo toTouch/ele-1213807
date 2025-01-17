@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.bo.CouponPackageItemBO;
 import com.xiliulou.electricity.entity.CouponPackageItem;
 
 import java.util.List;
@@ -47,4 +48,14 @@ public interface CouponPackageItemService {
      */
 
     List<CouponPackageItem> listCouponPackageItemByPackageId(Long packageId);
+
+
+    /**
+     * 获取优惠券包下的优惠券
+     *
+     * @param packageIds packageIdList
+     * @return: @return {@link List }<{@link CouponPackageItemBO }>
+     */
+
+    List<CouponPackageItemBO> listCouponPackageItemByPackageIds(List<Long> packageIds);
 }
