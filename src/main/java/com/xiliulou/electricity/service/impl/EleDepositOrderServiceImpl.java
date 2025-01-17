@@ -895,6 +895,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return Triple.of(true, null, eleDepositOrder);
     }
     
+    @Slave
+    @Override
+    public List<EleDepositOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList) {
+        return eleDepositOrderMapper.selectListByOrderIdList(tenantId, orderIdList);
+    }
+    
     @Override
     public R queryFranchiseeDeposit(String productKey, String deviceName, Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();

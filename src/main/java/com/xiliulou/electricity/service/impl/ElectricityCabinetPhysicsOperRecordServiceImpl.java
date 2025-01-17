@@ -111,11 +111,13 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
     }
     
     @Override
+    @Slave
     public Integer existSameCabinetCellSameTimeOpenRecord(Long createTime, Integer electricityCabinetId, Integer oldCellNo) {
         return electricityCabinetPhysicsOperRecordMapper.existSameCabinetCellSameTimeOpenRecord(createTime, electricityCabinetId, oldCellNo);
     }
     
     @Override
+    @Slave
     public Integer existOpenRecordInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell) {
         return electricityCabinetPhysicsOperRecordMapper.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
     }

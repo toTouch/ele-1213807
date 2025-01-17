@@ -79,7 +79,17 @@
         order by p.id desc
             limit 1
     </select>
-
+    
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO">
+        select t1.uid, t1.member_card_id, t1.order_id, t2.pay_type, t2.create_time
+        from t_user_battery_member_card_package t1
+        left join t_electricity_member_card_order t2 on t1.order_id = t2.order_id
+        where t1.tenant_id = #{tenantId} and t1.uid in
+        <foreach collection="uidList" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </select>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_user_battery_member_card_package where id = #{id}

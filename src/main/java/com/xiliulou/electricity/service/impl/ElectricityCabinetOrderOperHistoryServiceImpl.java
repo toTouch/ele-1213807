@@ -118,4 +118,9 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
         electricityCabinetOrderOperHistoryMapper.insertEleExchangeOperateHistory(operHistoryList);
     }
+
+    @Override
+    public void batchInsert(List<ElectricityCabinetOrderOperHistory> list) {
+        electricityCabinetOrderOperHistoryMapper.insertEleExchangeOperateHistory(list);
+    }
 }
