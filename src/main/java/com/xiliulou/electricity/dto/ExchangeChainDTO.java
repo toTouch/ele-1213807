@@ -1,9 +1,6 @@
 package com.xiliulou.electricity.dto;
 
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -42,4 +39,7 @@ public class ExchangeChainDTO {
      * 用户绑定的电池
      */
     private ElectricityBattery electricityBattery;
+
+
+    private RentBatteryOrder rentBatteryOrder;
 }

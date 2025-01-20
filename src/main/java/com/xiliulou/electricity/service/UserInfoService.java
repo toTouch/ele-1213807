@@ -70,6 +70,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryCarRentalList(UserInfoQuery userInfoQuery);
     
+    R queryCarRentalListForPro(UserInfoQuery userInfoQuery);
+    
     R queryCarRentalCount(UserInfoQuery userInfoQuery);
     
     R updateStatus(Long uid, Integer usableStatus);
@@ -149,6 +151,8 @@ public interface UserInfoService extends IService<UserInfo> {
     R userInfoSearch(Long size, Long offset, String name, String keyWords);
     
     R queryEleList(UserInfoQuery userInfoQuery);
+    
+    R queryEleListForPro(UserInfoQuery userInfoQuery);
     
     R queryEleListCount(UserInfoQuery userInfoQuery);
     
