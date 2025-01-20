@@ -99,7 +99,7 @@
     
     <select id="countCabinetOverview" resultType="java.lang.Integer">
         SELECT
-            count(cabinet_id)
+            count(distinct cabinet_id)
         FROM
             t_ele_hardware_fault_cabinet_msg
         where
