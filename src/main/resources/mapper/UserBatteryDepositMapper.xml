@@ -53,7 +53,15 @@
             </if>
         </where>
     </select>
-
+    
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserBatteryDeposit">
+        <include refid="selectUserDeposit"/>
+        where del_flag = 0 and uid in
+        <foreach collection="uidList" item="uid" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_battery_deposit(uid, did, order_id, del_flag,battery_deposit, create_time, update_time, apply_deposit_time, deposit_type, deposit_modify_flag,before_modify_deposit)

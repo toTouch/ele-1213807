@@ -88,4 +88,8 @@ public interface InsuranceOrderService {
      */
     Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId, ElectricityCabinet electricityCabinet,
             BasePayConfig basePayConfig);
+
+    InsuranceOrder queryByUid(Long uid, Integer type,Integer status);
+
+    List<InsuranceOrder> queryByUid(Long uid, Integer type);
 }

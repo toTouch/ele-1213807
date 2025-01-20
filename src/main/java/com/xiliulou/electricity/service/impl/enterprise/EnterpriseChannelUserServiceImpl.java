@@ -1002,7 +1002,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             channelUserExitMapper.batchUpdateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, idList, System.currentTimeMillis());
         }
         
-        log.error("channel User Exit Check success, uid={}, msg={}", request.getUid());
+        log.info("channel User Exit Check success, uid={}, msg={}", request.getUid());
         
         return Triple.of(true, null, null);
     }
@@ -1435,6 +1435,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Slave
     public int existsRenewCloseUser(Long id) {
         return enterpriseChannelUserMapper.existsRenewCloseUser(id);
+    }
+    
+    @Slave
+    @Override
+    public List<EnterpriseChannelUserVO> listByUidList(List<Long> uidList, Integer tenantId) {
+        return enterpriseChannelUserMapper.selectListByUidList(uidList, tenantId);
     }
     
     private Triple<Boolean, String, Object> channelUserAdminExitCheck(EnterpriseUserAdminExitCheckRequest request, EnterpriseChannelUser channelUser, Integer tenantId) {

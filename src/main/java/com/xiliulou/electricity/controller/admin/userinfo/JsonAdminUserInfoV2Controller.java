@@ -5,6 +5,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.CheckFreezeDaysSourceEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -204,7 +205,8 @@ public class JsonAdminUserInfoV2Controller {
         }
         
         Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, freezeRentOrderoptReq.getUid(), freezeRentOrderoptReq.getPackageOrderNo(),
-                freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.BACKGROUND, user.getUid(), user.getUsername());
+                freezeRentOrderoptReq.getApplyTerm(), freezeRentOrderoptReq.getApplyReason(), SystemDefinitionEnum.BACKGROUND, user.getUid(), user.getUsername(),
+                CheckFreezeDaysSourceEnum.BACK.getCode());
         return R.ok(freezeFlag);
         
     }
@@ -222,6 +224,9 @@ public class JsonAdminUserInfoV2Controller {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
         
         return R.ok(carRentalPackageMemberTermBizService.queryUserMemberInfo(tenantId, uid));
         

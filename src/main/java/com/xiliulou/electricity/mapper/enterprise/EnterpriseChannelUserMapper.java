@@ -125,4 +125,6 @@ public interface EnterpriseChannelUserMapper extends BaseMapper<EnterpriseChanne
     void updateByEnterpriseId(EnterpriseChannelUser enterpriseChannelUser);
     
     int existsRenewCloseUser(@Param("enterpriseId") Long id);
+    
+    List<EnterpriseChannelUserVO> selectListByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
 }

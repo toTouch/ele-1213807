@@ -78,7 +78,6 @@ public class ElectricityCabinetOrderOperHistory {
 
     public static final Integer SELF_OPEN_CELL_SEQ_COMPLETE = 10;
 
-    public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY = 7;
     
     public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE = 8;
     

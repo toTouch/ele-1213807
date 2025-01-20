@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜保险用户绑定(FranchiseeInsurance)表服务接口
@@ -583,9 +586,44 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.isNull(insuranceUserInfo)) {
             return R.fail("100309", "用户未购买保险");
         }
-        
         InsuranceUserInfoVo oldInsuranceUserInfo = selectUserInsurance(query.getUid(), query.getType());
-        
+
+
+        // 是否存在未生效的保险
+        InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(userInfo.getUid(), query.getType(), InsuranceOrder.NOT_EFFECTIVE);
+
+        // 未出险--已出险 && 已经过期
+        if (issueInsuranceCheck(insuranceUserInfo, query.getIsUse())) {
+            if (Objects.isNull(insuranceOrder)) {
+                //无承接保险订单 订单状态更新为已过期
+                updateInsuranceOrder(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
+                return R.fail("402016", "当前保单已过期，无法进行出险操作");
+            } else {
+                //  有承接保险订单
+                //  前一个保单更新为【已过期】
+                updateInsuranceOrder(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
+                //  承接的新保单状态更新为【已出险】
+                updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.IS_USE);
+
+                // 用户保险为出险
+                InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
+                updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
+                updateInsuranceUserInfo.setIsUse(query.getIsUse());
+                updateInsuranceUserInfo.setType(query.getType());
+                updateInsuranceUserInfo.setUid(userInfo.getUid());
+                // 修改到期时间为承接保险的到期时间
+                updateInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+                updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+                updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+                this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
+
+                // 操作记录
+                operate(query, user, userInfo, oldInsuranceUserInfo, updateInsuranceUserInfo);
+                return R.ok();
+            }
+        }
+
+
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
         updateInsuranceUserInfo.setIsUse(query.getIsUse());
@@ -593,19 +631,56 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setUid(userInfo.getUid());
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+        if (Objects.nonNull(insuranceOrder)){
+            // 存在承接保险订单
+            if (Objects.nonNull(query.getInsuranceExpireTime()) && query.getInsuranceExpireTime() <= System.currentTimeMillis() || Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE)){
+                existNotUseInsuranceOrder(updateInsuranceUserInfo, insuranceOrder);
+            }
+        }else {
+            if (Objects.nonNull(query.getInsuranceExpireTime()) && query.getInsuranceExpireTime() <= System.currentTimeMillis()) {
+                updateInsuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
+            }
+            if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE)) {
+                updateInsuranceUserInfo.setIsUse(query.getIsUse());
+            }
+        }
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
-        
+
+
+        // 当前保险状态更新为已出险
         InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
         insuranceOrderUpdate.setUpdateTime(System.currentTimeMillis());
         insuranceOrderUpdate.setOrderId(insuranceUserInfo.getInsuranceOrderId());
-        insuranceOrderUpdate.setIsUse(query.getIsUse());
+        // 当前保险到期时间小于等于当前时间,保险状态更新为：已过期
+        if (Objects.nonNull(query.getInsuranceExpireTime()) && query.getInsuranceExpireTime() <= System.currentTimeMillis()){
+            insuranceOrderUpdate.setIsUse(InsuranceOrder.EXPIRED);
+        }else {
+            insuranceOrderUpdate.setIsUse(query.getIsUse());
+        }
         insuranceOrderUpdate.setTenantId(TenantContextHolder.getTenantId());
         insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
-        
+
+
         //新增操作记录
+        operate(query, user, userInfo, oldInsuranceUserInfo, updateInsuranceUserInfo);
+        return R.ok();
+    }
+
+    private void existNotUseInsuranceOrder(InsuranceUserInfo updateInsuranceUserInfo, InsuranceOrder insuranceOrder) {
+        updateInsuranceUserInfo.setInsuranceId(insuranceOrder.getInsuranceId());
+        updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+        // 设置用户未出险
+        updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+        // 时间为承接保险的到期时间+当前时间
+        updateInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+        // 有未生效的保险设置为 未出险
+        this.updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
+    }
+
+    private void operate(InsuranceUserInfoQuery query, TokenUser user, UserInfo userInfo, InsuranceUserInfoVo oldInsuranceUserInfo, InsuranceUserInfo updateInsuranceUserInfo) {
         EleUserOperateRecord record = EleUserOperateRecord.builder().operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        
+
         //判断是单电的保险操作还是车的保险操作
         if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
@@ -624,11 +699,24 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOldCarInsuranceExpireTime(oldInsuranceUserInfo.getInsuranceExpireTime());
             record.setNewCarInsuranceExpireTime(query.getInsuranceExpireTime());
         }
-        
+
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
-        
-        return R.ok();
     }
+
+    private static boolean issueInsuranceCheck(InsuranceUserInfo insuranceUserInfo, Integer isUser) {
+        return Objects.equals(isUser, InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceUserInfo.getInsuranceExpireTime()) && insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis();
+    }
+
+    private void updateInsuranceOrder(String orderId, Integer status) {
+        InsuranceOrder newInsuranceOrder = new InsuranceOrder();
+        newInsuranceOrder.setUpdateTime(System.currentTimeMillis());
+        newInsuranceOrder.setOrderId(orderId);
+        newInsuranceOrder.setIsUse(status);
+        newInsuranceOrder.setTenantId(TenantContextHolder.getTenantId());
+        insuranceOrderService.updateIsUseByOrderId(newInsuranceOrder);
+    }
+
+
     
     @Override
     public R renewalUserBatteryInsurance(InsuranceUserInfoQuery query) {
@@ -672,29 +760,60 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            return R.fail("100306", "保险已禁用!");
+            return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理");
         }
-        
+
+        List<InsuranceOrder> insuranceOrders = insuranceOrderService.queryByUid(query.getUid(), query.getType());
+        // 用户是否有未生效保险
+        if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_EFFECTIVE)).collect(Collectors.toList()))) {
+            return R.fail("402015", "当前用户已有未生效的保险订单，请前往【保险购买记录】查看详情");
+        }
+
+        InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
+
+        // 生成保险订单
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
-        InsuranceOrder insuranceUserOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
+        InsuranceOrder insuranceOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
                 .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(orderId).cid(franchiseeInsurance.getCid()).franchiseeId(franchiseeInsurance.getFranchiseeId())
-                .isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
+                .payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
                 .phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_SUCCESS).tenantId(TenantContextHolder.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName())
                 .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
-        insuranceOrderService.insert(insuranceUserOrder);
-        
-        InsuranceUserInfo newInsuranceUserInfo = this.saveUserInsurance(insuranceUserOrder);
+        // 如意存在未出险的保险订单&已经支付成功的，续费新的保险订单为未生效
+        if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_USE)
+                && Objects.equals(item.getStatus(), InsuranceOrder.STATUS_SUCCESS)).collect(Collectors.toList()))) {
+            insuranceOrder.setIsUse(InsuranceOrder.NOT_EFFECTIVE);
+        } else {
+            // 未出险
+            insuranceOrder.setIsUse(InsuranceOrder.NOT_USE);
+            // 更新保险绑定关系
+            updateInsuranceUserInfo.setInsuranceId(insuranceOrder.getInsuranceId());
+            updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+        }
+        insuranceOrderService.insert(insuranceOrder);
+
+        // 如果本来就存在未出险的保险，则不更新绑定，如果没有未出险订单，则更新绑定
+        InsuranceUserInfo insuranceUserInfoCache = this.selectByUidAndTypeFromCache(insuranceOrder.getUid(), insuranceOrder.getInsuranceType());
+        updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+        if (Objects.isNull(insuranceUserInfoCache) || Objects.equals(insuranceUserInfoCache.getIsUse(), InsuranceUserInfo.IS_USE)
+                || insuranceUserInfoCache.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            updateInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+        }
+        updateInsuranceUserInfo.setId(insuranceUserInfoCache.getId());
+        updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateInsuranceUserInfo.setUid(query.getUid());
+        updateInsuranceUserInfo.setType( query.getType());
+        insuranceUserInfoService.updateInsuranceUserInfoById(updateInsuranceUserInfo);
+
         
         InsuranceOrder oldInsuranceUserOrder = insuranceOrderService.queryByOrderId(insuranceUserInfo.getInsuranceOrderId());
-        if (Objects.nonNull(oldInsuranceUserOrder)) {
-            InsuranceOrder insuranceUserOrderUpdate = new InsuranceOrder();
-            insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
-            insuranceUserOrderUpdate.setIsUse(Objects.equals(oldInsuranceUserOrder.getIsUse(), InsuranceOrder.IS_USE) ? InsuranceOrder.IS_USE : InsuranceOrder.INVALID);
-            insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            //            insuranceOrderService.update(insuranceUserOrderUpdate);
-            insuranceOrderService.updateUseStatusForRefund(oldInsuranceUserOrder.getOrderId(), InsuranceOrder.INVALID);
-        }
+//        if (Objects.nonNull(oldInsuranceUserOrder)) {
+//            InsuranceOrder insuranceUserOrderUpdate = new InsuranceOrder();
+//            insuranceUserOrderUpdate.setId(oldInsuranceUserOrder.getId());
+//            insuranceUserOrderUpdate.setIsUse(Objects.equals(oldInsuranceUserOrder.getIsUse(), InsuranceOrder.IS_USE) ? InsuranceOrder.IS_USE : InsuranceOrder.INVALID);
+//            insuranceUserOrderUpdate.setUpdateTime(System.currentTimeMillis());
+//            insuranceOrderService.updateUseStatusForRefund(oldInsuranceUserOrder.getOrderId(), InsuranceOrder.INVALID);
+//        }
 /*
         InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
         updateOrAddInsuranceUserInfo.setId(insuranceUserInfo.getId());
@@ -728,17 +847,17 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOperateModel(UserOperateRecordConstant.BATTERY_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.RENEWAL_BATTERY_INSURANCE_CONTENT);
             record.setOldBatteryInsuranceStatus(oldInsuranceUserOrder.getIsUse());
-            record.setNewBatteryInsuranceStatus(newInsuranceUserInfo.getIsUse());
+            record.setNewBatteryInsuranceStatus(updateInsuranceUserInfo.getIsUse());
             record.setOldBatteryInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
-            record.setNewBatteryInsuranceExpireTime(newInsuranceUserInfo.getInsuranceExpireTime());
+            record.setNewBatteryInsuranceExpireTime(updateInsuranceUserInfo.getInsuranceExpireTime());
         } else {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
             record.setOperateModel(UserOperateRecordConstant.CAR_INSURANCE);
             record.setOperateContent(UserOperateRecordConstant.RENEWAL_CAR_INSURANCE_CONTENT);
             record.setOldCarInsuranceStatus(oldInsuranceUserOrder.getIsUse());
-            record.setNewCarInsuranceStatus(newInsuranceUserInfo.getIsUse());
+            record.setNewCarInsuranceStatus(updateInsuranceUserInfo.getIsUse());
             record.setOldCarInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
-            record.setNewCarInsuranceExpireTime(newInsuranceUserInfo.getInsuranceExpireTime());
+            record.setNewCarInsuranceExpireTime(updateInsuranceUserInfo.getInsuranceExpireTime());
         }
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         
@@ -813,27 +932,47 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             if (CollectionUtils.isEmpty(list)) {
                 return;
             }
-            
-            list.parallelStream().forEach(item -> {
-                if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
-                    //更新用户绑定保险状态
-                    InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
-                    insuranceUserInfo.setId(item.getId());
-                    insuranceUserInfo.setUid(item.getUid());
-                    insuranceUserInfo.setType(item.getType());
-                    insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
-                    insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
-                    this.updateInsuranceUserInfoById(insuranceUserInfo);
-                    
-                    //更新订单状态
-                    insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
-                }
-            });
-            
+            list.parallelStream().forEach(this::userInsuranceExpireAutoConvert);
             offset += size;
         }
     }
-    
+
+    @Override
+    public void userInsuranceExpireAutoConvert(InsuranceUserInfo item) {
+        if (Objects.isNull(item)) {
+            log.warn("UserInsuranceExpireAutoConvert Warn! item is null");
+            return;
+        }
+        if (Objects.isNull(item.getInsuranceExpireTime())) {
+            log.warn("UserInsuranceExpireAutoConvert Warn! insuranceExpireTime is null, id is {}", item.getId());
+            return;
+        }
+        if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            // 更新保险订单状态=已过期
+            insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
+
+            InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
+            insuranceUserInfo.setId(item.getId());
+            insuranceUserInfo.setUid(item.getUid());
+            insuranceUserInfo.setType(item.getType());
+            insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+            // 当前保险过期，未生效保险立即生效（允许定时任务的时间误差），保险状态更新为未出险
+            InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(item.getUid(), item.getType(), InsuranceOrder.NOT_EFFECTIVE);
+            if (Objects.isNull(insuranceOrder)) {
+                // 没有承接保险
+                insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
+            } else {
+                // 未出险，用户新绑定的保险订单
+                insuranceUserInfo.setIsUse(InsuranceOrder.NOT_USE);
+                insuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+                insuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + insuranceOrder.getValidDays() * 24 * 60 * 60 * 1000L);
+                //更新承接保险订单状态=未出险
+                insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
+            }
+            this.updateInsuranceUserInfoById(insuranceUserInfo);
+        }
+    }
+
     @Override
     public List<InsuranceUserInfo> selectByUid(Long uid) {
         return baseMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid));
@@ -841,5 +980,34 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     
     private List<InsuranceUserInfo> selectUserInsuranceList(int offset, int size) {
         return baseMapper.selectUserInsuranceList(offset, size);
+    }
+
+
+    @Override
+    public R renewalUserInsuranceInfoCheck(InsuranceUserInfoQuery query) {
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(query.getInsuranceId());
+        if (Objects.isNull(franchiseeInsurance)) {
+            return R.fail("100305", "未找到保险!");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
+            //  续费同类型未禁用的保险
+            franchiseeInsurance = franchiseeInsuranceService.querySameInsuranceType(userInfo.getTenantId(), userInfo.getFranchiseeId(), query.getType(), franchiseeInsurance.getSimpleBatteryType(), franchiseeInsurance.getCarModelId());
+            if (Objects.isNull(franchiseeInsurance)) {
+                return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理");
+            }
+        }
+
+        return R.ok(franchiseeInsurance);
+    }
+
+    @Override
+    @Slave
+    public List<InsuranceUserInfo> listByUid(Long uid) {
+        return baseMapper.selectListByUid(uid);
     }
 }
