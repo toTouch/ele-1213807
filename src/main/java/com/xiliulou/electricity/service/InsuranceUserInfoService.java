@@ -68,4 +68,14 @@ public interface InsuranceUserInfoService {
     void updateUserInsuranceOrderStatusTask();
 
     List<InsuranceUserInfo> selectByUid(Long uid);
+
+    /**
+     * 用户保险过期自动转换
+     * @param item
+     */
+    void userInsuranceExpireAutoConvert(InsuranceUserInfo item);
+
+    R renewalUserInsuranceInfoCheck(InsuranceUserInfoQuery query);
+
+    List<InsuranceUserInfo> listByUid(Long uid);
 }
