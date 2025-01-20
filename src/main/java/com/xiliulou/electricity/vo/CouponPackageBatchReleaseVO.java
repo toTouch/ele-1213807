@@ -32,8 +32,17 @@ public class CouponPackageBatchReleaseVO {
     private Integer isRequest;
 
 
+
+
+
+    /**
+     * 是否需要轮训，是
+     */
     public static final Integer IS_REQUEST_YES = 1;
 
+    /**
+     * 前端不需要轮训
+     */
     public static final Integer IS_REQUEST_NO = 0;
 
 }

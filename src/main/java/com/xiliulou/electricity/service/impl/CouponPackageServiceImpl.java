@@ -434,6 +434,9 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
     @Override
     public CouponPackage queryByIdFromCache(Long id) {
+        if (Objects.isNull(id)) {
+            return null;
+        }
         //先查缓存
         CouponPackage couponPackage = redisService.getWithHash(CacheConstant.COUPON_PACKAGE_CACHE_KEY + id, CouponPackage.class);
         if (Objects.nonNull(couponPackage)) {
