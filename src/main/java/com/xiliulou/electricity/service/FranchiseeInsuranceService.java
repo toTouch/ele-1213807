@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.FranchiseeInsuranceIdsRequest;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
+import com.xiliulou.electricity.vo.UserInsuranceInfoVO;
 import com.xiliulou.electricity.vo.insurance.FranchiseeInsuranceOrderIdsVo;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -65,4 +66,8 @@ public interface FranchiseeInsuranceService {
     List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(Collection<Long> collect);
     
     List<FranchiseeInsuranceOrderIdsVo> queryInsuranceIds(FranchiseeInsuranceIdsRequest franchiseeInsuranceIdsRequest);
+
+    FranchiseeInsurance querySameInsuranceType(Integer tenantId, Long franchiseeId, Integer type, String batteryType, Long carModelId);
+
+    UserInsuranceInfoVO selectInsuranceByTypeV2(FranchiseeInsuranceQuery query);
 }

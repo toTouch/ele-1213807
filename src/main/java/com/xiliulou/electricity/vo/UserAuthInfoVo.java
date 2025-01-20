@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.vo.userinfo.emergencyContact.EmergencyContactVO;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author: eclair
@@ -91,5 +94,10 @@ public class UserAuthInfoVo {
      * 实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
      */
     private Integer authType;
+    
+    /**
+     * 紧急联系人
+     */
+    private List<EmergencyContactVO> emergencyContactList;
 
 }
