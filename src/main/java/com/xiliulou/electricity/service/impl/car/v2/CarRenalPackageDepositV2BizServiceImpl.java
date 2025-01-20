@@ -1193,6 +1193,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     // 作废保险订单
                     if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                         insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                        // 是否存在未生效的保险
+                        InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(depositPayEntity.getUid(), depositRefundEntity.getRentalPackageType(), InsuranceOrder.NOT_EFFECTIVE);
+                        if (Objects.nonNull(insuranceOrder)) {
+                            insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                        }
                     }
                     // 删除会员期限表信息
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), apploveUid);
@@ -1262,6 +1268,11 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     // 作废保险订单
                     if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                         insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                        // 是否存在未生效的保险
+                        InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(depositPayEntity.getUid(), depositRefundEntity.getRentalPackageType(), InsuranceOrder.NOT_EFFECTIVE);
+                        if (Objects.nonNull(insuranceOrder)) {
+                            insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                        }
                     }
                     // 删除会员期限表信息
                     carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
