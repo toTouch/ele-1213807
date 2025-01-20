@@ -82,7 +82,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
     private RedisService redisService;
 
     TtlXllThreadPoolExecutorServiceWrapper execute = TtlXllThreadPoolExecutorsSupport.get(
-            XllThreadPoolExecutors.newFixedThreadPool("COUPON_PACKAGE_RELEASE_POOL", 3, "coupon_package_release_thread"));
+            XllThreadPoolExecutors.newFixedThreadPool("COUPON_PACKAGE_RELEASE_POOL", 2, "coupon_package_release_thread"));
 
 
     private void checkCouponAndBuildPackageItem(List<CouponPackageEditQuery.CouponPackageItemQuery> list, Long franchiseeId, List<CouponPackageItem> itemList, AtomicReference<Integer> sumCount) {
@@ -330,14 +330,13 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         Iterator<User> iterator = existsPhone.iterator();
 
         List<UserCoupon> userCouponList = new ArrayList<>();
-        int maxSize = 300;
-        int size = 0;
+        int maxSize = 500;
 
         while (iterator.hasNext()) {
-            if (size >= maxSize) {
+            // 按照最大优惠包下面20个优惠券算，一次可以插入是25个用户数据
+            if (userCouponList.size() >= maxSize) {
                 userCouponService.batchInsert(userCouponList);
                 userCouponList.clear();
-                size = 0;
                 continue;
             }
             User user = iterator.next();
@@ -360,7 +359,6 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 userCoupon.setCouponWay(item.getPackageId());
                 userCouponList.add(userCoupon);
             });
-            size++;
         }
 
         if (CollUtil.isNotEmpty(userCouponList)) {
