@@ -3,11 +3,17 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserSourceQuery;
+import com.xiliulou.electricity.request.userinfo.emergencyContact.EmergencyContactRequest;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.ValidList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +41,9 @@ public class JsonUserUserInfoController extends BaseController {
     
     @Resource
     UserOauthBindService userOauthBindService;
+    
+    @Resource
+    private EmergencyContactService emergencyContactService;
     
     /**
      * 小程序首页获取用户详情
@@ -87,6 +96,22 @@ public class JsonUserUserInfoController extends BaseController {
     @GetMapping("/user/accountInfo")
     public R userAccountInfo() {
         return R.ok(userInfoService.selectAccountInfo());
+    }
+    
+    /**
+     * 查询紧急联系人
+     */
+    @GetMapping(value = "/user/emergencyContact/list")
+    public R emergencyContactList() {
+        return R.ok(emergencyContactService.listByUidFromCache(SecurityUtils.getUid()));
+    }
+    
+    /**
+     * 新增或编辑紧急联系人
+     */
+    @PostMapping(value = "/user/emergencyContact/insertOrUpdate")
+    public R emergencyContactInsertOrUpdate(@RequestBody @Validated ValidList<EmergencyContactRequest> emergencyContactList) {
+        return emergencyContactService.insertOrUpdate(emergencyContactList);
     }
     
 }
