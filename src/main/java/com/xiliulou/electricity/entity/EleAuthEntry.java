@@ -8,9 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 /**
  * 实名认证资料项(TEleAuthEntry)实体类
  *
@@ -52,8 +49,8 @@ public class EleAuthEntry {
      * 备注
      */
     private String remark;
-
-    //唯一标识(1--姓名，2--身份证，3--身份证正面 ，4--身份证反面)
+    
+    //唯一标识(1--姓名，2--身份证，3--身份证正面 ，4--身份证反面，5--自拍照片， 6--紧急联系人)
     private Integer identify;
 
     //租户id
@@ -76,8 +73,10 @@ public class EleAuthEntry {
     public static final Integer ID_CARD_BACK_PHOTO = 4;
     //自拍照片
     public static final Integer ID_SELF_PHOTO = 5;
-
-
+    
+    // 紧急联系人
+    public static final Integer ID_EMERGENCY_CONTACT = 6;
+    
     //使用
     public static final Integer IS_USE = 0;
     //默认不使用
