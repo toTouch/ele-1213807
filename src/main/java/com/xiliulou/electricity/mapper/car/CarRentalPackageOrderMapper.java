@@ -215,4 +215,6 @@ public interface CarRentalPackageOrderMapper {
      * @date 2024/11/26 13:51
      */
     List<CarRentalPackageOrderPo> selectListByOrderNos(@Param("tenantId") Integer tenantId, @Param("orderNos") List<String> orderNos);
+    
+    List<CarRentalPackageOrderPo> selectListByUidAndUseStatus(@Param("uidList")List<Long> uidList, @Param("useStatus")Integer useStatus);
 }

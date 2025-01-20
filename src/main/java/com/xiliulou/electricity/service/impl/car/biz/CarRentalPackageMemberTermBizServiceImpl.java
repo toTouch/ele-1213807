@@ -78,6 +78,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -592,10 +593,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      */
     @Override
     public UserMemberInfoVo queryUserMemberInfo(Integer tenantId, Long uid) {
-        if (!ObjectUtils.allNotNull(tenantId, uid)) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-        
         // 查看会员信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
@@ -827,7 +824,13 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                         }
                         
                         // 判定构建逾期订单
-                        Long expireTime = memberTermEntity.getDueTime() + TimeConstant.DAY_MILLISECOND;
+                        //Long expireTime = memberTermEntity.getDueTime() + TimeConstant.DAY_MILLISECOND;
+                        // 获取过期保护期毫秒
+                        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(memberTermEntity.getTenantId());
+                        long expiredProtectionMillisecond = this.getExpiredProtectionMillisecond(electricityConfig);
+                        // 获取过期时间
+                        Long expireTime = memberTermEntity.getDueTime() + expiredProtectionMillisecond;
+                        
                         if (nowTime >= expireTime) {
                             slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity, expireTime);
                             if (ObjectUtils.isEmpty(slippageEntityInsert)) {
@@ -1082,5 +1085,17 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         
         return slippageEntity;
+    }
+    
+    
+    private long getExpiredProtectionMillisecond(ElectricityConfig electricityConfig) {
+        if (Objects.isNull(electricityConfig)) {
+            return TimeConstant.DAY_MILLISECOND;
+        }
+        // 套餐过期保护期 小时
+        Integer expiredProtectionTime = Optional.ofNullable(electricityConfig.getExpiredProtectionTime())
+                .orElse(TimeConstant.DAT_HOURS);
+        // 转换毫秒
+        return expiredProtectionTime * 60L * 60L * 1000L;
     }
 }

@@ -202,7 +202,32 @@
     <select id="countByThirdIdAndSourceAndTenantId" resultType="java.lang.Integer">
         select count(1) from t_user_oauth_bind where tenant_id=#{tenantId} and third_id=#{thirdId} and source=#{source}
     </select>
-
+    
+    <select id="selectListByUidAndPhoneList" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT id,
+        uid,
+        source,
+        third_id,
+        third_nick,
+        access_token,
+        refresh_token,
+        status,
+        phone,
+        create_time,
+        update_time,
+        `tenant_id`
+        FROM t_user_oauth_bind
+        where tenant_id = #{tenantId}
+        and uid in
+        <foreach collection="queryList" item="query" open="(" separator="," close=")">
+            #{query.uid}
+        </foreach>
+        and phone in
+        <foreach collection="queryList" item="query" open="(" separator="," close=")">
+            #{query.phone}
+        </foreach>
+    </select>
+    
     
     <delete id="deleteByUid">
         delete

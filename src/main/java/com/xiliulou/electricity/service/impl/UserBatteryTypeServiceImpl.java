@@ -1,13 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserBatteryTypeMapper;
+import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -21,11 +20,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * (UserBatteryType)表服务实现类
@@ -47,7 +48,7 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     private UserInfoService userInfoService;
     
     @Resource
-    private RedisService redisService;
+    private BatteryModelService batteryModelService;
     
     @Override
     public Integer batchInsert(List<UserBatteryType> userBatteryType) {
@@ -148,6 +149,43 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Override
     public Integer deleteByUidAndBatteryTypes(Long uid, List<String> batteryTypes) {
         return userBatteryTypeMapper.deleteByUidAndBatteryTypes(uid, batteryTypes);
+    }
+    
+    @Slave
+    @Override
+    public Map<Long, List<String>> listShortBatteryByUidList(List<Long> uidList, Integer tenantId) {
+        List<UserBatteryType> userBatteryTypeList = userBatteryTypeMapper.selectListByUidList(uidList, tenantId);
+        if (CollectionUtils.isEmpty(userBatteryTypeList)) {
+            return null;
+        }
+    
+        Set<String> batteryTypeSet = userBatteryTypeList.stream().filter(Objects::nonNull).map(UserBatteryType::getBatteryType).collect(Collectors.toSet());
+        List<BatteryModel> batteryModels = batteryModelService.listBatteryModelByBatteryTypeList(new ArrayList<>(batteryTypeSet), tenantId);
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return null;
+        }
+    
+        Map<String, String> batteryTypeMap = batteryModels.stream()
+                .collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (item1, item2) -> item2));
+        Map<Long, List<UserBatteryType>> userBatteryTypeMap = userBatteryTypeList.stream().collect(Collectors.groupingBy(UserBatteryType::getUid));
+        Map<Long, List<String>> map = new HashMap<>(userBatteryTypeMap.size());
+    
+        userBatteryTypeMap.forEach((uid, userBatteryTypes) -> {
+            if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                return;
+            }
+        
+            List<String> shortList = new ArrayList<>(userBatteryTypes.size());
+            userBatteryTypes.forEach(userBatteryType -> {
+                if (StringUtils.isNotBlank(userBatteryType.getBatteryType()) && batteryTypeMap.containsKey(userBatteryType.getBatteryType())) {
+                    shortList.add(batteryTypeMap.get(userBatteryType.getBatteryType()));
+                }
+            });
+        
+            map.put(uid, shortList);
+        });
+    
+        return map;
     }
     
     @Override

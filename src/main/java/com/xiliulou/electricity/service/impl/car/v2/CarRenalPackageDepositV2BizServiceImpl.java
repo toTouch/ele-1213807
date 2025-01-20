@@ -627,6 +627,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             // 处理状态
             carRentalPackageMemberTermService.updateStatusById(memberTermEntity.getId(), MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode(), optId);
         } else {
+          try{
             // 作废所有的套餐购买订单（未使用、使用中）
             carRentalPackageOrderService.refundDepositByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid(), optId);
             // 查询用户保险
@@ -653,6 +654,17 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 userBatteryTypeService.deleteByUid(memberTermEntity.getUid());
                 userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
             }
+            
+          }finally {
+              // 清空缓存
+              try{
+                  String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, memberTermEntity.getTenantId(), memberTermEntity.getUid());
+                  redisService.delete(cacheKey);
+              } catch (Exception e){
+                  log.warn("WARN! Exception:",e);
+              }
+              
+          }
             
         }
     }

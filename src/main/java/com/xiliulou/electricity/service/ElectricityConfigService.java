@@ -37,11 +37,12 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
     /**
      * 校验是否可自动审核
      *
-     * @param tenantId 租户id
-     * @param days     申请冻结天数
-     * @param uid      申请冻结用户uid
+     * @param tenantId  租户id
+     * @param days      申请冻结天数
+     * @param uid       申请冻结用户uid
+     * @param hasAssets 有无资产，true-有资产；false-无资产
      * @return 自动审核校验结果，true-自动审核，false-人工审核
      * @throws BizException 若捕获到BizException，直接将其code、message组合成失败结果返回给前端即可
      */
-    Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid) throws BizException;
+    Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid, boolean hasAssets, Integer source) throws BizException;
 }
