@@ -92,6 +92,12 @@
             <if test="sn != null and sn != ''">
                 and sn like concat('%', #{sn}, '%')
             </if>
+            <if test="snList != null and snList.size() > 0">
+                and sn in
+                <foreach collection="snList" separator="," item="sn" open="(" close=")">
+                    #{sn}
+                </foreach>
+            </if>
             <if test="batchNo != null and batchNo != ''">
                 and batch_no like concat('%', #{batchNo}, '%')
             </if>
@@ -162,6 +168,43 @@
         order by id asc
         limit #{size}
     </select>
+
+    <select id="listBySnList" resultType="com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord">
+        select
+        <include refid="basic_field"/>
+        from t_battery_recycle_record
+        <where>
+            del_flag = 0
+            and tenant_id = #{tenantId}
+
+            <if test="status != null">
+                and status = #{status}
+            </if>
+
+            <if test="snList != null and snList.size() > 0">
+                and sn in
+                <foreach collection="snList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <update id="batchUpdateStatusByIdList">
+        update t_battery_recycle_record
+        set status = #{status},
+            update_time = #{updateTime}
+        where id in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
 
 </mapper>
 

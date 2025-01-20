@@ -4195,6 +4195,35 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
             }).filter(Objects::nonNull).collect(Collectors.toList());
             
+        } else if (Objects.nonNull(cabinetQuery.getLatitude()) && Objects.nonNull(cabinetQuery.getLongitude())) {
+            // 根据指定经纬度查询
+            ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                    .distance(Objects.isNull(cabinetQuery.getDistance()) ? 1000D : cabinetQuery.getDistance()).lon(cabinetQuery.getLongitude())
+                    .lat(cabinetQuery.getLatitude()).tenantId(TenantContextHolder.getTenantId()).build();
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = getGeoLocationGeoResults(electricityCabinetQuery);
+            if (geoRadius == null) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+
+            electricityCabinets = geoRadius.getContent().parallelStream().map(e -> {
+                ElectricityCabinetMapBO electricityCabinetMapBO = new ElectricityCabinetMapBO();
+                Integer eid = Integer.valueOf(e.getContent().getName());
+                ElectricityCabinet electricityCabinetTemp = queryByIdFromCache(eid);
+                if (Objects.isNull(electricityCabinetTemp)) {
+                    return null;
+                }
+
+                electricityCabinetMapBO.setId(electricityCabinetTemp.getId());
+                electricityCabinetMapBO.setName(electricityCabinetTemp.getName());
+                electricityCabinetMapBO.setAddress(electricityCabinetTemp.getAddress());
+                electricityCabinetMapBO.setLongitude(electricityCabinetTemp.getLongitude());
+                electricityCabinetMapBO.setLatitude(electricityCabinetTemp.getLatitude());
+                electricityCabinetMapBO.setOnlineStatus(electricityCabinetTemp.getOnlineStatus());
+                electricityCabinetMapBO.setUsableStatus(electricityCabinetTemp.getUsableStatus());
+                electricityCabinetMapBO.setPowerType(electricityCabinetTemp.getPowerType());
+                return electricityCabinetMapBO;
+
+            }).filter(Objects::nonNull).collect(Collectors.toList());
         } else {
             electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
         }
