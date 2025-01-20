@@ -94,6 +94,7 @@
              GROUP BY cabinet_id
          ) s
         order by s.warnCount desc
+            limit #{offset}, #{size}
     </select>
     
     <select id="countCabinetOverview" resultType="java.lang.Integer">
