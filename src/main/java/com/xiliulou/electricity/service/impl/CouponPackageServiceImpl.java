@@ -153,7 +153,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             couponPackageMapper.saveCouponPackage(couponPackage);
             packageId = couponPackage.getId();
         } else {
-            CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(query.getId());
+            CouponPackage couponPackage = queryByIdFromCache(query.getId());
             if (Objects.isNull(couponPackage)) {
                 return R.fail("402025", "优惠券包不存在");
             }
@@ -170,12 +170,13 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         itemList.forEach(item -> item.setPackageId(finalPackageId));
         packageItemService.batchSavePackItem(itemList);
 
+        redisService.delete(CacheConstant.COUPON_PACKAGE_CACHE_KEY + packageId);
         return R.ok();
     }
 
     @Override
     public CouponPackageDetailsVO editEcho(Long packageId) {
-        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(packageId);
+        CouponPackage couponPackage = queryByIdFromCache(packageId);
         if (Objects.isNull(couponPackage)) {
             throw new BizException("402025", "优惠券包不存在");
         }
@@ -194,13 +195,15 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
     @Override
     public void del(Long packageId) {
-        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(packageId);
+        CouponPackage couponPackage = queryByIdFromCache(packageId);
         if (Objects.isNull(couponPackage)) {
             throw new BizException("402025", "优惠券包不存在");
         }
 
         couponPackageMapper.deleteCouponPackageById(packageId);
         packageItemService.deletePackItemByPackageId(packageId);
+
+        redisService.delete(CacheConstant.COUPON_PACKAGE_CACHE_KEY + packageId);
     }
 
     @Override
@@ -290,7 +293,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(request.getPackageId());
+        CouponPackage couponPackage = queryByIdFromCache(request.getPackageId());
         if (Objects.isNull(couponPackage)) {
             R.fail("402025", "优惠券包不存在");
         }
@@ -378,7 +381,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        CouponPackage couponPackage = couponPackageMapper.selectCouponPackageById(request.getPackageId());
+        CouponPackage couponPackage = queryByIdFromCache(request.getPackageId());
         if (Objects.isNull(couponPackage)) {
             R.fail("402025", "优惠券包不存在");
         }
@@ -426,5 +429,25 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             return R.fail("402027", "券包正在发送中，请稍后再试");
         }
         return R.ok();
+    }
+
+
+    @Override
+    public CouponPackage queryByIdFromCache(Long id) {
+        //先查缓存
+        CouponPackage couponPackage = redisService.getWithHash(CacheConstant.COUPON_PACKAGE_CACHE_KEY + id, CouponPackage.class);
+        if (Objects.nonNull(couponPackage)) {
+            return couponPackage;
+        }
+
+        //缓存没有再查数据库
+        CouponPackage couponPackageDb = couponPackageMapper.selectCouponPackageById(id);
+        if (Objects.isNull(couponPackageDb)) {
+            return null;
+        }
+
+        //放入缓存
+        redisService.saveWithHash(CacheConstant.COUPON_PACKAGE_CACHE_KEY + id, couponPackageDb);
+        return couponPackageDb;
     }
 }

@@ -110,6 +110,9 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Autowired
     private NewUserActivityService newUserActivityService;
 
+    @Resource
+    private CouponPackageService couponPackageService;
+
     /**
      * 根据ID集查询用户优惠券信息
      *
@@ -231,6 +234,10 @@ public class UserCouponServiceImpl implements UserCouponService {
         if (Objects.equals(couponType, CouponTypeEnum.REGISTER_ACTIVITIES.getCode())) {
             NewUserActivity newUserActivity = newUserActivityService.queryByIdFromCache(couponWay.intValue());
             vo.setCouponWayDetails(Objects.isNull(newUserActivity) ? null : newUserActivity.getName());
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.COUPON_PACKAGE.getCode())) {
+            CouponPackage couponPackage = couponPackageService.queryByIdFromCache(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(couponPackage) ? null : couponPackage.getName());
         }
     }
 

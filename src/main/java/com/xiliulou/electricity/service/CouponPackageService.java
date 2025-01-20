@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.CouponPackage;
 import com.xiliulou.electricity.query.CouponPackageEditQuery;
 import com.xiliulou.electricity.query.CouponPackagePageQuery;
 import com.xiliulou.electricity.request.CouponPackageAppointReleaseRequest;
@@ -84,4 +85,14 @@ public interface CouponPackageService {
      */
 
     R queryBatchReleaseStatus(String sessionId);
+
+
+    /**
+     * 查询服务包
+     *
+     * @param id id
+     * @return: @return {@link CouponPackage }
+     */
+
+    CouponPackage queryByIdFromCache(Long id);
 }
