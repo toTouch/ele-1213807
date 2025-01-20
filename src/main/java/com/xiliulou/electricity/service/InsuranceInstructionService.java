@@ -14,4 +14,5 @@ public interface InsuranceInstructionService {
 
     int update(InsuranceInstruction insuranceInstruction);
 
+    InsuranceInstruction queryByInsuranceId(Long insuranceId);
 }
