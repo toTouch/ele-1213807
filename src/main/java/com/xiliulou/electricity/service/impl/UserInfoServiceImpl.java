@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -28,33 +29,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.EleAuthEntry;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.EleUserAuth;
-import com.xiliulou.electricity.entity.EleUserEsignRecord;
-import com.xiliulou.electricity.entity.EleUserOperateHistory;
-import com.xiliulou.electricity.entity.EleUserOperateRecord;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserAuthMessage;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserInfoExtra;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -2156,8 +2131,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             
         }
-        
-        threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));
+
+        threadPool.execute(() -> {
+            userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid());
+            // 保险转换
+            List<InsuranceUserInfo> list = insuranceUserInfoService.listByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(list)) {
+                log.warn("Current User Not HaveInsurance, uid is {}", userInfo.getUid());
+                return;
+            }
+            list.stream().forEach(e->{
+                insuranceUserInfoService.userInsuranceExpireAutoConvert(e);
+            });
+        });
+
         
         return Triple.of(true, "", userInfoResult);
     }
@@ -2344,7 +2331,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
         }
         
-        threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));
+        threadPool.execute(() -> {
+            userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid());
+            // 保险转换
+            List<InsuranceUserInfo> list = insuranceUserInfoService.listByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(list)) {
+                log.warn("Current User Not HaveInsurance, uid is {}", userInfo.getUid());
+                return;
+            }
+            list.stream().forEach(e->{
+                insuranceUserInfoService.userInsuranceExpireAutoConvert(e);
+            });
+        });
         
         return Triple.of(true, "", userInfoResult);
     }

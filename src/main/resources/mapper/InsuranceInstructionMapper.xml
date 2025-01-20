@@ -20,4 +20,17 @@
     </update>
 
 
+    <select id="selectByInsuranceId" resultType="com.xiliulou.electricity.entity.InsuranceInstruction">
+        select id,
+               instruction,
+               insurance_id,
+               franchisee_id,
+               del_flag,
+               tenant_id,
+               create_time,
+               update_time
+        from t_insurance_instruction
+        where insurance_id = #{insuranceId}
+    </select>
+
 </mapper>
