@@ -214,7 +214,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             return;
         }
 
-        Map<Long, Long> sourcePermissionMap = permissionResourceList.stream().filter(item -> Objects.isNull(item.getParent())).collect(Collectors.toMap(PermissionResource::getId, PermissionResource::getParent, (k1, k2) -> k1));
+        Map<Long, Long> sourcePermissionMap = permissionResourceList.stream().filter(item -> !Objects.isNull(item.getParent())).collect(Collectors.toMap(PermissionResource::getId, PermissionResource::getParent, (k1, k2) -> k1));
 
         asyncTransaction.runAsyncTransactional(grant -> {
             List<Integer> types = grant.getType();
@@ -236,6 +236,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             if (!CollectionUtils.isEmpty(checkRoleIds)){
                 collected = checkRoleIds.stream().collect(Collectors.groupingBy(GrantRolePermission::getRoleId));
             }
+
             for (Long checkRoleId : roleIds) {
                 Set<Long> copySourceIds = new HashSet<>(sourceIds);
                 //不为空说明该角色已绑定过部分权限
@@ -265,21 +266,29 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                 List<Long> finalCurRolePermissionIds = curRolePermissionIds;
                 // 过滤掉权限对应的父节点在当前角色没有选中的数据
                 List<GrantRolePermission> batchInsert = copySourceIds.stream().filter(id -> sourcePermissionMap.containsKey(id)
-                        && !finalCurRolePermissionIds.contains(sourcePermissionMap.get(id))).map(id -> {
+                        && finalCurRolePermissionIds.contains(sourcePermissionMap.get(id))).map(id -> {
                     GrantRolePermission rolePermission = new GrantRolePermission();
                     rolePermission.setRoleId(checkRoleId);
                     rolePermission.setPId(id);
                     return rolePermission;
                 }).collect(Collectors.toList());
-                rolePermissions.addAll(batchInsert);
+
+                if (ObjectUtils.isNotEmpty(batchInsert)) {
+                    rolePermissions.addAll(batchInsert);
+                }
+
             }
+
             if (CollectionUtils.isEmpty(rolePermissions)){
                 log.info("grantPermission failed. rolePermissions is empty.");
                 return null;
             }
+
             rolePermissionMapper.batchInsert(new ArrayList<>(rolePermissions));
+
             Set<Long> ids = rolePermissions.stream().map(GrantRolePermission::getRoleId).collect(Collectors.toSet());
             log.info("Grant Permission success. grant permission is : {}", rolePermissions);
+
             return ids;
         }, serviceWrapper, userGrantSourceReq, (ids) -> {
             if (CollectionUtils.isEmpty(ids)) {
