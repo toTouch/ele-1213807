@@ -260,9 +260,6 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                     curRolePermissionIds = roleBOS.stream().map(GrantRolePermission::getPId).collect(Collectors.toList());
                 }
 
-                // 将当前权限加入到父节点中，为了防止父子节点同时加入的场景
-                curRolePermissionIds.addAll(userGrantSourceReq.getSourceIds());
-
                 //未进入上层if,则为空说明所有权限都未被添加过，该角色无任何权限，添加资源中的所有
                 //批量插入数据构建
                 List<Long> finalCurRolePermissionIds = curRolePermissionIds;
