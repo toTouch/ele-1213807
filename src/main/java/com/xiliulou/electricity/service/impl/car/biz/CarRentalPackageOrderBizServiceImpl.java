@@ -1587,8 +1587,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
         
         // 2. 更新会员期限
-        Integer memberTermStatus = expireFlag ? MemberTermStatusEnum.EXPIRE.getCode() : MemberTermStatusEnum.NORMAL.getCode();
-        carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), memberTermStatus,
+        carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(),
                 approveUid);
     }
     
@@ -1661,8 +1660,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             
             // 2. 更新会员期限
-            Integer memberTermStatus = expireFlag ? MemberTermStatusEnum.EXPIRE.getCode() : MemberTermStatusEnum.NORMAL.getCode();
-            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), memberTermStatus, carRentRefundVo.getUid());
+            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), carRentRefundVo.getUid());
         }
         log.info("approve refund flow end, order No = {}, approve flag = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getApproveFlag());
     }
