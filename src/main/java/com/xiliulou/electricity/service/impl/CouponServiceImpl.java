@@ -610,7 +610,7 @@ public class CouponServiceImpl implements CouponService {
 
 
     @Override
-    public R editEnablesState(Long id, Integer state) {
+    public R editEnablesState(Long id, Integer enabledState) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -667,7 +667,7 @@ public class CouponServiceImpl implements CouponService {
 
         Coupon couponUpdate = new Coupon();
         couponUpdate.setId(id.intValue());
-        couponUpdate.setEnabledState(state);
+        couponUpdate.setEnabledState(enabledState);
         couponUpdate.setUpdateTime(System.currentTimeMillis());
         couponMapper.updateById(couponUpdate);
 

@@ -317,11 +317,11 @@ public class JsonAdminCouponController extends BaseController {
      * 编辑优惠券禁用状态
      *
      * @param id    id
-     * @param state state
+     * @param enabledState enabledState
      * @return R
      */
-    @GetMapping("/admin/coupon/update/state")
-    public R editEnablesState(@RequestParam("id") Long id, @RequestParam("state") Integer state) {
-        return couponService.editEnablesState(id, state);
+    @GetMapping("/admin/coupon/update/enabledState")
+    public R editEnablesState(@RequestParam("id") Long id, @RequestParam("enabledState") Integer enabledState) {
+        return couponService.editEnablesState(id, enabledState);
     }
 }

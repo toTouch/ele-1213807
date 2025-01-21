@@ -63,5 +63,5 @@ public interface CouponService {
     
     List<Coupon> queryListByIdsFromDB(List<Long> couponIds);
 
-    R editEnablesState(Long id,Integer state);
+    R editEnablesState(Long id, Integer enabledState);
 }
