@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.GrantRolePermission;
+import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.supper.GrantType;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.mapper.RoleMapper;
 import com.xiliulou.electricity.mapper.RolePermissionMapper;
 import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
+import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
@@ -32,6 +34,7 @@ import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,7 +87,9 @@ public class AdminSupperServiceImpl implements AdminSupperService {
     
     private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport.get(
             XllThreadPoolExecutors.newFixedThreadPool("ADMIN_SUPPER_POOL_EXECUTOR", 1, "admin-supper-executor"));
-    
+    @Autowired
+    private PermissionResourceService permissionResourceService;
+
     /**
      * 根据电池SN删除电池
      *
@@ -201,6 +206,16 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             log.error("Illegal call, current user is not a super administrator.");
             return;
         }
+
+        // 判断当前资源是否存在
+        List<PermissionResource> permissionResourceList = permissionResourceService.listByIdList(userGrantSourceReq.getSourceIds());
+        if (CollectionUtils.isEmpty(permissionResourceList)) {
+            log.error("Illegal call, current source is not exist.sourceIdList={}", permissionResourceList);
+            return;
+        }
+
+        Map<Long, Long> sourcePermissionMap = permissionResourceList.stream().filter(item -> Objects.isNull(item.getParent())).collect(Collectors.toMap(PermissionResource::getId, PermissionResource::getParent, (k1, k2) -> k1));
+
         asyncTransaction.runAsyncTransactional(grant -> {
             List<Integer> types = grant.getType();
             List<Long> sourceIds = grant.getSourceIds();
@@ -208,7 +223,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
             Set<GrantRolePermission> rolePermissions = new HashSet<>();
             
             //根据权限类型和租户查询对应租户的所有角色信息
-            List<Long> roleIds = roleMapper.selectIdsByNamesAndTenantIds(GrantType.namesOfCode(types), tenantIds);
+            List<Long> roleIds = roleMapper.selectIdsByNamesAndTenantIds(null, tenantIds);
             if (CollectionUtils.isEmpty(roleIds)) {
                 log.info("grantPermission failed. roleIds is empty.");
                 return null;
@@ -237,9 +252,23 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                         continue;
                     }
                 }
+
+                // 封装当前角色对应的权限id的集合
+                List<GrantRolePermission> roleBOS = collected.getOrDefault(checkRoleId, new ArrayList<>());
+                List<Long> curRolePermissionIds = new ArrayList<>();
+                if (ObjectUtils.isNotEmpty(roleBOS)) {
+                    curRolePermissionIds = roleBOS.stream().map(GrantRolePermission::getPId).collect(Collectors.toList());
+                }
+
+                // 将当前权限加入到父节点中，为了防止父子节点同时加入的场景
+                curRolePermissionIds.addAll(userGrantSourceReq.getSourceIds());
+
                 //未进入上层if,则为空说明所有权限都未被添加过，该角色无任何权限，添加资源中的所有
                 //批量插入数据构建
-                List<GrantRolePermission> batchInsert = copySourceIds.stream().map(id -> {
+                List<Long> finalCurRolePermissionIds = curRolePermissionIds;
+                // 过滤掉权限对应的父节点在当前角色没有选中的数据
+                List<GrantRolePermission> batchInsert = copySourceIds.stream().filter(id -> sourcePermissionMap.containsKey(id)
+                        && !finalCurRolePermissionIds.contains(sourcePermissionMap.get(id))).map(id -> {
                     GrantRolePermission rolePermission = new GrantRolePermission();
                     rolePermission.setRoleId(checkRoleId);
                     rolePermission.setPId(id);
