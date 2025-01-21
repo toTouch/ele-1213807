@@ -357,7 +357,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).couponId(coupon.getId())
                 .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(tenantId);
+                .tenantId(tenantId).couponType(CouponTypeEnum.BATCH_RELEASE.getCode()).couponWay(SecurityUtils.getUid());
 
         //优惠券过期时间
 
