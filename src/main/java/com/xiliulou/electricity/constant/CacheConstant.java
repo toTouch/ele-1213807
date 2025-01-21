@@ -829,7 +829,7 @@ public interface CacheConstant {
     /**
      * 分期套餐代扣后处理逻辑锁
      */
-    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
+    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d:%d";
     
     /**
      * 设备信息缓存
@@ -937,6 +937,8 @@ public interface CacheConstant {
      * 标记电池缓存
      */
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
+
+    String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
 
     /**
      * 优惠券包下发结果缓存key

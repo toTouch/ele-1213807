@@ -52,7 +52,7 @@
     
     <select id="countTenantOverview" resultType="java.lang.Integer">
         SELECT
-        count(tenant_id)
+        count(distinct tenant_id)
         FROM
         t_ele_hardware_fault_cabinet_msg
         WHERE
@@ -94,11 +94,12 @@
              GROUP BY cabinet_id
          ) s
         order by s.warnCount desc
+            limit #{offset}, #{size}
     </select>
     
     <select id="countCabinetOverview" resultType="java.lang.Integer">
         SELECT
-            count(cabinet_id)
+            count(distinct cabinet_id)
         FROM
             t_ele_hardware_fault_cabinet_msg
         where
