@@ -98,7 +98,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             }
 
             if (Objects.equals(coupon.getEnabledState(), Coupon.COUPON_UNABLE_STATUS)) {
-                throw new BizException("402015", errorMsgName + "优惠券已禁用，请检查选择的优惠券状态");
+                throw new BizException("402028", errorMsgName + "优惠券已禁用，请检查选择的优惠券状态");
             }
             if (Objects.equals(coupon.getDelFlag(), Coupon.DEL_DEL)) {
                 throw new BizException("402022", errorMsgName + "优惠券已删除，请检查选择的优惠券状态");

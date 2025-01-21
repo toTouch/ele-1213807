@@ -637,13 +637,13 @@ public class CouponServiceImpl implements CouponService {
 
         ShareActivityRule shareActivityRule = shareActivityRuleService.selectByCouponId(id);
         if (Objects.nonNull(shareActivityRule)) {
-            return R.fail("402016", "禁用失败，优惠券已绑定用户邀请活动");
+            return R.fail("402029", "禁用失败，优惠券已绑定用户邀请活动");
         }
 
         // 注册活动
         NewUserActivity newUserActivity = newUserActivityService.selectByCouponId(id);
         if (Objects.nonNull(newUserActivity)) {
-            return R.fail("402016", "禁用失败，优惠券已绑定用户邀请活动");
+            return R.fail("402029", "禁用失败，优惠券已绑定用户邀请活动");
         }
 
         //检查是否绑定到换电套餐
