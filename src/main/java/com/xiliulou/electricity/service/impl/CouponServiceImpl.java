@@ -631,7 +631,7 @@ public class CouponServiceImpl implements CouponService {
         }
 
         Integer franchiseeId = coupon.getFranchiseeId();
-        if (Objects.nonNull(franchiseeId) && !pair.getRight().contains(franchiseeId.longValue())) {
+        if (Objects.isNull(franchiseeId) || !pair.getRight().contains(franchiseeId.longValue())) {
             return R.fail("120240", "当前加盟商无权限操作");
         }
 
