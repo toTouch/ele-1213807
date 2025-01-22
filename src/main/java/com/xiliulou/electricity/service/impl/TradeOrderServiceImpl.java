@@ -51,8 +51,6 @@ import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -60,25 +58,13 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
@@ -116,7 +102,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -127,9 +112,6 @@ import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_PAYMENT_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 
 /**
  * 混合支付(UnionTradeOrder)表服务接口
@@ -143,9 +125,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
-    
-    @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
     
     @Autowired
     UserOauthBindService userOauthBindService;
@@ -178,52 +157,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Autowired
-    ElectricityMemberCardService electricityMemberCardService;
-    
-    @Autowired
     UserCouponService userCouponService;
-    
-    @Autowired
-    CouponService couponService;
-    
-    @Autowired
-    JoinShareActivityRecordService joinShareActivityRecordService;
-    
-    @Autowired
-    OldUserActivityService oldUserActivityService;
-    
-    @Autowired
-    JoinShareActivityHistoryService joinShareActivityHistoryService;
-    
-    @Autowired
-    ShareActivityRecordService shareActivityRecordService;
-    
-    @Autowired
-    JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
-    
-    @Autowired
-    JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
-    
-    @Autowired
-    ShareMoneyActivityService shareMoneyActivityService;
-    
-    @Autowired
-    ShareMoneyActivityRecordService shareMoneyActivityRecordService;
-    
-    @Autowired
-    UserAmountService userAmountService;
     
     @Autowired
     RedisService redisService;
     
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-    
-    @Autowired
-    StoreService storeService;
-    
-    @Autowired
-    BatteryModelService batteryModelService;
     
     @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
@@ -278,6 +218,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Resource
     private ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    private EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     
     
     @Override
@@ -622,7 +565,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, limitPurchase.getMiddle(), limitPurchase.getRight());
             }
             
-            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(query.getPaymentChannel(), tenantId, batteryMemberCardToBuy.getFranchiseeId(),Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
+            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(query.getPaymentChannel(), tenantId, batteryMemberCardToBuy.getFranchiseeId(),
+                    Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
             if (Objects.isNull(payParamConfig)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", userInfo.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
@@ -666,8 +610,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100018", "套餐租金退款审核中");
             }
             
-            if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects
-                    .equals(userInfo.getFranchiseeId(), batteryMemberCardToBuy.getFranchiseeId())) {
+            if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
+                    batteryMemberCardToBuy.getFranchiseeId())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
@@ -689,7 +633,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "301040", "该套餐暂不支持购买，请重新选择");
             }
             
-            BatteryMemberCard userBindBatteryMemberCard = Objects.isNull(userBatteryMemberCard) ? null : batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            BatteryMemberCard userBindBatteryMemberCard =
+                    Objects.isNull(userBatteryMemberCard) ? null : batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             
             // 获取扫码柜机
             ElectricityCabinet electricityCabinet = null;
@@ -698,7 +643,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 套餐订单
-            Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCardToBuy, query, electricityCabinet, payParamConfig, userBindBatteryMemberCard);
+            Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCardToBuy, query, electricityCabinet, payParamConfig,
+                    userBindBatteryMemberCard);
             if (Boolean.FALSE.equals(generateMemberCardOrderResult.getLeft())) {
                 return generateMemberCardOrderResult;
             }
@@ -1427,16 +1373,21 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
+        // 获取过期滞纳金起算时间
+        EleBatteryServiceFeeOrder expiredEleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
+        Integer expiredProtectionTime = eleBatteryServiceFeeOrderService.getExpiredProtectionTime(expiredEleBatteryServiceFeeOrder, franchisee.getTenantId());
+        
         // 套餐过期电池服务费
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && (
                 Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(
                         userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))
-                && userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L < System.currentTimeMillis()) {
+                && userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L < System.currentTimeMillis()) {
             // 1.获取滞纳金订单
-            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
-            if (StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {// 兼容2.0版本小程序
+            if (StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {
+                // 兼容2.0版本小程序
                 // 用户绑定的电池型号
                 List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+                
                 Set<String> batteryTypeSet = null;
                 if (CollectionUtils.isNotEmpty(userBatteryTypes)) {
                     batteryTypeSet = new HashSet<>(userBatteryTypes);
@@ -1444,27 +1395,27 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 // 生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-                eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder().orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
-                        .uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT)
-                        .batteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime()).createTime(System.currentTimeMillis())
-                        .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE)
-                        .franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
+                expiredEleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                        .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
+                        .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT)
+                        .batteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000)
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
+                        .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
                         .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
                         //                        .paymentChannel(ChannelSourceContextHolder.get())
-                        .build();
-                batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
+                        .expiredProtectionTime(expiredProtectionTime).build();
+                batteryServiceFeeOrderService.insert(expiredEleBatteryServiceFeeOrder);
                 
                 // 将滞纳金订单与用户绑定
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-                serviceFeeUserInfoUpdate.setExpireOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+                serviceFeeUserInfoUpdate.setExpireOrderNo(expiredEleBatteryServiceFeeOrder.getOrderId());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             } else {
-                eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
-                if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+                if (Objects.isNull(expiredEleBatteryServiceFeeOrder)) {
                     log.warn("SERVICE FEE WARN! not found disableMembercard eleBatteryServiceFeeOrder,uid={}", userInfo.getUid());
                     return Triple.of(false, "ELECTRICITY.0015", "滞纳金订单不存在");
                 }
@@ -1472,17 +1423,18 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             // 2.计算套餐过期电池服务费
             BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
+            
             // 是否存在套餐过期电池服务费
-            if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0) {
+            if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L) > 0) {
                 int batteryMemebercardExpireDays = (int) Math.ceil(
-                        (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                        (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
                 expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
             }
             
             // 更新滞纳金订单金额
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
-            eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
+            eleBatteryServiceFeeOrderUpdate.setId(expiredEleBatteryServiceFeeOrder.getId());
             eleBatteryServiceFeeOrderUpdate.setPayAmount(expireBatteryServiceFee);
             eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleBatteryServiceFeeOrderUpdate.setParamFranchiseeId(payParamConfig.getFranchiseeId());
@@ -1490,11 +1442,17 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //            eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
             batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
             
-            orderList.add(eleBatteryServiceFeeOrder.getOrderId());
+            orderList.add(expiredEleBatteryServiceFeeOrder.getOrderId());
             orderTypeList.add(ServiceFeeEnum.BATTERY_EXPIRE.getCode());
             allPayAmount.add(expireBatteryServiceFee);
             
             log.info("BATTERY SERVICE FEE INFO!user exist battery expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
+        }
+        
+        // 需求上线时避免重启中未删除缓存导致报错，以后无用
+        BigDecimal freezeServiceCharge = batteryMemberCard.getFreezeServiceCharge();
+        if (Objects.isNull(freezeServiceCharge)) {
+            freezeServiceCharge = batteryMemberCard.getServiceCharge();
         }
         
         // 暂停套餐电池服务费
@@ -1509,7 +1467,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     serviceFeeUserInfo.getPauseOrderNo())) {
                 // 计算暂停套餐电池服务费
                 int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-                pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                pauseBatteryServiceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
                 
                 // 生成滞纳金订单
@@ -1521,23 +1479,25 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     batteryTypeSet = new HashSet<>(userBatteryTypes);
                 }
                 
-                eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder().orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
-                        .uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(pauseBatteryServiceFee).status(EleDepositOrder.STATUS_INIT)
-                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
-                        .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
-                        .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
-                        .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
-                        //                        .paymentChannel(ChannelSourceContextHolder.get())
-                        .build();
-                batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
-                
-                // 将滞纳金订单与用户绑定
-                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-                serviceFeeUserInfoUpdate.setPauseOrderNo(eleBatteryServiceFeeOrder.getOrderId());
-                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+                // 套餐的套餐冻结服务费大于0，再保存套餐冻结滞纳金订单
+                if (!Objects.isNull(freezeServiceCharge) && freezeServiceCharge.compareTo(BigDecimal.ZERO) > 0) {
+                    eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder().orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
+                            .uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(pauseBatteryServiceFee).status(EleDepositOrder.STATUS_INIT)
+                            .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
+                            .source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId())
+                            .modelType(franchisee.getModelType()).batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
+                            .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(freezeServiceCharge)
+                            .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
+                            .expiredProtectionTime(EleBatteryServiceFeeOrder.EXPIRED_PROTECTION_TIME_DISABLE).build();
+                    batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
+                    
+                    // 将滞纳金订单与用户绑定
+                    ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                    serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+                    serviceFeeUserInfoUpdate.setPauseOrderNo(eleBatteryServiceFeeOrder.getOrderId());
+                    serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                    serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+                }
             }
             
             // 2 新版小程序  停卡，存在滞纳金订单
@@ -1545,7 +1505,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     serviceFeeUserInfo.getPauseOrderNo())) {
                 // 计算暂停套餐电池服务费
                 int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-                pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                pauseBatteryServiceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
                 
                 eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
@@ -1657,8 +1617,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             ElectricityCabinet electricityCabinet, BasePayConfig payParamConfig, BatteryMemberCard userBindbatteryMemberCard) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         
-        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService
-                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, userBindbatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
+                userBindbatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getMemberId());
             return Triple.of(false, "100220", "用户存在电池服务费");

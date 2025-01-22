@@ -13,17 +13,20 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum PackageTypeEnum implements BasicEnum<Integer, String> {
-
-    PACKAGE_TYPE_BATTERY(1, "换电套餐类型"),
-
-    PACKAGE_TYPE_CAR_RENTAL(2, "租车套餐类型"),
-
-    PACKAGE_TYPE_CAR_BATTERY(3, "车电一体套餐类型"),
-
+    
+    PACKAGE_TYPE_BATTERY(1, "换电套餐类型", "exchangeBatteryMemberHandler"),
+    
+    PACKAGE_TYPE_CAR_RENTAL(2, "租车套餐类型", null
+    ),
+    
+    PACKAGE_TYPE_CAR_BATTERY(3, "车电一体套餐类型", "exchangeCarMemberHandler"),
+    
     ;
 
     private final Integer code;
 
     private final String desc;
-
+    
+    private final String serviceImpl;
+    
 }

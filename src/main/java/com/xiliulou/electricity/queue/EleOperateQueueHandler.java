@@ -36,25 +36,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryTrackRecordService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ExchangeBatterySocService;
-import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
@@ -182,6 +164,9 @@ public class EleOperateQueueHandler {
     
     @Resource
     private ExchangeExceptionHandlerService exceptionHandlerService;
+
+    @Resource
+    private ReturnBatterySuccessHandlerService returnBatterySuccessHandlerService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
     
@@ -291,6 +276,10 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                     lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
                 }
+
+                // 保存租/退二次扫码的自主开仓时间限制
+                redisService.set(CacheConstant.RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY + rentBatteryOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 5L,
+                        TimeUnit.MINUTES);
                 
                 if (finalOpenDTO.getIsProcessFail()) {
                     RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
@@ -395,7 +384,7 @@ public class EleOperateQueueHandler {
         }
         
         //对异常仓门进行锁仓处理
-        electricityCabinetBoxService.disableCell(cellNo, electricityCabinetId);
+        // electricityCabinetBoxService.disableCell(cellNo, electricityCabinetId);
         
         //查询三元组信息
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
@@ -766,14 +755,17 @@ public class EleOperateQueueHandler {
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),
                 RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
-            
-            checkReturnBatteryDoor(rentBatteryOrder);
-            
+
+            // 提出去优化
+            returnBatterySuccessHandlerService.checkReturnBatteryDoor(rentBatteryOrder);
+
+
             enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
             //记录企业用户还电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         }
-        
+
+
     }
     
     //检测租电池

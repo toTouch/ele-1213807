@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl.warn;
 
 import com.alibaba.excel.EasyExcel;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
@@ -16,6 +18,7 @@ import com.xiliulou.electricity.entity.FailureAlarm;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.warn.EleHardwareWarnMsg;
+import com.xiliulou.electricity.entity.warn.EleWarnHandleRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmDeviceTypeEnum;
@@ -31,13 +34,16 @@ import com.xiliulou.electricity.queryModel.failureAlarm.WarnMsgPageQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
+import com.xiliulou.electricity.request.failureAlarm.WarnHandlePageRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FailureAlarmService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
+import com.xiliulou.electricity.service.warn.EleWarnHandleRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnFrequencyVo;
@@ -68,6 +74,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -100,6 +107,12 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
     @Resource
     private ElectricityCabinetOrderService electricityCabinetOrderService;
     
+    @Resource
+    private RedisService redisService;
+    
+    @Resource
+    private EleWarnHandleRecordService eleWarnHandleRecordService;
+    
     @Slave
     @Override
     public List<EleHardwareFailureWarnMsgVo> list(FailureAlarmTaskQueryRequest request) {
@@ -127,10 +140,72 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         if (ObjectUtils.isEmpty(list)) {
             return R.ok(Collections.emptyList());
         }
+        
+        return R.ok(transformResult(list, request.getNoLimitSignalId()));
+    }
     
+    @Override
+    @Slave
+    public List<String> listSignalIdByIdList(List<Long> warnIdList, Integer handleStatus) {
+        return eleHardwareWarnMsgMapper.selectListSignalIdByIdList(warnIdList, handleStatus);
+    }
+    
+    @Override
+    @Slave
+    public List<EleHardwareWarnMsg> listBySignalIdList(List<String> signalIdList, Long maxId, Integer tenantId, Long size) {
+        return eleHardwareWarnMsgMapper.selectListBySignalIdList(signalIdList, maxId, tenantId, size);
+    }
+    
+    @Override
+    public int batchUpdateHandleStatus(List<Long> warnIdList, Integer status, String batchNo) {
+        return eleHardwareWarnMsgMapper.batchUpdateHandleStatus(warnIdList, status, batchNo, System.currentTimeMillis());
+    }
+    
+    @Override
+    @Slave
+    public List<EleHardwareFailureWarnMsgPageVo> listHandlerRecordByPage(WarnHandlePageRequest warnHandlePageRequest) {
+        WarnMsgPageQueryModel queryModel = new WarnMsgPageQueryModel();
+        BeanUtils.copyProperties(warnHandlePageRequest, queryModel);
+        List<EleHardwareWarnMsg> list = eleHardwareWarnMsgMapper.selectListHandlerRecordByPage(queryModel);
+        
+        if (ObjectUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        
+        return transformResult(list, null);
+    }
+    
+    @Override
+    @Slave
+    public Integer countHandleRecordTotal(WarnHandlePageRequest warnHandlePageRequest) {
+        WarnMsgPageQueryModel queryModel = new WarnMsgPageQueryModel();
+        BeanUtils.copyProperties(warnHandlePageRequest, queryModel);
+        
+        return eleHardwareWarnMsgMapper.countHandleRecordTotal(queryModel);
+    }
+    
+    @Override
+    public String checkHandleResult(String batchNo) {
+        Long uid = SecurityUtils.getUid();
+        
+        return redisService.get(String.format(CacheConstant.WARN_HANDLE_RESULT, uid, batchNo));
+    }
+    
+    @Override
+    @Slave
+    public Boolean existsByIdList(List<Long> warnIdList) {
+        Integer count  = eleHardwareWarnMsgMapper.existsByIdList(warnIdList);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private List<EleHardwareFailureWarnMsgPageVo> transformResult(List<EleHardwareWarnMsg> list, Integer noLimitSignalId) {
         Set<String> returnOrderIdList= new HashSet<>();
         Set<String> exchangeOrderIdList= new HashSet<>();
-    
+        Set<String> batchNoSet = new HashSet<>();
         list.stream().forEach(item -> {
             // 骗锁订单id
             if (Objects.equals(item.getSignalId(), EleHardWareWarnMsgConstant.LOCK_DECEPTION_SIGNAL_ID) && StringUtils.isNotEmpty(item.getOrderId())) {
@@ -142,31 +217,45 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
                     returnOrderIdList.add(item.getOrderId());
                 }
             }
+            
+            batchNoSet.add(item.getBatchNo());
         });
-    
+        
         List<RentBatteryOrder> rentBatteryOrderList = new ArrayList<>();
         if (ObjectUtils.isNotEmpty(returnOrderIdList)) {
             rentBatteryOrderList = rentBatteryOrderService.listByOrderIdList(returnOrderIdList);
         }
-    
+        
         List<ElectricityCabinetOrder> exchangeOrderList = new ArrayList<>();
         if (ObjectUtils.isNotEmpty(exchangeOrderIdList)) {
             exchangeOrderList = electricityCabinetOrderService.listByOrderIdList(exchangeOrderIdList);
         }
-    
+        
         Map<String, Long> orderIdAndUidMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(rentBatteryOrderList)) {
             rentBatteryOrderList.stream().forEach(item -> orderIdAndUidMap.put(item.getOrderId(), item.getUid()));
         }
-    
+        
         if (ObjectUtils.isNotEmpty(exchangeOrderList)) {
             exchangeOrderList.stream().forEach(item -> orderIdAndUidMap.put(item.getOrderId(), item.getUid()));
+        }
+        
+        List<EleWarnHandleRecord> eleWarnHandleRecordList = null;
+        if (ObjectUtils.isNotEmpty(batchNoSet)) {
+            eleWarnHandleRecordList = eleWarnHandleRecordService.listByBatchNoList(batchNoSet);
+        }
+        
+        Map<String, EleWarnHandleRecord> eleWarnHandleRecordMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(eleWarnHandleRecordList)) {
+            eleWarnHandleRecordMap = eleWarnHandleRecordList.stream()
+                    .collect(Collectors.toMap(EleWarnHandleRecord::getBatchNo, Function.identity(), (key1, key2) -> key2));
         }
         
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
         
         List<EleHardwareFailureWarnMsgPageVo> resultList = new ArrayList<>();
         Integer finalType = type;
+        Map<String, EleWarnHandleRecord> finalEleWarnHandleRecordMap = eleWarnHandleRecordMap;
         list.forEach(item -> {
             EleHardwareFailureWarnMsgPageVo vo = new EleHardwareFailureWarnMsgPageVo();
             BeanUtils.copyProperties(item, vo);
@@ -179,7 +268,14 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
             ElectricityCabinet electricityCabinet = cabinetService.queryByIdFromCache(vo.getCabinetId());
             Optional.ofNullable(electricityCabinet).ifPresent(electricityCabinet1 -> {
                 vo.setCabinetVersion(electricityCabinet1.getVersion());
+                vo.setCabinetName(electricityCabinet1.getName());
+                vo.setAddress(electricityCabinet1.getAddress());
             });
+            
+            // 查询处理的备注
+            if (ObjectUtils.isNotEmpty(finalEleWarnHandleRecordMap.get(item.getBatchNo()))) {
+                vo.setRemark(finalEleWarnHandleRecordMap.get(item.getBatchNo()).getRemark());
+            }
             
             Map<String, Map<String, String>> map = new HashMap<>();
             
@@ -197,7 +293,7 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
                         name = userInfo.getName();
                         phone = userInfo.getPhone();
                     }
-    
+                    
                     signalName = String.format(EleHardWareWarnMsgConstant.LOCK_DECEPTION_FAILURE_NAME, failureAlarm.getSignalName(), name, phone, item.getOrderId());
                 } else {
                     Map<String, String> descMap = map.get(failureAlarm.getSignalId());
@@ -205,17 +301,17 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
                         descMap = getDescMap(failureAlarm.getEventDesc());
                         map.put(failureAlarm.getSignalId(), descMap);
                     }
-    
+                    
                     if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                         signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                     }
                 }
-               
+                
                 
                 vo.setFailureAlarmName(signalName);
                 vo.setGrade(failureAlarm.getGrade());
                 vo.setDeviceType(failureAlarm.getDeviceType());
-            } else if (Objects.isNull(request.getNoLimitSignalId())) {
+            } else if (Objects.isNull(noLimitSignalId)) {
                 vo.setFailureAlarmName("");
                 vo.setGrade(null);
                 vo.setDeviceType(null);
@@ -224,8 +320,9 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
             resultList.add(vo);
         });
         
-        return R.ok(resultList);
+        return resultList;
     }
+    
     
     @Slave
     @Override
@@ -568,6 +665,7 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         queryModel.setAlarmId(request.getAlarmId());
         // 设置查询参数
         BeanUtils.copyProperties(request, queryModel);
+        
         if (ObjectUtils.isNotEmpty(queryModel.getDeviceType()) || ObjectUtils.isNotEmpty(queryModel.getGrade()) || ObjectUtils.isNotEmpty(request.getTenantVisible())
                 || ObjectUtils.isNotEmpty(request.getStatus())) {
             // 查询故障告警设置是否存在

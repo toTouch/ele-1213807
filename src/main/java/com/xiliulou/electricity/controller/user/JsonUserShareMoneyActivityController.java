@@ -5,6 +5,7 @@ import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -33,7 +34,7 @@ public class JsonUserShareMoneyActivityController {
     
     //查询是否有活动
     @GetMapping(value = "/user/shareMoneyActivity/checkActivity")
-    public R checkActivity() {
-        return shareMoneyActivityService.checkActivity();
+    public R checkActivity(@RequestParam(name = "version", required = false) String version) {
+        return shareMoneyActivityService.checkActivity(version);
     }
 }

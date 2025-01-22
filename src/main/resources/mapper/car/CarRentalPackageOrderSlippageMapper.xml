@@ -33,6 +33,7 @@
         <result property="wechatMerchantId" column="wechat_merchant_id" jdbcType="VARCHAR"/>
         <result property="payFranchiseeId" column="pay_franchisee_id" jdbcType="BIGINT"/>
         <result property="paymentChannel" column="payment_channel" jdbcType="VARCHAR"/>
+        <result property="expiredProtectionTime" column="expired_protection_time" jdbcType="INTEGER"/>
     </resultMap>
     
     <!-- 表名 -->
@@ -46,7 +47,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `car_model_id`, `car_sn`, `battery_model_type`, `battery_sn`, `late_fee`, `late_fee_start_time`,
-        `late_fee_end_time`, `late_fee_pay`, `pay_state`, `pay_time`, `wechat_merchant_id`, `pay_franchisee_id`,`payment_channel`
+        `late_fee_end_time`, `late_fee_pay`, `pay_state`, `pay_time`, `wechat_merchant_id`, `pay_franchisee_id`,`payment_channel`,`expired_protection_time`
     </sql>
     
     <!-- 全部字段 -->
@@ -118,6 +119,7 @@
             <if test=" payTime != null ">`pay_time`,</if>
             <if test=" wechatMerchantId != null and wechatMerchantId != '' ">`wechat_merchant_id`,</if>
             <if test=" payFranchiseeId != null ">`pay_franchisee_id`,</if>
+            <if test=" expiredProtectionTime != null ">`expired_protection_time`,</if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -149,6 +151,7 @@
             <if test=" payTime != null ">#{payTime},</if>
             <if test=" wechatMerchantId != null and wechatMerchantId != '' ">#{wechatMerchantId},</if>
             <if test=" payFranchiseeId != null ">#{payFranchiseeId},</if>
+            <if test=" expiredProtectionTime != null ">#{expiredProtectionTime},</if>
         </trim>
     </sql>
     
@@ -295,6 +298,21 @@
         <include refid="table_name"/>
         <where>
             `id` = #{id}
+        </where>
+    </select>
+    
+    <select id="selectListByPackageOrderNosAndType"
+        resultMap="entityMap">
+        SELECT
+        <include refid="all_field"/>
+        FROM
+        <include refid="table_name"/>
+        <where>
+            `rental_package_order_no` in
+            <foreach collection="rentalPackageOrderNos" open="(" close=")" separator="," item="rentalPackageOrderNo">
+                #{rentalPackageOrderNo}
+            </foreach>
+            AND `type` = #{type} AND `pay_state` = 1 AND `del_flag` = 0
         </where>
     </select>
     

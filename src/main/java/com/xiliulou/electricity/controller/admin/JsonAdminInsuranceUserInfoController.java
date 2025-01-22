@@ -72,9 +72,11 @@ public class JsonAdminInsuranceUserInfoController extends BaseController {
     /**
      * 更新用户保险出险状态
      *
+     * 保险续费经前端确认废弃
      */
     @PutMapping(value = "/admin/insuranceUserInfo/insuranceStatus")
     @Log(title = "修改用户保险状态")
+    @Deprecated
     public R updateServiceStatus(@RequestParam("uid") Long uid, @RequestParam("insuranceStatus") Integer insuranceStatus, @RequestParam("type") Integer type) {
         return insuranceUserInfoService.updateUserBatteryInsuranceStatus(uid, insuranceStatus, type);
     }
@@ -95,5 +97,11 @@ public class JsonAdminInsuranceUserInfoController extends BaseController {
     @Log(title = "续费用户保险")
     public R renewalUserInsuranceInfo(@RequestBody InsuranceUserInfoQuery query){
         return insuranceUserInfoService.renewalUserBatteryInsurance(query);
+    }
+
+    @PostMapping("/admin/insuranceUserInfo/renewalUserInsurance/check")
+    public R renewalUserInsuranceInfoCheck(@RequestBody InsuranceUserInfoQuery query) {
+
+        return insuranceUserInfoService.renewalUserInsuranceInfoCheck(query);
     }
 }

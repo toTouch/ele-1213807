@@ -224,4 +224,15 @@ public interface CarRentalPackageOrderService {
      */
     Long sumConfineNumByUid(Long uid);
     
+    
+    
+    /**
+     * 根据订单编码查询(批量)
+     *
+     * @param orderNos 订单编码
+     * @return 套餐购买订单
+     */
+    List<CarRentalPackageOrderPo> queryListByOrderNo(Integer tenantId,List<String> orderNos);
+    
+    List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus);
 }

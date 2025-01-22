@@ -117,9 +117,14 @@ public class BatteryMemberCardVO {
     private Integer refundDepositeAudit;
     
     /**
-     * 服务费
+     * 套餐过期服务费
      */
     private BigDecimal serviceCharge;
+    
+    /**
+     * 套餐冻结服务费
+     */
+    private BigDecimal freezeServiceCharge;
     
     /**
      * 是否显示(0:显示,1:隐藏)
@@ -169,9 +174,15 @@ public class BatteryMemberCardVO {
     private List<MemberCardBatteryType> batteryType;
     
     /**
-     * 套餐绑定的优惠券信息
+     * 套餐绑定的减免券、折扣券信息
+     * TODO 这个属性在天数券需求对应的小程序全部升级完毕后可以删除
      */
     private List<CouponSearchVo> coupons;
+    
+    /**
+     * 套餐绑定的全部天数券信息
+     */
+    private List<CouponSearchVo> newCoupons;
     
     /**
      * 套餐绑定的用户分组信息

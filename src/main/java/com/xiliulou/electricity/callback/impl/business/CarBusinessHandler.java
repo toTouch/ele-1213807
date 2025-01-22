@@ -203,6 +203,11 @@ public class CarBusinessHandler implements BusinessHandler {
             // 作废保险订单
             if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                 insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(depositRefundEntity.getUid(), depositRefundEntity.getRentalPackageType(), InsuranceOrder.NOT_EFFECTIVE);
+                if (Objects.nonNull(insuranceOrder)){
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                }
             }
             // 删除会员期限表信息
             carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), null);

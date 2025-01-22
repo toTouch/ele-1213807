@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.EleOperateHistoryConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper;
@@ -96,5 +98,29 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
     @Override
     public ElectricityCabinetOrderOperHistory queryOrderHistoryFinallyFail(String orderId) {
         return electricityCabinetOrderOperHistoryMapper.selectOrderHistoryFinallyFail(orderId);
+    }
+    
+    @Override
+    public void initExchangeOrderOperHistory(String orderId, Integer tenantId, Integer oldCell) {
+        List<ElectricityCabinetOrderOperHistory> operHistoryList = CollUtil.newArrayList();
+        
+        operHistoryList.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(orderId).tenantId(tenantId).msg("前置检测成功")
+                .seq(EleOperateHistoryConstant.INIT_CHECK_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
+        operHistoryList.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(orderId).tenantId(tenantId).msg(oldCell + "号仓门开门成功")
+                .seq(EleOperateHistoryConstant.INIT_OPEN_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
+        operHistoryList.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(orderId).tenantId(tenantId).msg(oldCell + "号仓门关闭")
+                .seq(EleOperateHistoryConstant.INIT_CLOSE_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
+        operHistoryList.add(ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(orderId).tenantId(tenantId).msg("旧电池检测成功")
+                .seq(EleOperateHistoryConstant.INIT_BATTERY_CHECK_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build());
+        electricityCabinetOrderOperHistoryMapper.insertEleExchangeOperateHistory(operHistoryList);
+    }
+
+    @Override
+    public void batchInsert(List<ElectricityCabinetOrderOperHistory> list) {
+        electricityCabinetOrderOperHistoryMapper.insertEleExchangeOperateHistory(list);
     }
 }

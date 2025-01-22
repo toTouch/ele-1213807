@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -42,8 +41,6 @@ public interface ElectricityMemberCardOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId, Long uid);
 
-    R openOrDisableMemberCard(Integer usableStatus);
-
     R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline ,String applyReason);
 
     R enableMemberCardForLimitTime();
@@ -58,22 +55,8 @@ public interface ElectricityMemberCardOrderService {
 
     R getDisableMemberCardList(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
-    Long calcRentCarMemberCardExpireTime(String rentType, Integer rentTime, UserCarMemberCard userCarMemberCard);
-
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
-
-    ElectricityMemberCardOrder queryLastPayMemberCardTimeByUidAndSuccess(Long uid, Long franchiseeId, Integer tenantId);
-
-    BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId);
-
-    BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId);
-
-    List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
-
-    List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeIds, Long beginTime, Long endTime);
-
-    BigDecimal querySumMemberCardTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
-
+    
     void batteryMemberCardExpireReminder(BatteryMemberCardExpireReminderTask.TaskParam param);
 
     void systemEnableMemberCardTask();

@@ -28,6 +28,7 @@
         <result property="freeDeposit" column="free_deposit" jdbcType="INTEGER"/>
         <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL"/>
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL"/>
+        <result property="freezeLateFee" column="freeze_late_fee" jdbcType="DECIMAL"/>
         <result property="confine" column="confine" jdbcType="INTEGER"/>
         <result property="confineNum" column="confine_num" jdbcType="BIGINT"/>
         <result property="giveCoupon" column="give_coupon" jdbcType="INTEGER"/>
@@ -53,7 +54,7 @@
     <sql id="private_field">
         `name`
         , `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_voltage`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `free_deposit`,
-        `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`,`coupon_arrays`, `status`, `remark`, `sort_param`,`user_group_ids`,`is_user_group`
+        `rent_unit_price`, `late_fee`,`freeze_late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`,`coupon_arrays`, `status`, `remark`, `sort_param`,`user_group_ids`,`is_user_group`
     </sql>
     
     <!-- 全部字段 -->
@@ -137,6 +138,7 @@
             <if test=" freeDeposit != null ">`free_deposit`,</if>
             <if test=" rentUnitPrice != null ">`rent_unit_price`,</if>
             <if test=" lateFee != null ">`late_fee`,</if>
+            <if test=" freezeLateFee != null ">`freeze_late_fee`,</if>
             <if test=" confine != null ">`confine`,</if>
             <if test=" confineNum != null ">`confine_num`,</if>
             <if test=" giveCoupon != null ">`give_coupon`,</if>
@@ -174,6 +176,7 @@
             <if test=" freeDeposit != null ">#{freeDeposit},</if>
             <if test=" rentUnitPrice != null ">#{rentUnitPrice},</if>
             <if test=" lateFee != null ">#{lateFee},</if>
+            <if test=" freezeLateFee != null ">#{freezeLateFee},</if>
             <if test=" confine != null ">#{confine},</if>
             <if test=" confineNum != null ">#{confineNum},</if>
             <if test=" giveCoupon != null ">#{giveCoupon},</if>
@@ -303,6 +306,7 @@
             <if test=" freeDeposit != null ">, `free_deposit` = #{freeDeposit}</if>
             <if test=" rentUnitPrice != null ">, `rent_unit_price` = #{rentUnitPrice}</if>
             <if test=" lateFee != null ">, `late_fee` = #{lateFee}</if>
+            <if test=" freezeLateFee != null ">, `freeze_late_fee` = #{freezeLateFee}</if>
             <if test=" giveCoupon != null ">, `give_coupon` = #{giveCoupon}</if>
             <if test=" couponId != null ">, `coupon_id` = #{couponId}</if>
             <if test=" couponArrays != null and couponArrays != '' ">, `coupon_arrays` = #{couponArrays}</if>

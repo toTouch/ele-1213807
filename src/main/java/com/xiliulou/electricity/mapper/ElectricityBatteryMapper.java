@@ -18,6 +18,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 换电柜电池表(ElectricityBattery)表数据库访问层
@@ -39,7 +40,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
      * 根据电池SN集查询电池
      * <p>用于内部接口，删除电池使用</p>
      *
-     * @param franchiseeIdList
      * @param tenantId             租户ID
      * @param batterySns           电池SN编码集
      * @param bindFranchiseeIdList
@@ -204,4 +204,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBattery> selectListByEid(@Param("eIdList") List<Integer> electricityCabinetIdList);
 
     List<ExportMutualBatteryBO> selectMutualBattery(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds);
+    
+    Integer existsByBatteryType(@Param("batteryType") String batteryType, @Param("tenantId") Integer tenantId);
+    
+    List<ElectricityBattery> selectLUserBatteryByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
 }

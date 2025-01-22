@@ -47,4 +47,9 @@ public class ElectricityCabinetMapBO {
      * 少电多电类型：0-正常 1-少电 2-多电
      */
     private Integer batteryCountType;
+
+    /**
+     * 柜机供电类型：0--市电，1--反向供电
+     */
+    private Integer powerType;
 }

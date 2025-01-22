@@ -57,7 +57,7 @@ public class ElectricityConfig {
      */
     private Long updateTime;
     
-    //租户id
+    // 租户id
     private Integer tenantId;
     
     /**
@@ -232,12 +232,42 @@ public class ElectricityConfig {
     private Integer isSwapExchange;
 
 
+    /**
+     * 套餐冻结自动审核，0-关闭自动审核，其他为自动审核最大天数限制
+     */
+    private Integer freezeAutoReviewDays;
+    
+    /**
+     * 套餐冻结次数限制，0-不限次，其他为用户端申请冻结最大次数
+     */
+    private Integer packageFreezeCount;
+    
+    /**
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDays 为无资产情况下限制申请冻结最大天数
+     */
+    private Integer packageFreezeDays;
+    
+    /**
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDaysWithAssets 为有资产情况下限制申请冻结最大天数
+     */
+    private Integer packageFreezeDaysWithAssets;
+    
+    /**
+     * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
+     */
+    private Integer expiredProtectionTime;
+    
+    
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     
     public static Integer MOVE_FRANCHISEE_OPEN = 0;
     
-    //人工审核
-    //实名审核方式 0:人工审核 ,1:自动审核,2:人脸核身
+    // 人工审核
+    // 实名审核方式 0:人工审核 ,1:自动审核,2:人脸核身
     public static Integer MANUAL_REVIEW = 0;
     
     public static Integer AUTO_REVIEW = 1;
@@ -245,10 +275,10 @@ public class ElectricityConfig {
     public static Integer FACE_REVIEW = 2;
     
     
-    //线上提现
+    // 线上提现
     public static Integer WITHDRAW = 0;
     
-    //线下提现
+    // 线下提现
     public static Integer NON_WITHDRAW = 1;
     
     public static Integer OPEN_DOOR_LOCK = 0;
@@ -355,6 +385,7 @@ public class ElectricityConfig {
      * 打开支付宝客服 0-是 1-否
      */
     public static Integer OPEN_ALIPAY_CUSTOMER = 0;
+    
     public static Integer CLOSE_ALIPAY_CUSTOMER = 1;
     
     /**
@@ -397,4 +428,13 @@ public class ElectricityConfig {
      * 互通换电开启
      */
     public static Integer SWAP_EXCHANGE_CLOSE = 1;
+    
+    /**
+     * 租户未设置最大天数时，套餐冻结最大天数限制
+     */
+    public static Integer FREEZE_DAYS_MAX = 60;
+    
+    public static Integer EXPIRED_PROTECTION_TIME_DEFAULT = 24;
+    
+    public static Integer FREEZE_COUNT_NOT_LIMIT = 0;
 }

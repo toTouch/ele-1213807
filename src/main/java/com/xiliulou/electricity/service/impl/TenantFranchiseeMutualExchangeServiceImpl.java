@@ -468,6 +468,10 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                     if (Objects.equals(e.getFranchiseeId(), e.getEFranchiseeId())) {
                         return null;
                     }
+                    // 如果在仓，并且柜机和电池加盟商不互通情况 不导出
+                    if(!mutualFranchiseeSet.contains(e.getEFranchiseeId())){
+                        return null;
+                    }
                     excelVO.setPhysicsStatus("在仓");
                     Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getEFranchiseeId());
                     excelVO.setMutualFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);

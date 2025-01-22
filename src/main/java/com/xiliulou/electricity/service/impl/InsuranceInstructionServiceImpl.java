@@ -35,4 +35,9 @@ public class InsuranceInstructionServiceImpl extends ServiceImpl<InsuranceInstru
     public int update(InsuranceInstruction insuranceInstruction) {
         return insuranceInstructionMapper.update(insuranceInstruction);
     }
+
+    @Override
+    public InsuranceInstruction queryByInsuranceId(Long insuranceId) {
+        return insuranceInstructionMapper.selectByInsuranceId(insuranceId);
+    }
 }
