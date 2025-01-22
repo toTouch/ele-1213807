@@ -124,12 +124,14 @@
             limit #{query.offset}, #{query.size}
         </if>
     </select>
-
-
+    
+    <!--减少关联的表减少慢SQL-->
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_user_coupon as tuc
-        left join t_coupon as tc on tuc.coupon_id=tc.id
+        <if test="query.superposition != null or query.franchiseeId != null or (query.franchiseeIds != null and query.franchiseeIds.size()>0) or (query.storeIds != null and query.storeIds.size()>0)">
+            left join t_coupon as tc on tuc.coupon_id=tc.id
+        </if>
         <where>
             <if test="query.uid != null">
                 and tuc.uid = #{query.uid}
