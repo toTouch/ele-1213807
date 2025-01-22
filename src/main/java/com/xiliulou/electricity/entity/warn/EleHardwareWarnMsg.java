@@ -129,6 +129,15 @@ public class EleHardwareWarnMsg {
      */
     private String orderId;
     
+    /**
+     * 处理方式：0--待处理 1--处理中 2--已处理  3--忽略 4--转工单
+     */
+    private Integer handleStatus;
+    
+    /**
+     * 批次号
+     */
+    private String batchNo;
     
     /**
      * 告警标识

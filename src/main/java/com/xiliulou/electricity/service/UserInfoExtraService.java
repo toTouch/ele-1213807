@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.exception.BizException;
@@ -64,7 +65,7 @@ public interface UserInfoExtraService {
      */
     R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException;
     
-    Integer getUnusedFreezeCount(Integer tenantId, Long uid) throws BizException;
+    Integer getUnusedFreezeCount(ElectricityConfig electricityConfig, Long uid) throws BizException;
 
     R editUserInfoExtra(UserInfoExtraRequest request);
 }

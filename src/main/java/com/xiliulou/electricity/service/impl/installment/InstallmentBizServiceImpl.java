@@ -677,8 +677,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             for (InstallmentDeductionPlan deductionPlan : deductionPlansWaitDeduct) {
                 String repaymentPlanNo = OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SIGN_AGREEMENT_PAY, installmentRecord.getUid());
                 
-                BigDecimal zeroAmount = new BigDecimal("0.00");
-                
                 // 生成代扣记录
                 InstallmentDeductionRecord deductionRecord = new InstallmentDeductionRecord();
                 deductionRecord.setUid(installmentRecord.getUid());
@@ -688,7 +686,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 deductionRecord.setUserName(installmentRecord.getUserName());
                 deductionRecord.setMobile(installmentRecord.getMobile());
                 deductionRecord.setAmount(deductionPlan.getAmount());
-                deductionRecord.setStatus(Objects.equals(deductionPlan.getAmount(), zeroAmount) ? DEDUCTION_RECORD_STATUS_SUCCESS : DEDUCTION_RECORD_STATUS_INIT);
+                deductionRecord.setStatus(deductionPlan.getAmount().compareTo(BigDecimal.ZERO) == 0 ? DEDUCTION_RECORD_STATUS_SUCCESS : DEDUCTION_RECORD_STATUS_INIT);
                 deductionRecord.setIssue(deductionPlan.getIssue());
                 deductionRecord.setPlanId(deductionPlan.getId());
                 deductionRecord.setSubject(null);
@@ -699,7 +697,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 installmentDeductionRecordService.insert(deductionRecord);
                 
                 // 代扣0元，0元只有一个代扣计划，也只会出现在第一期，直接在0元处理中续费套餐就可以了，也不用考虑代扣完解约的问题
-                if (Objects.equals(deductionPlan.getAmount(), zeroAmount)) {
+                if (deductionPlan.getAmount().compareTo(BigDecimal.ZERO) == 0) {
                     handleDeductZero(installmentRecord, deductionPlan, deductionRecord);
                     return Triple.of(true, null, null);
                 }
@@ -875,6 +873,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
             
+            // TODO SJP 优化点，外部查询了套餐订单，里面又查了一次，还有考虑在生成套餐订单时保存好有效天数
             unionTradeOrderService.manageMemberCardOrderV2(memberCardOrder.getOrderId(), ElectricityTradeOrder.STATUS_SUCCESS, userInfo);
         } else {
             // 下述校验在上文的绑定第一期套餐方法内部做了，故在此处校验

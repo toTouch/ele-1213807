@@ -117,4 +117,6 @@ public interface MerchantConstant {
     Integer UN_BIND_MERCHANT_USER_TYPE = 0;
     
     Integer UN_BIND_CHANNEL_EMPLOYEE_USER_TYPE = 1;
+
+    Integer MERCHANT_OVERDUE_USER_QUERY_TYPE = 4;
 }

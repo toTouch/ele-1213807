@@ -18,6 +18,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 换电柜电池表(ElectricityBattery)表数据库访问层
@@ -205,4 +206,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ExportMutualBatteryBO> selectMutualBattery(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds);
     
     Integer existsByBatteryType(@Param("batteryType") String batteryType, @Param("tenantId") Integer tenantId);
+    
+    List<ElectricityBattery> selectLUserBatteryByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
 }

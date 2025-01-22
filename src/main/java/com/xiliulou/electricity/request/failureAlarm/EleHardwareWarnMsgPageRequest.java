@@ -66,11 +66,26 @@ public class EleHardwareWarnMsgPageRequest {
      * 运营商可见(0-不可见， 1-可见)
      */
     private Integer tenantVisible;
+    /**
+     * 消息可见(0-不可见， 1-可见)
+     */
+    private Integer msgVisible;
+    
+    /**
+     * 处理方式：0--待处理 1--处理中 2--已处理  3--忽略 4--转工单 5--自动恢复
+     */
+    private Integer handleStatus;
+    
     
     /**
      * 运作状态(0-启用， 1-禁用)
      */
     private Integer status;
+    
+    /**
+     * 运作状态(0-启用， 1-禁用)
+     */
+    private Integer enableStatus;
     
     private Long size;
     

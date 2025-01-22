@@ -59,7 +59,7 @@ public class AssetConstant {
     /***
      * 车辆批量入库 车牌号长度限制
      */
-    public static final Integer ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE = 9;
+    public static final Integer ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE = 10;
     
     /***
      * 车辆批量入库 车架号长度限制

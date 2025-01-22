@@ -168,7 +168,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             }
             
             if (Objects.equals(userNotifyQuery.getType(), UserNotifyConstant.TYPE_CONTENT) && StringUtils.isNotBlank(userNotifyQuery.getContent())) {
-                if (userNotifyQuery.getContent().length() > 100) {
+                if (userNotifyQuery.getContent().length() > 200) {
                     return R.fail("100377", "参数校验错误");
                 }
             }
