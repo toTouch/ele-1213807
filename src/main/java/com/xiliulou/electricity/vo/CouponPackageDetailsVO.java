@@ -56,6 +56,11 @@ public class CouponPackageDetailsVO {
         private String couponName;
 
         /**
+         * 优惠类型，1:减免券，3:天数劵
+         */
+        private Integer discountType;
+
+        /**
          * 作用
          */
         private String effect;
