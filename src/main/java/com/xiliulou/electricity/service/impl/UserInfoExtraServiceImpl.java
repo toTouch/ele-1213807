@@ -806,12 +806,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
 
         String remark = request.getRemark();
-        if (StrUtil.isBlank(remark)){
-            log.warn("EditUserInfoExtra Warn! remark is null, uid is {}", request.getUid());
-            return R.ok();
-        }
-
-        if (remark.length() > NumberConstant.ONE_HUNDRED) {
+        if (StrUtil.isNotEmpty(remark) && remark.length() > NumberConstant.ONE_HUNDRED) {
             return R.fail("402036", "长度最大支持100字");
         }
 
