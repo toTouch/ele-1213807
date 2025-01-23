@@ -228,9 +228,8 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         List<Long> packageIdList = packageList.stream().map(CouponPackage::getId).collect(Collectors.toList());
         List<CouponPackageItemBO> packageItemList = packageItemService.listCouponPackageItemByPackageIds(packageIdList);
         Map<Long, CouponPackageItemBO> packageItemBoMap = new HashMap<>(10);
-        if (CollUtil.isEmpty(packageItemList)) {
-            packageItemBoMap =
-                    packageItemList.stream().collect(Collectors.toMap(CouponPackageItemBO::getPackageId, item -> item, (k1, k2) -> k1));
+        if (CollUtil.isNotEmpty(packageItemList)) {
+            packageItemBoMap = packageItemList.stream().collect(Collectors.toMap(CouponPackageItemBO::getPackageId, item -> item, (k1, k2) -> k1));
         }
 
         Map<Long, CouponPackageItemBO> finalPackageItemBoMap = packageItemBoMap;
