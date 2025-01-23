@@ -15,7 +15,7 @@
                update_time
     </sql>
 
-    <insert id="saveCouponPackage">
+    <insert id="saveCouponPackage" keyProperty="id" useGeneratedKeys="true">
         insert into t_coupon_package (name, coupon_count, is_can_buy, user_name, amount, tenant_id,
                                       franchisee_id, create_time, update_time)
         values (#{name}, #{couponCount}, #{isCanBuy}, #{userName}, #{amount}, #{tenantId},
