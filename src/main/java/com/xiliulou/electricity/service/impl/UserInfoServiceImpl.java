@@ -3914,6 +3914,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         }
                     }
                 }
+
+                if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBindBattery(),
+                        ElectricityConfig.NOT_IS_BIND_BATTERY)) {
+                    return R.fail("402035", "运营商暂未开放此功能!");
+                }
                 
                 //修改按此套餐的次数
                 Triple<Boolean, String, String> modifyResult = electricityCabinetOrderService.checkAndModifyMemberCardCount(

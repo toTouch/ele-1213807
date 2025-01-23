@@ -442,4 +442,12 @@ public class ElectricityConfig {
     public static Integer EXPIRED_PROTECTION_TIME_DEFAULT = 24;
     
     public static Integer FREEZE_COUNT_NOT_LIMIT = 0;
+
+
+    /**
+     * 是否绑定电池 0--开启，1--关闭
+     */
+    public static Integer IS_BIND_BATTERY = 0;
+
+    public static Integer NOT_IS_BIND_BATTERY = 1;
 }
