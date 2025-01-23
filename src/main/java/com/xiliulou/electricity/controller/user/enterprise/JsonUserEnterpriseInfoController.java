@@ -47,7 +47,14 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      */
     @GetMapping({"/user/cloudBean/detail", "/merchant/cloudBean/detail"})
     public R cloudBeanDetail() {
-//        return R.ok(enterpriseInfoService.cloudBeanDetail());
+        return R.ok(enterpriseInfoService.cloudBeanDetail());
+    }
+
+    /**
+     * 获取用户云豆详情
+     */
+    @GetMapping("/merchant/cloudBean/detailV2")
+    public R cloudBeanDetailV2() {
         return R.ok(enterpriseInfoService.cloudBeanDetailV2());
     }
     
@@ -74,7 +81,11 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      */
     @GetMapping({"/user/enterpriseInfo/cloudBean/generalView", "/merchant/enterpriseInfo/cloudBean/generalView"})
     public R cloudBeanGeneralView() {
-//        return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
+        return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
+    }
+
+    @GetMapping("/merchant/enterpriseInfo/cloudBean/generalViewV2")
+    public R cloudBeanGeneralViewV2() {
         return returnTripleResult(enterpriseInfoService.cloudBeanGeneralViewV2());
     }
     
