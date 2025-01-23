@@ -805,9 +805,14 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             R.fail("100247", "用户信息不存在");
         }
 
-        if (StrUtil.isBlank(request.getRemark())){
+        String remark = request.getRemark();
+        if (StrUtil.isBlank(remark)){
             log.warn("EditUserInfoExtra Warn! remark is null, uid is {}", request.getUid());
             return R.ok();
+        }
+
+        if (remark.length() > NumberConstant.ONE_HUNDRED) {
+            return R.fail("402036", "长度最大支持100字");
         }
 
         UserInfoExtra updateUserInfoExtra = new UserInfoExtra();
