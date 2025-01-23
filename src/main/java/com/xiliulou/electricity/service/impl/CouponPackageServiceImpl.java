@@ -143,7 +143,8 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             return R.fail("402024", "优惠券为空");
         }
 
-        CouponPackage.CouponPackageBuilder packageBuilder = CouponPackage.builder().name(query.getName()).couponCount(sumCount.get()).isCanBuy(query.getIsCanBuy()).amount(BigDecimal.valueOf(query.getAmount()))
+        CouponPackage.CouponPackageBuilder packageBuilder = CouponPackage.builder().name(query.getName()).couponCount(sumCount.get()).isCanBuy(query.getIsCanBuy())
+                .amount(Objects.equals(query.getIsCanBuy(), CouponPackage.CAN_BUY) ? BigDecimal.valueOf(query.getAmount()) : BigDecimal.ZERO)
                 .userName(user.getUsername()).tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(query.getFranchiseeId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis());
 
