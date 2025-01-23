@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -84,97 +85,97 @@ import java.util.stream.Collectors;
 @Service("userInfoExtraService")
 @Slf4j
 public class UserInfoExtraServiceImpl implements UserInfoExtraService {
-    
+
     @Resource
     private UserInfoExtraMapper userInfoExtraMapper;
-    
+
     @Autowired
     private UserInfoService userInfoService;
-    
+
     @Autowired
     private RedisService redisService;
-    
+
     @Autowired
     private MerchantJoinRecordService merchantJoinRecordService;
-    
+
     @Autowired
     private MerchantAttrService merchantAttrService;
-    
+
     @Autowired
     private MerchantService merchantService;
-    
+
     @Autowired
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
-    
+
     @Autowired
     private MerchantLevelService merchantLevelService;
-    
+
     @Autowired
     private RebateConfigService rebateConfigService;
-    
+
     @Resource
     JoinShareActivityHistoryService joinShareActivityHistoryService;
-    
+
     @Resource
     JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
-    
+
     @Resource
     InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
-    
+
     @Resource
     ChannelActivityHistoryService channelActivityHistoryService;
-    
+
     @Resource
     private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
-    
+
     @Resource
     private ElectricityConfigService electricityConfigService;
-    
+
     @Resource
     private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
-    
+
     @Resource
     private OperateRecordUtil operateRecordUtil;
-    
+
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
         return this.userInfoExtraMapper.selectByUid(uid);
     }
-    
+
     @Override
     public UserInfoExtra queryByUidFromCache(Long uid) {
         UserInfoExtra cacheUserInfoExtra = redisService.getWithHash(CacheConstant.CACHE_USER_INFO_EXTRA + uid, UserInfoExtra.class);
         if (Objects.nonNull(cacheUserInfoExtra)) {
             return cacheUserInfoExtra;
         }
-        
+
         UserInfoExtra userInfoExtra = this.queryByUidFromDB(uid);
         if (Objects.isNull(userInfoExtra)) {
             return null;
         }
-        
+
         redisService.saveWithHash(CacheConstant.CACHE_USER_INFO_EXTRA + uid, userInfoExtra);
-        
+
         return userInfoExtra;
     }
-    
+
     @Override
     public UserInfoExtra insert(UserInfoExtra userInfoExtra) {
         this.userInfoExtraMapper.insert(userInfoExtra);
         return userInfoExtra;
     }
-    
+
     @Override
     public Integer updateByUid(UserInfoExtra userInfoExtra) {
         int update = this.userInfoExtraMapper.updateByUid(userInfoExtra);
-        
+
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_INFO_EXTRA + userInfoExtra.getUid());
         });
-        
+
         return update;
     }
-    
+
     @Override
     public Integer deleteByUid(Long uid) {
         //        int delete = this.userInfoExtraMapper.deleteByUid(uid);
@@ -184,87 +185,87 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         userInfoExtra.setUpdateTime(System.currentTimeMillis());
         return this.updateByUid(userInfoExtra);
     }
-    
+
     @Override
     public void bindMerchant(UserInfo userInfo, String orderId, Long memberCardId) {
         Long uid = userInfo.getUid();
-        
+
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.warn("BIND MERCHANT WARN!electricityMemberCardOrder is null,uid={},orderId={}", uid, orderId);
             return;
         }
-        
+
         if (Objects.isNull(userInfo.getPayCount()) || userInfo.getPayCount() > 1) {
             log.info("BIND MERCHANT WARN!payCount is illegal,uid={},orderId={}", uid, orderId);
             return;
         }
-        
+
         UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.warn("BIND MERCHANT WARN!userInfoExtra is null,uid={},orderId={}", uid, orderId);
             return;
         }
-        
+
         if (Objects.nonNull(userInfoExtra.getMerchantId())) {
             log.warn("BIND MERCHANT WARN!user already bind merchant,uid={},orderId={}", uid, orderId);
             return;
         }
-        
+
         MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.queryByJoinUid(uid);
         if (Objects.isNull(merchantJoinRecord)) {
             log.warn("BIND MERCHANT WARN!merchantJoinRecord is null,uid={},orderId={}", uid, orderId);
             return;
         }
-        
+
         Merchant merchant = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
         if (Objects.isNull(merchant)) {
             log.warn("BIND MERCHANT WARN!merchant is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
         }
-        
+
         MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
         }
-        
+
         MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
         if (Objects.isNull(merchantLevel)) {
             log.warn("BIND MERCHANT WARN!merchantLevel is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
         }
-        
+
         // 根据商户等级&套餐id获取返利套餐
         RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(memberCardId, merchantLevel.getLevel());
         if (Objects.isNull(rebateConfig)) {
             log.warn("BIND MERCHANT WARN!rebateConfig is null,merchantId={},uid={},level={}", merchantJoinRecord.getMerchantId(), uid, merchantLevel.getLevel());
             return;
         }
-        
+
         if (Objects.isNull(rebateConfig.getStatus()) || Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
             log.warn("BIND MERCHANT WARN!rebateConfig status illegal,id={},uid={}", rebateConfig.getId(), uid);
             return;
         }
-        
+
         // 加盟商一致校验
         if (!Objects.equals(userInfo.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
             log.warn("BIND MERCHANT WARN! userInfo franchisee not equal order franchisee, uid ={} , order.franchiseeId={}", uid, electricityMemberCardOrder.getFranchiseeId());
             return;
         }
-        
+
         if (!Objects.equals(merchant.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
             log.warn("BIND MERCHANT WARN! merchant franchisee not equal order franchisee,merchant.id = {} , order.franchiseeId={}", merchant.getId(),
                     electricityMemberCardOrder.getFranchiseeId());
             return;
         }
-        
+
         List<RebateConfig> rebateConfigs = rebateConfigService.listRebateConfigByMid(electricityMemberCardOrder.getMemberCardId());
         if (CollUtil.isEmpty(rebateConfigs)) {
             log.warn("BIND MERCHANT WARN! current member not in rebateConfig, memberId={}", electricityMemberCardOrder.getMemberCardId());
             return;
         }
-        
+
         // 邀请有效期内
         if (merchantAttrService.checkInvitationTime(merchantAttr, merchantJoinRecord.getStartTime())) {
             UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
@@ -278,9 +279,9 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             }
             userInfoExtraUpdate.setActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
             userInfoExtraUpdate.setInviterUid(merchantJoinRecord.getInviterUid());
-            
+
             this.updateByUid(userInfoExtraUpdate);
-            
+
             MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
             merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
             merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
@@ -300,29 +301,29 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
         }
     }
-    
+
     @Override
     public R selectInviterList(MerchantModifyInviterRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = request.getUid();
-        
+
         MerchantInviterVO successInviterVO = this.querySuccessInviter(uid);
         if (Objects.isNull(successInviterVO)) {
             log.warn("Modify inviter fail! not found success record, uid={}", uid);
             return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
         }
-        
+
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
             log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
             return R.ok();
         }
-        
+
         // 商户列表
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().size(request.getSize()).offset(request.getOffset()).name(request.getMerchantName())
                 .tenantId(tenantId).franchiseeId(userInfo.getFranchiseeId()).build();
@@ -330,7 +331,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (CollectionUtils.isEmpty(merchantList)) {
             return R.ok();
         }
-        
+
         Integer inviterSource = successInviterVO.getInviterSource();
         Long inviterMerchantId = successInviterVO.getMerchantId();
         List<MerchantVO> filterMerchantList = merchantList;
@@ -338,21 +339,21 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             // 去除原商户邀请人
             filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getId(), inviterMerchantId)).collect(Collectors.toList());
         }
-        
+
         if (CollectionUtils.isEmpty(filterMerchantList)) {
             return R.ok();
         }
-        
+
         List<MerchantForModifyInviterVO> merchantVOList = filterMerchantList.stream().map(item -> {
             MerchantForModifyInviterVO merchantForModifyInviterVO = new MerchantForModifyInviterVO();
             BeanUtils.copyProperties(item, merchantForModifyInviterVO);
-            
+
             return merchantForModifyInviterVO;
         }).collect(Collectors.toList());
-        
+
         return R.ok(merchantVOList);
     }
-    
+
     @Override
     public MerchantInviterVO querySuccessInviter(Long uid) {
         UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
@@ -360,7 +361,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             log.warn("querySuccessInviter userInfoExtra not exist, uid={}", uid);
             return null;
         }
-        
+
         Long inviterUid = userInfoExtra.getInviterUid();
         Integer activitySource = userInfoExtra.getActivitySource();
         if (Objects.isNull(inviterUid) || Objects.equals(inviterUid, NumberConstant.ZERO_L) || Objects.isNull(activitySource) || Objects.equals(activitySource,
@@ -368,7 +369,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             log.warn("querySuccessInviter has no inviter, uid={}", uid);
             return null;
         }
-        
+
         String inviterName = StringUtils.EMPTY;
         Long merchantId = NumberConstant.ZERO_L;
         if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
@@ -380,80 +381,80 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         } else {
             inviterName = Optional.ofNullable(userInfoService.queryByUidFromDbIncludeDelUser(inviterUid)).map(UserInfo::getName).orElse("");
         }
-        
+
         return MerchantInviterVO.builder().uid(uid).inviterUid(inviterUid).inviterName(inviterName).inviterSource(activitySource).merchantId(merchantId).build();
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator, List<Long> franchiseeIds) {
         Long uid = merchantModifyInviterUpdateRequest.getUid();
-        
+
         // 操作频繁
         boolean result = redisService.setNx(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-        
+
         try {
             Integer tenantId = TenantContextHolder.getTenantId();
             Long merchantId = merchantModifyInviterUpdateRequest.getMerchantId();
-            
+
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
-            
+
             // 加盟商一致性校验
             Long franchiseeId = userInfo.getFranchiseeId();
             if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
                 log.warn("ModifyInviter WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
                 return R.fail("120240", "当前加盟商无权限操作");
             }
-            
+
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
                 log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
                 return R.ok();
             }
-            
+
             Merchant merchant = merchantService.queryByIdFromCache(merchantId);
             if (Objects.isNull(merchant)) {
                 log.warn("Modify inviter fail! merchant not exist, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
-            
+
             // 获取商户保护期和有效期
             MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
             if (Objects.isNull(merchantAttr)) {
                 log.warn("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
-            
+
             if (!Objects.equals(userInfo.getFranchiseeId(), merchant.getFranchiseeId())) {
                 log.warn("Modify inviter fail! not same franchisee, uid={}, merchantId={}", uid, merchantId);
                 return R.ok();
             }
-            
+
             // 参与成功的记录
             MerchantInviterVO successInviterVO = querySuccessInviter(uid);
             if (Objects.isNull(successInviterVO)) {
                 log.warn("Modify inviter fail! not found success record, uid={}", uid);
                 return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
             }
-            
+
             Integer inviterSource = successInviterVO.getInviterSource();
             Long oldInviterUid = successInviterVO.getInviterUid();
             String oldInviterName = successInviterVO.getInviterName();
             Long newInviterUid = merchant.getUid();
             Long channelEmployeeUid = merchant.getChannelEmployeeUid();
-            
+
             // 修改前后不能一样
             if (Objects.equals(oldInviterUid, newInviterUid)) {
                 log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
                 return R.fail("120108", "只可修改为非当前商户，请重新选择");
             }
-            
+
             // 逻辑删除旧的记录
             switch (inviterSource) {
                 case 1:
@@ -479,7 +480,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 default:
                     break;
             }
-            
+
             // 新增用户商户绑定
             UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
             if (Objects.nonNull(userInfoExtra)) {
@@ -491,36 +492,36 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 userInfoExtra.setActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
                 userInfoExtra.setInviterUid(newInviterUid);
                 userInfoExtra.setLatestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
-                
+
                 this.updateByUid(userInfoExtra);
             } else {
                 UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
                         .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                         .activitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).inviterUid(newInviterUid)
                         .latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).eleLimit(UserInfoExtraConstant.ELE_LIMIT_YES).build();
-                
+
                 this.insert(insertUserInfoExtra);
             }
-            
+
             // 新增商户参与记录
             MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, uid, channelEmployeeUid, merchantAttr, tenantId, merchant.getFranchiseeId());
             merchantJoinRecordService.insertOne(merchantJoinRecord);
-            
+
             // 新增修改记录
             MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
                     .inviterName(Optional.ofNullable(merchantService.queryByIdFromCache(merchantId)).orElse(new Merchant()).getName()).oldInviterUid(oldInviterUid)
                     .oldInviterName(oldInviterName).oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId)
                     .operator(operator).remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
-            
+
             merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
-            
+
             return R.ok();
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid);
         }
     }
-    
+
     @Override
     public MerchantInviterVO judgeInviterTypeForMerchant(Long joinUid, Long inviterUid, Integer tenantId) {
         Merchant merchant1 = merchantService.queryByUid(inviterUid);
@@ -541,11 +542,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 }
             }
         }
-        
+
         return MerchantInviterVO.builder().uid(joinUid).inviterUid(inviterUid).inviterName(inviterName)
                 .inviterSource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).merchantId(merchantId).build();
     }
-    
+
     private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId,
             Long franchiseeId) {
         long nowTime = System.currentTimeMillis();
@@ -553,7 +554,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
         Integer validTime = merchantAttr.getInvitationValidTime();
         Integer validTimeUnit = merchantAttr.getValidTimeUnit();
-        
+
         // 保护期过期时间
         long protectionExpireTime = nowTime;
         // 分钟转毫秒
@@ -564,7 +565,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
             protectionExpireTime += protectionTime * TimeConstant.HOURS_MILLISECOND;
         }
-        
+
         // 参与有效期过期时间
         long expiredTime = nowTime;
         // 分钟转毫秒
@@ -575,10 +576,10 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
             expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
         }
-        
+
         // 创建日期
         String monthDate = DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT);
-        
+
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid)
                 .inviterType(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF).joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime)
@@ -586,88 +587,88 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES)
                 .franchiseeId(franchiseeId).successTime(nowTime).monthDate(monthDate).build();
     }
-    
+
     @Override
     public Triple<Boolean, String, String> isLimitPurchase(Long uid, Integer tenantId) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig)) {
             return Triple.of(false, null, null);
         }
-        
+
         if (Objects.equals(electricityConfig.getEleLimit(), ElectricityConfig.ELE_LIMIT_CLOSE)) {
             return Triple.of(false, null, null);
         }
-        
+
         UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             return Triple.of(false, null, null);
         }
-        
+
         if (Objects.equals(userInfoExtra.getEleLimit(), UserInfoExtraConstant.ELE_LIMIT_NO)) {
             return Triple.of(false, null, null);
         }
-        
+
         List<UserBatteryMemberCardPackage> packageList = userBatteryMemberCardPackageService.selectByUid(uid);
         if (CollectionUtils.isEmpty(packageList)) {
             return Triple.of(false, null, null);
         }
-    
+
         if (Objects.isNull(electricityConfig.getEleLimitCount()) || Objects.equals(electricityConfig.getEleLimitCount(), NumberConstant.ZERO)) {
             return Triple.of(false, null, null);
         }
-        
+
         if (countOnlineOrder(packageList) >= electricityConfig.getEleLimitCount()) {
             return Triple.of(true, "120151", "您已购买了多个尚未使用的换电套餐，为保障您的资金安全，请联系客服后购买");
         }
-        
+
         return Triple.of(false, null, null);
     }
-    
+
     private Integer countOnlineOrder(List<UserBatteryMemberCardPackage> packageList) {
         Integer count = 0;
-        
+
         List<String> orderIdList = packageList.stream().map(UserBatteryMemberCardPackage::getOrderId).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(orderIdList)) {
             return count;
         }
-        
+
         List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.queryListByOrderIds(orderIdList);
         if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
             return count;
         }
-        
+
         for (ElectricityMemberCardOrder electricityMemberCardOrder : electricityMemberCardOrders) {
             if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT)) {
                 count++;
             }
         }
-        
+
         return count;
     }
-    
+
     @Override
     public R updateEleLimit(UserInfoLimitRequest request, List<Long> franchiseeIds) {
         Long uid = request.getUid();
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
-        
+
         if (Objects.isNull(userInfo) || Objects.isNull(userInfoExtra) || !Objects.equals(userInfoExtra.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("UpdateEleLimit warn! not found user, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         // 加盟商一致性校验
         Long franchiseeId = userInfo.getFranchiseeId();
         if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
             log.warn("UpdateEleLimit warn! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return R.fail("120240", "当前加盟商无权限操作");
         }
-        
+
         int update = userInfoExtraMapper.updateByUid(UserInfoExtra.builder().eleLimit(request.getEleLimit()).uid(uid).build());
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_INFO_EXTRA + userInfoExtra.getUid());
         });
-        
+
         if (update > 0) {
             Map<String, Object> oldMap = new HashMap<>();
             oldMap.put("eleLimit", userInfoExtra.getEleLimit());
@@ -676,23 +677,23 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             newMap.put("eleLimit", request.getEleLimit());
             operateRecordUtil.record(oldMap, newMap);
         }
-        
+
         return R.ok(update);
     }
-    
+
     @Override
     public R<Object> checkFreezeCount(Integer tenantId, Long uid) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig) || Objects.isNull(electricityConfig.getPackageFreezeCount())) {
             return R.fail("301031", "未找到租户配置信息");
         }
-        
+
         UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.warn("CHECK FREEZE COUNT WARN! not found userInfo extra, uid={}", uid);
             return R.fail("100247", "用户信息不存在");
         }
-        
+
         // 实时获取本月最小时间戳，判断记录版本是否过期
         Long newMinTimeOfMonth = getMinTimeOfMonth();
         if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
@@ -700,14 +701,14 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             setPackageFreezeCount(uid, newMinTimeOfMonth, 0);
             return R.ok();
         }
-        
+
         if (!Objects.equals(electricityConfig.getPackageFreezeCount(), ElectricityConfig.FREEZE_COUNT_NOT_LIMIT)
                 && userInfoExtra.getPackageFreezeCount() >= electricityConfig.getPackageFreezeCount()) {
             return R.fail("301032", "冻结次数已用完，请稍后再试");
         }
         return R.ok();
     }
-    
+
     @Override
     public R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException {
         UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
@@ -715,15 +716,15 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             log.warn("CHANGE FREEZE COUNT FOR USER WARN! not found userInfo extra, uid={}", uid);
             return R.fail("100247", "用户信息不存在");
         }
-        
+
         // 实时获取本月最小时间戳，判断冻结计数版本是否过期
         Long newMinTimeOfMonth = getMinTimeOfMonth();
-        
+
         int count;
         Long minTimeOfMonthUpdate = null;
         if (Objects.equals(type, UserInfoExtraConstant.ADD_FREEZE_COUNT)) {
             // 发起申请增加用户冻结计数
-            
+
             if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
                 // 获取到的是下一个月的时间戳，已过期，重置为1，同时重置版本号时间戳
                 count = 1;
@@ -734,7 +735,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             }
         } else if (Objects.equals(type, UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT)) {
             // 审核拒绝扣减用户冻结计数
-            
+
             if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
                 // 获取到的是下一个月的时间戳，已过期，重置为0，同时重置版本号时间戳
                 count = 0;
@@ -747,46 +748,46 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             log.error("CHANGE FREEZE COUNT FOR USER ERROR! Operation type error, uid={}", uid);
             throw new BizException("操作类型错误");
         }
-        
+
         // 无需重设作为版本号的时间戳，传null即可
         setPackageFreezeCount(uid, minTimeOfMonthUpdate, count);
         return R.ok();
     }
-    
+
     @Override
     public Integer getUnusedFreezeCount(ElectricityConfig electricityConfig, Long uid) throws BizException {
         if (Objects.isNull(electricityConfig)) {
             log.error("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", uid);
             throw new BizException("301031", "未找到租户配置信息");
         }
-        
+
         // 配置为null及关闭的时候，返回不限制
         Integer tenantPackageFreezeCount = electricityConfig.getPackageFreezeCount();
         if (Objects.isNull(tenantPackageFreezeCount) || Objects.equals(tenantPackageFreezeCount, ElectricityConfig.FREEZE_COUNT_NOT_LIMIT)) {
             return -1;
         }
-        
+
         UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.error("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", uid);
             throw new BizException("100247", "用户信息不存在");
         }
-        
+
         Long newMinTimeOfMonth = getMinTimeOfMonth();
         if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
             // 此处在用户冻结次数过期的情况下不要做初始化，避免因为和申请冻结接口的并发修改问题导致数据错误
             return electricityConfig.getPackageFreezeCount();
         }
-        
+
         return Math.max(tenantPackageFreezeCount - userInfoExtra.getPackageFreezeCount(), 0);
     }
-    
+
     private Long getMinTimeOfMonth() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Shanghai"));
         ZonedDateTime firstDayOfMonth = now.with(TemporalAdjusters.firstDayOfMonth()).withHour(0).withMinute(0).withSecond(0).withNano(0);
         return firstDayOfMonth.toInstant().toEpochMilli();
     }
-    
+
     private void setPackageFreezeCount(Long uid, Long newMinTimeOfMonth, Integer count) {
         UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
         userInfoExtraUpdate.setUid(uid);
@@ -802,6 +803,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (Objects.isNull(userInfoExtra)) {
             log.warn("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", request.getUid());
             R.fail("100247", "用户信息不存在");
+        }
+
+        if (StrUtil.isBlank(request.getRemark())){
+            log.warn("EditUserInfoExtra Warn! remark is null, uid is {}", request.getUid());
+            return R.ok();
         }
 
         UserInfoExtra updateUserInfoExtra = new UserInfoExtra();
