@@ -187,6 +187,9 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         CouponPackageDetailsVO couponPackageDetailsVO = CouponPackageDetailsVO.builder().id(couponPackage.getId()).name(couponPackage.getName()).count(couponPackage.getCouponCount())
                 .franchiseeId(couponPackage.getFranchiseeId()).isCanBuy(couponPackage.getIsCanBuy()).amount(couponPackage.getAmount().doubleValue()).build();
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(couponPackage.getFranchiseeId());
+        couponPackageDetailsVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
+
         List<CouponPackageItem> couponPackageItemList = packageItemService.listCouponPackageItemByPackageId(packageId);
         if (CollUtil.isEmpty(couponPackageItemList)) {
             return couponPackageDetailsVO;

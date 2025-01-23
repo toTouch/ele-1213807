@@ -34,6 +34,9 @@ public class CouponPackageDetailsVO {
 
     private Long franchiseeId;
 
+
+    private String franchiseeName;
+
     /**
      * 是否可购买
      */
