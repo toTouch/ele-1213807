@@ -25,7 +25,7 @@
     <update id="updateCouponPackage">
         update t_coupon_package
         set
-        <if test="name != null">
+        <if test="name != null and name != ''">
             name = #{name},
         </if>
         <if test="couponCount != null">
@@ -34,7 +34,7 @@
         <if test="isCanBuy != null">
             is_can_buy = #{isCanBuy},
         </if>
-        <if test="userName != null">
+        <if test="userName != null and userName != ''">
             user_name = #{userName},
         </if>
         <if test="amount != null">
@@ -71,7 +71,7 @@
         <include refid="baseSql"/>
         from t_coupon_package
         where tenant_id = #{tenantId}
-        <if test="packageName != null">
+        <if test="packageName != null and packageName != '' ">
             and name like concat('%',#{packageName},'%')
         </if>
         <if test="franchiseeId != null">
@@ -94,7 +94,7 @@
         select count(1)
         from t_coupon_package
         where tenant_id = #{tenantId}
-        <if test="packageName != null">
+        <if test="packageName != null and packageName != ''">
             and name like concat('%',#{packageName},'%')
         </if>
         <if test="franchiseeId != null">
