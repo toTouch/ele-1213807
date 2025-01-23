@@ -72,7 +72,7 @@
         from t_coupon_package
         where tenant_id = #{tenantId}
         <if test="packageName != null">
-            name like concat('%',#{packageName},'%')
+            and name like concat('%',#{packageName},'%')
         </if>
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
@@ -95,7 +95,7 @@
         from t_coupon_package
         where tenant_id = #{tenantId}
         <if test="packageName != null">
-            name like concat('%',#{packageName},'%')
+            and name like concat('%',#{packageName},'%')
         </if>
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
