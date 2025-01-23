@@ -19,7 +19,7 @@ public class CouponPackagePageQuery extends BasePageQuery {
 
     private Long franchiseeId;
 
-    private Integer inCanBuy;
+    private Integer isCanBuy;
 
     private List<Long> franchiseeIds;
 
