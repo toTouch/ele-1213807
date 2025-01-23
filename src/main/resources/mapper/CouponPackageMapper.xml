@@ -77,7 +77,7 @@
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
-        <if test="inCanBuy != null">
+        <if test="isCanBuy != null">
             and is_can_buy = #{isCanBuy}
         </if>
         <if test="franchiseeIds != null">
@@ -100,7 +100,7 @@
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
-        <if test="inCanBuy != null">
+        <if test="isCanBuy != null">
             and is_can_buy = #{isCanBuy}
         </if>
         <if test="franchiseeIds != null">
