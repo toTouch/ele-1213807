@@ -48,6 +48,12 @@ public class ElectricityCabinetBoxLockPageVO {
 
     private Integer tenantId;
 
+
+    /**
+     * 区域
+     */
+    private String areaName;
+
     /**
      * 设备名称
      */

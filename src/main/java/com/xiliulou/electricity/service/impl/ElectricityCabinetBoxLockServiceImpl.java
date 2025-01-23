@@ -10,12 +10,14 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxLockMapper;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
+import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -25,10 +27,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -61,6 +60,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
 
     @Resource
     private ApplicationContext applicationContext;
+
+    @Resource
+    private MerchantAreaService merchantAreaService;
 
     @Override
     public void insertElectricityCabinetBoxLock(ElectricityCabinetBoxLock cabinetBoxLock) {
@@ -126,6 +128,14 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             return CollUtil.newArrayList();
         }
 
+        List<Long> areaIdList = electricityCabinetBoxLocks.stream().map(ElectricityCabinetBoxLock::getAreaId).collect(Collectors.toList());
+        List<MerchantArea> areaList = merchantAreaService.listByIdList(areaIdList);
+        Map<Long, String> areaNameMap = new HashMap<>(10);
+        if (CollUtil.isNotEmpty(areaList)) {
+            areaNameMap = areaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (key, key1) -> key1));
+        }
+
+        Map<Long, String> finalAreaNameMap = areaNameMap;
         return electricityCabinetBoxLocks.stream().map(item -> {
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
@@ -133,6 +143,7 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             vo.setStoreName(Objects.nonNull(store) ? store.getName() : null);
+            vo.setAreaName(finalAreaNameMap.get(item.getAreaId()));
             return vo;
         }).collect(Collectors.toList());
     }
