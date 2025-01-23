@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.bo.CouponPackageItemBO;
 import com.xiliulou.electricity.entity.CouponPackageItem;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,5 +22,5 @@ public interface CouponPackageItemMapper {
 
     List<CouponPackageItem> selectListCouponPackageItemByPackageId(Long packageId);
 
-    List<CouponPackageItemBO> selectListCouponPackageItemByPackageIds(List<Long> packageIds);
+    List<CouponPackageItemBO> selectListCouponPackageItemByPackageIds(@Param("packageIds") List<Long> packageIds);
 }
