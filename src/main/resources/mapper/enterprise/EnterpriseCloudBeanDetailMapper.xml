@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanDetailMapper">
     <sql id="column">
-        id, enterprise_id, distributable_cloud_bean, recovered_cloud_bean, recyclable_cloud_bean, del_flag, tenant_id,
+         enterprise_id, distributable_cloud_bean, recovered_cloud_bean, recyclable_cloud_bean, del_flag, tenant_id,
         create_time, update_time
     </sql>
 
