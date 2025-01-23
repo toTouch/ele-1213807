@@ -15,6 +15,6 @@ import java.util.List;
  */
 public interface EnterpriseCloudBeanDetailMapper {
 
-    EnterpriseCloudBeanDetail selectByEnterpriseId(@Param("id") Long id);
+    EnterpriseCloudBeanDetail selectByEnterpriseId(@Param("enterpriseId") Long id);
 }
 
