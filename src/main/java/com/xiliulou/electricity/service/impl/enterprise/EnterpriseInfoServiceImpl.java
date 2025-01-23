@@ -36,15 +36,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
-import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
-import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
-import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecordDetail;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
-import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecordDetail;
+import com.xiliulou.electricity.entity.enterprise.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
@@ -82,16 +74,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
-import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
-import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordDetailService;
-import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordDetailService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
+import com.xiliulou.electricity.service.enterprise.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -271,6 +254,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     private FreeDepositService freeDepositService;
+
+    @Resource
+    private EnterpriseCloudBeanDetailService enterpriseCloudBeanDetailService;
+
+    @Resource
+    private EnterpriseCloudBeanOverviewService enterpriseCloudBeanOverviewService;
     
     
     static XllThreadPoolExecutorService handleQueryCloudBeanPool = XllThreadPoolExecutors.newFixedThreadPool("HandleQueryCloudBeanPool", 6, "handle-query-cloud-bean-pool-thread");
@@ -667,7 +656,82 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         return Triple.of(true, null, null);
     }
-    
+
+    @Slave
+    @Override
+    public UserCloudBeanDetailVO cloudBeanDetailV2() {
+        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("USER CLOUD BEAN DETAIL ERROR!not found enterpriseInfo,uid={}", SecurityUtils.getUid());
+            return null;
+        }
+
+        UserCloudBeanDetailVO userCloudBeanDetailVO = new UserCloudBeanDetailVO();
+        userCloudBeanDetailVO.setTotalCloudBean(enterpriseInfo.getTotalBeanAmount());
+
+        EnterpriseCloudBeanDetail enterpriseCloudBeanDetail = enterpriseCloudBeanDetailService.queryByEnterpriseId(enterpriseInfo.getId());
+        if (Objects.isNull(enterpriseCloudBeanDetail)) {
+            log.info("USER CLOUD BEAN DETAIL ERROR!not found enterpriseCloudBeanDetail,enterpriseId={}", enterpriseInfo.getId());
+            userCloudBeanDetailVO.setDistributableCloudBean(NumberConstant.ZERO_D);
+            userCloudBeanDetailVO.setRecoveredCloudBean(NumberConstant.ZERO_D);
+            userCloudBeanDetailVO.setRecyclableCloudBean(NumberConstant.ZERO_D);
+
+            return userCloudBeanDetailVO;
+        }
+
+        userCloudBeanDetailVO.setDistributableCloudBean(enterpriseCloudBeanDetail.getDistributableCloudBean().doubleValue());
+        userCloudBeanDetailVO.setRecoveredCloudBean(enterpriseCloudBeanDetail.getRecoveredCloudBean().doubleValue());
+        userCloudBeanDetailVO.setRecyclableCloudBean(enterpriseCloudBeanDetail.getRecyclableCloudBean().doubleValue());
+
+        return userCloudBeanDetailVO;
+    }
+
+    @Override
+    @Slave
+    public Triple<Boolean, String, Object> cloudBeanGeneralViewV2() {
+        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
+            return Triple.of(true, null, null);
+        }
+
+        CloudBeanGeneralViewVO cloudBeanGeneralViewVO = new CloudBeanGeneralViewVO();
+        cloudBeanGeneralViewVO.setCanAllocationCloudBean(enterpriseInfo.getTotalBeanAmount().doubleValue());
+
+        EnterpriseCloudBeanOverview enterpriseCloudBeanOverview = enterpriseCloudBeanOverviewService.queryByEnterpriseId(enterpriseInfo.getId());
+        if (Objects.isNull(enterpriseCloudBeanOverview)) {
+            log.info("ENTERPRISE ERROR! not found enterpriseCloudBeanOverview,enterpriseId={}", enterpriseInfo.getId());
+
+            cloudBeanGeneralViewVO.setAllocationCloudBean(0D);
+            cloudBeanGeneralViewVO.setAllocationMembercard(0);
+            cloudBeanGeneralViewVO.setAllocationUser(0L);
+
+            cloudBeanGeneralViewVO.setRecycleCloudBean(0D);
+            cloudBeanGeneralViewVO.setRecycleMembercard(0);
+            cloudBeanGeneralViewVO.setRecycleUser(0L);
+
+            cloudBeanGeneralViewVO.setCanRecycleCloudBean(0D);
+            cloudBeanGeneralViewVO.setCanRecycleMembercard(0);
+            cloudBeanGeneralViewVO.setCanRecycleUser(0L);
+
+            return Triple.of(true, null, cloudBeanGeneralViewVO);
+        }
+
+        cloudBeanGeneralViewVO.setAllocationCloudBean(enterpriseCloudBeanOverview.getAllocationCloudBean().doubleValue());
+        cloudBeanGeneralViewVO.setAllocationMembercard(enterpriseCloudBeanOverview.getAllocationPackageCount());
+        cloudBeanGeneralViewVO.setAllocationUser(enterpriseCloudBeanOverview.getAllocationUserCount());
+
+        cloudBeanGeneralViewVO.setRecycleCloudBean(enterpriseCloudBeanOverview.getRecycleCloudBean().doubleValue());
+        cloudBeanGeneralViewVO.setRecycleMembercard(enterpriseCloudBeanOverview.getRecyclePackageCount());
+        cloudBeanGeneralViewVO.setRecycleUser(enterpriseCloudBeanOverview.getRecycleUserCount());
+
+        cloudBeanGeneralViewVO.setCanRecycleCloudBean(enterpriseCloudBeanOverview.getCanRecycleCloudBean().doubleValue());
+        cloudBeanGeneralViewVO.setCanRecycleMembercard(enterpriseCloudBeanOverview.getCanPackageCount());
+        cloudBeanGeneralViewVO.setCanRecycleUser(enterpriseCloudBeanOverview.getCanRecycleUserCount());
+
+        return Triple.of(true, null, cloudBeanGeneralViewVO);
+    }
+
     private void unbindUserDataForFreeDeposit(UserInfo userInfo, EnterpriseChannelUser enterpriseChannelUser) {
         //清除用户租退电、购买套餐记录
         anotherPayMembercardRecordService.deleteByUid(userInfo.getUid());

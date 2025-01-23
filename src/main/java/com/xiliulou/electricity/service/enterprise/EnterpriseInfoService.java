@@ -124,4 +124,8 @@ public interface EnterpriseInfoService {
     void deleteCacheByEnterpriseId(Long enterpriseId);
     
     Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid);
+
+    UserCloudBeanDetailVO cloudBeanDetailV2();
+
+    Triple<Boolean, String, Object> cloudBeanGeneralViewV2();
 }
