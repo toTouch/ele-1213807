@@ -361,12 +361,12 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
         Map<Long, BigDecimal> resultMap = new HashMap<>();
     
         slippageEntityMap.forEach((uid, slippageList) -> {
+            BigDecimal totalAmount = BigDecimal.ZERO;
+        
             if (CollectionUtils.isEmpty(slippageList)) {
-                resultMap.put(uid, null);
                 return;
             }
-    
-            BigDecimal totalAmount = BigDecimal.ZERO;
+        
             for (CarRentalPackageOrderSlippagePo slippageEntity : slippageList) {
                 long now = System.currentTimeMillis();
                 // 结束时间，不为空
@@ -383,7 +383,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
                 BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
                 totalAmount = totalAmount.add(amount);
             }
-    
+        
             resultMap.put(uid, BigDecimal.ZERO.compareTo(totalAmount) == 0 ? null : totalAmount.setScale(2, RoundingMode.HALF_UP));
         });
     
