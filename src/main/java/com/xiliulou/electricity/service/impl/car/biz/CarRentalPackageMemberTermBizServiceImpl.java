@@ -660,7 +660,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     public CarUserMemberInfoProDTO queryUserMemberInfoForProPreSelect(Integer tenantId, List<Long> uidList) {
         // 1.查询会员期限
         List<CarRentalPackageMemberTermPo> memberTermList = carRentalPackageMemberTermService.listByTenantIdAndUidList(tenantId, uidList);
-        
+    
         Map<Long, CarRentalPackageMemberTermPo> userMemberTermMap = null;
         // 2.会员期限套餐订单信息
         Map<String, CarRentalPackageOrderPo> userUsingPackageOrderMap = null;
@@ -675,11 +675,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 7. 滞纳金
         Map<Long, BigDecimal> userLateFeeMap = null;
     
+        List<CarRentalPackageOrderPo> usingOrderList = null;
         if (!CollectionUtils.isEmpty(memberTermList)) {
             userMemberTermMap = memberTermList.stream().collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, Function.identity(), (v1, v2) -> v1));
             List<String> packageOrderNoList = memberTermList.stream().map(CarRentalPackageMemberTermPo::getRentalPackageOrderNo).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(packageOrderNoList)) {
-                List<CarRentalPackageOrderPo> usingOrderList = carRentalPackageOrderService.queryListByOrderNo(tenantId, packageOrderNoList);
+                usingOrderList = carRentalPackageOrderService.queryListByOrderNo(tenantId, packageOrderNoList);
                 if (!CollectionUtils.isEmpty(usingOrderList)) {
                     userUsingPackageOrderMap = usingOrderList.stream().collect(Collectors.toMap(CarRentalPackageOrderPo::getOrderNo, Function.identity(), (v1, v2) -> v1));
                 }
@@ -706,18 +707,18 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 }
             }
         }
-        
+    
         List<ElectricityCar> carList = carService.listNoDelByUidList(tenantId, uidList);
         if (!CollectionUtils.isEmpty(carList)) {
             userCarMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity(), (v1, v2) -> v1));
         }
-        
+    
         // 滞纳金
         userLateFeeMap = carRenalPackageSlippageBizService.listCarPackageUnpaidAmountByUidList(tenantId, uidList);
     
-        return CarUserMemberInfoProDTO.builder().memberTermList(memberTermList).userMemberTermMap(userMemberTermMap).userUsingPackageOrderMap(userUsingPackageOrderMap)
-                .userUsingCarPackageMap(userUsingCarPackageMap).userUsingDepositMap(userUsingDepositMap).usingPackageCarModelMap(usingPackageCarModelMap).userCarMap(userCarMap)
-                .userLateFeeMap(userLateFeeMap).build();
+        return CarUserMemberInfoProDTO.builder().memberTermList(memberTermList).userMemberTermMap(userMemberTermMap).usingPackageOrderList(usingOrderList)
+                .userUsingPackageOrderMap(userUsingPackageOrderMap).userUsingCarPackageMap(userUsingCarPackageMap).userUsingDepositMap(userUsingDepositMap)
+                .usingPackageCarModelMap(usingPackageCarModelMap).userCarMap(userCarMap).userLateFeeMap(userLateFeeMap).build();
     }
     @Override
     public UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO) {

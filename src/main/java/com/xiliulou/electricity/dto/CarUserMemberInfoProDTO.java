@@ -31,6 +31,8 @@ public class CarUserMemberInfoProDTO {
     
     private Map<String, CarRentalPackageOrderPo> userUsingPackageOrderMap;
     
+    private List<CarRentalPackageOrderPo> usingPackageOrderList;
+    
     private Map<Long, CarRentalPackagePo> userUsingCarPackageMap;
     
     private Map<String, CarRentalPackageDepositPayPo> userUsingDepositMap;

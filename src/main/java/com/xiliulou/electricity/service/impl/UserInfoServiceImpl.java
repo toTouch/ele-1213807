@@ -904,7 +904,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         });
                 
         // 使用中订单是否可退
-        Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, tenantId);
+        Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, tenantId, carUserMemberInfoProDTO);
         // 待使用订单是否有可退套餐
         Map<Long, Boolean> noUsingRefundMap = getCarNoUsingOrderPro(uidList);
         userCarRentalPackageVOList.forEach(item -> {
@@ -939,33 +939,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     /**
      * 当前订单是否已失效/已退租
      */
-    private Map<Long, Boolean> getUsingRentedOrderPro(List<Long> uidList, Integer tenantId) {
-        if (CollectionUtils.isEmpty(uidList)) {
-            return null;
-        }
-        
-        List<String> orderNoList = new ArrayList<>();
-        uidList.forEach(uid -> {
-            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-            if (Objects.isNull(memberTermEntity)) {
-                return;
-            }
-    
-            orderNoList.add(memberTermEntity.getRentalPackageOrderNo());
-        });
-        
-        
-        if (CollectionUtils.isEmpty(orderNoList)) {
+    private Map<Long, Boolean> getUsingRentedOrderPro(List<Long> uidList, Integer tenantId, CarUserMemberInfoProDTO carUserMemberInfoProDTO) {
+        if (CollectionUtils.isEmpty(uidList) || Objects.isNull(carUserMemberInfoProDTO)) {
             return null;
         }
     
-        List<CarRentalPackageOrderPo> packageOrderPoList = carRentalPackageOrderService.queryListByOrderNo(tenantId, orderNoList);
-        if (CollectionUtils.isEmpty(packageOrderPoList)) {
+        List<CarRentalPackageOrderPo> usingPackageOrderList = carUserMemberInfoProDTO.getUsingPackageOrderList();
+        if (CollectionUtils.isEmpty(usingPackageOrderList)) {
             return null;
         }
     
         Map<Long, Boolean> usingRentRefundFlagMap = new HashMap<>();
-        packageOrderPoList.forEach(item -> {
+        usingPackageOrderList.forEach(item -> {
             Integer useState = item.getUseState();
             if (Objects.equals(useState, UseStateEnum.IN_USE.getCode())) {
                 usingRentRefundFlagMap.put(item.getUid(), true);
@@ -973,7 +958,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 usingRentRefundFlagMap.put(item.getUid(), false);
             }
         });
-        
+    
         return usingRentRefundFlagMap;
     }
     
