@@ -659,8 +659,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     @Override
     public CarUserMemberInfoProDTO queryUserMemberInfoForProPreSelect(Integer tenantId, List<Long> uidList) {
         // 1.查询会员期限
-        List<CarRentalPackageMemberTermPo> memberTermList = uidList.stream().map(uid -> carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid))
-                .filter(Objects::nonNull).collect(Collectors.toList());
+        List<CarRentalPackageMemberTermPo> memberTermList = carRentalPackageMemberTermService.listByTenantIdAndUidList(tenantId, uidList);
+        
         Map<Long, CarRentalPackageMemberTermPo> userMemberTermMap = null;
         // 2.会员期限套餐订单信息
         Map<String, CarRentalPackageOrderPo> userUsingPackageOrderMap = null;
@@ -673,45 +673,36 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 6.用户车辆信息
         Map<Long, ElectricityCar> userCarMap = new HashMap<>();
         // 7. 滞纳金
-        Map<Long, BigDecimal> userLateFeeMap = new HashMap<>();
-        
+        Map<Long, BigDecimal> userLateFeeMap = null;
+    
         if (!CollectionUtils.isEmpty(memberTermList)) {
             userMemberTermMap = memberTermList.stream().collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, Function.identity(), (v1, v2) -> v1));
-            
             List<String> packageOrderNoList = memberTermList.stream().map(CarRentalPackageMemberTermPo::getRentalPackageOrderNo).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(packageOrderNoList)) {
                 List<CarRentalPackageOrderPo> usingOrderList = carRentalPackageOrderService.queryListByOrderNo(tenantId, packageOrderNoList);
-                
                 if (!CollectionUtils.isEmpty(usingOrderList)) {
                     userUsingPackageOrderMap = usingOrderList.stream().collect(Collectors.toMap(CarRentalPackageOrderPo::getOrderNo, Function.identity(), (v1, v2) -> v1));
                 }
             }
-    
+        
             memberTermList.forEach(item -> {
                 Long uid = item.getUid();
                 CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(item.getRentalPackageId());
                 if (Objects.nonNull(rentalPackageEntity)) {
                     userUsingCarPackageMap.put(uid, rentalPackageEntity);
                 }
-        
+            
                 ElectricityCarModel carModel = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
                 if (Objects.nonNull(carModel)) {
                     usingPackageCarModelMap.put(rentalPackageEntity.getId(), carModel);
                 }
             });
-            
+        
             List<String> depositOrderNoList = memberTermList.stream().map(CarRentalPackageMemberTermPo::getDepositPayOrderNo).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(depositOrderNoList)) {
                 List<CarRentalPackageDepositPayPo> usingDepositList = carRentalPackageDepositPayService.listByOrders(tenantId, depositOrderNoList);
                 if (!CollectionUtils.isEmpty(usingDepositList)) {
                     userUsingDepositMap = usingDepositList.stream().collect(Collectors.toMap(CarRentalPackageDepositPayPo::getOrderNo, Function.identity(), (v1, v2) -> v1));
-    
-                    List<Long> packageIdList = usingDepositList.stream().map(CarRentalPackageDepositPayPo::getRentalPackageId).collect(Collectors.toList());
-                    if (!CollectionUtils.isEmpty(packageIdList)) {
-                        packageIdList.forEach(packageId ->{
-                            carRentalPackageService.selectById(packageId);
-                        });
-                    }
                 }
             }
         }
@@ -721,12 +712,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             userCarMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity(), (v1, v2) -> v1));
         }
         
-        uidList.forEach(uid -> {
-            BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
-            if (Objects.nonNull(lateFeeAmount)) {
-                userLateFeeMap.put(uid, lateFeeAmount);
-            }
-        });
+        // 滞纳金
+        userLateFeeMap = carRenalPackageSlippageBizService.listCarPackageUnpaidAmountByUidList(tenantId, uidList);
     
         return CarUserMemberInfoProDTO.builder().memberTermList(memberTermList).userMemberTermMap(userMemberTermMap).userUsingPackageOrderMap(userUsingPackageOrderMap)
                 .userUsingCarPackageMap(userUsingCarPackageMap).userUsingDepositMap(userUsingDepositMap).usingPackageCarModelMap(usingPackageCarModelMap).userCarMap(userCarMap)
@@ -791,7 +778,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     
         if (Objects.isNull(rentalPackageEntity)) {
             rentalPackageEntityFlag = false;
-            rentalPackageEntity = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
+            if (Objects.nonNull(depositPayEntity)) {
+                rentalPackageEntity = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
+            }
         }
     
         // 车辆型号信息
@@ -815,7 +804,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 套餐对应的电池型号信息、用户电池信息
         List<CarRentalPackageCarBatteryRelPo> carBatteryRelEntityList = null;
         List<BatteryModel> batteryModelEntityList = null;
-        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType) && Objects.nonNull(rentalPackageEntity)) {
             carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageEntity.getId());
             if (!CollectionUtils.isEmpty(carBatteryRelEntityList)) {
                 List<String> batteryTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPo::getBatteryModelType).distinct().collect(Collectors.toList());

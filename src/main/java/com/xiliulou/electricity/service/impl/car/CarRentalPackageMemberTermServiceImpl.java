@@ -372,4 +372,10 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     public List<CarRentalPackageMemberTermPo> queryListExpireByParam(CarRentalPackageMemberTermExpiredQryModel qryModel) {
         return carRentalPackageMemberTermMapper.selectListExpireByParam(qryModel);
     }
+    
+    @Slave
+    @Override
+    public List<CarRentalPackageMemberTermPo> listByTenantIdAndUidList(Integer tenantId, List<Long> uidList) {
+        return carRentalPackageMemberTermMapper.selectListByTenantIdAndUidList(tenantId, uidList);
+    }
 }
