@@ -344,7 +344,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
     
     @Override
     public Map<Long, BigDecimal> listCarPackageUnpaidAmountByUidList(Integer tenantId, List<Long> uidList) {
-        if (Objects.isNull(tenantId) || !CollectionUtils.isEmpty(uidList)) {
+        if (Objects.isNull(tenantId) || CollectionUtils.isEmpty(uidList)) {
             return null;
         }
     
