@@ -1369,27 +1369,27 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         // 校验电池状态，生成各电池的失败结果
         List<BindBatteryFailReasonVO> reasonVOList = new ArrayList<>();
         List<ElectricityBattery> electricityBatteries = new ArrayList<>();
-        List<Long> idsWaitBind = batteryQuery.getElectricityBatterySnList().parallelStream().map(sn -> {
+        List<Long> idsWaitBind = new ArrayList<>();
+        batteryQuery.getElectricityBatterySnList().forEach(sn -> {
             try {
                 ElectricityBattery electricityBattery = queryBySnFromDb(sn);
                 if (Objects.isNull(electricityBattery)) {
                     reasonVOList.add(new BindBatteryFailReasonVO(sn, BindBatteryConstants.FAIL_REASON_NOT_FOUND));
-                    return null;
+                    return;
                 }
                 
                 if (Objects.equals(electricityBattery.getStockStatus(), StockStatusEnum.UN_STOCK.getCode())) {
                     reasonVOList.add(new BindBatteryFailReasonVO(sn, BindBatteryConstants.FAIL_REASON_ALREADY_OUTBOUND));
-                    return null;
+                    return;
                 }
                 
                 electricityBatteries.add(electricityBattery);
-                return electricityBattery.getId();
+                idsWaitBind.add(electricityBattery.getId());
             } catch (Exception e) {
                 log.error("Bind Franchisee For BatteryV2, sn = {}", sn, e);
                 reasonVOList.add(new BindBatteryFailReasonVO(sn, BindBatteryConstants.FAIL_REASON_UNKNOWN));
-                return null;
             }
-        }).collect(Collectors.toList());
+        });
         
         // 没有电池需要修改的时候直接返回结果
         if (CollectionUtils.isEmpty(idsWaitBind)) {
