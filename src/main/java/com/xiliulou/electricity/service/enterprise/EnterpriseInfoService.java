@@ -131,5 +131,5 @@ public interface EnterpriseInfoService {
 
     Triple<Boolean, String, Object> refresh(Integer type);
 
-    Triple<Boolean, String, Object> queryRefresh(Integer sessionId);
+    Triple<Boolean, String, Object> queryRefresh(String sessionId);
 }

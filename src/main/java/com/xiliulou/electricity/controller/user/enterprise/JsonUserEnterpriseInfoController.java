@@ -73,7 +73,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     }
 
     @GetMapping("/merchant/enterpriseInfo/cloudBean/queryRefresh")
-    public R queryRefresh(@RequestParam(value = "sessionId") Integer sessionId) {
+    public R queryRefresh(@RequestParam(value = "sessionId") String sessionId) {
 
         return returnTripleResult(enterpriseInfoService.queryRefresh(sessionId));
     }

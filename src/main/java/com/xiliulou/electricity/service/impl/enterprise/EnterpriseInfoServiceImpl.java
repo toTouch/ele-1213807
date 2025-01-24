@@ -749,7 +749,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> queryRefresh(Integer sessionId) {
+    public Triple<Boolean, String, Object> queryRefresh(String sessionId) {
         EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(SecurityUtils.getUid());
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "300074", "未找到企业信息");
