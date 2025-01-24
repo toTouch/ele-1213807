@@ -10,7 +10,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class BindBatteryFailReasonVO {
     
-    private String sn;
+    private String failSn;
     
     private String reason;
 }
