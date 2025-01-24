@@ -128,4 +128,8 @@ public interface EnterpriseInfoService {
     UserCloudBeanDetailVO cloudBeanDetailV2();
 
     Triple<Boolean, String, Object> cloudBeanGeneralViewV2();
+
+    Triple<Boolean, String, Object> refresh(Integer type);
+
+    Triple<Boolean, String, Object> queryRefresh(Integer sessionId);
 }

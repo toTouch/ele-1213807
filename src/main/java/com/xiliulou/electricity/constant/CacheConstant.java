@@ -930,5 +930,7 @@ public interface CacheConstant {
      * 标记电池缓存
      */
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
+
+    String CACHE_ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT = "ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT:%d:%s";
 }
 
