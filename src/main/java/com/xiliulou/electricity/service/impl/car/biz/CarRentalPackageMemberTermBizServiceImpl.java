@@ -715,7 +715,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     
         // 滞纳金
         userLateFeeMap = carRenalPackageSlippageBizService.listCarPackageUnpaidAmountByUidList(tenantId, uidList);
-    
+        
         return CarUserMemberInfoProDTO.builder().memberTermList(memberTermList).userMemberTermMap(userMemberTermMap).usingPackageOrderList(usingOrderList)
                 .userUsingPackageOrderMap(userUsingPackageOrderMap).userUsingCarPackageMap(userUsingCarPackageMap).userUsingDepositMap(userUsingDepositMap)
                 .usingPackageCarModelMap(usingPackageCarModelMap).userCarMap(userCarMap).userLateFeeMap(userLateFeeMap).build();
@@ -723,6 +723,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     @Override
     public UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO) {
         if (Objects.isNull(carUserMemberInfoProDTO)) {
+            log.warn("carUserMemberInfoProDTO is null, uid={}, uidList={}, carUserMemberInfoProDTO={}", uid, uidList, carUserMemberInfoProDTO);
             return null;
         }
     
@@ -742,12 +743,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 7. 滞纳金
         Map<Long, BigDecimal> userLateFeeMap = carUserMemberInfoProDTO.getUserLateFeeMap();
     
-        if (MapUtils.isEmpty(userMemberTermMap) || userMemberTermMap.containsKey(uid)) {
+        if (MapUtils.isEmpty(userMemberTermMap) || !userMemberTermMap.containsKey(uid)) {
+            log.warn("userMemberTermMap is empty or userMemberTermMap not containsKey uid={}", uid);
             return null;
         }
     
         CarRentalPackageMemberTermPo memberTermEntity = userMemberTermMap.get(uid);
         if (Objects.isNull(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+            log.warn("memberTermEntity is null or memberTermEntity is pending effective, memberTermEntity={}", memberTermEntity);
             return null;
         }
     
