@@ -728,7 +728,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
     
         // 1.查询会员期限
-        List<CarRentalPackageMemberTermPo> memberTermList = carUserMemberInfoProDTO.getMemberTermList();
         Map<Long, CarRentalPackageMemberTermPo> userMemberTermMap = carUserMemberInfoProDTO.getUserMemberTermMap();
         // 2.会员期限套餐订单信息
         Map<String, CarRentalPackageOrderPo> userUsingPackageOrderMap = carUserMemberInfoProDTO.getUserUsingPackageOrderMap();
@@ -754,7 +753,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             return null;
         }
     
-        Long rentalPackageId = memberTermEntity.getRentalPackageId();
         String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
         String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
         Integer rentalPackageType = memberTermEntity.getRentalPackageType();
@@ -764,8 +762,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         boolean rentalPackageEntityFlag = true;
         // 套餐信息
         CarRentalPackagePo rentalPackageEntity = null;
-        if (MapUtils.isNotEmpty(userUsingCarPackageMap) && userUsingCarPackageMap.containsKey(rentalPackageId)) {
-            rentalPackageEntity = userUsingCarPackageMap.get(rentalPackageId);
+        if (MapUtils.isNotEmpty(userUsingCarPackageMap) && userUsingCarPackageMap.containsKey(uid)) {
+            rentalPackageEntity = userUsingCarPackageMap.get(uid);
         }
     
         // 套餐订单信息
