@@ -35,8 +35,6 @@ public interface ElectricityMemberCardOrderService {
 
     R queryList(MemberCardOrderQuery memberCardOrderQuery);
 
-    void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
-
     R queryCount(MemberCardOrderQuery memberCardOrderQuery);
 
     Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery);

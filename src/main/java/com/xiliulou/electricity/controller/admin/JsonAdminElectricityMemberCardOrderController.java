@@ -152,6 +152,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
     }
     
     //换电柜购卡订单导出报表
+    @Deprecated
     @GetMapping("/admin/electricityMemberCardOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "memberCardType", required = false) Integer cardType,
@@ -160,44 +161,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
             @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "payCount", required = false) Integer payCount,
             @RequestParam(value = "refId", required = false) Long refId, @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
             @RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
-            HttpServletResponse response) {
-        
-        Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
-        if (days > 33) {
-            throw new CustomBusinessException("搜索日期不能大于33天");
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.warn("ELE WARN! not found user");
-            throw new CustomBusinessException("查不到订单");
-        }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            throw new CustomBusinessException("订单不存在");
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                throw new CustomBusinessException("订单不存在！");
-            }
-        }
-        
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
-                throw new CustomBusinessException("订单不存在！");
-            }
-        }
-        
-        MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder().payType(payType).phone(phone).uid(uid).orderId(orderId).cardType(cardType)
-                .queryStartTime(queryStartTime).queryEndTime(queryEndTime).tenantId(TenantContextHolder.getTenantId()).status(status).source(source).refId(refId)
-                .cardModel(memberCardModel).franchiseeId(franchiseeId).cardPayCount(payCount).userName(userName).franchiseeIds(franchiseeIds).storeIds(storeIds).build();
-        electricityMemberCardOrderService.exportExcel(memberCardOrderQuery, response);
-    }
+            HttpServletResponse response) {}
     
     /**
      * 暂停用户套餐
