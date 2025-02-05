@@ -22,7 +22,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -117,11 +117,12 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(user);
-        if (!pair.getLeft()) {
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
+        if (!triple.getRight()) {
             return new ArrayList<>();
         }
-        query.setFranchiseeIds(pair.getRight());
+        query.setFranchiseeIds(triple.getLeft());
+        query.setStoreIds(triple.getMiddle());
 
         List<ElectricityCabinetBoxLock> electricityCabinetBoxLocks = electricityCabinetBoxLockMapper.listCabinetBoxLock(query);
         if (CollUtil.isEmpty(electricityCabinetBoxLocks)) {
@@ -156,11 +157,13 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(user);
-        if (!pair.getLeft()) {
+
+        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
+        if (!triple.getRight()) {
             return NumberConstant.ZERO_L;
         }
-        query.setFranchiseeIds(pair.getRight());
+        query.setFranchiseeIds(triple.getLeft());
+        query.setStoreIds(triple.getMiddle());
 
         return electricityCabinetBoxLockMapper.countCabinetBoxLock(query);
     }

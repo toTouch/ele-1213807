@@ -94,6 +94,12 @@
         <if test="storeId != null">
             and store_id = #{storeId}
         </if>
+        <if test="storeIds != null and storeIds.size() > 0">
+            AND store_id IN
+            <foreach collection="storeIds" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
         <if test="lockStatusChangeTimeStart != null">
             and lock_status_change_time &gt;=#{lockStatusChangeTimeStart}
         </if>
@@ -134,6 +140,12 @@
         </if>
         <if test="storeId != null">
             and store_id = #{storeId}
+        </if>
+        <if test="storeIds != null and storeIds.size() > 0">
+            AND store_id IN
+            <foreach collection="storeIds" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
         </if>
         <if test="lockStatusChangeTimeStart != null">
             and lock_status_change_time &gt;=#{lockStatusChangeTimeStart}
