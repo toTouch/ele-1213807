@@ -88,22 +88,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.producer.MessageSendProducer;
-import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.DeviceStatusQuery;
-import com.xiliulou.electricity.query.EleCabinetPatternQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnCountQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
-import com.xiliulou.electricity.query.FreeCellNoQuery;
-import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
-import com.xiliulou.electricity.query.LowBatteryExchangeModel;
-import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
@@ -5877,5 +5862,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("User ShowInfoByDistanceV2 Error! box is {}", CollUtil.isEmpty(exchangeableList) ? null : JsonUtil.toJson(exchangeableList));
             return Collections.emptyList();
         }
+    }
+
+
+    @Override
+    public List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query) {
+        if (Objects.isNull(query.getAreaId()) && StrUtil.isEmpty(query.getAddress()) && StrUtil.isEmpty(query.getAddress())) {
+            return List.of();
+        }
+        return electricityCabinetMapper.selectCabinetIdByFilter(query);
     }
 }

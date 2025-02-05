@@ -14,6 +14,8 @@ import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxLockMapper;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetIdByFilterQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
@@ -124,19 +126,24 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         query.setFranchiseeIds(triple.getLeft());
         query.setStoreIds(triple.getMiddle());
 
+        //  电柜信息搜索
+        List<Integer> cabinetIdByFilterList = electricityCabinetService.queryCabinetIdByFilter(
+                ElectricityCabinetIdByFilterQuery.builder().tenantId(query.getTenantId())
+                        .name(query.getName())
+                        .address(query.getAddress())
+                        .areaId(query.getAreaId())
+                        .build()
+        );
+        if (CollUtil.isNotEmpty(cabinetIdByFilterList)) {
+            query.setIdsByLikeName(cabinetIdByFilterList);
+        }
+
+
         List<ElectricityCabinetBoxLock> electricityCabinetBoxLocks = electricityCabinetBoxLockMapper.listCabinetBoxLock(query);
         if (CollUtil.isEmpty(electricityCabinetBoxLocks)) {
             return CollUtil.newArrayList();
         }
 
-        List<Long> areaIdList = electricityCabinetBoxLocks.stream().map(ElectricityCabinetBoxLock::getAreaId).collect(Collectors.toList());
-        List<MerchantArea> areaList = merchantAreaService.listByIdList(areaIdList);
-        Map<Long, String> areaNameMap = new HashMap<>(10);
-        if (CollUtil.isNotEmpty(areaList)) {
-            areaNameMap = areaList.stream().collect(Collectors.toMap(MerchantArea::getId, MerchantArea::getName, (key, key1) -> key1));
-        }
-
-        Map<Long, String> finalAreaNameMap = areaNameMap;
         return electricityCabinetBoxLocks.stream().map(item -> {
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
@@ -144,7 +151,15 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             vo.setStoreName(Objects.nonNull(store) ? store.getName() : null);
-            vo.setAreaName(finalAreaNameMap.get(item.getAreaId()));
+
+
+            Optional.ofNullable(electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId())).ifPresent(cabinet -> {
+                vo.setName(cabinet.getName());
+                vo.setAddress(cabinet.getAddress());
+                MerchantArea merchantArea = merchantAreaService.queryById(cabinet.getAreaId());
+                vo.setAreaName(Objects.isNull(merchantArea) ? null : merchantArea.getName());
+            });
+
             return vo;
         }).collect(Collectors.toList());
     }
@@ -164,6 +179,19 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         }
         query.setFranchiseeIds(triple.getLeft());
         query.setStoreIds(triple.getMiddle());
+
+        //  电柜信息搜索
+        List<Integer> cabinetIdByFilterList = electricityCabinetService.queryCabinetIdByFilter(
+                ElectricityCabinetIdByFilterQuery.builder().tenantId(query.getTenantId())
+                        .name(query.getName())
+                        .address(query.getAddress())
+                        .areaId(query.getAreaId())
+                        .build()
+        );
+        if (CollUtil.isNotEmpty(cabinetIdByFilterList)) {
+            query.setIdsByLikeName(cabinetIdByFilterList);
+        }
+
 
         return electricityCabinetBoxLockMapper.countCabinetBoxLock(query);
     }

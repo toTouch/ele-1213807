@@ -34,4 +34,7 @@ public class ElectricityCabinetBoxLockPageQuery extends BasePageQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+
+
+    private List<Integer> idsByLikeName;
 }

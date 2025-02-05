@@ -5,7 +5,7 @@
     <sql id="baseSql">
         id
         ,product_key,device_name
-        ,name,sn,electricity_cabinet_id,cell_no,lock_type,lock_reason,lock_status_change_time,address,area_id,tenant_id,franchisee_id,store_id,create_time,update_time
+        ,sn,electricity_cabinet_id,cell_no,lock_type,lock_reason,lock_status_change_time,tenant_id,franchisee_id,store_id,create_time,update_time
     </sql>
 
     <insert id="insertEleLockBox">
@@ -13,15 +13,12 @@
         (id,
          product_key,
          device_name,
-         name,
          sn,
          electricity_cabinet_id,
          cell_no,
          lock_type,
          lock_reason,
          lock_status_change_time,
-         address,
-         area_id,
          tenant_id,
          franchisee_id,
          store_id,
@@ -30,15 +27,12 @@
         VALUES (#{boxLock.id},
                 #{boxLock.productKey},
                 #{boxLock.deviceName},
-                #{boxLock.name},
                 #{boxLock.sn},
                 #{boxLock.electricityCabinetId},
                 #{boxLock.cellNo},
                 #{boxLock.lockType},
                 #{boxLock.lockReason},
                 #{boxLock.lockStatusChangeTime},
-                #{boxLock.address},
-                #{boxLock.areaId},
                 #{boxLock.tenantId},
                 #{boxLock.franchiseeId},
                 #{boxLock.storeId},
@@ -67,21 +61,21 @@
         <include refid="baseSql"/>
         from t_electricity_cabinet_box_lock
         where  tenant_id = #{tenantId}
-        <if test="name != null and name != ''">
-            and name like concat('%',#{name},'%')
+        <if test="idsByLikeName != null and idsByLikeName.size() > 0">
+            AND electricity_cabinet_id IN
+            <foreach collection="idsByLikeName" item="id" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
         </if>
+
         <if test="sn != null and sn != ''">
             and sn  like concat('%',#{sn},'%')
         </if>
-        <if test="address != null and address != ''">
-            and address like concat('%',#{address},'%')
-        </if>
+
         <if test="lockType != null">
             and lock_type = #{lockType}
         </if>
-        <if test="areaId != null">
-            and area_id = #{areaId}
-        </if>
+
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
@@ -114,21 +108,20 @@
         select count(1)
         from t_electricity_cabinet_box_lock
         where tenant_id = #{tenantId}
-        <if test="name != null and name != ''">
-            and name like concat('%',#{name},'%')
+        <if test="idsByLikeName != null and idsByLikeName.size() > 0">
+            AND electricity_cabinet_id IN
+            <foreach collection="idsByLikeName" item="id" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
         </if>
         <if test="sn != null and sn != ''">
             and sn like concat('%',#{sn},'%')
         </if>
-        <if test="address != null and address != ''">
-            and address like concat('%',#{address},'%')
-        </if>
+
         <if test="lockType != null">
             and lock_type = #{lockType}
         </if>
-        <if test="areaId != null">
-            and area_id = #{areaId}
-        </if>
+
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>

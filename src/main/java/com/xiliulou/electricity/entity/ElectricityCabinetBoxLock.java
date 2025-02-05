@@ -38,10 +38,6 @@ public class ElectricityCabinetBoxLock {
     private String deviceName;
 
     /**
-     * 换电柜名称
-     */
-    private String name;
-    /**
      * 换电柜sn
      */
     private String sn;
@@ -58,12 +54,14 @@ public class ElectricityCabinetBoxLock {
 
     /**
      * 锁仓类型 0--人为禁用 1--系统禁用 2--待检中
+     *
      * @see com.xiliulou.electricity.enums.LockTypeEnum
      */
     private Integer lockType;
 
     /**
      * 锁仓原因
+     *
      * @see com.xiliulou.electricity.enums.LockReasonEnum
      */
     private Integer lockReason;
@@ -73,14 +71,6 @@ public class ElectricityCabinetBoxLock {
      */
     private Long lockStatusChangeTime;
 
-
-    /**
-     * 换电柜地址
-     */
-    private String address;
-
-
-    private Long areaId;
 
     private Integer tenantId;
 
