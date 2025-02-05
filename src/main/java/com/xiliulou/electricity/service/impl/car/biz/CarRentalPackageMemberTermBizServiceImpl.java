@@ -691,11 +691,11 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 CarRentalPackagePo rentalPackageEntity = carRentalPackageService.selectById(item.getRentalPackageId());
                 if (Objects.nonNull(rentalPackageEntity)) {
                     userUsingCarPackageMap.put(uid, rentalPackageEntity);
-                }
-            
-                ElectricityCarModel carModel = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
-                if (Objects.nonNull(carModel)) {
-                    usingPackageCarModelMap.put(rentalPackageEntity.getId(), carModel);
+    
+                    ElectricityCarModel carModel = carModelService.queryByIdFromCache(rentalPackageEntity.getCarModelId());
+                    if (Objects.nonNull(carModel)) {
+                        usingPackageCarModelMap.put(rentalPackageEntity.getId(), carModel);
+                    }
                 }
             });
         
