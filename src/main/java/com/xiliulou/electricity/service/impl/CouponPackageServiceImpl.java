@@ -80,6 +80,9 @@ public class CouponPackageServiceImpl implements CouponPackageService {
     private UserCouponService userCouponService;
 
     @Resource
+    private CouponPackageOperateRecordService couponPackageOperateRecordService;
+
+    @Resource
     private RedisService redisService;
 
     TtlXllThreadPoolExecutorServiceWrapper execute = TtlXllThreadPoolExecutorsSupport.get(
@@ -328,26 +331,30 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 .notExistPhones(notExistUserSet)
                 .isRequest(existUserSet.isEmpty() ? CouponPackageBatchReleaseVO.IS_REQUEST_NO : CouponPackageBatchReleaseVO.IS_REQUEST_YES)
                 .build();
-        execute.execute(() -> batchReleaseHandler(existUserSet, packageItemList, vo.getSessionId()));
+        execute.execute(() -> batchReleaseHandler(existUserSet, packageItemList, vo.getSessionId(), operateUser.getName(), operateUid));
 
         return R.ok(vo);
     }
 
 
-    private void batchReleaseHandler(Set<User> existsPhone, List<CouponPackageItem> packageItemList, String sessionId) {
+    private void batchReleaseHandler(Set<User> existsPhone, List<CouponPackageItem> packageItemList, String sessionId, String operateName, Long operateUid) {
         Iterator<User> iterator = existsPhone.iterator();
 
         List<UserCoupon> userCouponList = new ArrayList<>();
+        List<CouponPackageOperateRecord> couponPackageOperateRecordList = new ArrayList<>();
         int maxSize = 500;
 
         while (iterator.hasNext()) {
             // 按照最大优惠包下面20个优惠券算，一次可以插入是25个用户数据
             if (userCouponList.size() >= maxSize) {
                 userCouponService.batchInsert(userCouponList);
+                couponPackageOperateRecordService.batchInsert(couponPackageOperateRecordList);
                 userCouponList.clear();
+                couponPackageOperateRecordList.clear();
                 continue;
             }
             User user = iterator.next();
+            // 优惠券包的优惠券
             packageItemList.stream().forEach(item -> {
                 UserCoupon userCoupon = new UserCoupon();
                 userCoupon.setSource(UserCoupon.TYPE_SOURCE_ADMIN_SEND);
@@ -367,10 +374,16 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 userCoupon.setCouponWay(item.getPackageId());
                 userCouponList.add(userCoupon);
             });
+
+
+            couponPackageOperateRecordList.add(CouponPackageOperateRecord.builder().packageId(packageItemList.get(0).getPackageId()).uid(user.getUid())
+                    .name(user.getName()).phone(user.getPhone()).operateName(operateName).issuedUid(operateUid)
+                    .tenantId(user.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
         }
 
         if (CollUtil.isNotEmpty(userCouponList)) {
             userCouponService.batchInsert(userCouponList);
+            couponPackageOperateRecordService.batchInsert(couponPackageOperateRecordList);
         }
 
         log.info("Coupon Package Batch Release Success! sessionId is {} size is {}", sessionId, existsPhone.size());
@@ -395,6 +408,9 @@ public class CouponPackageServiceImpl implements CouponPackageService {
         if (CollUtil.isEmpty(packageItemList)) {
             R.fail("402026", "优惠券包下的优惠券为空");
         }
+
+
+        List<CouponPackageOperateRecord> couponPackageOperateRecordList = new ArrayList<>();
 
         request.getUid().parallelStream().forEach(uid -> {
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -423,8 +439,13 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             }).collect(Collectors.toList());
 
             userCouponService.batchInsert(userCouponList);
+
+            couponPackageOperateRecordList.add(CouponPackageOperateRecord.builder().packageId(couponPackage.getId()).uid(userInfo.getUid())
+                    .name(userInfo.getName()).phone(userInfo.getPhone()).operateName(operateUser.getUsername()).issuedUid(operateUser.getUid())
+                    .tenantId(userInfo.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
         });
 
+        couponPackageOperateRecordService.batchInsert(couponPackageOperateRecordList);
         return R.ok();
     }
 
