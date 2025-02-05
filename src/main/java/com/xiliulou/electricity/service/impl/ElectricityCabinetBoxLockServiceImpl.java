@@ -266,4 +266,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     public ElectricityCabinetBoxLock selectBoxLockByEidAndCell(Integer eid, Integer cellNo) {
         return electricityCabinetBoxLockMapper.selectBoxLockByEidAndCell(eid, cellNo);
     }
+
+    @Override
+    public void deleteElectricityCabinetBoxLock(Integer electricityCabinetId) {
+        electricityCabinetBoxLockMapper.deleteElectricityCabinetBoxLock(electricityCabinetId);
+    }
 }

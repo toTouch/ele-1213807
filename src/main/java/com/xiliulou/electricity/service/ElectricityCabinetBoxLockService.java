@@ -62,4 +62,14 @@ public interface ElectricityCabinetBoxLockService {
      * @return ElectricityCabinetBoxLock
      */
     ElectricityCabinetBoxLock selectBoxLockByEidAndCell(Integer eid, Integer cellNo);
+
+
+    /**
+     * 删除柜机的锁仓列表
+     *
+     * @param electricityCabinetId electricityCabinetId
+     * @return:
+     */
+
+    void deleteElectricityCabinetBoxLock(Integer electricityCabinetId);
 }

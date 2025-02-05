@@ -19,4 +19,6 @@ public interface ElectricityCabinetBoxLockMapper {
     List<ElectricityCabinetBoxLock> listCabinetBoxLock(ElectricityCabinetBoxLockPageQuery query);
 
     Long countCabinetBoxLock(ElectricityCabinetBoxLockPageQuery query);
+
+    void deleteElectricityCabinetBoxLock(Integer electricityCabinetId);
 }

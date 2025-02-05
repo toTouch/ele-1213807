@@ -46,6 +46,12 @@
         where id = #{id}
     </update>
 
+    <delete id="deleteElectricityCabinetBoxLock">
+        delete
+        from t_electricity_cabinet_box_lock
+        where electricity_cabinet_id = #{electricityCabinetId}
+    </delete>
+
 
     <select id="selectBoxLockByEidAndCell"
             resultType="com.xiliulou.electricity.entity.ElectricityCabinetBoxLock">

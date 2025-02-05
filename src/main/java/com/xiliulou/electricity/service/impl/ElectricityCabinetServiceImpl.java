@@ -419,6 +419,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private LessTimeExchangeService lessTimeExchangeService;
 
+    @Resource
+    private ElectricityCabinetBoxLockService electricityCabinetBoxLockService;
 
 
     /**
@@ -744,6 +746,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             
             electricityCabinetServerService.logicalDeleteByEid(id);
+
+            // 删除锁仓仓门列表
+            electricityCabinetBoxLockService.deleteElectricityCabinetBoxLock(id);
             
             return null;
         });
