@@ -111,13 +111,17 @@ public interface ElectricityCabinetOrderService {
     
     R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
     
-    R openFullCell(OpenFullCellQuery query);
+
     
     List<ElectricityCabinetOrder> listByOrderIdList(Set<String> exchangeOrderIdList);
     
     List<String> getBatteryTypesForCheck(UserInfo userInfo, ElectricityBattery battery, List<String> userBatteryTypes);
     
     void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo);
-    
-     Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee);
+
+    ElectricityCabinetOrder selectLatelyExchangeOrderByDate(Long uid,  Long currentTime);
+
+    ElectricityCabinetOrder selectLatelyExchangeOrder(Long uid, Long startTime, Long currentTime);
+
+    List<ElectricityCabinetOrder> existExchangeOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid);
 }

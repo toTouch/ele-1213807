@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * 微信退款-租车押金退款 ServiceImpl
@@ -179,6 +181,12 @@ public class RefundPayCarDepositServiceImpl implements RefundPayService {
                 // 作废保险订单
                 if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
                     insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                    // 是否存在未生效的保险
+                    InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(memberTermUpdateEntity.getUid(), memberTermUpdateEntity.getRentalPackageType(), InsuranceOrder.NOT_EFFECTIVE);
+                    if (Objects.nonNull(insuranceOrder)){
+                        insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                    }
                 }
                 // 清理user信息/解绑车辆/解绑电池
                 userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());

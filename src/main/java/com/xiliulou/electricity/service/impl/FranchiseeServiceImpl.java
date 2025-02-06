@@ -36,6 +36,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
+import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CityService;
@@ -58,6 +59,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
+import com.xiliulou.electricity.service.retrofit.AuxRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -65,7 +67,6 @@ import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,7 +170,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     private MerchantAttrService merchantAttrService;
     
-    
+    @Resource
+    private AuxRetrofitService auxRetrofitService;
     @Slave
     @Override
     public List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery) {
@@ -382,6 +384,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             merchantLevelService.deleteByFranchiseeId(id);
             //删除加盟商下商户配置
             merchantAttrService.deleteByFranchiseeId(id);
+    
+            // 删除运维小程序常用功能排序数据
+            auxRetrofitService.deleteFeatureSort(FeatureSortReq.builder().tenantId(franchisee.getTenantId()).uid(franchisee.getUid()).build());
             return null;
         });
         

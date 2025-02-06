@@ -68,7 +68,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
             } else {
                 if (requestPhoneList.size() > ServicePhone.LIMIT_NUM) {
                     log.warn("InsertOrUpdate servicePhone warn! phone number exceed limit");
-                    return R.fail("120149", "客服电话最多设置5个");
+                    return R.fail("120149", "客服电话最多设置30个");
                 }
                 
                 List<ServicePhoneDTO> requestPhoneDTOList = requestPhoneList.stream()

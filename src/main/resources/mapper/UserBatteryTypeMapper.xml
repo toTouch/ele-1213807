@@ -37,6 +37,16 @@
         where uid = #{uid} and del_flag = 0
     </select>
     
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserBatteryType">
+        select uid, battery_type
+        from t_user_battery_type
+        where uid in
+        <foreach item="item" index="index" collection="uidList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and tenant_id = #{tenantId}
+    </select>
+    
     <insert id="batchInsert">
         insert into t_user_battery_type(uid, battery_type, del_flag, create_time, update_time, tenant_id) values
         <foreach item="item" index="index" collection="list" separator=",">

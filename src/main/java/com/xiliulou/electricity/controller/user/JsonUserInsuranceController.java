@@ -37,7 +37,7 @@ public class JsonUserInsuranceController extends BaseController {
         FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder().franchiseeId(franchiseeId).insuranceType(insuranceType).storeId(storeId)
                 .status(FranchiseeInsurance.STATUS_USABLE).carModelId(carModelId).simpleBatteryType(simpleBatteryType).tenantId(TenantContextHolder.getTenantId()).build();
         
-        return R.ok(franchiseeInsuranceService.selectInsuranceByType(query));
+        return R.ok(franchiseeInsuranceService.selectInsuranceByTypeV2(query));
     }
     
     

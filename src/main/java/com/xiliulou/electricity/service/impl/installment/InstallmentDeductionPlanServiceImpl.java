@@ -166,15 +166,17 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
                     planList.add(deductionPlan);
                 } else {
                     // 单期金额过大，需要拆分
-                    // 求金额为最大代扣金额的子订单的数量
+                    // 求金额为最大代扣金额的子订单的数量，先除再减的原因是产品要求金额小的放在前面
                     BigDecimal suborderNumber = suborderAmount.divide(deductionMaxAmount, 0, RoundingMode.DOWN);
                     
                     // 求剩余需代扣金额
                     BigDecimal remainingAmount = suborderAmount.subtract(deductionMaxAmount.multiply(suborderNumber));
                     
-                    // 首先生成剩余金额的代扣计划
-                    deductionPlan.setAmount(remainingAmount);
-                    planList.add(deductionPlan);
+                    // 首先生成剩余金额的代扣计划，并且需要剩余金额大于0.01
+                    if (remainingAmount.compareTo(BigDecimal.valueOf(0.01)) >= 0) {
+                        deductionPlan.setAmount(remainingAmount);
+                        planList.add(deductionPlan);
+                    }
                     
                     // 生成金额为单笔最大金额的代扣计划
                     for (int i1 = 0; i1 < suborderNumber.intValue(); i1++) {
