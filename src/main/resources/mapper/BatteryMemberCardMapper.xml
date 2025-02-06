@@ -262,7 +262,7 @@
             </if>
         </where>
         group by tbmc.id
-        order by tbmc.status, tbmc.sort_param desc
+        order by tbmc.sort_param desc
         limit #{offset}, #{size}
     </select>
     
