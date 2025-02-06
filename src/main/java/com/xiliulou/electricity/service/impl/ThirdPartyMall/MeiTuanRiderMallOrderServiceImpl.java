@@ -794,19 +794,16 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         // key-memberCardId, value-batteryType的List
         Map<Long, List<String>> midBatteryTypeMap = batteryTypeList.stream().filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(MemberCardBatteryType::getMid, Collectors.mapping(MemberCardBatteryType::getBatteryType, Collectors.toList())));
-        if (MapUtils.isEmpty(midBatteryTypeMap)) {
-            return null;
-        }
-        
+    
         return batteryDepositBOList.stream().map(item -> {
             Long packageId = item.getPackageId();
-            BatteryDepositBO bo = null;
-            if (midBatteryTypeMap.containsKey(packageId)) {
-                bo = new BatteryDepositBO();
-                BeanUtils.copyProperties(item, bo);
+            BatteryDepositBO bo = new BatteryDepositBO();
+            BeanUtils.copyProperties(item, bo);
+        
+            if (MapUtils.isNotEmpty(midBatteryTypeMap) && midBatteryTypeMap.containsKey(packageId)) {
                 bo.setBatteryTypes(batteryModelService.transformBatteryTypes(midBatteryTypeMap.get(packageId), tenantId));
             }
-            
+        
             return bo;
         }).collect(Collectors.toList());
     }
