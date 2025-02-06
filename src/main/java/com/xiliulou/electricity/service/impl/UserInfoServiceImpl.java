@@ -18,6 +18,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
+import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
@@ -34,6 +35,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -42,8 +44,10 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SignStatusEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageStatusVOEnum;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
@@ -110,10 +114,12 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -393,6 +399,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Resource
     private EmergencyContactService emergencyContactService;
     
+    @Resource
+    private EnterpriseInfoService enterpriseInfoService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
     /**
      * 分页查询
      *
@@ -406,6 +418,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfoQuery = UserInfoQuery.builder().offset(0L).size(10L).build();
         }
         return userInfoMapper.page(userInfoQuery);
+    }
+    
+    /**
+     * 分页查询
+     *
+     * @param userInfoQuery 查询条件
+     * @return 用户集
+     */
+    @Slave
+    @Override
+    public List<UserInfoBO> pageV2(UserInfoQuery userInfoQuery) {
+        if (ObjectUtil.isEmpty(userInfoQuery)) {
+            userInfoQuery = UserInfoQuery.builder().tenantId(TenantContextHolder.getTenantId()).offset(0L).size(10L).build();
+        }
+        return userInfoMapper.pageV2(userInfoQuery);
     }
     
     /**
@@ -3257,6 +3284,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
                 }
+    
+                // 查询已删除/已注销
+                Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+                if (Objects.equals(item.getDelFlag(), CommonConstant.DEL_Y)) {
+                    userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+    
+                    UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(item.getUid(),
+                            List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+                    if (Objects.nonNull(userDelRecord)) {
+                        item.setDelTime(userDelRecord.getDelTime());
+                        if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
+                            userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
+                        }
+                    }
+                }
+                item.setUserStatus(userStatus);
                 
                 threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));
             });
@@ -3394,6 +3437,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         
             eleInfoProVO.setBasicInfo(basicInfo);
+    
+            // 查询已删除/已注销
+            Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+            if (Objects.equals(item.getDelFlag(), CommonConstant.DEL_Y)) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+        
+                UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(item.getUid(),
+                        List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+                if (Objects.nonNull(userDelRecord)) {
+                    item.setDelTime(userDelRecord.getDelTime());
+                    if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
+                        userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
+                    }
+                }
+            }
+            item.setUserStatus(userStatus);
         
             uidList.add(uid);
             UserOauthBindListQuery query = UserOauthBindListQuery.builder().phone(item.getPhone()).uid(uid).build();
@@ -4084,5 +4143,156 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         operateRecordUtil.record(null, recordMap);
         
     }
+    @Slave
+    @Override
+    public Long queryDelUidByIdNumber(String idNumber, Integer tenantId) {
+        return userInfoMapper.selectDelUidByIdNumber(idNumber, tenantId);
+    }
     
+    @Override
+    public R deleteAccountPreCheck() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            return R.fail("120138", "您还未登录，请去【我的】页面登录");
+        }
+        
+        Long uid = tokenUser.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
+            log.warn("DeleteAccountPreCheck WARN! not found user,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("DeleteAccountPreCheck WARN! not found userInfo,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("DeleteAccountPreCheck WARN! not found userInfoExtra,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        Integer tenantId = userInfo.getTenantId();
+        
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
+        if (Objects.nonNull(enterpriseInfo)) {
+            log.warn("DeleteAccountPreCheck WARN! enterprise user cannot be delete! uid={}", uid);
+            return R.fail("120130", "请先删除企业用户配置");
+        }
+        
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
+        if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
+            log.warn("DeleteAccountPreCheck WARN! enterprise user cloudBean not recycled! uid={}", uid);
+            return R.fail("120131", "您名下有未回收的云豆，暂无法注销，请联系站点回收后操作");
+        }
+        
+        BigDecimal batteryLateFees = serviceFeeUserInfoService.selectBatteryServiceFeeByUid(uid);
+        if (Objects.nonNull(batteryLateFees) && batteryLateFees.compareTo(BigDecimal.ZERO) > 0) {
+            log.warn("DeleteAccountPreCheck WARN! has batteryLateFees! uid={}", uid);
+            return R.fail("120134", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
+        }
+        
+        boolean carLateFees = carRentalPackageOrderSlippageService.isExitUnpaid(tenantId, uid);
+        if (carLateFees) {
+            log.warn("DeleteAccountPreCheck WARN! has carLateFees! uid={}", uid);
+            return R.fail("120134", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
+        }
+        
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.warn("DeleteAccountPreCheck WARN! has unreturned battery! uid={}", uid);
+            return R.fail("120132", "您名下有未归还的电池，暂无法注销，请归还后操作");
+        }
+        
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.warn("DeleteAccountPreCheck WARN! has unreturned car! uid={}", uid);
+            return R.fail("120133", "您名下有未归还的车辆，暂无法注销，请归还后操作");
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("DeleteAccountPreCheck WARN! userBatteryMemberCard is freezing! uid={}, memberCardId={}", uid, userBatteryMemberCard.getMemberCardId());
+                return R.fail("120136", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
+            }
+            
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("DeleteAccountPreCheck warn! userBatteryMemberCard has been frozen! uid={}, memberCardId={}", uid, userBatteryMemberCard.getMemberCardId());
+                return R.fail("120135", "您当前套餐已冻结，暂无法注销，请启用后操作");
+            }
+        }
+        
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (Objects.nonNull(memberTermEntity)) {
+            Integer memberTermEntityStatus = memberTermEntity.getStatus();
+            if (MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermEntityStatus)) {
+                log.warn("DeleteAccountPreCheck WARN! memberTermEntityStatus is freezing! uid={}, rentalPackageId={}", uid, memberTermEntity.getRentalPackageId());
+                return R.fail("120136", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
+            }
+            
+            if (MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntityStatus)) {
+                log.warn("DeleteAccountPreCheck WARN! memberTermEntityStatus has been frozen! uid={}, rentalPackageId={}", uid, memberTermEntity.getRentalPackageId());
+                return R.fail("120135", "您当前套餐已冻结，暂无法注销，请启用后操作");
+            }
+        }
+        
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarDepositStatus(),
+                UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            log.warn("DeleteAccountPreCheck WARN! has unreturned deposit! uid={}", uid);
+            return R.fail("402030", "请退还押金后，进行删除操作");
+        }
+        
+        return R.ok();
+    }
+    
+    @Override
+    public R deleteAccount() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            return R.fail("120138", "您还未登录，请去【我的】页面登录");
+        }
+        
+        Long uid = tokenUser.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
+            log.warn("DeleteAccount WARN! not found user,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("DeleteAccount WARN! not found userInfo,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("DeleteAccount WARN! not found userInfoExtra,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            log.warn("Modify inviter fail! userAccount is cancelling, uid={}", uid);
+            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+        }
+        
+        Integer tenantId = userInfo.getTenantId();
+        String delPhone = StringUtils.EMPTY;
+        String delIdNumber = StringUtils.EMPTY;
+        UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userInfo, tenantId);
+        if (Objects.nonNull(remarkPhoneAndIdNumber)) {
+            delPhone = remarkPhoneAndIdNumber.getDelPhone();
+            delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+        }
+        
+        //给用户打注销中标记
+        userDelRecordService.insert(uid, delPhone, delIdNumber, UserStatusEnum.USER_STATUS_CANCELLING.getCode(), tenantId, userInfo.getFranchiseeId(),
+                UserStatusEnum.USER_DELAY_DAY_30.getCode());
+        
+        return R.ok();
+    }
 }

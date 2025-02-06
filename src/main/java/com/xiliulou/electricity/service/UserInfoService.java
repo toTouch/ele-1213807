@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -33,6 +34,8 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 用户集
      */
     List<UserInfo> page(UserInfoQuery userInfoQuery);
+    
+    List<UserInfoBO> pageV2(UserInfoQuery userInfoQuery);
     
     /**
      * 查询总数
@@ -206,4 +209,10 @@ public interface UserInfoService extends IService<UserInfo> {
     Integer updatePayCountByUid(UserInfo userInfo);
 
     UserInfo queryByUidFromDB(Long uid);
+    
+    Long queryDelUidByIdNumber(String idNumber, Integer tenantId);
+    
+    R deleteAccountPreCheck();
+    
+    R deleteAccount();
 }

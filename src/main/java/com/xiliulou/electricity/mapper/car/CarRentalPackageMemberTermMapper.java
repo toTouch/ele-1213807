@@ -184,4 +184,6 @@ public interface CarRentalPackageMemberTermMapper {
      * @date 2024/11/25 17:46
      */
     List<CarRentalPackageMemberTermPo> selectListExpireByParam(CarRentalPackageMemberTermExpiredQryModel qryModel);
+    
+    Integer removeByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 }

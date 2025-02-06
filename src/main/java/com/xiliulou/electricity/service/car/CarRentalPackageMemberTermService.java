@@ -190,4 +190,6 @@ public interface CarRentalPackageMemberTermService {
      * @date 2024/11/25 17:05
      */
     List<CarRentalPackageMemberTermPo> queryListExpireByParam(CarRentalPackageMemberTermExpiredQryModel qryModel);
+    
+    Integer removeByUid(Integer tenantId, Long uid);
 }

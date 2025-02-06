@@ -232,6 +232,12 @@
         </where>
     </update>
     
+    <update id="removeByUid">
+        UPDATE
+        <include refid="table_name"/>
+        set del_flag = 1 where tenant_id = #{tenantId} and uid = #{uid}
+    </update>
+    
     <!-- 根据租户ID和用户ID查询租车套餐会员限制信息 -->
     <select id="selectByTenantIdAndUid" resultMap="entityMap">
         SELECT
