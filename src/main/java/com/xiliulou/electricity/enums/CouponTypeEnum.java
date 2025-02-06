@@ -16,7 +16,7 @@ public enum CouponTypeEnum {
     CAR_BUY_PACKAGE(3, "购买套餐（车）"),
     INVITE_COUPON_ACTIVITIES(4, "邀请返券活动"),
     REGISTER_ACTIVITIES(5, "注册活动"),
-    COUPON_PACKAGE(6, "优惠券包"),
+    COUPON_PACKAGE(6, "优惠券包发放"),
     ;
 
     private final Integer code;

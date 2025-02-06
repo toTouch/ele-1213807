@@ -371,7 +371,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 userCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
                 userCoupon.setTenantId(user.getTenantId());
                 userCoupon.setCouponType(CouponTypeEnum.COUPON_PACKAGE.getCode());
-                userCoupon.setCouponWay(item.getPackageId());
+                userCoupon.setCouponWay(operateUid);
                 userCouponList.add(userCoupon);
             });
 
@@ -434,7 +434,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 userCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
                 userCoupon.setTenantId(userInfo.getTenantId());
                 userCoupon.setCouponType(CouponTypeEnum.COUPON_PACKAGE.getCode());
-                userCoupon.setCouponWay(couponPackage.getId());
+                userCoupon.setCouponWay(operateUser.getUid());
                 return userCoupon;
             }).collect(Collectors.toList());
 

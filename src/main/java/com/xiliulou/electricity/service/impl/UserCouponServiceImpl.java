@@ -236,8 +236,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             vo.setCouponWayDetails(Objects.isNull(newUserActivity) ? null : newUserActivity.getName());
         }
         if (Objects.equals(couponType, CouponTypeEnum.COUPON_PACKAGE.getCode())) {
-            CouponPackage couponPackage = couponPackageService.queryByIdFromCache(couponWay);
-            vo.setCouponWayDetails(Objects.isNull(couponPackage) ? null : couponPackage.getName());
+            User user = userService.queryByUidFromCache(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(user) ? null : user.getName());
         }
     }
 
