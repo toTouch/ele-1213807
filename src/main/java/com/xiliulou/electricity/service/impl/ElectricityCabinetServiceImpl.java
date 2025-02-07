@@ -5872,9 +5872,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query) {
-        if (Objects.isNull(query.getAreaId()) && StrUtil.isEmpty(query.getAddress()) && StrUtil.isEmpty(query.getName())) {
-            return List.of();
-        }
         return electricityCabinetMapper.selectCabinetIdByFilter(query);
     }
 }

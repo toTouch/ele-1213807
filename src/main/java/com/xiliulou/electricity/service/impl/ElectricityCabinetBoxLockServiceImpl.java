@@ -126,16 +126,21 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         query.setFranchiseeIds(triple.getLeft());
         query.setStoreIds(triple.getMiddle());
 
+
         //  电柜信息搜索
-        List<Integer> cabinetIdByFilterList = electricityCabinetService.queryCabinetIdByFilter(
-                ElectricityCabinetIdByFilterQuery.builder().tenantId(query.getTenantId())
-                        .name(query.getName())
-                        .address(query.getAddress())
-                        .areaId(query.getAreaId())
-                        .build()
-        );
-        if (CollUtil.isNotEmpty(cabinetIdByFilterList)) {
-            query.setIdsByLikeName(cabinetIdByFilterList);
+        if (Objects.nonNull(query.getAreaId()) || StrUtil.isNotBlank(query.getAddress()) || StrUtil.isNotBlank(query.getName())) {
+            List<Integer> cabinetIdByFilterList = electricityCabinetService.queryCabinetIdByFilter(
+                    ElectricityCabinetIdByFilterQuery.builder().tenantId(query.getTenantId())
+                            .name(query.getName())
+                            .address(query.getAddress())
+                            .areaId(query.getAreaId())
+                            .build()
+            );
+            if (CollUtil.isNotEmpty(cabinetIdByFilterList)) {
+                query.setIdsByLikeName(cabinetIdByFilterList);
+            } else {
+                return CollUtil.newArrayList();
+            }
         }
 
 
@@ -181,15 +186,19 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         query.setStoreIds(triple.getMiddle());
 
         //  电柜信息搜索
-        List<Integer> cabinetIdByFilterList = electricityCabinetService.queryCabinetIdByFilter(
-                ElectricityCabinetIdByFilterQuery.builder().tenantId(query.getTenantId())
-                        .name(query.getName())
-                        .address(query.getAddress())
-                        .areaId(query.getAreaId())
-                        .build()
-        );
-        if (CollUtil.isNotEmpty(cabinetIdByFilterList)) {
-            query.setIdsByLikeName(cabinetIdByFilterList);
+        if (Objects.nonNull(query.getAreaId()) || StrUtil.isNotBlank(query.getAddress()) || StrUtil.isNotBlank(query.getName())) {
+            List<Integer> cabinetIdByFilterList = electricityCabinetService.queryCabinetIdByFilter(
+                    ElectricityCabinetIdByFilterQuery.builder().tenantId(query.getTenantId())
+                            .name(query.getName())
+                            .address(query.getAddress())
+                            .areaId(query.getAreaId())
+                            .build()
+            );
+            if (CollUtil.isNotEmpty(cabinetIdByFilterList)) {
+                query.setIdsByLikeName(cabinetIdByFilterList);
+            } else {
+                return NumberConstant.ZERO_L;
+            }
         }
 
 
