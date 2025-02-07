@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.userinfo;
 
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author HeYafeng
@@ -37,4 +39,8 @@ public interface UserDelRecordService {
     Integer updateStatusById(Long id, Integer status, Long updateTime);
     
     void asyncRecoverCommonUser(Long uid, Integer type);
+    
+    Map<Long, UserDelStatusDTO> listUserStatus(List<Long> uidList, List<Integer> status);
+    
+    Integer getUserStatus(Long uid, Map<Long, UserDelStatusDTO> userStatusMap);
 }

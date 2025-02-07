@@ -24,4 +24,6 @@ public interface UserDelRecordMapper {
     Integer updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("updateTime") Long updateTime);
     
     Integer deleteById(Long id);
+    
+    List<UserDelRecord> selectListByUidListAndStatus(@Param("uidList") List<Long> uidList, @Param("statusList") List<Integer> statusList);
 }

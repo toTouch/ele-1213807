@@ -4,6 +4,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.UserInfoGroupConstant;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -243,6 +245,64 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
                 userDelRecordMapper.deleteById(userDelRecord.getId());
             }
         });
+    
+    }
+    
+    @Slave
+    @Override
+    public Map<Long, UserDelStatusDTO> listUserStatus(List<Long> uidList, List<Integer> status) {
+        if (CollectionUtils.isEmpty(uidList) || CollectionUtils.isEmpty(status)) {
+            return null;
+        }
+        List<UserDelRecord> userDelRecordList = userDelRecordMapper.selectListByUidListAndStatus(uidList, status);
+        Map<Long, UserDelRecord> uidRecordMap = null;
+        if (CollectionUtils.isNotEmpty(userDelRecordList)) {
+            uidRecordMap = userDelRecordList.stream().collect(Collectors.toMap(UserDelRecord::getUid, Function.identity(), (k1, k2) -> k1));
+        }
+    
+        Map<Long, UserDelStatusDTO> map = new HashMap<>(uidList.size());
+        Map<Long, UserDelRecord> finalUidRecordMap = uidRecordMap;
+    
+        for (Long uid : uidList) {
+            UserDelStatusDTO userDelStatusDTO = new UserDelStatusDTO();
+        
+            if (MapUtils.isEmpty(finalUidRecordMap) || !finalUidRecordMap.containsKey(uid)) {
+                userDelStatusDTO.setUserStatus(UserStatusEnum.USER_STATUS_VO_COMMON.getCode());
+                map.put(uid, userDelStatusDTO);
+                continue;
+            }
+        
+            UserDelRecord userDelRecord = finalUidRecordMap.get(uid);
+            if (Objects.isNull(userDelRecord)) {
+                userDelStatusDTO.setUserStatus(UserStatusEnum.USER_STATUS_VO_COMMON.getCode());
+                map.put(uid, userDelStatusDTO);
+                continue;
+            }
+        
+            userDelStatusDTO.setDelTime(userDelRecord.getDelTime());
+            if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_DELETED.getCode())) {
+                userDelStatusDTO.setUserStatus(UserStatusEnum.USER_STATUS_VO_DELETED.getCode());
+            } else if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
+                userDelStatusDTO.setUserStatus(UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode());
+            }
+        
+            map.put(uid, userDelStatusDTO);
+        }
+    
+        return map;
+    }
+    
+    @Override
+    public Integer getUserStatus(Long uid, Map<Long, UserDelStatusDTO> userStatusMap) {
+        Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+        if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid)) {
+            UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
+            if (Objects.nonNull(userDelStatusDTO)) {
+                userStatus = userDelStatusDTO.getUserStatus();
+            }
+        }
+    
+        return userStatus;
     }
     
 }

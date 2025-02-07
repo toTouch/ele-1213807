@@ -63,6 +63,21 @@
         </foreach>
         order by id desc limit 1
     </select>
+    
+    <select id="selectListByUidListAndStatus" resultType="com.xiliulou.electricity.entity.UserDelRecord">
+        select
+        <include refid="basic_field"/>
+        from t_user_del_record
+        where uid in
+        <foreach collection="uidList" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+        and status in
+        <foreach collection="statusList" item="status" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+        order by id desc
+    </select>
 
 </mapper>
 
