@@ -79,6 +79,9 @@
             <if test="query.superposition != null">
                 and superposition = #{query.superposition}
             </if>
+            <if test="query.enabledState != null">
+                and enabled_state = #{query.enabledState}
+            </if>
         </where>
         order by create_time desc
         <if test="query.offset != null and query.size != null">
@@ -117,6 +120,9 @@
             </if>
             <if test="query.superposition != null">
                 and superposition = #{query.superposition}
+            </if>
+            <if test="query.enabledState != null">
+                and enabled_state = #{query.enabledState}
             </if>
         </where>
     </select>

@@ -185,26 +185,27 @@ public class JsonAdminCouponController extends BaseController {
      */
     @GetMapping(value = "/admin/coupon/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "discountType", required = false) Integer discountType,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "applyType", required = false) Integer applyType, @RequestParam(value = "superposition", required = false) Integer superposition,
-            @RequestParam(value = "useScope",required = false) Integer useScope) {
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "applyType", required = false) Integer applyType, @RequestParam(value = "superposition", required = false) Integer superposition,
+                       @RequestParam(value = "useScope", required = false) Integer useScope,
+                       @RequestParam(value = "enabledState", required = false) Integer enabledState) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-        
+
         if (offset < 0) {
             offset = 0L;
         }
-        
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok(Collections.emptyList());
         }
-        
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -212,30 +213,31 @@ public class JsonAdminCouponController extends BaseController {
                 return R.ok(Collections.emptyList());
             }
         }
-        
+
         CouponQuery couponQuery = CouponQuery.builder().offset(offset).size(size).name(name).discountType(discountType).franchiseeId(franchiseeId).applyType(applyType)
-                .superposition(superposition).useScope(useScope).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).build();
+                .superposition(superposition).useScope(useScope).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds).enabledState(enabledState).build();
         return couponService.queryCouponList(couponQuery);
     }
-    
-    //列表查询
+
+
     @GetMapping(value = "/admin/coupon/count")
     public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "applyType", required = false) Integer applyType,
-            @RequestParam(value = "superposition", required = false) Integer superposition,@RequestParam(value = "useScope",required = false) Integer useScope) {
-        
+                        @RequestParam(value = "name", required = false) String name, @RequestParam(value = "applyType", required = false) Integer applyType,
+                        @RequestParam(value = "superposition", required = false) Integer superposition, @RequestParam(value = "useScope", required = false) Integer useScope,
+                        @RequestParam(value = "enabledState", required = false) Integer enabledState) {
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok(NumberConstant.ZERO);
         }
-        
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -243,9 +245,9 @@ public class JsonAdminCouponController extends BaseController {
                 return R.ok(NumberConstant.ZERO);
             }
         }
-        
+
         CouponQuery couponQuery = CouponQuery.builder().name(name).discountType(discountType).franchiseeId(franchiseeId).applyType(applyType).superposition(superposition)
-                .tenantId(tenantId).useScope(useScope).franchiseeIds(franchiseeIds).build();
+                .tenantId(tenantId).useScope(useScope).franchiseeIds(franchiseeIds).enabledState(enabledState).build();
         return couponService.queryCount(couponQuery);
     }
     
