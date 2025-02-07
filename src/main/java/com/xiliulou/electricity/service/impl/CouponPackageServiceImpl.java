@@ -372,7 +372,9 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 userCoupon.setTenantId(user.getTenantId());
                 userCoupon.setCouponType(CouponTypeEnum.COUPON_PACKAGE.getCode());
                 userCoupon.setCouponWay(operateUid);
-                userCouponList.add(userCoupon);
+                // 生成count个优惠券
+                List<UserCoupon> sameUserCouponList = Collections.nCopies(item.getCount(), userCoupon);
+                userCouponList.addAll(sameUserCouponList);
             });
 
 
@@ -418,7 +420,10 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 log.warn("Coupon Package Appoint Release Warn! userInfo is null , uid is {}", uid);
                 return;
             }
-            List<UserCoupon> userCouponList = packageItemList.parallelStream().map(item -> {
+
+            List<UserCoupon> userCouponList = new ArrayList<>();
+
+            packageItemList.stream().forEach(item -> {
                 UserCoupon userCoupon = new UserCoupon();
                 userCoupon.setSource(UserCoupon.TYPE_SOURCE_ADMIN_SEND);
                 userCoupon.setCouponId(item.getCouponId().intValue());
@@ -435,8 +440,10 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 userCoupon.setTenantId(userInfo.getTenantId());
                 userCoupon.setCouponType(CouponTypeEnum.COUPON_PACKAGE.getCode());
                 userCoupon.setCouponWay(operateUser.getUid());
-                return userCoupon;
-            }).collect(Collectors.toList());
+                // 生成count个优惠券
+                List<UserCoupon> sameUserCouponList = Collections.nCopies(item.getCount(), userCoupon);
+                userCouponList.addAll(sameUserCouponList);
+            });
 
             userCouponService.batchInsert(userCouponList);
 
