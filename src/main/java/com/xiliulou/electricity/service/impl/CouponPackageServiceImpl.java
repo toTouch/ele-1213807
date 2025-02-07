@@ -321,7 +321,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
                 notExistUserSet.add(e);
             } else {
                 UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-                user.setName(userInfo.getName());
+                user.setName(Objects.isNull(userInfo) ? null : userInfo.getName());
                 existUserSet.add(user);
             }
         });
