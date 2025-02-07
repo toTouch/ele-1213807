@@ -67,7 +67,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -700,33 +699,72 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
             
             // 封装相同押金金额套餐的电池型号返回给用户，由用户自己选择要交的押金
-            List<MtMemberCarBatteryTypeVO> midBatteryTypes = new ArrayList<>();
-            for (BatteryDepositBO batteryDepositBO : batteryDepositBOList) {
-                if (Objects.isNull(vo.getFranchiseeId())) {
-                    vo.setFranchiseeId(batteryDepositBO.getFranchiseeId());
-                }
-                
-                if (Objects.isNull(vo.getBatteryDeposit())) {
-                    vo.setBatteryDeposit(batteryDepositBO.getDeposit());
-                }
-                
-                if (Objects.isNull(vo.getFreeDeposit())) {
-                    vo.setFreeDeposit(batteryDepositBO.getFreeDeposit());
-                }
-                
-                MtMemberCarBatteryTypeVO midBatteryType = new MtMemberCarBatteryTypeVO();
-                midBatteryType.setPackageId(batteryDepositBO.getPackageId());
-                midBatteryType.setBatteryTypes(batteryDepositBO.getBatteryTypes());
-                
-                midBatteryTypes.add(midBatteryType);
-            }
+            BatteryDepositBO batteryDepositBO = batteryDepositBOList.get(0);
+            vo.setFranchiseeId(batteryDepositBO.getFranchiseeId());
+            vo.setBatteryDeposit(batteryDepositBO.getDeposit());
+            vo.setFreeDeposit(batteryDepositBO.getFreeDeposit());
+            
+            List<MtMemberCarBatteryTypeVO> midBatteryTypes = removeDuplicateBatteryType(batteryDepositBOList);
             
             vo.setMidBatteryTypes(CollectionUtils.isEmpty(midBatteryTypes) ? null : midBatteryTypes);
         }
         
-        log.info("vo={}",vo);
+        log.info("QueryBatteryDeposit info! vo={}", vo);
         
         return R.ok(vo);
+    }
+    
+    private List<MtMemberCarBatteryTypeVO> removeDuplicateBatteryType(List<BatteryDepositBO> list) {
+        log.info("QueryBatteryDeposit info! list={}", list);
+        
+        // 空或只有一个元素，则电池型号不展示
+        if (CollectionUtils.isEmpty(list) || Objects.equals(list.size(), 1)) {
+            return null;
+        }
+        
+        // 如果有多个元素，则对电池型号进行去重（不考虑顺序，保留第一个元素的电池型号）
+        Map<Set<String>, List<BatteryDepositBO>> map = new HashMap<>(list.size());
+        for (BatteryDepositBO batteryDepositBO : list) {
+            if (Objects.isNull(batteryDepositBO) || CollectionUtils.isEmpty(batteryDepositBO.getBatteryTypes())) {
+                continue;
+            }
+            
+            List<String> batteryTypeList = batteryDepositBO.getBatteryTypes();
+            Set<String> batteryTypeSet = new HashSet<>(batteryTypeList);
+            
+            // 按电池型号进行分组
+            if (!map.containsKey(batteryTypeSet)) {
+                List<BatteryDepositBO> boList = new ArrayList<>();
+                boList.add(batteryDepositBO);
+                map.put(batteryTypeSet, boList);
+            } else {
+                map.get(batteryTypeSet).add(batteryDepositBO);
+            }
+        }
+        
+        // 分组后，若只有一个电池型号，则不展示
+        if (Objects.equals(map.size(), 1)) {
+            return null;
+        }
+        
+        List<MtMemberCarBatteryTypeVO> result = new ArrayList<>();
+        map.forEach((key, value) -> {
+            if (CollectionUtils.isEmpty(value)) {
+                return;
+            }
+            
+            // 每种类型电池型号返回一个即可
+            BatteryDepositBO batteryDepositBO = value.get(0);
+            if (Objects.nonNull(batteryDepositBO)) {
+                MtMemberCarBatteryTypeVO midBatteryType = new MtMemberCarBatteryTypeVO();
+                midBatteryType.setPackageId(batteryDepositBO.getPackageId());
+                midBatteryType.setBatteryTypes(batteryDepositBO.getBatteryTypes());
+                
+                result.add(midBatteryType);
+            }
+        });
+        
+        return result;
     }
     
     @Slave
@@ -777,57 +815,10 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             result = result.stream().filter(Objects::nonNull).collect(Collectors.toList());
         }
         
-        // 对电池型号进行去重
-        removeDuplicateBatteryType(result);
-        
-        log.info("result={}",result);
-        
         return result;
     }
     
-    private void removeDuplicateBatteryType(List<BatteryDepositBO> list) {
-        if (CollectionUtils.isEmpty(list)) {
-            return;
-        }
-        
-        // 如果只有一个元素，则电池型号不展示
-        if (Objects.equals(list.size(), 1)) {
-            BatteryDepositBO batteryDepositBO = list.get(0);
-            if (Objects.nonNull(batteryDepositBO)) {
-                batteryDepositBO.setBatteryTypes(null);
-            }
-            return;
-        }
-        
-        // 如果有多个元素，则对电池型号进行去重（不考虑顺序，保留第一个元素的电池型号）
-        Map<Set<String>, List<BatteryDepositBO>> map = new HashMap<>();
-        for (BatteryDepositBO batteryDepositBO : list) {
-            if (Objects.isNull(batteryDepositBO) || CollectionUtils.isEmpty(batteryDepositBO.getBatteryTypes())) {
-                continue;
-            }
-            
-            List<String> batteryTypeList = batteryDepositBO.getBatteryTypes();
-            Set<String> batteryTypeSet = new HashSet<>(batteryTypeList);
-            if (!map.containsKey(batteryTypeSet)) {
-                List<BatteryDepositBO> boList = new ArrayList<>();
-                boList.add(batteryDepositBO);
-                map.put(batteryTypeSet, boList);
-            } else {
-                // 只保留相同的一个电池型号即可
-                batteryDepositBO.setBatteryTypes(null);
-                map.get(batteryTypeSet).add(batteryDepositBO);
-            }
-        }
-        
-        // 去重后，若只有一个电池型号，则不展示
-        if (Objects.equals(map.size(), 1)) {
-            list.get(0).setBatteryTypes(null);
-        }
-    }
-    
     private List<BatteryDepositBO> rebuildBatteryDepositBOList(List<BatteryDepositBO> batteryDepositBOList, Integer tenantId) {
-        log.info("batteryDepositBOList={}", batteryDepositBOList);
-        
         if (CollectionUtils.isEmpty(batteryDepositBOList)) {
             return null;
         }
@@ -838,24 +829,21 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         List<MemberCardBatteryType> batteryTypeList = memberCardBatteryTypeService.listByMemberCardIds(tenantId, memberCardIds);
-        if (CollectionUtils.isEmpty(batteryTypeList)) {
-            return null;
+        Map<Long, List<String>> midBatteryTypeMap = null;
+        if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+            midBatteryTypeMap = batteryTypeList.stream().filter(Objects::nonNull)
+                    .collect(Collectors.groupingBy(MemberCardBatteryType::getMid, Collectors.mapping(MemberCardBatteryType::getBatteryType, Collectors.toList())));
         }
         
-        // key-memberCardId, value-batteryType的List
-        Map<Long, List<String>> midBatteryTypeMap = batteryTypeList.stream().filter(Objects::nonNull)
-                .collect(Collectors.groupingBy(MemberCardBatteryType::getMid, Collectors.mapping(MemberCardBatteryType::getBatteryType, Collectors.toList())));
-        
+        Map<Long, List<String>> finalMidBatteryTypeMap = midBatteryTypeMap;
         return batteryDepositBOList.stream().map(item -> {
             BatteryDepositBO bo = new BatteryDepositBO();
             BeanUtils.copyProperties(item, bo);
             Long packageId = item.getPackageId();
             
-            if (MapUtils.isNotEmpty(midBatteryTypeMap) && midBatteryTypeMap.containsKey(packageId)) {
-                bo.setBatteryTypes(batteryModelService.transformBatteryTypes(midBatteryTypeMap.get(packageId), tenantId));
+            if (MapUtils.isNotEmpty(finalMidBatteryTypeMap) && finalMidBatteryTypeMap.containsKey(packageId)) {
+                bo.setBatteryTypes(batteryModelService.transformBatteryTypes(finalMidBatteryTypeMap.get(packageId), tenantId));
             }
-            
-            log.info("bo={}", bo);
             
             return bo;
         }).collect(Collectors.toList());
