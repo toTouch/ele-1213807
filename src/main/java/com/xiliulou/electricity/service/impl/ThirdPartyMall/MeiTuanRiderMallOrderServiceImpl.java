@@ -67,8 +67,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -722,6 +724,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             vo.setMidBatteryTypes(CollectionUtils.isEmpty(midBatteryTypes) ? null : midBatteryTypes);
         }
         
+        log.info("vo={}",vo);
+        
         return R.ok(vo);
     }
     
@@ -773,10 +777,57 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             result = result.stream().filter(Objects::nonNull).collect(Collectors.toList());
         }
         
+        // 对电池型号进行去重
+        removeDuplicateBatteryType(result);
+        
+        log.info("result={}",result);
+        
         return result;
     }
     
+    private void removeDuplicateBatteryType(List<BatteryDepositBO> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
+        
+        // 如果只有一个元素，则电池型号不展示
+        if (Objects.equals(list.size(), 1)) {
+            BatteryDepositBO batteryDepositBO = list.get(0);
+            if (Objects.nonNull(batteryDepositBO)) {
+                batteryDepositBO.setBatteryTypes(null);
+            }
+            return;
+        }
+        
+        // 如果有多个元素，则对电池型号进行去重（不考虑顺序，保留第一个元素的电池型号）
+        Map<Set<String>, List<BatteryDepositBO>> map = new HashMap<>();
+        for (BatteryDepositBO batteryDepositBO : list) {
+            if (Objects.isNull(batteryDepositBO) || CollectionUtils.isEmpty(batteryDepositBO.getBatteryTypes())) {
+                continue;
+            }
+            
+            List<String> batteryTypeList = batteryDepositBO.getBatteryTypes();
+            Set<String> batteryTypeSet = new HashSet<>(batteryTypeList);
+            if (!map.containsKey(batteryTypeSet)) {
+                List<BatteryDepositBO> boList = new ArrayList<>();
+                boList.add(batteryDepositBO);
+                map.put(batteryTypeSet, boList);
+            } else {
+                // 只保留相同的一个电池型号即可
+                batteryDepositBO.setBatteryTypes(null);
+                map.get(batteryTypeSet).add(batteryDepositBO);
+            }
+        }
+        
+        // 去重后，若只有一个电池型号，则不展示
+        if (Objects.equals(map.size(), 1)) {
+            list.get(0).setBatteryTypes(null);
+        }
+    }
+    
     private List<BatteryDepositBO> rebuildBatteryDepositBOList(List<BatteryDepositBO> batteryDepositBOList, Integer tenantId) {
+        log.info("batteryDepositBOList={}", batteryDepositBOList);
+        
         if (CollectionUtils.isEmpty(batteryDepositBOList)) {
             return null;
         }
@@ -794,16 +845,18 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         // key-memberCardId, value-batteryType的List
         Map<Long, List<String>> midBatteryTypeMap = batteryTypeList.stream().filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(MemberCardBatteryType::getMid, Collectors.mapping(MemberCardBatteryType::getBatteryType, Collectors.toList())));
-    
+        
         return batteryDepositBOList.stream().map(item -> {
-            Long packageId = item.getPackageId();
             BatteryDepositBO bo = new BatteryDepositBO();
             BeanUtils.copyProperties(item, bo);
-        
+            Long packageId = item.getPackageId();
+            
             if (MapUtils.isNotEmpty(midBatteryTypeMap) && midBatteryTypeMap.containsKey(packageId)) {
                 bo.setBatteryTypes(batteryModelService.transformBatteryTypes(midBatteryTypeMap.get(packageId), tenantId));
             }
-        
+            
+            log.info("bo={}", bo);
+            
             return bo;
         }).collect(Collectors.toList());
     }
