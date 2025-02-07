@@ -705,18 +705,18 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             vo.setFreeDeposit(batteryDepositBO.getFreeDeposit());
             
             List<MtMemberCarBatteryTypeVO> midBatteryTypes = removeDuplicateBatteryType(batteryDepositBOList);
+            if (CollectionUtils.isEmpty(midBatteryTypes)) {
+                vo.setPackageId(batteryDepositBO.getPackageId());
+                midBatteryTypes = null;
+            }
             
-            vo.setMidBatteryTypes(CollectionUtils.isEmpty(midBatteryTypes) ? null : midBatteryTypes);
+            vo.setMidBatteryTypes(midBatteryTypes);
         }
-        
-        log.info("QueryBatteryDeposit info! vo={}", vo);
         
         return R.ok(vo);
     }
     
     private List<MtMemberCarBatteryTypeVO> removeDuplicateBatteryType(List<BatteryDepositBO> list) {
-        log.info("QueryBatteryDeposit info! list={}", list);
-        
         // 空或只有一个元素，则电池型号不展示
         if (CollectionUtils.isEmpty(list) || Objects.equals(list.size(), 1)) {
             return null;
