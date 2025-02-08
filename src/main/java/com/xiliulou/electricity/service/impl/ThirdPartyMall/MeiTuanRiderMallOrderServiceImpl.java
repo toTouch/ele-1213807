@@ -651,14 +651,20 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Override
     public R queryBatteryDeposit(Long uid) {
+        MtBatteryDepositVO vo = new MtBatteryDepositVO();
+        vo.setUid(uid);
+        vo.setIsShow(MtBatteryDepositVO.IS_SHOW);
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("QueryBatteryDeposit warn! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        MtBatteryDepositVO vo = new MtBatteryDepositVO();
-        vo.setUid(uid);
+    
+        // 已缴纳车电一体押金，不展示押金模块
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            vo.setIsShow(MtBatteryDepositVO.IS_NOT_SHOW);
+        }
         
         Integer batteryDepositStatus = userInfo.getBatteryDepositStatus();
         vo.setBatteryDepositStatus(batteryDepositStatus);

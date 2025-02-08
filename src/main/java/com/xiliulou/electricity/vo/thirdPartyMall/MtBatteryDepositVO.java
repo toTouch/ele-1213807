@@ -52,4 +52,13 @@ public class MtBatteryDepositVO {
      */
     List<MtMemberCarBatteryTypeVO> midBatteryTypes;
     
+    /**
+     * 小程序押金模块是否展示:0-展示 1-不展示
+     * 不展示的场景:已缴纳车电一体押金
+     */
+    private Integer isShow;
+    
+    public static final Integer IS_SHOW = 0;
+    
+    public static final Integer IS_NOT_SHOW = 1;
 }
