@@ -23,6 +23,7 @@ import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
 import com.xiliulou.electricity.mapper.thirdPartyMall.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.thirdPartyMall.OrderQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
@@ -136,6 +137,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private UserService userService;
+
+    @Resource
+    private LostUserActivityDealPublish lostUserActivityDealPublish;
     
     @Slave
     @Override
@@ -374,7 +378,10 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.error("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
                 return Triple.of(false, "120146", "订单兑换失败，请联系客服处理");
             }
-            
+
+            // 流失用户活动处理
+            lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
+
             // 给第三方推送用户套餐信息
             pushDataToThirdService.asyncPushUserMemberCardToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), tenantId, uid,
                     meiTuanRiderMallOrder.getMeiTuanOrderId(), MeiTuanRiderMallConstant.MEI_TUAN_ORDER);

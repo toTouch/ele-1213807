@@ -293,6 +293,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
         rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
+        rebateRecord.setMessageId(Objects.nonNull(batteryMemberCardMerchantRebate.getMessageId()) ? batteryMemberCardMerchantRebate.getMessageId() : "");
 
         //商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
