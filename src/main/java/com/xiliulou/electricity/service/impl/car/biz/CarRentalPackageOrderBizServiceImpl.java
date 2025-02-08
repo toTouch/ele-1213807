@@ -314,9 +314,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Resource
-    private UserInfoExtraService userInfoExtraService;
-    
-    @Resource
     private PayConfigConverter payConfigConverter;
     
     @Resource
