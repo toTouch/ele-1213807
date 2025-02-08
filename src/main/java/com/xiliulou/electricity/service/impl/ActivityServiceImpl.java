@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -152,10 +153,10 @@ public class ActivityServiceImpl implements ActivityService {
     
     @Resource
     private LostUserBizService lostUserBizService;
-    
+
     @Resource
     private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
-    
+
     @Autowired
     RocketMqService rocketMqService;
     
@@ -251,7 +252,7 @@ public class ActivityServiceImpl implements ActivityService {
                     log.warn("handle activity error ! Not found userInfoExtra, joinUid={}", uid);
                     return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
                 }
-    
+
                 log.info("Activity flow for battery package, is old user= {}, userInfoExtra = {}", userInfo.getPayCount(), userInfoExtra);
                 
                 // 处理活动(530需求:以最新的参与活动为准)
@@ -282,7 +283,7 @@ public class ActivityServiceImpl implements ActivityService {
                     log.warn("Activity flow for car Rental or car with battery package error! Not found userInfoExtra, joinUid={}", uid);
                     return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
                 }
-    
+
                 log.info("Activity flow for car Rental or car with battery package, is old user= {}, userInfoExtra = {}", userInfo.getPayCount(), userInfoExtra);
                 
                 // 处理活动(530需求:以最新的参与活动为准)
@@ -321,13 +322,13 @@ public class ActivityServiceImpl implements ActivityService {
         if (Objects.isNull(successInviterVO)) {
             log.info("HANDLE LOST USER ACTIVITY BATTERY PACKAGE TYPE INFO! inviter is empty, uid：{}",uid);
         }
-        
+
         // 流失用户修改为老用户且解绑活动
         lostUserBizService.updateLostUserStatusAndUnbindActivity(userInfo.getTenantId(), uid, successInviterVO);
-        
+
         Integer latestActivitySource = userInfoExtra.getLatestActivitySource();
         Integer tenantId = userInfo.getTenantId();
-        
+
         Long oldInviterUid = null;
         String oldInviterName = null;
         Integer inviterSource = null;
@@ -336,21 +337,21 @@ public class ActivityServiceImpl implements ActivityService {
             oldInviterName = successInviterVO.getInviterName();
             inviterSource = successInviterVO.getInviterSource();
         }
-        
+
         boolean isSuccessModifyInviter = false;
-        
+
         // 商户扫码线上支付
         if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode(), latestActivitySource) && Objects.equals(ElectricityMemberCardOrder.ONLINE_PAYMENT,
                 electricityMemberCardOrder.getPayType())) {
             //用户绑定商户
             Triple<Boolean, String, Object> triple = userInfoExtraService.bindMerchantForLostUser(userInfo, electricityMemberCardOrder.getOrderId(),
                     electricityMemberCardOrder.getMemberCardId());
-            
+
             //商户返利
             if (triple.getLeft()) {
                 sendMerchantRebateMQ(uid, electricityMemberCardOrder.getOrderId(), YesNoEnum.YES.getCode());
                 // 新租修改邀请记录
-                
+
                 Merchant merchant = (Merchant) triple.getRight();
                 // 当原来有邀请人的时候则需添加邀请记录
                 if (Objects.nonNull(successInviterVO)) {
@@ -361,9 +362,9 @@ public class ActivityServiceImpl implements ActivityService {
                             .operator(NumberConstant.ZERO_L).remark(MerchantInviterModifyRecordConstant.LOST_USER_MODIFY_INVITER_REMARK).delFlag(MerchantConstant.DEL_NORMAL)
                             .createTime(System.currentTimeMillis())
                             .updateTime(System.currentTimeMillis()).build();
-                    
+
                     merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
-                    
+
                     isSuccessModifyInviter = true;
                 } else {
                     // 新增修改记录
@@ -373,28 +374,28 @@ public class ActivityServiceImpl implements ActivityService {
                             .operator(NumberConstant.ZERO_L).remark(MerchantInviterModifyRecordConstant.LOST_USER_MODIFY_INVITER_REMARK).delFlag(MerchantConstant.DEL_NORMAL)
                             .createTime(System.currentTimeMillis())
                             .updateTime(System.currentTimeMillis()).build();
-                    
+
                     merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
                 }
             }
         }
-        
+
         // 如果没有成功的变更邀请人，且原先有绑定活动则需将原来活动的信息进行清空
         if (!isSuccessModifyInviter && Objects.nonNull(successInviterVO)) {
             // 修改用户为无参与活动记录
             lostUserBizService.updateLostUserNotActivity(uid);
-            
+
             // 新租修改邀请记录
             MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(NumberConstant.ZERO_L)
                     .inviterName("").oldInviterUid(oldInviterUid)
                     .oldInviterName(oldInviterName).oldInviterSource(inviterSource).merchantId(NumberConstant.ZERO_L).franchiseeId(NumberConstant.ZERO_L).tenantId(tenantId)
                     .operator(NumberConstant.ZERO_L).remark(MerchantInviterModifyRecordConstant.LOST_USER_MODIFY_INVITER_CANCEL_REMARK).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
-            
+
             merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
         }
     }
-    
+
     /**
      * 流失用户活动处理逻辑
      * @param userInfo
@@ -410,7 +411,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (Objects.isNull(successInviterVO)) {
             log.info("HANDLE LOST USER ACTIVITY CAR PACKAGE TYPE INFO! inviter is empty, uid：{}",uid);
         }
-        
+
         Long oldInviterUid = null;
         String oldInviterName = null;
         Integer inviterSource = null;
@@ -420,30 +421,30 @@ public class ActivityServiceImpl implements ActivityService {
             oldInviterName = successInviterVO.getInviterName();
             inviterSource = successInviterVO.getInviterSource();
         }
-        
+
         // 流失用户修改为老用户且解绑活动
         lostUserBizService.updateLostUserStatusAndUnbindActivity(userInfo.getTenantId(), uid, successInviterVO);
-        
+
         // 如果用户之前绑定过活动则修改流失用户为无活动状态
         if (Objects.nonNull(successInviterVO)) {
             // 修改用户为无参与活动记录
             lostUserBizService.updateLostUserNotActivity(uid);
-            
+
             // 新租修改邀请记录
             MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(NumberConstant.ZERO_L)
                     .inviterName("").oldInviterUid(oldInviterUid)
                     .oldInviterName(oldInviterName).oldInviterSource(inviterSource).merchantId(NumberConstant.ZERO_L).franchiseeId(NumberConstant.ZERO_L).tenantId(tenantId)
                     .operator(NumberConstant.ZERO_L).remark(MerchantInviterModifyRecordConstant.LOST_USER_MODIFY_INVITER_CANCEL_REMARK).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
-            
+
             merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
         }
-        
-        
+
+
         // 暂时先不处理其他流失用户的活动场景
-        
+
     }
-    
+
     /**
      * 购买换电套餐后，处理活动
      */
@@ -534,6 +535,7 @@ public class ActivityServiceImpl implements ActivityService {
         merchantRebate.setOrderId(orderId);
         merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
         merchantRebate.setMerchantId(userInfoExtra.getMerchantId());
+        merchantRebate.setMessageId(IdUtil.fastSimpleUUID());
         merchantRebate.setLostUserType(lostUserType);
         //续费成功  发送返利MQ
         rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));

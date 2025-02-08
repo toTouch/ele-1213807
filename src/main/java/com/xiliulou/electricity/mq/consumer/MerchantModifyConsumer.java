@@ -2,7 +2,9 @@ package com.xiliulou.electricity.mq.consumer;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.MDC;
@@ -36,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
@@ -76,6 +80,9 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
     
     @Autowired
     private UserInfoExtraService userInfoExtraService;
+
+    @Resource
+    private RedisService redisService;
     
     @Override
     public void onMessage(String message) {
@@ -90,7 +97,13 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
             if (Objects.isNull(merchantModify) || Objects.isNull(merchantModify.getMerchantId()) || Objects.isNull(merchantModify.getUid())) {
                 return;
             }
-            
+
+            // 判断消息是否存在
+            if (checkMessageExist(merchantModify)) {
+                log.info("MERCHANT MODIFY CONSUMER WARN!message exist,message={}", message);
+                return;
+            }
+
             Merchant merchant = merchantService.queryByIdFromCache(merchantModify.getMerchantId());
             if (Objects.isNull(merchant)) {
                 log.warn("MERCHANT MODIFY CONSUMER WARN!merchant is null,merchantId={}", merchantModify.getMerchantId());
@@ -122,7 +135,8 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
             
             long startTime = DateUtils.getDayStartTimeByLocalDate(LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()));
             long endTime = DateUtils.getDayStartTimeByLocalDate(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())) + 24 * 60 * 60 * 1000L;
-            
+            String messageId = merchantModify.getMessageId();
+
             while (true) {
                 /**
                  * 获取商户本月上一级的返利记录，根据该条记录，生成差额
@@ -243,7 +257,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setCreateTime(System.currentTimeMillis());
                     rebateRecord.setUpdateTime(System.currentTimeMillis());
                     rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
-    
+                    rebateRecord.setMessageId(Objects.nonNull(messageId) ? messageId : "");
                     //商户禁用后，不给商户返利；渠道员禁用，不返利
                     if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
                         rebateRecord.setMerchantRebate(BigDecimal.ZERO);
@@ -261,5 +275,19 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
         } catch (Exception e) {
             log.error("MERCHANT MODIFY CONSUMER ERROR!msg={}", message, e);
         }
+    }
+
+    private boolean checkMessageExist(MerchantModify merchantModify) {
+        if (ObjectUtils.isEmpty(merchantModify.getMessageId())) {
+            return false;
+        }
+
+        // 判断缓存中是否存在消息
+        if (!redisService.setNx(String.format(CacheConstant.REBATE_CONSUMER_MODIFY_LOCK_KEY, merchantModify.getMessageId()), "1", 5 * 1000L, false)) {
+            return true;
+        }
+
+        // 判断返利表中是否存在消息
+        return rebateRecordService.existsRebateRecord(merchantModify.getMessageId());
     }
 }

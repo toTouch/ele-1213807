@@ -18,10 +18,15 @@ public class BatteryMemberCardMerchantRebate {
      * 商户ID
      */
     private Long merchantId;
-    
+
+    /**
+     * 消息Id
+     */
+    private String messageId;
+
     /**
      * 流失用户 0：是, 1：否
      */
     private Integer lostUserType;
-    
+
 }
