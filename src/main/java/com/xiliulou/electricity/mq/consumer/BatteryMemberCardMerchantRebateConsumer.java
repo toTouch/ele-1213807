@@ -40,7 +40,6 @@ import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -50,7 +49,6 @@ import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -301,7 +299,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
         rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
-        rebateRecord.setMessageId(batteryMemberCardMerchantRebate.getMessageId());
+        rebateRecord.setMessageId(Objects.nonNull(batteryMemberCardMerchantRebate.getMessageId()) ? batteryMemberCardMerchantRebate.getMessageId() : "");
         
         //商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
@@ -395,7 +393,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
             rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
             rebateRecordInsert.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
-            rebateRecordInsert.setMessageId(batteryMemberCardMerchantRebate.getMessageId());
+            rebateRecordInsert.setMessageId(Objects.nonNull(batteryMemberCardMerchantRebate.getMessageId()) ? batteryMemberCardMerchantRebate.getMessageId() : "");
             rebateRecordService.insert(rebateRecordInsert);
             
             //扣减商户、渠道商返利金额
@@ -403,7 +401,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             channelEmployeeAmountService.reduceAmount(rebateRecord.getChannelerRebate(), rebateRecord.getChanneler(), rebateRecord.getTenantId().longValue());
         }
         
-        handleExcessRebateRecord(rebateRecord, batteryMembercardRefundOrder);
+        handleExcessRebateRecord(rebateRecord, batteryMembercardRefundOrder, batteryMemberCardMerchantRebate.getMessageId());
     }
     
     
@@ -427,8 +425,9 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
      * 处理差额返利记录
      *
      * @param rebateRecord
+     * @param messageId
      */
-    public void handleExcessRebateRecord(RebateRecord rebateRecord, BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
+    public void handleExcessRebateRecord(RebateRecord rebateRecord, BatteryMembercardRefundOrder batteryMembercardRefundOrder, String messageId) {
         //获取差额记录
         List<RebateRecord> excessList = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
         if (CollectionUtils.isEmpty(excessList)) {
@@ -477,7 +476,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
                 rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
                 rebateRecordInsert.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
-                rebateRecordInsert.setMessageId(record.getMessageId());
+                rebateRecordInsert.setMessageId(Objects.nonNull(messageId) ? messageId : "");
                 rebateRecordService.insert(rebateRecordInsert);
                 
                 //扣减商户、渠道商返利金额

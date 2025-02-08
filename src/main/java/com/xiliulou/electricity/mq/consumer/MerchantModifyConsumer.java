@@ -257,7 +257,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setCreateTime(System.currentTimeMillis());
                     rebateRecord.setUpdateTime(System.currentTimeMillis());
                     rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
-                    rebateRecord.setMessageId(messageId);
+                    rebateRecord.setMessageId(Objects.nonNull(messageId) ? messageId : "");
                     //商户禁用后，不给商户返利；渠道员禁用，不返利
                     if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
                         rebateRecord.setMerchantRebate(BigDecimal.ZERO);
