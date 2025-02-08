@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -26,6 +27,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
@@ -47,6 +49,7 @@ import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -134,6 +137,9 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Resource
     private OperateRecordUtil operateRecordUtil;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
@@ -416,6 +422,13 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 return R.ok();
             }
             
+            // 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                log.warn("Modify inviter fail! userAccount is cancelling, uid={}", uid);
+                return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+            }
+            
             Merchant merchant = merchantService.queryByIdFromCache(merchantId);
             if (Objects.isNull(merchant)) {
                 log.warn("Modify inviter fail! merchant not exist, merchantId={}", merchantId);
@@ -653,6 +666,13 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (Objects.isNull(userInfo) || Objects.isNull(userInfoExtra) || !Objects.equals(userInfoExtra.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("UpdateEleLimit warn! not found user, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            log.warn("UpdateEleLimit warn! userAccount is cancelling, uid={}", uid);
+            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
         }
         
         // 加盟商一致性校验

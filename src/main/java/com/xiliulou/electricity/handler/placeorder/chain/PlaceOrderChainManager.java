@@ -14,8 +14,10 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
@@ -31,11 +33,11 @@ import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.TradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.RequiredArgsConstructor;
@@ -94,10 +96,9 @@ public class PlaceOrderChainManager {
     
     private final ElectricityConfigService electricityConfigService;
     
-    private final UserInfoExtraService userInfoExtraService;
-    
     private final EnterpriseChannelUserService enterpriseChannelUserService;
     
+    private final UserDelRecordService userDelRecordService;
     
     private final HashMap<Integer, AbstractPlaceOrderHandler> FIRST_NODES = new HashMap<>();
     
@@ -158,6 +159,13 @@ public class PlaceOrderChainManager {
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("PLACE ORDER WARN! user not auth,uid={}", uid);
             return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            log.warn("PLACE ORDER WARN! userAccount is cancelling, uid={}", uid);
+            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
         }
         
         // 检查是否为自主续费状态

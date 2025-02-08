@@ -34,6 +34,7 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
@@ -70,6 +71,7 @@ import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
@@ -121,6 +123,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderCheckBizSer
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -332,6 +335,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Resource
     private CouponDayRecordService couponDayRecordService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     
     public static final Integer ELE = 0;
@@ -862,8 +868,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
+    
+            // 1.3 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
+            }
             
-            // 1.3 查询用户当前所在分组
+            // 1.4 查询用户当前所在分组
             Set<Long> groupIds = new HashSet<>();
             UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(buyOptModel.getFranchiseeId().longValue()).build();
             List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
@@ -1923,6 +1935,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        // 是否为"注销中"
+        if (Objects.equals(systemDefinitionEnum.getCode(), SystemDefinitionEnum.BACKGROUND.getCode())) {
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
+            }
         }
         
         // 查询套餐会员期限

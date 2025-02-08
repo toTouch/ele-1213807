@@ -2,14 +2,13 @@ package com.xiliulou.electricity.vo.userinfo;
 
 import lombok.Builder;
 import lombok.Data;
-
-
-@Builder
 /**
  * @author HeYafeng
  * @description 账号管理用户信息
  * @date 2024/8/16 14:35:10
  */
+
+@Builder
 @Data
 public class UserAccountInfoVO {
     

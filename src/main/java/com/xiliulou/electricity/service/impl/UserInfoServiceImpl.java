@@ -1509,6 +1509,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 return R.fail("ELECTRICITY.0024", "用户已被禁用");
             }
+    
+            // 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(oldUserInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+            }
             
             // 判断是否缴纳押金
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(
@@ -2683,6 +2689,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
         // 紧急联系人
         vo.setEmergencyContactList(emergencyContactService.listVOByUid(uid));
+    
+        // 查询已删除/已注销
+        vo.setUserStatus(this.queryUserDelStatus(uid));
         
         return R.ok(vo);
     }
@@ -3875,7 +3884,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public UserAccountInfoVO selectAccountInfo() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(tokenUser)) {
-            log.error("selectAccountInfo error! tokenUser is null");
+            log.warn("selectAccountInfo warn! tokenUser is null");
             return null;
         }
         
@@ -4369,7 +4378,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 是否为"注销中"
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
-            log.warn("Modify inviter fail! userAccount is cancelling, uid={}", uid);
+            log.warn("DeleteAccount WARN! userAccount is cancelling, uid={}", uid);
             return R.fail("120139", "账号处于注销缓冲期内，无法操作");
         }
         
@@ -4387,5 +4396,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 UserStatusEnum.USER_DELAY_DAY_30.getCode());
         
         return R.ok();
+    }
+    
+    @Override
+    public Integer queryUserDelStatus(Long uid) {
+        Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+        
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
+            } else {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+            }
+        }
+        
+        return userStatus;
     }
 }

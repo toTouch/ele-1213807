@@ -215,4 +215,9 @@ public interface UserInfoService extends IService<UserInfo> {
     R deleteAccountPreCheck();
     
     R deleteAccount();
+    
+    /**
+     * 0-正常,1-已删除, 2-已注销
+     */
+    Integer queryUserDelStatus(Long uid);
 }
