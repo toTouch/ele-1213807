@@ -939,5 +939,16 @@ public interface CacheConstant {
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
     
     String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
+
+    /**
+     * 返利消费
+     */
+    String REBATE_CONSUMER_LOCK_KEY = "REBATE_CONSUMER_LOCK_KEY:%s";
+
+    /**
+     * 返利修改消费
+     */
+    String REBATE_CONSUMER_MODIFY_LOCK_KEY = "REBATE_CONSUMER_MODIFY_LOCK_KEY:%s";
+
 }
 

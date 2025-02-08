@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -374,6 +375,7 @@ public class ActivityServiceImpl implements ActivityService {
         merchantRebate.setOrderId(orderId);
         merchantRebate.setType(MerchantConstant.TYPE_PURCHASE);
         merchantRebate.setMerchantId(userInfoExtra.getMerchantId());
+        merchantRebate.setMessageId(IdUtil.fastSimpleUUID());
         //续费成功  发送返利MQ
         rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
     }

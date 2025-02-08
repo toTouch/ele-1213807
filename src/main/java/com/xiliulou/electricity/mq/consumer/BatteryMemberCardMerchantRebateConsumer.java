@@ -2,7 +2,9 @@ package com.xiliulou.electricity.mq.consumer;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -38,9 +40,11 @@ import com.xiliulou.electricity.service.merchant.MerchantUserAmountService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.service.merchant.RebateRecordService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.MDC;
@@ -48,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -102,17 +107,27 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     
     @Autowired
     private MerchantAttrService merchantAttrService;
+
+    @Resource
+    private RedisService redisService;
+
     @Override
     public void onMessage(String message) {
         MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
         
         log.info("REBATE CONSUMER INFO!received msg={}", message);
         BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate = null;
-        
+
         try {
             batteryMemberCardMerchantRebate = JsonUtil.fromJson(message, BatteryMemberCardMerchantRebate.class);
             
             if (Objects.isNull(batteryMemberCardMerchantRebate) || Objects.isNull(batteryMemberCardMerchantRebate.getType())) {
+                return;
+            }
+
+            // 判断消息是否存在
+            if (checkMessageExist(batteryMemberCardMerchantRebate)) {
+                log.info("REBATE CONSUMER INFO!message exist,message={}", message);
                 return;
             }
             
@@ -134,7 +149,21 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             log.error("REBATE CONSUMER ERROR!msg={}", message, e);
         }
     }
-    
+
+    private boolean checkMessageExist(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
+        if (ObjectUtils.isEmpty(batteryMemberCardMerchantRebate.getMessageId())) {
+            return false;
+        }
+
+        // 判断缓存中是否存在消息
+        if (!redisService.setNx(String.format(CacheConstant.REBATE_CONSUMER_LOCK_KEY, batteryMemberCardMerchantRebate.getMessageId()), "1", 5 * 1000L, false)) {
+            return true;
+        }
+
+        // 判断返利表中是否存在消息
+        return rebateRecordService.existsRebateRecord(batteryMemberCardMerchantRebate.getMessageId());
+    }
+
     private void handleRebate(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
         
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMemberCardMerchantRebate.getOrderId());
@@ -272,6 +301,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
         rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
+        rebateRecord.setMessageId(batteryMemberCardMerchantRebate.getMessageId());
         
         //商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
@@ -365,6 +395,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
             rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
             rebateRecordInsert.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
+            rebateRecordInsert.setMessageId(batteryMemberCardMerchantRebate.getMessageId());
             rebateRecordService.insert(rebateRecordInsert);
             
             //扣减商户、渠道商返利金额
@@ -446,6 +477,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
                 rebateRecordInsert.setUpdateTime(System.currentTimeMillis());
                 rebateRecordInsert.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
                 rebateRecordInsert.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
+                rebateRecordInsert.setMessageId(record.getMessageId());
                 rebateRecordService.insert(rebateRecordInsert);
                 
                 //扣减商户、渠道商返利金额

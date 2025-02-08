@@ -18,4 +18,9 @@ public class BatteryMemberCardMerchantRebate {
      * 商户ID
      */
     private Long merchantId;
+
+    /**
+     * 消息Id
+     */
+    private String messageId;
 }
