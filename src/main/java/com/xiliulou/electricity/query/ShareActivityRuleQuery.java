@@ -20,6 +20,12 @@ public class ShareActivityRuleQuery {
      * 优惠券id
      */
     private Integer couponId;
+    
+    
+    /**
+     * 优惠券数组列
+     */
+    private List<Long> couponArrays;
 
 
 }

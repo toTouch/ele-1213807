@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.vo.car.CarRentRefundVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVo;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
 import com.xiliulou.electricity.vo.rental.RentalPackageRefundVO;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
@@ -146,7 +148,7 @@ public interface CarRentalPackageOrderBizService {
      * @return
      */
     Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason, SystemDefinitionEnum systemDefinitionEnum, Long optUid,
-            String userName);
+            String userName, Integer checkFreezeDays);
     
     /**
      * 根据用户ID及订单编码，退租购买的订单申请
@@ -211,11 +213,12 @@ public interface CarRentalPackageOrderBizService {
     /**
      * 根据资产类型,租户，uid，查询用户是否存在对应的资产
      *
-     * @param uid
+     * @param userInfo
      * @param tenantId
      * @param assetType
      * @return
      */
-    boolean checkUserHasAssets(Long uid, Integer tenantId, Integer assetType);
-
+    boolean checkUserHasAssets(UserInfo userInfo, Integer tenantId, Integer assetType);
+    
+    Integer dayCouponCount(String orderNo);
 }

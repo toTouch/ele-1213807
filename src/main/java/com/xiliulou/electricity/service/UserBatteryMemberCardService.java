@@ -72,13 +72,6 @@ public interface UserBatteryMemberCardService {
      */
     Integer minCount(UserBatteryMemberCard userBatteryMemberCard);
 
-    /**
-     * 离线换电扣除套餐
-     * @param
-     * @return
-     */
-    Integer minCountForOffLineEle(UserBatteryMemberCard userBatteryMemberCard);
-
     Integer plusCount(Long id);
 
     /**
@@ -94,17 +87,8 @@ public interface UserBatteryMemberCardService {
     List<UserBatteryMemberCard> batteryMemberCardExpire(Integer tenantId,Integer offset, Integer size, Long firstTime,
                                                                      Long lastTime);
     
-    
-
-    List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
-                                                             Long lastTime);
-
-    List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime);
-
     Integer checkUserByMembercardId(Long id);
-
-    Integer deductionExpireTime(Long uid, Long time,Long updateTime);
-
+    
     List<UserBatteryMemberCard> selectList(int offset, int size);
     
     List<UserBatteryMemberCard> selectExpireList(int offset, int size, long memberCardExpireTime);
@@ -119,7 +103,7 @@ public interface UserBatteryMemberCardService {
 
     Long transforRemainingTime(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 
-    List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds);
+    List<UserBatteryMemberCard> selectUseableListByTenantIds(Long userBatteryMemberCardId, int size, List<Integer> tenantIds);
     
     List<UserBatteryMemberCardChannelExitVo> selectExpireExitList(int offset, int size);
     

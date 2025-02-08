@@ -124,4 +124,33 @@ public class TenantConfigVO {
      * 打开支付宝客服 0-是 1-否
      */
     private Integer alipayCustomer;
+    
+    /**
+     * 套餐冻结自动审核，0-关闭自动审核，其他为自动审核最大天数限制
+     */
+    private Integer freezeAutoReviewDays;
+    
+    /**
+     * 套餐冻结次数限制，0-不限次，其他为用户端申请冻结最大次数
+     */
+    private Integer packageFreezeCount;
+    
+    /**
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDays 为无资产情况下限制申请冻结最大天数
+     */
+    private Integer packageFreezeDays;
+    
+    /**
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDaysWithAssets 为有资产情况下限制申请冻结最大天数
+     */
+    private Integer packageFreezeDaysWithAssets;
+    
+    /**
+     * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
+     */
+    private Integer expiredProtectionTime;
 }

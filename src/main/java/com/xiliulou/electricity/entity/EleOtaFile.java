@@ -35,7 +35,7 @@ public class EleOtaFile {
     private Long updateTime;
     
     /**
-     * 文件类型 1--旧 2--新
+     * 文件类型 1--旧 2--新 3--六合一 4--新版六合一
      */
     private Integer fileType;
     
@@ -43,10 +43,11 @@ public class EleOtaFile {
     
     public static final Integer DEL_DEL = 1;
     
+    public static final int TYPE_OLD_FILE = 1;
     
-    public static final Integer TYPE_SIX_IN_ONE_FILE = 3;
+    public static final int TYPE_NEW_FILE = 2;
     
-    public static final Integer TYPE_NEW_FILE = 2;
+    public static final int TYPE_SIX_FILE = 3;
     
-    public static final Integer TYPE_OLD_FILE = 1;
+    public static final int TYPE_NEW_SIX_FILE = 4;
 }

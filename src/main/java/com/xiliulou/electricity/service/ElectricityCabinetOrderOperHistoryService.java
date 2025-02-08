@@ -4,6 +4,8 @@ import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 
+import java.util.List;
+
 /**
  * 订单的操作历史记录(TElectricityCabinetOrderOperHistory)表服务接口
  *
@@ -36,4 +38,9 @@ public interface ElectricityCabinetOrderOperHistoryService {
     Integer updateTenantIdByOrderId(String orderId, Integer superAdminTenantId);
     
     ElectricityCabinetOrderOperHistory queryOrderHistoryFinallyFail(String orderId);
+    
+    
+    void initExchangeOrderOperHistory(String orderId, Integer tenantId, Integer oldCell);
+
+    void batchInsert(List<ElectricityCabinetOrderOperHistory> list);
 }

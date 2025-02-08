@@ -33,12 +33,15 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
+import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -62,6 +65,8 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
+import com.xiliulou.electricity.service.retrofit.AuxRetrofitService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -190,6 +195,13 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private ServicePhoneService servicePhoneService;
+    
+    @Resource
+    private InstallmentSearchApiService installmentSearchApiService;
+    
+    @Resource
+    private AuxRetrofitService auxRetrofitService;
+    
     
     /**
      * 启用锁定用户
@@ -750,6 +762,9 @@ public class UserServiceImpl implements UserService {
                 // 删除用户对应的认证信息
                 userOauthBindService.deleteByUid(uid, tenantId);
             }
+    
+            // 删除运维小程序常用功能排序数据
+            auxRetrofitService.deleteFeatureSort(FeatureSortReq.builder().tenantId(tenantId).uid(uid).build());
             
         }
         return Pair.of(true, null);
@@ -1003,6 +1018,12 @@ public class UserServiceImpl implements UserService {
             log.warn("ELE WARN! not found userInfo,uid={} ", uid);
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
+
+        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            return Triple.of(false, "402030", "请退还押金后，进行删除操作");
+        }
         
         if (Objects.equals(userRentInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还后再删除");
@@ -1010,6 +1031,11 @@ public class UserServiceImpl implements UserService {
         
         if (Objects.equals(userRentInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             return Triple.of(false, "100253", "用户已租车辆，请先退还后再删除");
+        }
+        
+        InstallmentRecord installmentRecord = installmentSearchApiService.queryUsingRecordForUser(uid);
+        if (Objects.nonNull(installmentRecord)) {
+            return Triple.of(false, "301051", "该用户存在未完成的分期签约记录");
         }
         
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);

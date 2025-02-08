@@ -22,6 +22,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
@@ -132,10 +133,10 @@ public interface ElectricityCabinetService {
     
     R queryCabinetBelongFranchisee(Integer id);
     
-    Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
-    
-    Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid, Integer flexibleRenewalType);
-    
+
+    Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid,
+                                                              Integer flexibleRenewalType, Set<Long> mutualFranchiseeSet);
+
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
     
     Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version);
@@ -283,4 +284,10 @@ public interface ElectricityCabinetService {
     R updateCabinetPattern(EleCabinetPatternQuery query);
     
     List<ElectricityCabinetBO> listByIdList(List<Integer> cabinetIdList);
+    
+    R quickExchage(QuickExchangeQuery quickExchangeQuery);
+    
+    R getQuickExchangeResult(String sessionId);
+
+    R showInfoByDistanceV3(ElectricityCabinetQuery electricityCabinetQuery);
 }

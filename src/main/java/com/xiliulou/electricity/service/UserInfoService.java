@@ -70,6 +70,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryCarRentalList(UserInfoQuery userInfoQuery);
     
+    R queryCarRentalListForPro(UserInfoQuery userInfoQuery);
+    
     R queryCarRentalCount(UserInfoQuery userInfoQuery);
     
     R updateStatus(Long uid, Integer usableStatus);
@@ -150,6 +152,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryEleList(UserInfoQuery userInfoQuery);
     
+    R queryEleListForPro(UserInfoQuery userInfoQuery);
+    
     R queryEleListCount(UserInfoQuery userInfoQuery);
     
     void deleteCache(Long uid);
@@ -200,4 +204,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R bindBattery(BindBatteryRequest bindBatteryRequest);
     
     Integer updatePayCountByUid(UserInfo userInfo);
+
+    UserInfo queryByUidFromDB(Long uid);
 }

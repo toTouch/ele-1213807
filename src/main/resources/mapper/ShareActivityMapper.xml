@@ -131,5 +131,26 @@
         </if>
         limit #{offset} , #{size}
     </select>
+    <select id="selectByIdWithDelFlag" resultType="com.xiliulou.electricity.entity.ShareActivity">
+        select id,
+               name,
+               type,
+               status,
+               description,
+               invitation_criteria,
+               del_flag,
+               create_time,
+               receive_type,
+               update_time,
+               uid,
+               user_name,
+               franchisee_id,
+               hours,
+               minutes,
+               invitation_criteria,
+               franchisee_id
+        from t_share_activity
+        where id = #{id}
+    </select>
 
 </mapper>

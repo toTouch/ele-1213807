@@ -16,6 +16,8 @@
         <result property="inviterUid" column="inviter_uid" jdbcType="INTEGER"/>
         <result property="latestActivitySource" column="latest_activity_source" jdbcType="INTEGER"/>
         <result property="eleLimit" column="ele_limit" jdbcType="INTEGER"/>
+        <result property="minTimeOfMonth" column="min_time_of_month" jdbcType="BIGINT"/>
+        <result property="packageFreezeCount" column="package_freeze_count" jdbcType="TINYINT"/>
         <result property="lostUserStatus" column="lost_user_status" jdbcType="INTEGER"/>
         <result property="lostUserTime" column="lost_user_time" jdbcType="BIGINT"/>
         <result property="lostUserFirstRebateTime" column="lost_user_first_rebate_time" jdbcType="BIGINT"/>
@@ -24,16 +26,19 @@
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserInfoExtraMap">
         select
-          uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source, ele_limit,
-          lost_user_status, lost_user_time, lost_user_first_rebate_time
+          uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid,
+          latest_activity_source, ele_limit, min_time_of_month, package_freeze_count,lost_user_status, lost_user_time, lost_user_first_rebate_time
         from t_user_info_extra
         where uid = #{uid}
     </select>
     
     <!--新增所有列-->
+    <!--新增SQL中不应增加 min_time_of_month、package_freeze_count 这两个字段，有大量场景未给这两个字段设置值，使用默认值即可-->
     <insert id="insert" keyProperty="uid" useGeneratedKeys="true">
-        insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source, ele_limit)
-        values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime}, #{activitySource}, #{inviterUid}, #{latestActivitySource}, #{eleLimit})
+        insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time,
+                                      activity_source, inviter_uid, latest_activity_source, ele_limit)
+        values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime},
+                #{activitySource}, #{inviterUid}, #{latestActivitySource}, #{eleLimit})
     </insert>
     
     <!--通过主键修改数据-->
@@ -76,6 +81,12 @@
             <if test="eleLimit != null">
                 ele_limit = #{eleLimit},
             </if>
+            <if test="minTimeOfMonth != null">
+                min_time_of_month = #{minTimeOfMonth},
+            </if>
+            <if test="packageFreezeCount != null">
+                package_freeze_count = #{packageFreezeCount},
+            </if>
             <if test="lostUserStatus != null">
                 lost_user_status = #{lostUserStatus},
             </if>
@@ -88,7 +99,7 @@
         </set>
         where uid = #{uid}
     </update>
-    
+
     <update id="updateUserNotActivityByUid">
         update t_user_info_extra
         set merchant_id = null,
@@ -101,7 +112,7 @@
             update_time =#{updateTime}
         where uid = #{uid}
     </update>
-    
+
     <!--通过主键删除-->
     <delete id="deleteByUid">
         delete from t_user_info_extra where uid = #{uid}

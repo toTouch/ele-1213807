@@ -45,6 +45,15 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
     
+    
+    public static void main(String[] args) {
+       
+        long diffDay = DateUtils.diffDay(1734232990868L, 1734492190868L);
+        // 计算滞纳金金额
+        BigDecimal amount = NumberUtil.mul(diffDay, new BigDecimal("0.01")).setScale(2, RoundingMode.HALF_UP);
+        System.out.printf("");
+    }
+    
     /**
      * 查询当前未支付的逾期订单明细
      *

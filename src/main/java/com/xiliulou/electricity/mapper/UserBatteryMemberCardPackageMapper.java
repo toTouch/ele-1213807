@@ -41,4 +41,6 @@ public interface UserBatteryMemberCardPackageMapper extends BaseMapper<UserBatte
     List<UserBatteryMemberCardPackage> listChannelByUid(@Param("uid") Long uid);
     
     UserBatteryMemberCardPackageBO selectLastEnterprisePackageByUid(@Param("uid") Long uid);
+    
+    List<UserBatteryMemberCardPackageBO> selectListByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
 }

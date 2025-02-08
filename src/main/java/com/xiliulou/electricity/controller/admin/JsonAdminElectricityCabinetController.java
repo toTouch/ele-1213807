@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
@@ -27,9 +26,9 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
+import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
-import com.xiliulou.electricity.service.EleOnlineLogService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -39,7 +38,6 @@ import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.vo.HomepageBatteryVo;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
@@ -47,7 +45,6 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -682,7 +679,9 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     }
     
     /**
-     * ota操作： 1--下载新  2-- 同步  3--升级
+     * ota操作： 1--下载  2--同步  3--升级
+     * 下载时versionType：1-旧版 2-新版 3-旧六合一 4-新六合一
+     * 同步/升级时versionType:0
      */
     @PostMapping("/admin/electricityCabinet/ota/command")
     public R otaCommand(@RequestParam("eid") Integer eid, @RequestParam("operateType") Integer operateType, @RequestParam("versionType") Integer versionType,
@@ -824,7 +823,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "status", required = false) Integer status) {
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "longitude", required = false) Double longitude,
+                                                        @RequestParam(value = "latitude", required = false) Double latitude, @RequestParam(value = "distance", required = false) Double distance) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -847,7 +847,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
         
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().id(id).name(name).status(Objects.isNull(status) ? NumberConstant.ONE : status)
-                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).latitude(latitude).longitude(longitude).distance(distance).build();
         
         return electricityCabinetService.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
     }
@@ -1057,5 +1057,28 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return electricityCabinetService.updateCabinetPattern(query);
     }
     
+    /**
+     * saas快捷换电
+     *
+     * @param quickExchangeQuery query
+     * @return R
+     */
+    @PostMapping(value = "/admin/electricityCabinet/quickExchange")
+    public R quickExchange(@RequestBody @Validated QuickExchangeQuery quickExchangeQuery) {
+        return electricityCabinetService.quickExchage(quickExchangeQuery);
+    }
     
+    /**
+     * 快捷换电命令下发结果查询
+     *
+     * @param sessionId sessionId
+     * @return R
+     */
+    @GetMapping("/admin/electricityCabinet/quickExchange/result")
+    public R getQuickExchangeResult(@RequestParam("sessionId") String sessionId) {
+        if (StrUtil.isEmpty(sessionId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCabinetService.getQuickExchangeResult(sessionId);
+    }
 }

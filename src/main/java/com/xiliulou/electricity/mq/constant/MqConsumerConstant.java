@@ -49,6 +49,11 @@ public interface MqConsumerConstant {
      * 电池回收消费组
      */
     String BATTERY_RECYCLE_GROUP = "BATTERY_RECYCLE_GROUP";
+
+    /**
+     * 电池回收消费组
+     */
+    String CABINET_NORMAL_RESULT_GROUP = "CABINET_NORMAL_RESULT_GROUP";
     
     /**
      * 分账订单退款消费组
@@ -84,4 +89,19 @@ public interface MqConsumerConstant {
      * 用户设备在线日志 consumer group
      */
     String USER_DEVICE_STATUS_CONSUMER_GROUP = "user_device_status_consumer";
+    
+    /**
+     * 分期代扣相关group
+     */
+    String INSTALLMENT_DEDUCT_GROUP = "installment_deduct_group";
+    
+    /**
+     * 分期代扣处理成失败状态相关group
+     */
+    String INSTALLMENT_DEDUCT_FAIL_GROUP = "installment_deduct_fail_group";
+    
+    /**
+     * 分期代扣续费套餐相关group
+     */
+    String INSTALLMENT_DEDUCT_NOTIFY_GROUP = "installment_deduct_notify_group";
 }

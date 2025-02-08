@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
@@ -109,11 +111,17 @@ public interface ElectricityCabinetOrderService {
     
     R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
     
-    R openFullCell(OpenFullCellQuery query);
+
     
     List<ElectricityCabinetOrder> listByOrderIdList(Set<String> exchangeOrderIdList);
     
     List<String> getBatteryTypesForCheck(UserInfo userInfo, ElectricityBattery battery, List<String> userBatteryTypes);
     
     void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo);
+
+    ElectricityCabinetOrder selectLatelyExchangeOrderByDate(Long uid,  Long currentTime);
+
+    ElectricityCabinetOrder selectLatelyExchangeOrder(Long uid, Long startTime, Long currentTime);
+
+    List<ElectricityCabinetOrder> existExchangeOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid);
 }

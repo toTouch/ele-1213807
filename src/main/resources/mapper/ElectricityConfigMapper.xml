@@ -34,6 +34,12 @@
         <result property="eleLimitCount" column="ele_limit_count" jdbcType="INTEGER"/>
         <result property="isEnableFlexibleRenewal" column="is_enable_flexible_renewal" jdbcType="INTEGER"/>
         <result property="isEnableSeparateDeposit" column="is_enable_separate_deposit" jdbcType="INTEGER"/>
+        <result property="isSwapExchange" column="is_swap_exchange" jdbcType="INTEGER"/>
+        <result property="freezeAutoReviewDays" column="freeze_auto_review_days" jdbcType="INTEGER"/>
+        <result property="packageFreezeCount" column="package_freeze_count" jdbcType="INTEGER"/>
+        <result property="packageFreezeDays" column="package_freeze_days" jdbcType="INTEGER"/>
+        <result property="packageFreezeDaysWithAssets" column="package_freeze_days_with_assets" jdbcType="INTEGER"/>
+        <result property="expiredProtectionTime" column="expired_protection_time" jdbcType="INTEGER"/>
     </resultMap>
     
     <!-- 基础字段 -->
@@ -70,6 +76,11 @@
                ele_limit_count,
                is_enable_flexible_renewal,
                is_enable_separate_deposit,
+               freeze_auto_review_days,
+               package_freeze_count,
+               package_freeze_days,
+               package_freeze_days_with_assets,
+               expired_protection_time,
                lost_user_first,
                lost_user_days,
                allow_original_inviter
@@ -84,7 +95,8 @@
         is_open_car_battery_bind,is_open_car_control,is_zero_deposit_audit_enabled,is_enable_esign,
         allow_rent_ele,allow_return_ele,allow_freeze_with_assets,is_selection_exchange,low_charge_rate,
         full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,alipay_customer,is_comfort_exchange,priority_exchange_norm,
-        is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count,is_enable_flexible_renewal,is_enable_separate_deposit,lost_user_first,
+        is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count,is_enable_flexible_renewal,is_enable_separate_deposit,is_swap_exchange,
+        freeze_auto_review_days,package_freeze_count,package_freeze_days,package_freeze_days_with_assets,expired_protection_time,lost_user_first,
        	lost_user_days,allow_original_inviter
     </sql>
     <!--通过主键修改数据-->
@@ -207,6 +219,24 @@
             </if>
             <if test="isEnableSeparateDeposit != null">
                 is_enable_separate_deposit = #{isEnableSeparateDeposit},
+            </if>
+            <if test="isSwapExchange != null">
+                is_swap_exchange = #{isSwapExchange},
+            </if>
+            <if test="freezeAutoReviewDays != null">
+                freeze_auto_review_days = #{freezeAutoReviewDays},
+            </if>
+            <if test="packageFreezeCount != null">
+                package_freeze_count = #{packageFreezeCount},
+            </if>
+            <if test="packageFreezeDays != null">
+                package_freeze_days = #{packageFreezeDays},
+            </if>
+            <if test="packageFreezeDaysWithAssets != null">
+                package_freeze_days_with_assets = #{packageFreezeDaysWithAssets},
+            </if>
+            <if test="expiredProtectionTime != null">
+                expired_protection_time = #{expiredProtectionTime},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>

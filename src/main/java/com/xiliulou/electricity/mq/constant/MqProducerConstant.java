@@ -140,6 +140,11 @@ public interface MqProducerConstant {
     String BATTERY_RECYCLE_TOPIC_NAME = "BATTERY_RECYCLE_TOPIC";
 
     /**
+     * 下发normal模式 结果监听topic
+     */
+    String CABINET_NORMAL_RESULT_TOPIC_NAME = "CABINET_NORMAL_RESULT_TOPIC";
+
+    /**
      * 免押tag
      */
     String FREE_DEPOSIT_TAG_NAME = "FREE_DEPOSIT_TAG";
@@ -163,4 +168,29 @@ public interface MqProducerConstant {
      * 第三方商城主题
      */
     String THIRD_PARTY_MALL_TOPIC = "third_party_mall_topic";
+
+    /**
+     * 分期业务相关的topic
+     */
+    String INSTALLMENT_BUSINESS_TOPIC = "installment_business_topic";
+
+    /**
+     * 分期代扣相关tag
+     */
+    String INSTALLMENT_DEDUCT_TAG = "installment_deduct_tag";
+
+    /**
+     * 分期代扣处理成失败状态相关tag
+     */
+    String INSTALLMENT_DEDUCT_FAIL_TAG = "installment_deduct_fail_tag";
+
+    /**
+     * 分期代扣续费套餐tag
+     */
+    String INSTALLMENT_DEDUCT_NOTIFY_TAG = "installment_deduct_notify_tag";
+
+    /**
+     * 标记电池topic
+     */
+    String BATTERY_MARK_TOPIC = "battery_mark_topic";
 }

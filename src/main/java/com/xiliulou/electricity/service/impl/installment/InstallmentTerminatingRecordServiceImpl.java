@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -18,13 +20,14 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -41,20 +44,20 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class InstallmentTerminatingRecordServiceImpl implements InstallmentTerminatingRecordService {
     
-    private InstallmentTerminatingRecordMapper installmentTerminatingRecordMapper;
+    private final InstallmentTerminatingRecordMapper installmentTerminatingRecordMapper;
     
-    private FranchiseeService franchiseeService;
+    private final FranchiseeService franchiseeService;
     
-    private BatteryMemberCardService batteryMemberCardService;
+    private final BatteryMemberCardService batteryMemberCardService;
     
-    private CarRentalPackageService carRentalPackageService;
+    private final CarRentalPackageService carRentalPackageService;
     
-    private InstallmentDeductionPlanService installmentDeductionPlanService;
+    private final InstallmentDeductionPlanService installmentDeductionPlanService;
     
-    private UserService userService;
+    private final UserService userService;
     
     
     @Override
@@ -71,27 +74,36 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     @Override
     public R<List<InstallmentTerminatingRecordVO>> listForPage(InstallmentTerminatingRecordQuery query) {
         List<InstallmentTerminatingRecord> records = installmentTerminatingRecordMapper.selectPage(query);
+        if (CollectionUtils.isEmpty(records)) {
+            return R.ok(Collections.emptyList());
+        }
         
         List<InstallmentTerminatingRecordVO> collect = records.parallelStream().map(installmentTerminatingRecord -> {
             InstallmentTerminatingRecordVO vo = new InstallmentTerminatingRecordVO();
             BeanUtils.copyProperties(installmentTerminatingRecord, vo);
             
-            vo.setFranchiseeName(franchiseeService.queryByIdFromCache(installmentTerminatingRecord.getFranchiseeId()).getName());
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(installmentTerminatingRecord.getFranchiseeId());
+            vo.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
             // 设置电或者车的套餐名称，设置总金额和未支付金额
             if (Objects.equals(installmentTerminatingRecord.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
                 BatteryMemberCard memberCard = batteryMemberCardService.queryByIdFromCache(installmentTerminatingRecord.getPackageId());
-                vo.setPackageName(memberCard.getName());
-                vo.setAmount(memberCard.getRentPrice());
-                vo.setUnpaidAmount(vo.getAmount().subtract(vo.getPaidAmount()));
+                if (Objects.nonNull(memberCard)) {
+                    vo.setPackageName(memberCard.getName());
+                    vo.setAmount(memberCard.getRentPrice());
+                    vo.setUnpaidAmount(vo.getAmount().subtract(vo.getPaidAmount()));
+                }
             } else {
                 CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentTerminatingRecord.getPackageId());
-                vo.setPackageName(carRentalPackagePo.getName());
+                if (Objects.nonNull(carRentalPackagePo)) {
+                    vo.setPackageName(carRentalPackagePo.getName());
+                }
             }
             
             // 设置审核人名称
             if (Objects.nonNull(installmentTerminatingRecord.getAuditorId())) {
-                vo.setAuditorName(userService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId()).getName());
+                User user = userService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId());
+                vo.setAuditorName(Objects.isNull(user) ? null : user.getName());
             }
             
             return vo;
@@ -106,6 +118,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return R.ok(installmentTerminatingRecordMapper.count(query));
     }
     
+    @Slave
     @Override
     public List<InstallmentTerminatingRecord> listForRecordWithStatus(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordMapper.selectListForRecordWithStatus(query);
@@ -145,17 +158,19 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return installmentTerminatingRecord;
     }
     
-    
+    @Slave
     @Override
     public InstallmentTerminatingRecord queryById(Long id) {
         return installmentTerminatingRecordMapper.selectById(id);
     }
     
+    @Slave
     @Override
     public InstallmentTerminatingRecord queryLatestByExternalAgreementNo(String externalAgreementNo) {
         return installmentTerminatingRecordMapper.selectLatestByExternalAgreementNo(externalAgreementNo);
     }
     
+    @Slave
     @Override
     public List<InstallmentTerminatingRecord> listForUserWithStatus(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordMapper.selectListForUserWithStatus(query);

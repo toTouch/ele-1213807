@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
+import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -15,6 +17,7 @@ import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryEnableAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
+import com.xiliulou.electricity.vo.BatteryChangeInfoVO;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
@@ -142,6 +145,10 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn);
     
+    List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid, String sn);
+    
+    List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList, String sn);
+    
     /**
      * <p>
      *    Description: queryIdsBySnArray
@@ -163,5 +170,13 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBattery> listBySnList(List<String> item, Integer tenantId, List<Long> bindFranchiseeIdList);
     
     R deleteBatteryByExcel(DelBatteryReq delBatteryReq);
+
+
+    List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId, List<Long> franchiseeIds);
     
+    List<BatteryChangeInfoVO> getBatteryChangeOtherInfo(List<BatteryChangeInfo> list);
+    
+    Integer existsByBatteryType(String batteryType, Integer tenantId);
+    
+    Map<Long, ElectricityBattery> listUserBatteryByUidList(List<Long> uidList, Integer tenantId);
 }

@@ -7,9 +7,9 @@ package com.xiliulou.electricity.constant;
  */
 public interface BatteryMemberCardConstants {
     
-    Integer MAX_BATTERY_MEMBER_CARD_NUM = 150;
+    Integer MAX_BATTERY_MEMBER_CARD_NUM = 300;
     
-    Integer MAX_COUPON_NUM = 6;
+    Integer MAX_COUPON_NUM = 10;
     
     Integer MAX_USER_INFO_GROUP_NUM = 10;
     

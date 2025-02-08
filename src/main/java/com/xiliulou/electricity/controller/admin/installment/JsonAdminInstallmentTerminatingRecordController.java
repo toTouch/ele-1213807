@@ -22,9 +22,9 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  * @Author: SongJP
  * @Date: 2024/8/28 10:50
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 @RequestMapping("/admin/installment/terminating")
 public class JsonAdminInstallmentTerminatingRecordController {
     

@@ -30,5 +30,14 @@
         </set>
         where id = #{id} and tenant_id = #{tenantId}
     </update>
+    
+    <select id="selectListByIdentifies" resultType="com.xiliulou.electricity.entity.EleAuthEntry">
+        select id, name, is_use, type, create_time, update_time, del_flag, remark, identify, tenant_id
+        from t_ele_auth_entry
+        where tenant_id = #{tenantId} and identify in
+        <foreach collection="identifies" item="identify" open="(" separator="," close=")">
+            #{identify}
+        </foreach>
+    </select>
 
 </mapper>

@@ -62,8 +62,6 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     
     Integer minCount(Long id);
     
-    Integer minCountForOffLineEle(Long id);
-    
     Integer plusCount(Long uid);
     
     int updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard);
@@ -73,23 +71,15 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     List<UserBatteryMemberCard> batteryMemberCardExpire(@Param("tenantId")Integer tenantId,@Param("offset") Integer offset, @Param("size") Integer size, @Param("firstTime") Long firstTime,
             @Param("lastTime") Long lastTime);
     
-    @Deprecated
-    List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(@Param("offset") Integer offset, @Param("size") Integer size, @Param("firstTime") Long firstTime,
-            @Param("lastTime") Long lastTime);
-    
-    List<FailureMemberCardVo> queryMemberCardExpireUser(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
-    
     int unbindMembercardInfoByUid(UserBatteryMemberCard userBatteryMemberCard);
     
     Integer checkUserByMembercardId(@Param("membercardId") Long membercardId);
-    
-    Integer deductionExpireTime(@Param("uid") Long uid, @Param("time") Long time, @Param("updateTime") Long updateTime);
     
     List<UserBatteryMemberCard> selectByList(@Param("offset") int offset, @Param("size") int size);
     
     List<UserBatteryMemberCard> selectUseableList(@Param("offset") int offset, @Param("size") int size);
     
-    List<UserBatteryMemberCard> selectUseableListByTenantIds(@Param("offset") int offset, @Param("size") int size, @Param("tenantIds") List<Integer> tenantIds);
+    List<UserBatteryMemberCard> selectUseableListByTenantIds(@Param("userBatteryMemberCardId") Long userBatteryMemberCardId, @Param("size") int size, @Param("tenantIds") List<Integer> tenantIds);
     
     List<UserBatteryMemberCard> selectExpireList(@Param("offset") int offset, @Param("size") int size, @Param("memberCardExpireTime") Long memberCardExpireTime);
     

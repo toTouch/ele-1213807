@@ -32,24 +32,28 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -95,6 +99,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
     @Autowired
     BatteryModelService batteryModelService;
+    
+    @Resource
+    private TenantFranchiseeMutualExchangeService mutualExchangeService;
     
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
     
@@ -448,12 +455,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     /**
      * 检查电池是否属于当前柜机的加盟商
      */
-    private void checkBatteryFranchisee(ElectricityCabinet electricityCabinet, ElectricityBattery electricityBattery,
-                                        ElectricityCabinetBox updateElectricityCabinetBox, String sessionId) {
-        // 查换电柜所属加盟商
-        if (!Objects.equals(electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
-            log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}",
-                    electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId(), sessionId);
+    private void checkBatteryFranchisee(ElectricityCabinet electricityCabinet, ElectricityBattery electricityBattery, ElectricityCabinetBox updateElectricityCabinetBox,
+            String sessionId) {
+        if (!mutualExchangeService.batteryReportIsSatisfyFranchiseeMutualExchange(electricityCabinet.getTenantId(), electricityCabinet.getFranchiseeId(),
+                electricityBattery.getFranchiseeId(), sessionId)) {
+            log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}", electricityCabinet.getFranchiseeId(),
+                    electricityBattery.getFranchiseeId(), sessionId);
             updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
         }
     }

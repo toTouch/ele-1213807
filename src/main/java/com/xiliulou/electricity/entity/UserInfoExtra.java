@@ -79,17 +79,27 @@ public class UserInfoExtra {
      *
      */
     private Integer eleLimit;
-    
+
+    /**
+     * 每月最小时间戳，用于判断次数统计是否为本月
+     */
+    private Long minTimeOfMonth;
+
+    /**
+     * 用户每月套餐冻结次数
+     */
+    private Integer packageFreezeCount;
+
     /**
      * '是否为流失用户 0 - 是, 1 - 否
      */
     private Integer lostUserStatus;
-    
+
     /**
      * 流失时间
      */
     private Long lostUserTime;
-    
+
     /**
      * 流失用户首次拉新返利时间
      */

@@ -43,4 +43,8 @@ public class UserBatteryMemberCardPackageBO {
      * 套餐订单Id
      */
     private String orderId;
+    
+    private Integer payType;
+    
+    private String createTime;
 }

@@ -122,4 +122,6 @@ public interface EleRefundOrderService {
     R listSuperAdminPage(EleRefundQuery eleRefundQuery);
     
     Integer updateRefundAmountById(Long id, BigDecimal refundAmount);
+    
+    List<EleRefundOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList);
 }
