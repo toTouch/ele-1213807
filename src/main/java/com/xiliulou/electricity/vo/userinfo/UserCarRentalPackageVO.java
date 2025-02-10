@@ -141,6 +141,8 @@ public class UserCarRentalPackageVO {
      * 用户所属分组
      */
     private List<UserInfoGroupIdAndNameVO> groupList;
+
+    private String remark;
     
     
     public static Integer FREE_OF_CHARGE = 2;

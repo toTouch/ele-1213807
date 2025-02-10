@@ -10,17 +10,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
-import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.EleCabinetPatternQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetBatchEditRentReturnQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetImportQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
-import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
@@ -290,4 +280,15 @@ public interface ElectricityCabinetService {
     R getQuickExchangeResult(String sessionId);
 
     R showInfoByDistanceV3(ElectricityCabinetQuery electricityCabinetQuery);
+
+
+    List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
+
+    R listLowPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countFullPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
 }

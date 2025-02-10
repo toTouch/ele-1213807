@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.User;
@@ -606,7 +607,101 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         
         return R.ok(eleCabinetDataAnalyseService.selectFullPowerPageCount(cabinetQuery));
     }
-    
+
+    /**
+     * 在线列表
+     */
+    @GetMapping("/admin/eleCabinet/reversePower/page")
+    public R reversePowerPage(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                              @RequestParam(value = "name", required = false) String name,
+                              @RequestParam(value = "sn", required = false) String sn,
+                              @RequestParam(value = "address", required = false) String address,
+                              @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                              @RequestParam(value = "orderByAverageNumber", required = false) Integer orderByAverageNumber,
+                              @RequestParam(value = "orderByAverageActivity", required = false) Integer orderByAverageActivity,
+                              @RequestParam(value = "orderByTodayNumber", required = false) Integer orderByTodayNumber,
+                              @RequestParam(value = "orderByTodayActivity", required = false) Integer orderByTodayActivity,
+                              @RequestParam(value = "storeId", required = false) Long storeId,
+                              @RequestParam(value = "areaId", required = false) Long areaId) {
+
+        if (size < 0 || size > 50) {
+            size = 10;
+        }
+
+        if (offset < 0) {
+            offset = 0;
+        }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
+                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).areaId(areaId)
+                .orderByAverageNumber(orderByAverageNumber).orderByAverageActivity(orderByAverageActivity).orderByTodayNumber(orderByTodayNumber).powerType(EleCabinetConstant.POWER_TYPE_BACKUP)
+                .orderByTodayActivity(orderByTodayActivity).statisticDate(timeAgoStartTime).build();
+
+        return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
+    }
+
+    @GetMapping(value = "/admin/eleCabinet/reversePower/count")
+    public R reversePowerPageCount(@RequestParam(value = "name", required = false) String name,
+                                   @RequestParam(value = "sn", required = false) String sn,
+                                   @RequestParam(value = "address", required = false) String address,
+                                   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                                   @RequestParam(value = "storeId", required = false) Long storeId,
+                                   @RequestParam(value = "areaId", required = false) Long areaId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(0);
+            }
+        }
+
+        // 统计时间设置为昨日 统计换电次数及活跃度
+        long timeAgoStartTime = DateUtils.getTimeAgoStartTime(1);
+
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().areaId(areaId).powerType(EleCabinetConstant.POWER_TYPE_BACKUP)
+                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).statisticDate(timeAgoStartTime).eleIdList(eleIdList).build();
+
+        return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
+    }
+
     /**
      * 日均换电次数
      *
