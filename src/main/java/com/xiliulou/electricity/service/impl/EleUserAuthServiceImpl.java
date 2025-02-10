@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
 import com.xiliulou.electricity.entity.EleAuthEntry;
@@ -16,12 +19,15 @@ import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserAuthMessage;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.userinfo.EmergencyContact;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
 import com.xiliulou.electricity.event.SiteMessageEvent;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.mq.producer.MessageSendProducer;
+import com.xiliulou.electricity.request.userinfo.EleUserAuthRequest;
+import com.xiliulou.electricity.request.userinfo.emergencyContact.EmergencyContactRequest;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -29,6 +35,7 @@ import com.xiliulou.electricity.service.IdCardCheckService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserAuthMessageService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserAuthMessageVO;
@@ -37,8 +44,11 @@ import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -50,6 +60,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -104,6 +115,11 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Autowired
     private SiteMessagePublish siteMessagePublish;
     
+    @Resource
+    private EmergencyContactService emergencyContactService;
+    
+    @Resource
+    private RedisService redisService;
     
     /**
      * 新增数据
@@ -139,7 +155,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R webAuth(List<EleUserAuth> eleUserAuthList) {
+    public R webAuth(List<EleUserAuthRequest> eleUserAuthList) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -174,13 +190,19 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         if (!checkResult.getLeft()) {
             return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
+    
+        Pair<Boolean, Object> preCheck = preCheck(tenantId, eleUserAuthList);
+        if (!preCheck.getLeft()) {
+            return R.fail(preCheck.getRight().toString());
+        }
+    
+        Map<Integer, List<EleAuthEntry>> eleAuthEntryMap = (Map<Integer, List<EleAuthEntry>>) preCheck.getRight();
         
         UserInfo userInfo = new UserInfo();
         userInfo.setId(oldUserInfo.getId());
         
         //是否需要人工审核
         Integer status = EleUserAuth.STATUS_PENDING_REVIEW;
-        
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig)) {
             log.warn("not found electricityConfig,uid={}", user.getUid());
@@ -191,21 +213,41 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             status = EleUserAuth.STATUS_REVIEW_PASSED;
             userInfo.setAuthType(UserInfo.AUTH_TYPE_SYSTEM);
         }
-        
-        for (EleUserAuth eleUserAuth : eleUserAuthList) {
+    
+        Integer emergencyContactInsert = null;
+        for (EleUserAuthRequest eleUserAuthRequest : eleUserAuthList) {
+            EleUserAuth eleUserAuth = new EleUserAuth();
+            BeanUtils.copyProperties(eleUserAuthRequest, eleUserAuth);
             eleUserAuth.setUid(user.getUid());
-            
-            EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromCache(eleUserAuth.getEntryId());
-            if (Objects.isNull(eleAuthEntryDb)) {
-                log.error("not found authEntry entryId:{}", eleUserAuth.getEntryId());
+            Integer entryId = eleUserAuth.getEntryId();
+    
+            if (!eleAuthEntryMap.containsKey(entryId)) {
+                log.error("not found authEntry entryId:{}", entryId);
                 return R.fail("审核资料项不存在!");
             }
             
-            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleUserAuth.getEntryId())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, entryId)) {
                 userInfo.setName(eleUserAuth.getValue());
             }
-            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
+            
+            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, entryId)) {
                 userInfo.setIdNumber(eleUserAuth.getValue());
+            }
+    
+            // 紧急联系人，旧版小程序无该字段“emergencyContactList”
+            if (ObjectUtil.equal(EleAuthEntry.ID_EMERGENCY_CONTACT, entryId) && Objects.nonNull(eleUserAuthRequest.getEmergencyContactList())) {
+                Triple<Boolean, String, Object> emergencyContactCheckResult = emergencyContactService.checkEmergencyContact(eleUserAuthRequest.getEmergencyContactList(),
+                        oldUserInfo);
+                if (!emergencyContactCheckResult.getLeft()) {
+                    return R.fail(emergencyContactCheckResult.getMiddle(), emergencyContactCheckResult.getRight().toString());
+                }
+        
+                List<EmergencyContactRequest> emergencyContactList = (List<EmergencyContactRequest>) emergencyContactCheckResult.getRight();
+                if (!CollectionUtils.isEmpty(emergencyContactList)) {
+                    emergencyContactInsert = emergencyContactService.batchSave(emergencyContactList);
+                    // value不需要存紧急联系人
+                    eleUserAuth.setValue(null);
+                }
             }
             
             eleUserAuth.setStatus(status);
@@ -230,12 +272,43 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         if (flag) {
             sendAuthenticationAuditMessage(userInfo);
         }
+    
+        if (Objects.nonNull(emergencyContactInsert) && emergencyContactInsert > 0) {
+            redisService.delete(CacheConstant.CACHE_EMERGENCY_CONTACT_LIST + user.getUid());
+        }
         
         //发送消息到站内信
         siteMessagePublish.publish(
                 SiteMessageEvent.builder(this).code(SiteMessageType.REAL_NAME_VERIFICATION).notifyTime(System.currentTimeMillis()).tenantId(Long.valueOf(tenantId))
                         .addContext("name", userInfo.getName()).addContext("uid", oldUserInfo.getUid()).addContext("phone", oldUserInfo.getPhone()).build());
         return R.ok();
+    }
+    
+    private Pair<Boolean, Object> preCheck(Integer tenantId, List<EleUserAuthRequest> eleUserAuthList) {
+        if (CollectionUtils.isEmpty(eleUserAuthList)) {
+            log.warn("WebAuth warn! eleUserAuthList is empty!");
+            return Pair.of(false, "资料项为空");
+        }
+        
+        List<Integer> identityList = eleUserAuthList.stream().map(EleUserAuthRequest::getEntryId).filter(Objects::nonNull).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(identityList)) {
+            log.warn("WebAuth warn! identityList is empty! tenantId={}, eleUserAuthList={}", tenantId, eleUserAuthList);
+            return Pair.of(false, "资料项为空");
+        }
+        
+        List<EleAuthEntry> eleAuthEntryList = eleAuthEntryService.listByIdentifies(tenantId, identityList);
+        if (CollectionUtils.isEmpty(eleAuthEntryList)) {
+            log.warn("WebAuth warn! eleAuthEntryList is empty! tenantId={}, identityList={}", tenantId, identityList);
+            return Pair.of(false, "资料项为空");
+        }
+        
+        Map<Integer, List<EleAuthEntry>> eleAuthEntryMap = eleAuthEntryList.stream().collect(Collectors.groupingBy(EleAuthEntry::getIdentify));
+        if (MapUtils.isEmpty(eleAuthEntryMap)) {
+            log.warn("WebAuth warn! eleAuthEntryMap is empty! tenantId={}, identityList={}", tenantId, identityList);
+            return Pair.of(false, "资料项为空");
+        }
+        
+        return Pair.of(true, eleAuthEntryMap);
     }
     
     private Integer transfomStatus(Integer isManualReview) {
@@ -255,12 +328,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     }
     
     
-    private Triple<Boolean, String, Object> checkIdCard(Integer tenantId, List<EleUserAuth> eleUserAuthList) {
+    private Triple<Boolean, String, Object> checkIdCard(Integer tenantId, List<EleUserAuthRequest> eleUserAuthList) {
         if (CollectionUtils.isEmpty(eleUserAuthList)) {
             return Triple.of(false, "资料项为空", null);
         }
         String idCard = null;
-        for (EleUserAuth eleUserAuth : eleUserAuthList) {
+        for (EleUserAuthRequest eleUserAuth : eleUserAuthList) {
             if (!ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
                 continue;
             }
@@ -366,17 +439,22 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.ok(Collections.emptyList());
         }
         
-        List<EleUserAuth> collect = eleUserAuths.stream().map(e -> {
+        List<EleUserAuth> collect = eleUserAuths.stream().peek(e -> {
             if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_CARD_FRONT_PHOTO) || e.getEntryId()
                     .equals(EleAuthEntry.ID_SELF_PHOTO)) {
                 if (StringUtils.isNotEmpty(e.getValue())) {
                     e.setValue("https://" + storageConverter.getUrlPrefix() + "/" + e.getValue());
                 }
-                
             }
-            return e;
+    
+            // 紧急联系人
+            if (e.getEntryId().equals(EleAuthEntry.ID_EMERGENCY_CONTACT)) {
+                List<EmergencyContact> emergencyContactList = emergencyContactService.listByUidFromCache(e.getUid());
+                if (CollectionUtil.isNotEmpty(emergencyContactList)) {
+                    e.setValue(JSON.toJSONString(emergencyContactList));
+                }
+            }
         }).collect(Collectors.toList());
-        log.info("collect is -->{}", collect);
         return R.ok(collect);
     }
     

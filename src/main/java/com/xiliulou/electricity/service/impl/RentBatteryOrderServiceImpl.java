@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -16,10 +17,9 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.EleEsignConstant;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.*;
+import com.xiliulou.electricity.dto.ExchangeAssertProcessDTO;
+import com.xiliulou.electricity.dto.ExchangeChainDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleCabinetUsedRecord;
@@ -43,71 +43,27 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
-import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.OverdueType;
-import com.xiliulou.electricity.enums.RentReturnNormEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
-import com.xiliulou.electricity.query.LowBatteryExchangeModel;
-import com.xiliulou.electricity.query.OrderQuery;
-import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
-import com.xiliulou.electricity.query.RentBatteryOrderQuery;
-import com.xiliulou.electricity.query.RentBatteryQuery;
-import com.xiliulou.electricity.query.RentOpenDoorQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.EleUserEsignRecordService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
-import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserActiveInfoService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCarDepositService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.pipeline.ProcessContext;
+import com.xiliulou.electricity.service.pipeline.ProcessController;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.utils.AssertUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
-import com.xiliulou.electricity.vo.EleCabinetUsedRecordVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.RentBatteryOrderExcelVO;
-import com.xiliulou.electricity.vo.RentBatteryOrderVO;
-import com.xiliulou.electricity.vo.WarnMsgVo;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -258,6 +214,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Resource
     private ExchangeExceptionHandlerService exceptionHandlerService;
+
+    @Resource
+    private LessTimeExchangeService lessTimeExchangeService;
     
     /**
      * 吞电池优化版本
@@ -274,6 +233,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
+    @Autowired
+    private ProcessController processController;
 
     /**
      * 新增数据
@@ -858,6 +819,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     return R.fail("300001", "存在滞纳金，请先缴纳");
                 }
             }
+
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(
+                    electricityBattery)) {
+                return R.fail("300870", "系统检测到您未绑定电池，请检查");
+            }
             
             
             //分配开门格挡
@@ -896,6 +862,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
             dataMap.put("orderId", orderId);
+            dataMap.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
             
             //是否开启电池检测
             if (Objects.nonNull(electricityConfig)) {
@@ -1954,13 +1921,256 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
-    public Integer existReturnOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell) {
-        return rentBatteryOrderMapper.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
+    @Slave
+    public Integer existReturnRentOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell) {
+        return rentBatteryOrderMapper.existReturnRentOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
     }
     
     
     @Override
+    @Slave
     public Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo) {
         return rentBatteryOrderMapper.existSameCabinetCellSameTimeOpenReturnOrder(createTime, electricityCabinetId, oldCellNo);
+    }
+
+
+
+    @Override
+    @Slave
+    public RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long startTime, Long currentTime, Integer orderType) {
+        return rentBatteryOrderMapper.selectLatelyRentReturnOrder(uid, startTime, currentTime, orderType);
+    }
+
+
+    @Override
+    public R returnBatteryCheck(Integer electricityCabinetId) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //是否存在未完成的租电池订单
+        RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(user.getUid());
+        if (Objects.nonNull(oldRentBatteryOrder)) {
+            if (Objects.equals(oldRentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+                log.warn("RETURN BATTERY WARN! exits unfinished rent battery order,uid={}", user.getUid());
+                return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
+            } else if (Objects.equals(oldRentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                log.warn("RETURN BATTERY WARN! exits unfinished return battery order,uid={}", user.getUid());
+                return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+            }
+        }
+
+        //是否存在未完成的换电订单
+        ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(user.getUid());
+        if (Objects.nonNull(oldElectricityCabinetOrder)) {
+            log.warn("RETURN BATTERY WARN! exits unfinished exchange battery order,uid={}", user.getUid());
+            return R.fail((Object) oldElectricityCabinetOrder.getOrderId(), "ELECTRICITY.0094", "存在未完成换电订单，不能下单");
+        }
+
+        //换电柜
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(electricityCabinet)) {
+            log.warn("RETURN BATTERY WARN! not found electricityCabinet,electricityCabinetId={}", electricityCabinetId);
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
+        if (!eleResult) {
+            log.warn("RETURN BATTERY WARN! electricityCabinet is offline,electricityCabinetId={}", electricityCabinetId);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //换电柜营业时间
+        boolean isBusiness = this.isBusiness(electricityCabinet);
+        if (isBusiness) {
+            log.warn("RETURN BATTERY WARN! electricityCabinet is not business,electricityCabinetId={}", electricityCabinetId);
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+        }
+
+        try {
+            //查找换电柜门店
+            if (Objects.isNull(electricityCabinet.getStoreId())) {
+                log.warn("RETURN BATTERY WARN! not found store,electricityCabinetId={}", electricityCabinetId);
+                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+            }
+
+            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+            if (Objects.isNull(store)) {
+                log.warn("RETURN BATTERY WARN! not found store,storeId={}", electricityCabinet.getStoreId());
+                return R.fail("ELECTRICITY.0018", "未找到门店");
+            }
+
+            //查找门店加盟商
+            if (Objects.isNull(store.getFranchiseeId())) {
+                log.warn("RETURN BATTERY WARN! not found franchisee,storeId={}", store.getId());
+                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+            }
+
+            //用户
+            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.warn("RETURN BATTERY WARN! not found user,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0019", "未找到用户");
+            }
+
+            //用户是否可用
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.warn("RETURN BATTERY WARN! user is unUsable,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0024", "用户已被禁用");
+            }
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                log.warn("RETURN BATTERY WARN! not found franchisee,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+
+            //判断该换电柜加盟商和用户加盟商是否一致
+            if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
+                log.warn("RETURN BATTERY WARN!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(),
+                        userInfo.getFranchiseeId());
+                return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+            }
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryDeposit)) {
+                log.warn("RETURN BATTERY WARN! not pay deposit,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0042", "未缴纳押金");
+            }
+
+            //未绑定电池
+            if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                log.warn("RETURN BATTERY WARN! not rent battery,uid={} ", user.getUid());
+                return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+            }
+
+
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                //判断电池滞纳金
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userBatteryMemberCard)) {
+                    log.warn("RETURN BATTERY WARN! user haven't memberCard uid={}", userInfo.getUid());
+                    return R.fail("100210", "用户未开通套餐");
+                }
+
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                    log.warn("RETURN BATTERY WARN! user's member card is stop! uid={}", userInfo.getUid());
+                    return R.fail("100211", "换电套餐停卡审核中");
+                }
+
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    log.warn("RETURN BATTERY WARN! user's member card is stop! uid={}", userInfo.getUid());
+                    return R.fail("100211", "换电套餐已暂停");
+                }
+
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.isNull(batteryMemberCard)) {
+                    log.warn("RETURN BATTERY WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+                    return R.fail("ELECTRICITY.00121", "套餐不存在");
+                }
+
+
+                //判断用户电池服务费
+                Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
+                        batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                    log.warn("RETURN BATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
+                    return R.fail("ELECTRICITY.100000", "存在电池服务费", acquireUserBatteryServiceFeeResult.getRight());
+                }
+            } else {
+                //判断车电一体滞纳金
+                if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
+                    log.warn("RETURN BATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
+                    return R.fail("300001", "存在滞纳金，请先缴纳");
+                }
+            }
+
+            // 多次退电判断
+            Pair<Boolean, ReturnBatteryLessTimeScanVo> pair = lessTimeExchangeService.lessTimeReturnBatteryHandler(userInfo, electricityCabinet);
+            if (pair.getLeft()) {
+                return R.ok(pair.getRight());
+            }
+
+            // 如果超过5分钟或者返回false，这里返回不让前端不进行弹窗
+            ReturnBatteryLessTimeScanVo vo = new ReturnBatteryLessTimeScanVo();
+            vo.setIsEnterMoreExchange(LessScanConstant.NOT_ENTER_MORE_EXCHANGE);
+            return R.ok(vo);
+
+        } catch (BizException e) {
+            throw new BizException(e.getErrCode(), e.getErrMsg());
+        } catch (Exception e) {
+            log.error("RETURN BATTERY CHECK ERROR! uid={}", user.getUid(), e);
+        }
+        return R.ok();
+    }
+
+
+    @Override
+    public R lessRentReturnSelfOpenCell(LessExchangeSelfOpenCellQuery query) {
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("LessRentSelfOpenCell  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("LessRentSelfOpenCell WARN! not found user,uid is {}", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        // 构造责任链入参
+        ProcessContext<ExchangeAssertProcessDTO> processContext = ProcessContext.builder().code(ExchangeAssertChainTypeEnum.RENT_RETURN_BATTERY_LESS_OPEN_FULL_ASSERT.getCode()).processModel(
+                ExchangeAssertProcessDTO.builder().eid(query.getEid()).cellNo(query.getCellNo()).userInfo(userInfo).orderId(query.getOrderId()).selfOpenCellKey(CacheConstant.RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY)
+                        .chainObject(new ExchangeChainDTO()).build()).needBreak(false).build();
+        // 校验
+        @SuppressWarnings("unchecked")
+        ProcessContext<ExchangeAssertProcessDTO> process = processController.process(processContext);
+        if (process.getNeedBreak()) {
+            log.warn("rentBatteryLessExchangeSelfOpenCell Warn! BreakReason is {}", JsonUtil.toJson(process.getResult()));
+            return process.getResult();
+        }
+
+        RentBatteryOrder rentBatteryOrder = process.getProcessModel().getChainObject().getRentBatteryOrder();
+        AssertUtil.assertObjectIsNull(rentBatteryOrder, "ELECTRICITY.0015", "未找到订单");
+
+        ElectricityCabinet electricityCabinet = process.getProcessModel().getChainObject().getElectricityCabinet();
+        AssertUtil.assertObjectIsNull(electricityCabinet, "100003", "找不到柜机");
+
+        try {
+
+            RentBatteryOrder batteryOrder = new RentBatteryOrder();
+            batteryOrder.setId(rentBatteryOrder.getId());
+            batteryOrder.setUpdateTime(System.currentTimeMillis());
+            batteryOrder.setRemark(ExchangeRemarkConstant.USER_SELF_OPEN_CELL);
+            update(batteryOrder);
+
+            // 发送自助开仓命令
+            // 发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("orderId", query.getOrderId());
+            dataMap.put("cellNo", query.getCellNo());
+//            if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) && Objects.equals(
+//                    electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
+//                dataMap.put("isTakeCell", true);
+//            }
+            dataMap.put("userSelfOpenCell", true);
+
+
+            String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId();
+
+            HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
+            return R.ok(sessionId);
+        } catch (Exception e) {
+            log.error("order is error" + e);
+            return R.fail("ELECTRICITY.0025", "自助开仓失败");
+        }
     }
 }

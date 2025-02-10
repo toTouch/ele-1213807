@@ -1224,12 +1224,7 @@
         </if>
     </select>
     <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserInfo">
-        SELECT
-        name,
-        uid,
-        phone,
-        del_flag,
-        update_time
+        SELECT name, uid, phone, del_flag, update_time, battery_deposit_status, car_deposit_status, car_battery_deposit_status, battery_rent_status, car_rent_status, tenant_id, franchisee_id, store_id, create_time
         FROM
         t_user_info
         <where>

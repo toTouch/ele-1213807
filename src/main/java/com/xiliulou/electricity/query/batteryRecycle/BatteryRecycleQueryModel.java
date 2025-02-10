@@ -24,7 +24,9 @@ public class BatteryRecycleQueryModel {
     private Long offset;
     
     private String sn;
-    
+
+    private List<String> snList;
+
     private String batchNo;
     
     private Integer status;

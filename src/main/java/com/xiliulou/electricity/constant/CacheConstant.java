@@ -829,7 +829,7 @@ public interface CacheConstant {
     /**
      * 分期套餐代扣后处理逻辑锁
      */
-    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
+    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d:%d";
     
     /**
      * 设备信息缓存
@@ -916,6 +916,13 @@ public interface CacheConstant {
 
     String LOCK_USER_DAY_COUPON_USE_SCOPE = "lock_user_day_coupon_use_scope:%s:%s:%s";
 
+
+    /**
+     * 租电/退电允许自主开仓时间
+     */
+    String RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY = "rent_return_allow_self_open_cell_time:";
+
+
     /**
      * 故障告警处理LOCK
      */
@@ -930,5 +937,7 @@ public interface CacheConstant {
      * 标记电池缓存
      */
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
+    
+    String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
 }
 

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.query.UserOauthBindListQuery;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -82,4 +83,5 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     
     Integer countByThirdIdAndSourceAndTenantId(@Param("thirdId") String thirdId, @Param("source") Integer source, @Param("tenantId") Integer tenantId);
     
+    List<UserOauthBind> selectListByUidAndPhoneList(@Param("queryList") List<UserOauthBindListQuery> queryList, @Param("tenantId") Integer tenantId);
 }

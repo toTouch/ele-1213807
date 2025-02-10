@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.DateFormatConstant;
@@ -71,14 +72,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -729,7 +723,13 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     public MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId) {
         return merchantJoinRecordMapper.selectRemoveSuccessRecord(joinUid, inviterUid, tenantId);
     }
-    
+
+    @Override
+    @Slave
+    public List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList, long currentTime) {
+        return merchantJoinRecordMapper.selectListOverdueCount(merchantIdList, currentTime);
+    }
+
     @Override
     public List<MerchantScanCodeRecordVO> listScanCodeRecordPage(MerchantScanCodeRecordPageRequest request) {
         if (StrUtil.isNotBlank(request.getPhone())) {

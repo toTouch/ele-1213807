@@ -30,7 +30,7 @@ public class OrderQueryV3 {
     private Integer exchangeBatteryType;
     
     /**
-     * 如果不是同一个柜机，重新扫码换电不拦截，1
+     * 如果不是同一个柜机，重新扫码换电不拦截(1:是一个柜机)
      */
     private Integer isReScanExchange;
     
@@ -43,6 +43,11 @@ public class OrderQueryV3 {
      * 灵活续费操作类型，用于控制分配满电仓的逻辑
      */
     private Integer flexibleRenewalType;
+
+    /**
+     * 兼容租退优化（第一次租电，第二次换电的自主开仓）
+     */
+    private String version;
     
     //微信公众号来源
     public static final Integer SOURCE_WX_MP = 1;
@@ -56,4 +61,10 @@ public class OrderQueryV3 {
     public static final Integer RESCAN_EXCHANGE = 1;
     
     public static final Integer SECOND_FLEXIBLE_RENEWAL = 1;
+
+
+    /**
+     * 二次扫码兼容小程序旧版本
+     */
+    public static final String TWO_SCAN_EXCHANGE_COMPATIBLE_RENT_SELF_OPEN="3.3.29";
 }

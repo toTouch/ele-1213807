@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -35,8 +34,6 @@ public interface ElectricityMemberCardOrderService {
     List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId);
 
     R queryList(MemberCardOrderQuery memberCardOrderQuery);
-
-    void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
 
     R queryCount(MemberCardOrderQuery memberCardOrderQuery);
 
