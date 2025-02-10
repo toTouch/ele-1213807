@@ -101,7 +101,7 @@ public class InsuranceOrder {
     /**
      * 是否出险 0--未出险 1--已出险
      */
-    //保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效
+    //保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效 4：未生效
     private Integer isUse;
 
     //租户id
@@ -138,11 +138,12 @@ public class InsuranceOrder {
      */
     private String paymentChannel;
 
-    //保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效
+    //保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效 4:未生效
     public static final Integer NOT_USE = 0;
     public static final Integer IS_USE = 1;
     public static final Integer EXPIRED = 2;
     public static final Integer INVALID = 3;
+    public static final Integer NOT_EFFECTIVE = 4;
 
     public static final Integer ONLINE_PAY_TYPE = 0;
     public static final Integer OFFLINE_PAY_TYPE = 1;

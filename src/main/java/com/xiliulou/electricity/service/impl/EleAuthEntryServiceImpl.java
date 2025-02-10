@@ -57,7 +57,12 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         }
         return eleAuthEntry;
     }
-
+    
+    @Slave
+    @Override
+    public List<EleAuthEntry> listByIdentifies(Integer tenantId, List<Integer> identifies) {
+        return eleAuthEntryMapper.selectListByIdentifies(tenantId, identifies);
+    }
 
     @Override
     public R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList) {
@@ -139,7 +144,12 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         eleAuthEntry.setType("file");
         eleAuthEntry.setIdentify(EleAuthEntry.ID_SELF_PHOTO);
         eleAuthEntryMapper.insert(eleAuthEntry);
-
+    
+        //紧急联系人
+        eleAuthEntry.setName("紧急联系人");
+        eleAuthEntry.setType("input");
+        eleAuthEntry.setIdentify(EleAuthEntry.ID_EMERGENCY_CONTACT);
+        eleAuthEntryMapper.insert(eleAuthEntry);
     }
 
     /**

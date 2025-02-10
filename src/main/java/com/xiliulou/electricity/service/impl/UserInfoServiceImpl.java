@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -140,6 +141,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
@@ -414,6 +416,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
+    
+    @Resource
+    private EmergencyContactService emergencyContactService;
     
     /**
      * 分页查询
@@ -902,7 +907,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("Query user member info error for car rental pro.", e);
             return null;
         });
-                
+        
         // 使用中订单是否可退
         Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, tenantId, carUserMemberInfoProDTO);
         // 待使用订单是否有可退套餐
@@ -1327,6 +1332,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 UserAuthMessage userAuthMessage = userAuthMessageService.selectLatestByUid(e.getUid());
                 userAuthInfoVo.setMsg(Objects.isNull(userAuthMessage) ? "" : userAuthMessage.getMsg());
             }
+    
+            // 紧急联系人
+            userAuthInfoVo.setEmergencyContactList(emergencyContactService.listVOByUid(e.getUid()));
             
             List<EleUserAuth> list = (List<EleUserAuth>) eleUserAuthService.selectCurrentEleAuthEntriesList(e.getUid())
                     .getData();
@@ -2148,8 +2156,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             
         }
-        
-        threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));
+
+        threadPool.execute(() -> {
+            userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid());
+            // 保险转换
+            List<InsuranceUserInfo> list = insuranceUserInfoService.listByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(list)) {
+                log.warn("Current User Not HaveInsurance, uid is {}", userInfo.getUid());
+                return;
+            }
+            list.stream().forEach(e->{
+                insuranceUserInfoService.userInsuranceExpireAutoConvert(e);
+            });
+        });
+
         
         return Triple.of(true, "", userInfoResult);
     }
@@ -2336,7 +2356,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
         }
         
-        threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid()));
+        threadPool.execute(() -> {
+            userBatteryMemberCardPackageService.batteryMembercardTransform(userInfo.getUid());
+            // 保险转换
+            List<InsuranceUserInfo> list = insuranceUserInfoService.listByUid(userInfo.getUid());
+            if (CollUtil.isEmpty(list)) {
+                log.warn("Current User Not HaveInsurance, uid is {}", userInfo.getUid());
+                return;
+            }
+            list.stream().forEach(e->{
+                insuranceUserInfoService.userInsuranceExpireAutoConvert(e);
+            });
+        });
         
         return Triple.of(true, "", userInfoResult);
     }
@@ -2571,6 +2602,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
         vo.setEleLimit(
                 Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
+    
+        // 紧急联系人
+        vo.setEmergencyContactList(emergencyContactService.listVOByUid(uid));
         
         return R.ok(vo);
     }
@@ -3759,7 +3793,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             // 判断是否缴纳押金
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (!(Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
-                    || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode()))) {
+                    || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) || Objects.isNull(userBatteryDeposit)) {
                 log.warn("user bind battery warn! not pay deposit! uid={} ", userInfo.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }

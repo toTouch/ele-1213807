@@ -2,13 +2,11 @@ package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
-import com.xiliulou.electricity.vo.merchant.MerchantQrCodeVO;
-import com.xiliulou.electricity.vo.merchant.MerchantUserVO;
-import com.xiliulou.electricity.vo.merchant.MerchantVO;
+import com.xiliulou.electricity.vo.merchant.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -69,4 +67,8 @@ public interface MerchantService {
     Pair<Boolean, Object> unbindOpenId(MerchantUnbindReq params);
     
     List<Merchant> listByEnterpriseList(List<Long> enterpriseIdList);
+
+    Integer countOverdueUserTotal(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
+
+    List<MerchantJoinUserVO> listOverdueUserByPage(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
 }

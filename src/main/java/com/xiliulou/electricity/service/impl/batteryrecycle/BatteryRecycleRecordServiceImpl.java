@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord;
 import com.xiliulou.electricity.enums.batteryrecycle.BatteryRecycleStatusEnum;
 import com.xiliulou.electricity.mapper.batteryrecycle.BatteryRecycleRecordMapper;
 import com.xiliulou.electricity.query.batteryRecycle.BatteryRecycleQueryModel;
+import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleCancelRequest;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleSaveOrUpdateRequest;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecyclePageRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -25,6 +26,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.batteryRecycle.BatteryRecycleRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.vo.recycle.BatteryRecycleCancelResultVO;
 import com.xiliulou.electricity.vo.recycle.BatteryRecycleSaveResultVO;
 import com.xiliulou.electricity.vo.recycle.BatteryRecycleVO;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +38,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -220,7 +217,57 @@ public class BatteryRecycleRecordServiceImpl implements BatteryRecycleRecordServ
     public Integer updateById(BatteryRecycleRecord batteryRecycleRecord) {
         return batteryRecycleRecordMapper.updateById(batteryRecycleRecord);
     }
-    
+
+    /**
+     * 取消回收电池
+     * @param request
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> cancel(BatteryRecycleCancelRequest request, List<BatteryRecycleRecord> batteryRecycleRecords) {
+        BatteryRecycleCancelResultVO batteryRecycleCancelResultVO = new BatteryRecycleCancelResultVO();
+
+        // 根据电池编号查询是否存在已录入的电池记录
+        if (ObjectUtils.isEmpty(batteryRecycleRecords)) {
+            batteryRecycleCancelResultVO.setFailBatterySnList(request.getBatterySnList());
+            batteryRecycleCancelResultVO.setFailCount(request.getBatterySnList().size());
+            batteryRecycleCancelResultVO.setSuccessCount(NumberConstant.ZERO);
+
+            log.info("battery recycle cancel info! battery is not exists batter req:{}", request);
+            return Triple.of(true, "", batteryRecycleCancelResultVO);
+        }
+
+        Set<String> existsSnList = new HashSet<>();
+        List<Long> idList = new ArrayList<>();
+        batteryRecycleRecords.stream().forEach(item -> {
+            existsSnList.add(item.getSn());
+            idList.add(item.getId());
+        });
+
+        Set<String> notExistsSnList = new HashSet<>();
+        // 判断数量是否一致
+        if (existsSnList.size() != request.getBatterySnList().size()) {
+            // 对比出不同的电池sn
+            notExistsSnList = request.getBatterySnList().stream().filter(sn -> !existsSnList.contains(sn)).collect(Collectors.toSet());
+        }
+
+        // 修改记录为取消
+        batteryRecycleRecordMapper.batchUpdateStatusByIdList(idList, BatteryRecycleStatusEnum.CANCEL.getCode(), System.currentTimeMillis());
+
+        batteryRecycleCancelResultVO.setFailCount(notExistsSnList.size());
+        batteryRecycleCancelResultVO.setFailBatterySnList(notExistsSnList);
+        batteryRecycleCancelResultVO.setSuccessCount(existsSnList.size());
+
+        return Triple.of(true, "", batteryRecycleCancelResultVO);
+    }
+
+    @Slave
+    @Override
+    public List<BatteryRecycleRecord> listBySnList(BatteryRecycleCancelRequest request) {
+        return batteryRecycleRecordMapper.listBySnList(request.getBatterySnList(), request.getTenantId(),
+                request.getFranchiseeIdList(), BatteryRecycleStatusEnum.INIT.getCode());
+    }
+
     private List<ElectricityBattery> checkBatterySnList(List<String> batterySnList, Integer tenantId, List<Long> bindFranchiseeIdList) {
         if (batterySnList.size() > 2000) {
             List<List<String>> partition = ListUtils.partition(batterySnList, 2000);

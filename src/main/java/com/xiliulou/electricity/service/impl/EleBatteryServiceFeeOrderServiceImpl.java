@@ -200,21 +200,21 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     
     @Override
     public void membercardExpireGenerateServiceFeeOrder(String s) {
-        int offset = 0;
-        int size = 200;
-        
         List<Integer> tenantIds = null;
         if (StringUtils.isNotBlank(s)) {
             tenantIds = JsonUtil.fromJsonArray(s, Integer.class);
         }
-        
+
+        Long userBatteryMemberCardId = 0L;
+        int size = 200;
         while (true) {
-            //            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableList(offset, size);
-            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableListByTenantIds(offset, size, tenantIds);
+            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableListByTenantIds(userBatteryMemberCardId, size, tenantIds);
             if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
                 return;
             }
-            
+
+            userBatteryMemberCardId = userBatteryMemberCardList.get(userBatteryMemberCardList.size() - 1).getId();
+
             userBatteryMemberCardList.parallelStream().forEach(item -> {
                 
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
@@ -280,8 +280,6 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             });
-            
-            offset += size;
         }
     }
     

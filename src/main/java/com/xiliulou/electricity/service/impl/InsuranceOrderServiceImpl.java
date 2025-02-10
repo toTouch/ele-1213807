@@ -553,5 +553,16 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         });
         return insuranceOrderVOList;
     }
-    
+
+
+    @Override
+    public InsuranceOrder queryByUid(Long uid, Integer type,Integer status) {
+        return insuranceOrderMapper.selectByUid(uid, type, status);
+    }
+
+
+    @Override
+    public List<InsuranceOrder> queryByUid(Long uid, Integer type) {
+        return insuranceOrderMapper.selectListByUid(uid, type);
+    }
 }
