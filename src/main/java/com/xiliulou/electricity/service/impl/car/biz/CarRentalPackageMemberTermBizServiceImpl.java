@@ -721,7 +721,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                 .usingPackageCarModelMap(usingPackageCarModelMap).userCarMap(userCarMap).userLateFeeMap(userLateFeeMap).build();
     }
     @Override
-    public UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO) {
+    public UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO,
+            Map<Long, Boolean> usingRefundMap, Map<Long, Boolean> noUsingRefundMap) {
         if (Objects.isNull(carUserMemberInfoProDTO)) {
             log.warn("carUserMemberInfoProDTO is null, uid={}, uidList={}, carUserMemberInfoProDTO={}", uid, uidList, carUserMemberInfoProDTO);
             return null;
@@ -820,8 +821,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             lateFeeAmount = userLateFeeMap.get(uid);
         }
     
-        return buildUserMemberInfoVo(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity, depositPayEntity, carModelEntity, carEntity,
-                franchiseeEntity, storeEntity, rentalPackageEntityFlag, lateFeeAmount);
+        return buildUserMemberInfoVoForPro(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity, depositPayEntity, carModelEntity, carEntity,
+                franchiseeEntity, storeEntity, rentalPackageEntityFlag, lateFeeAmount, usingRefundMap, noUsingRefundMap);
     }
     
     /**
@@ -899,6 +900,103 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             }
         } else {
             userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+        }
+        
+        // 押金缴纳订单信息
+        if (ObjectUtils.isNotEmpty(depositPayEntity)) {
+            CarRentalPackageDepositPayVo carRentalPackageDepositPay = new CarRentalPackageDepositPayVo();
+            BeanUtils.copyProperties(depositPayEntity, carRentalPackageDepositPay);
+            userMemberInfoVo.setCarRentalPackageDepositPay(carRentalPackageDepositPay);
+        }
+        
+        // 车辆信息
+        if (ObjectUtils.isNotEmpty(carEntity)) {
+            CarVo car = new CarVo();
+            car.setCarSn(carEntity.getSn());
+            car.setCarModelName(carEntity.getModel());
+            userMemberInfoVo.setCar(car);
+        }
+        
+        return userMemberInfoVo;
+        
+    }
+    
+    private UserMemberInfoVo buildUserMemberInfoVoForPro(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackagePo rentalPackageEntity,
+            List<BatteryModel> batteryModelEntityList, CarRentalPackageOrderPo rentalPackageOrderEntity, CarRentalPackageDepositPayPo depositPayEntity,
+            ElectricityCarModel carModelEntity, ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity, boolean rentalPackageEntityFlag, BigDecimal lateFeeAmount,
+            Map<Long, Boolean> usingRefundMap, Map<Long, Boolean> noUsingRefundMap) {
+        
+        UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
+        userMemberInfoVo.setType(memberTermEntity.getRentalPackageType());
+        userMemberInfoVo.setDueTime(memberTermEntity.getDueTime());
+        userMemberInfoVo.setDueTimeTotal(memberTermEntity.getDueTimeTotal());
+        userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        userMemberInfoVo.setStatus(memberTermEntity.getStatus());
+        if (Objects.nonNull(franchiseeEntity)) {
+            userMemberInfoVo.setFranchiseeId(franchiseeEntity.getId().intValue());
+            userMemberInfoVo.setFranchiseeName(franchiseeEntity.getName());
+        }
+        if (Objects.nonNull(storeEntity)) {
+            userMemberInfoVo.setStoreId(storeEntity.getId().intValue());
+            userMemberInfoVo.setStoreName(storeEntity.getName());
+        }
+        if (Objects.nonNull(carModelEntity)) {
+            userMemberInfoVo.setCarModelId(carModelEntity.getId());
+            userMemberInfoVo.setCarModelName(carModelEntity.getName());
+        }
+        userMemberInfoVo.setResidue(memberTermEntity.getResidue());
+        userMemberInfoVo.setLateFeeAmount(lateFeeAmount);
+        // 退租不退押，不显示套餐信息
+        if (rentalPackageEntityFlag && Objects.nonNull(rentalPackageEntity)) {
+            userMemberInfoVo.setRentalPackageId(rentalPackageEntity.getId());
+            userMemberInfoVo.setRentalPackageName(rentalPackageEntity.getName());
+        }
+        // 更改状态
+        if ((ObjectUtils.isNotEmpty(memberTermEntity.getDueTime()) && memberTermEntity.getDueTime() != 0L && memberTermEntity.getDueTime() <= System.currentTimeMillis()) || (
+                Objects.equals(memberTermEntity.getRentalPackageConfine(), RenalPackageConfineEnum.NUMBER.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getResidue())
+                        && memberTermEntity.getResidue() <= 0L)) {
+            userMemberInfoVo.setStatus(MemberTermStatusEnum.EXPIRE.getCode());
+        }
+        if (!CollectionUtils.isEmpty(batteryModelEntityList)) {
+            List<String> batteryVShortList = batteryModelEntityList.stream().map(BatteryModel::getBatteryVShort).collect(Collectors.toList());
+            userMemberInfoVo.setBatteryVShortList(batteryVShortList);
+        }
+        
+        // 套餐购买信息
+        if (ObjectUtils.isNotEmpty(rentalPackageOrderEntity)) {
+            CarRentalPackageOrderVo carRentalPackageOrder = new CarRentalPackageOrderVo();
+            BeanUtils.copyProperties(rentalPackageOrderEntity, carRentalPackageOrder);
+            userMemberInfoVo.setCarRentalPackageOrder(carRentalPackageOrder);
+            if (YesNoEnum.NO.getCode().equals(carRentalPackageOrder.getRentRebate()) || carRentalPackageOrder.getRentRebateEndTime() <= System.currentTimeMillis()) {
+                userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+            }
+            
+            // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
+            List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(rentalPackageOrderEntity.getOrderNo());
+            if (!CollectionUtils.isEmpty(userCoupons)) {
+                userCoupons.forEach(userCoupon -> {
+                    Integer status = userCoupon.getStatus();
+                    if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
+                        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+                    }
+                });
+            }
+        } else {
+            userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+        }
+    
+        Long uid = memberTermEntity.getUid();
+        // 当前订单不可退时，需要判断未使用套餐是否可退
+        if (!userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
+            if (MapUtils.isNotEmpty(noUsingRefundMap) && noUsingRefundMap.containsKey(uid)) {
+                userMemberInfoVo.setCarRentalPackageOrderRefundFlag(noUsingRefundMap.get(uid));
+            }
+        }
+        // 当前订单是否已失效/已退租
+        if (MapUtils.isNotEmpty(usingRefundMap) && usingRefundMap.containsKey(uid)) {
+            if (userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
+                userMemberInfoVo.setCarRentalPackageOrderRefundFlag(usingRefundMap.get(uid));
+            }
         }
         
         // 押金缴纳订单信息

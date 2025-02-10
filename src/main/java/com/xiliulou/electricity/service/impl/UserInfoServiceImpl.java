@@ -902,39 +902,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("Query user battery info error for car rental pro.", e);
             return null;
         });
-
-        // 查询用户全量信息
-        CarUserMemberInfoProDTO carUserMemberInfoProDTO = carRentalPackageMemberTermBizService.queryUserMemberInfoForProPreSelect(tenantId, uidList);
-        CompletableFuture<Void> queryUserMemberInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
-            item.setUserMemberInfoVo(carRentalPackageMemberTermBizService.queryUserMemberInfoForPro(tenantId, item.getUid(), uidList, carUserMemberInfoProDTO));
-        }), threadPoolPro).exceptionally(e -> {
-            log.error("Query user member info error for car rental pro.", e);
-            return null;
-        });
         
+        CarUserMemberInfoProDTO carUserMemberInfoProDTO = carRentalPackageMemberTermBizService.queryUserMemberInfoForProPreSelect(tenantId, uidList);
         // 使用中订单是否可退
         Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, carUserMemberInfoProDTO);
         // 待使用订单是否有可退套餐
         Map<Long, Boolean> noUsingRefundMap = getCarNoUsingOrderPro(uidList);
-        userCarRentalPackageVOList.forEach(item -> {
-            UserMemberInfoVo userMemberInfoVo = item.getUserMemberInfoVo();
-            if (Objects.nonNull(userMemberInfoVo)) {
-                // 当前订单不可退时，需要判断未使用套餐是否可退
-                if (!userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
-                    if (MapUtils.isNotEmpty(noUsingRefundMap) && noUsingRefundMap.containsKey(item.getUid())) {
-                        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(noUsingRefundMap.get(item.getUid()));
-                    }
-                }
-
-                // 当前订单是否已失效/已退租
-                if (MapUtils.isNotEmpty(usingRefundMap) && usingRefundMap.containsKey(item.getUid())) {
-                    if (userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
-                        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(usingRefundMap.get(item.getUid()));
-                    }
-                }
-            }
-        });
     
+        // 查询用户全量信息
+        CompletableFuture<Void> queryUserMemberInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
+            item.setUserMemberInfoVo(
+                    carRentalPackageMemberTermBizService.queryUserMemberInfoForPro(tenantId, item.getUid(), uidList, carUserMemberInfoProDTO, usingRefundMap, noUsingRefundMap));
+        }), threadPoolPro).exceptionally(e -> {
+            log.error("Query user member info error for car rental pro.", e);
+            return null;
+        });
+
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo, queryUserMemberInfo);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);

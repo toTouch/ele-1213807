@@ -7,6 +7,7 @@ import com.xiliulou.electricity.reqparam.opt.carpackage.MemberCurrPackageOptReq;
 import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 租车套餐会员期限业务聚合 Service
@@ -93,6 +94,7 @@ public interface CarRentalPackageMemberTermBizService {
     
     CarUserMemberInfoProDTO queryUserMemberInfoForProPreSelect(Integer tenantId, List<Long> uidList);
     
-    UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO);
+    UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO, Map<Long, Boolean> usingRefundMap,
+            Map<Long, Boolean> noUsingRefundMap);
     
 }
