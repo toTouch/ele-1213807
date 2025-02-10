@@ -269,7 +269,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     TtlXllThreadPoolExecutorServiceWrapper threadPoolPro = TtlXllThreadPoolExecutorsSupport.get(
             XllThreadPoolExecutors.newFixedThreadPool("PRO-USER-INFO-LIST-THREAD-POOL", 4, "pro-user-info-list-thread:"));
-    
+
     @Autowired
     ElectricityCarModelService electricityCarModelService;
     
@@ -362,7 +362,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private UserInfoExtraService userInfoExtraService;
-    
+
     @Autowired
     CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
@@ -389,10 +389,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
-    
+
     @Resource
     private EmergencyContactService emergencyContactService;
-    
+
     /**
      * 分页查询
      *
@@ -576,7 +576,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
                     }
                 }
-    
+
                 DetailsUserInfoProVO detailsUserInfoProVO = new DetailsUserInfoProVO();
                 detailsUserInfoProVO.setFranchiseeId(item.getFranchiseeId());
                 detailsUserInfoProVO.setStoreId(item.getStoreId());
@@ -712,6 +712,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
                 
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
+
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(item.getUid());
+                item.setRemark(Objects.isNull(userInfoExtra) ? null : userInfoExtra.getRemark());
             });
         }, threadPool).exceptionally(e -> {
             log.error("ELE ERROR! query user group info error!", e);
@@ -765,7 +768,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(userCarRentalPackageDOList)) {
             return R.ok(Collections.emptyList());
         }
-    
+
         List<String> ordersOn = userCarRentalPackageDOList.stream().map(UserCarRentalPackageDO::getDepositOrderNo).filter(StrUtil::isNotBlank).collect(Collectors.toList());
         // t_car_rental_package_deposit_pay
         Map<String, Integer> orderMapPayType = carRentalPackageDepositPayService.selectPayTypeByOrders(ordersOn);
@@ -774,7 +777,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         List<Long> uidList = new ArrayList<>(userCarRentalPackageDOList.size());
         List<UserOauthBindListQuery> userOauthBindListQueryList = new ArrayList<>(userCarRentalPackageDOList.size());
         Integer tenantId = TenantContextHolder.getTenantId();
-    
+
         for (UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList) {
             UserCarRentalPackageProVO userCarRentalPackageVO = new UserCarRentalPackageProVO();
             BeanUtils.copyProperties(userCarRentalPackageDO, userCarRentalPackageVO);
@@ -785,26 +788,26 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             } else if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(userCarRentalPackageDO.getPackageType())) {
                 userCarRentalPackageVO.setDepositStatus(convertCarBatteryDepositStatus(userCarRentalPackageDO.getCarBatteryDepositStatus()));
             }
-        
+
             if (orderMapPayType.containsKey(userCarRentalPackageDO.getDepositOrderNo()) && orderMapPayType.get(userCarRentalPackageDO.getDepositOrderNo()) == 3) {
                 userCarRentalPackageVO.setDepositStatus(FREE_OF_CHARGE);
             }
-        
+
             if (MemberTermStatusEnum.FREEZE.getCode().equals(userCarRentalPackageDO.getPackageStatus())) {
                 userCarRentalPackageVO.setPackageFreezeStatus(CarRentalPackageStatusVOEnum.CAR_PACKAGE_FROZEN.getCode());
             } else {
                 userCarRentalPackageVO.setPackageFreezeStatus(CarRentalPackageStatusVOEnum.CAR_PACKAGE_UN_FROZEN.getCode());
             }
-        
+
             userCarRentalPackageVOList.add(userCarRentalPackageVO);
-        
+
             Long uid = userCarRentalPackageDO.getUid();
             uidList.add(uid);
-        
+
             UserOauthBindListQuery query = UserOauthBindListQuery.builder().phone(userCarRentalPackageDO.getPhone()).uid(uid).build();
             userOauthBindListQueryList.add(query);
         }
-    
+
         // 查询认证信息
         Map<Long, List<UserOauthBind>> userOauthMap = null;
         if (CollectionUtils.isNotEmpty(userOauthBindListQueryList)) {
@@ -813,25 +816,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userOauthMap = userOauthBinds.stream().collect(Collectors.groupingBy(UserOauthBind::getUid));
             }
         }
-    
+
         // 获取用户电池相关信息
         Map<Long, ElectricityBattery> userBatteryMap = electricityBatteryService.listUserBatteryByUidList(uidList, tenantId);
-    
+
         Map<Long, List<UserOauthBind>> finalUserOauthMap = userOauthMap;
         CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
             Long uid = item.getUid();
-        
+
             // 获取用户电池信息
             if (MapUtils.isNotEmpty(userBatteryMap) && userBatteryMap.containsKey(uid)) {
                 ElectricityBattery electricityBattery = userBatteryMap.get(uid);
                 item.setBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
                 item.setBatteryModel(Objects.isNull(electricityBattery) ? "" : electricityBattery.getModel());
             }
-        
+
             // 获取用户所属加盟商
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-        
+
             // 用户所属门店
             UserInfo userInfo = queryByUidFromCache(uid);
             if (Objects.nonNull(userInfo.getStoreId())) {
@@ -839,13 +842,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
                 item.setStoreName(Objects.isNull(store) ? "" : store.getName());
             }
-        
+
             // 套餐信息
             CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(item.getPackageId());
             if (Objects.nonNull(carRentalPackagePo)) {
                 item.setPackageName(carRentalPackagePo.getName());
             }
-        
+
             UserBasicInfoCarProVO basicInfo = new UserBasicInfoCarProVO();
             basicInfo.setUid(uid);
             basicInfo.setPhone(item.getPhone());
@@ -865,16 +868,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                             this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
                 }
             }
-        
+
             item.setBasicInfo(basicInfo);
         }), threadPoolPro).exceptionally(e -> {
             log.error("Query user battery info error for car rental pro.", e);
             return null;
         });
-    
+
         // 查询用户全量信息
         userCarRentalPackageVOList.forEach(item -> item.setUserMemberInfoVo(carRentalPackageMemberTermBizService.queryUserMemberInfo(tenantId, item.getUid())));
-    
+
         // 使用中订单是否可退
         Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, tenantId);
         // 待使用订单是否有可退套餐
@@ -888,7 +891,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         userMemberInfoVo.setCarRentalPackageOrderRefundFlag(noUsingRefundMap.get(item.getUid()));
                     }
                 }
-                
+
                 // 当前订单是否已失效/已退租
                 if (MapUtils.isNotEmpty(usingRefundMap) && usingRefundMap.containsKey(item.getUid())) {
                     if (userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
@@ -897,17 +900,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             }
         });
-    
+
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("Data summary browsing error for car rental pro.", e);
         }
-    
+
         return R.ok(userCarRentalPackageVOList);
     }
-    
+
     /**
      * 当前订单是否已失效/已退租
      */
@@ -915,27 +918,27 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (CollectionUtils.isEmpty(uidList)) {
             return null;
         }
-        
+
         List<String> orderNoList = new ArrayList<>();
         uidList.forEach(uid -> {
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (Objects.isNull(memberTermEntity)) {
                 return;
             }
-    
+
             orderNoList.add(memberTermEntity.getRentalPackageOrderNo());
         });
-        
-        
+
+
         if (CollectionUtils.isEmpty(orderNoList)) {
             return null;
         }
-    
+
         List<CarRentalPackageOrderPo> packageOrderPoList = carRentalPackageOrderService.queryListByOrderNo(tenantId, orderNoList);
         if (CollectionUtils.isEmpty(packageOrderPoList)) {
             return null;
         }
-    
+
         Map<Long, Boolean> usingRentRefundFlagMap = new HashMap<>();
         packageOrderPoList.forEach(item -> {
             Integer useState = item.getUseState();
@@ -945,39 +948,39 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 usingRentRefundFlagMap.put(item.getUid(), false);
             }
         });
-        
+
         return usingRentRefundFlagMap;
     }
-    
+
     private Map<Long, Boolean> getCarNoUsingOrderPro(List<Long> uidList) {
         if (CollectionUtils.isEmpty(uidList)) {
             return null;
         }
-        
+
         List<CarRentalPackageOrderPo> noUseOrderList = carRentalPackageOrderService.listByUidAndUseStatus(uidList, UseStateEnum.UN_USED.getCode());
-    
+
         Map<Long, List<CarRentalPackageOrderPo>> noUsingMap = noUseOrderList.stream().collect(Collectors.groupingBy(CarRentalPackageOrderPo::getUid));
         if (MapUtils.isEmpty(noUsingMap)) {
             return null;
         }
-        
+
         Map<Long, Boolean> noUsingRefundMap = new HashMap<>();
         noUsingMap.forEach((uid, noUsingList) -> {
             boolean refundFlag = false;
             if (CollectionUtils.isEmpty(noUsingList)) {
                 return;
             }
-    
+
             for (CarRentalPackageOrderPo noUsing : noUsingList) {
                 if (Objects.isNull(noUsing.getRentalPackageId())) {
                     continue;
                 }
-    
+
                 CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(noUsing.getRentalPackageId());
                 if (Objects.isNull(carRentalPackagePo)) {
                     continue;
                 }
-        
+
                 if (Objects.equals(carRentalPackagePo.getRentRebate(), YesNoEnum.YES.getCode())) {
                     refundFlag = true;
                     break;
@@ -985,10 +988,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             noUsingRefundMap.put(uid, refundFlag);
         });
-    
+
         return noUsingRefundMap;
     }
-    
+
     /**
      * 将车店一体押金状态，从0-已缴纳 1-未缴纳 转换为 0-未缴纳 1-已缴纳
      *
@@ -1314,10 +1317,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 UserAuthMessage userAuthMessage = userAuthMessageService.selectLatestByUid(e.getUid());
                 userAuthInfoVo.setMsg(Objects.isNull(userAuthMessage) ? "" : userAuthMessage.getMsg());
             }
-    
+
             // 紧急联系人
             userAuthInfoVo.setEmergencyContactList(emergencyContactService.listVOByUid(e.getUid()));
-            
+
             List<EleUserAuth> list = (List<EleUserAuth>) eleUserAuthService.selectCurrentEleAuthEntriesList(e.getUid())
                     .getData();
             if (!DataUtil.collectionIsUsable(list)) {
@@ -2580,14 +2583,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setInviterName(queryFinalInviterUserName(uid));
         // 邀请人来源
         vo.setInviterSource(inviterSource);
+
         // 是否限制换电套餐购买次数
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
         vo.setEleLimit(
                 Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
-    
         // 紧急联系人
         vo.setEmergencyContactList(emergencyContactService.listVOByUid(uid));
-        
+        vo.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
         return R.ok(vo);
     }
     
@@ -3257,7 +3260,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
                     item.setEnterpriseName(enterpriseChannelUserVO.getEnterpriseName());
                 }
-                
+
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(item.getUid());
+                item.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
+
                 threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));
             });
         }, threadPool).exceptionally(e -> {
@@ -3338,17 +3344,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(userEleInfoVOS)) {
             return R.ok(Collections.emptyList());
         }
-    
+
         Integer tenantId = TenantContextHolder.getTenantId();
         List<Long> uidList = new ArrayList<>(userEleInfoVOS.size());
         List<UserBatteryMemberCard> userBatteryMemberCardList = new ArrayList<>(userEleInfoVOS.size());
         List<UserBatteryDeposit> userBatteryDepositList = new ArrayList<>(userEleInfoVOS.size());
         List<UserOauthBindListQuery> userOauthBindListQueryList = new ArrayList<>(userEleInfoVOS.size());
-    
+
         // 封装用户列表
         List<UserEleInfoProVO> userInfoList = userEleInfoVOS.stream().map(item -> {
             Long uid = item.getUid();
-    
+
             UserEleInfoProVO eleInfoProVO = UserEleInfoProVO.builder().uid(item.getUid()).name(item.getName()).phone(item.getPhone()).memberCardId(item.getMemberCardId())
                     .memberCardExpireTime(item.getMemberCardExpireTime()).remainingNumber(item.getRemainingNumber()).batteryDepositStatus(item.getBatteryDepositStatus())
                     .batteryRentStatus(item.getBatteryRentStatus()).usableStatus(item.getUsableStatus()).build();
@@ -3357,7 +3363,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 eleInfoProVO.setMemberCardName(batteryMemberCard.getName());
                 eleInfoProVO.setLimitCount(batteryMemberCard.getLimitCount());
             }
-        
+
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
             if (Objects.nonNull(userBatteryMemberCard)) {
                 userBatteryMemberCardList.add(userBatteryMemberCard);
@@ -3366,7 +3372,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.nonNull(userBatteryDeposit)) {
                 userBatteryDepositList.add(userBatteryDeposit);
             }
-        
+
             // 封装basicInfo
             UserBasicInfoEleProVO basicInfo = UserBasicInfoEleProVO.builder().name(item.getName()).phone(item.getPhone()).batteryDepositStatus(item.getBatteryDepositStatus())
                     .build();
@@ -3379,7 +3385,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     basicInfo.setModelType(franchisee.getModelType());
                 }
             }
-        
+
             if (Objects.nonNull(userInfo.getStoreId())) {
                 basicInfo.setStoreId(userInfo.getStoreId());
                 Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
@@ -3387,21 +3393,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     basicInfo.setStoreName(store.getName());
                 }
             }
-        
+
             EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(uid);
             if (Objects.nonNull(enterpriseChannelUserVO)) {
                 basicInfo.setEnterpriseChannelUserInfo(enterpriseChannelUserVO);
             }
-        
+
             eleInfoProVO.setBasicInfo(basicInfo);
-        
+
             uidList.add(uid);
             UserOauthBindListQuery query = UserOauthBindListQuery.builder().phone(item.getPhone()).uid(uid).build();
             userOauthBindListQueryList.add(query);
-        
+
             return eleInfoProVO;
         }).collect(Collectors.toList());
-    
+
         // 用户绑定的电池型号对应的短型号
         Map<Long, List<String>> userShortBatteryMap = userBatteryTypeService.listShortBatteryByUidList(uidList, tenantId);
         // 查询用户电池
@@ -3420,7 +3426,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (CollectionUtils.isNotEmpty(enterpriseChannelUserList)) {
             enterpriseChannelUserMap = enterpriseChannelUserList.stream().collect(Collectors.toMap(EnterpriseChannelUserVO::getUid, Function.identity(), (k1, k2) -> k1));
         }
-    
+
         // 查询用户电池、电池型号及当前套餐，滞纳金，认证信息
         Map<Long, List<UserOauthBind>> finalUserOauthMap = userOauthMap;
         Map<Long, EnterpriseChannelUserVO> finalEnterpriseChannelUserMap = enterpriseChannelUserMap;
@@ -3428,7 +3434,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfoList.forEach(item -> {
                 Long uid = item.getUid();
                 UserBasicInfoEleProVO basicInfo = item.getBasicInfo();
-            
+
                 item.setBatteryInfo(getEleBatteryInfoPro(item, userShortBatteryMap, userBatteryMap));
                 // 滞纳金
                 item.setBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(uid));
@@ -3452,7 +3458,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! query user battery info for pro error!", e);
             return null;
         });
-    
+
         // 押金是否可退
         Map<Long, UserBatteryDeposit> userBatteryDepositMap = null;
         Map<String, EleDepositOrder> eleDepositOrderMap = null;
@@ -3463,41 +3469,41 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDepositMap = userBatteryDepositList.stream().filter(o -> Objects.nonNull(o.getOrderId()))
                     .collect(Collectors.toMap(UserBatteryDeposit::getUid, Function.identity(), (item1, item2) -> item2));
             List<String> orderIdList = userBatteryDepositList.stream().map(UserBatteryDeposit::getOrderId).collect(Collectors.toList());
-        
+
             // 查询押金订单
             List<EleDepositOrder> eleDepositOrderList = eleDepositOrderService.listByOrderIdList(tenantId, orderIdList);
             if (CollectionUtils.isNotEmpty(eleDepositOrderList)) {
                 eleDepositOrderMap = eleDepositOrderList.stream().collect(Collectors.toMap(EleDepositOrder::getOrderId, Function.identity(), (k1, k2) -> k1));
             }
-        
+
             // 查询免押代扣金额
             orderPayTransAmtMap = freeDepositOrderService.selectPayTransAmtByOrderIdsToMap(orderIdList);
-        
+
             // 查询退押
             List<EleRefundOrder> eleRefundOrderList = eleRefundOrderService.listByOrderIdList(tenantId, orderIdList);
             if (CollectionUtils.isNotEmpty(eleRefundOrderList)) {
                 eleRefundOrderMap = eleRefundOrderList.stream().collect(Collectors.groupingBy(EleRefundOrder::getOrderId, Collectors.toList()));
             }
         }
-    
+
         Map<Long, UserBatteryDeposit> finalUserBatteryDepositMap = userBatteryDepositMap;
         Map<String, Double> finalOrderPayTransAmtMap = orderPayTransAmtMap;
         Map<String, EleDepositOrder> finalEleDepositOrderMap = eleDepositOrderMap;
         Map<String, List<EleRefundOrder>> finalEleRefundOrderMap = eleRefundOrderMap;
-    
+
         CompletableFuture<Void> queryDepositInfo = CompletableFuture.runAsync(() -> userInfoList.forEach(item -> item.setEleDepositRefund(
                         getEleDepositInfoPro(item, finalUserBatteryDepositMap, finalOrderPayTransAmtMap, finalEleDepositOrderMap, finalEleRefundOrderMap))), threadPoolPro)
                 .exceptionally(e -> {
                     log.error("ELE ERROR! query user deposit info for pro error!", e);
                     return null;
                 });
-    
+
         // 租金是否可退
         Map<Long, UserBatteryMemberCard> userBatteryMemberCardMap = null;
         Map<String, ElectricityMemberCardOrder> usingOrderMap = null;
         if (CollectionUtils.isNotEmpty(userBatteryMemberCardList)) {
             userBatteryMemberCardMap = userBatteryMemberCardList.stream().collect(Collectors.toMap(UserBatteryMemberCard::getUid, Function.identity(), (item1, item2) -> item2));
-        
+
             List<String> usingOrderIdList = userBatteryMemberCardList.stream().map(UserBatteryMemberCard::getOrderId).collect(Collectors.toList());
             List<ElectricityMemberCardOrder> usingOrderList = electricityMemberCardOrderService.queryListByOrderIds(usingOrderIdList);
             if (CollectionUtils.isNotEmpty(usingOrderList)) {
@@ -3506,56 +3512,56 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         // 待使用订单是否有可退套餐
         Map<Long, Boolean> noUsingRefundMap = getEleNoUsingOrderPro(uidList, tenantId);
-    
+
         Map<Long, UserBatteryMemberCard> finalUserBatteryMemberCardMap = userBatteryMemberCardMap;
         Map<String, ElectricityMemberCardOrder> finalUsingOrderMap = usingOrderMap;
-    
+
         CompletableFuture<Void> rentRefundInfo = CompletableFuture.runAsync(
                 () -> userInfoList.forEach(item -> item.setRentRefundFlag(getEleRentRefundFlagPro(item, finalUserBatteryMemberCardMap, finalUsingOrderMap, noUsingRefundMap))),
                 threadPoolPro).exceptionally(e -> {
             log.error("ELE ERROR! query user rentRefundFlag for pro error!", e);
             return null;
         });
-    
+
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryBatteryInfo, queryDepositInfo, rentRefundInfo);
-    
+
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-    
+
         return R.ok(userInfoList);
     }
-    
+
     private DetailsBatteryInfoProVO getEleBatteryInfoPro(UserEleInfoProVO userEleInfoProVO, Map<Long, List<String>> userShortBatteryMap,
             Map<Long, ElectricityBattery> userBatteryMap) {
         Long uid = userEleInfoProVO.getUid();
         DetailsBatteryInfoProVO detailsBatteryInfoProVO = DetailsBatteryInfoProVO.builder().memberCardId(userEleInfoProVO.getMemberCardId()).build();
-        
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.nonNull(userBatteryMemberCard)) {
             detailsBatteryInfoProVO.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
             detailsBatteryInfoProVO.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
         }
-        
+
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
         if (Objects.nonNull(userBatteryDeposit)) {
             detailsBatteryInfoProVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
         }
-        
+
         if (MapUtils.isNotEmpty(userShortBatteryMap) && userShortBatteryMap.containsKey(uid)) {
             detailsBatteryInfoProVO.setBatteryModels(userShortBatteryMap.get(uid));
         }
-        
+
         if (MapUtils.isNotEmpty(userBatteryMap) && userBatteryMap.containsKey(uid)) {
             ElectricityBattery electricityBattery = userBatteryMap.get(uid);
             detailsBatteryInfoProVO.setBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
         }
-        
+
         return detailsBatteryInfoProVO;
     }
-    
+
     private EleDepositRefundVO getEleDepositInfoPro(UserEleInfoProVO userEleInfoProVO, Map<Long, UserBatteryDeposit> finalUserBatteryDepositMap,
             Map<String, Double> finalOrderPayTransAmtMap, Map<String, EleDepositOrder> finalEleDepositOrderMap, Map<String, List<EleRefundOrder>> finalEleRefundOrderMap) {
         EleDepositRefundVO eleDepositRefundVO = new EleDepositRefundVO();
@@ -3565,25 +3571,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userEleInfoProVO.setEleDepositRefund(eleDepositRefundVO);
             return eleDepositRefundVO;
         }
-        
+
         UserBatteryDeposit userBatteryDeposit = finalUserBatteryDepositMap.get(uid);
         if (Objects.isNull(userBatteryDeposit) || Objects.isNull(userBatteryDeposit.getOrderId())) {
             eleDepositRefundVO.setRefundFlag(false);
             userEleInfoProVO.setEleDepositRefund(eleDepositRefundVO);
             return eleDepositRefundVO;
         }
-        
+
         String orderId = userBatteryDeposit.getOrderId();
         if (MapUtils.isNotEmpty(finalOrderPayTransAmtMap) && finalOrderPayTransAmtMap.containsKey(orderId)) {
             eleDepositRefundVO.setPayTransAmt(finalOrderPayTransAmtMap.get(orderId));
         }
-        
+
         if (MapUtils.isEmpty(finalEleDepositOrderMap) || !finalEleDepositOrderMap.containsKey(orderId)) {
             eleDepositRefundVO.setRefundFlag(false);
             userEleInfoProVO.setEleDepositRefund(eleDepositRefundVO);
             return eleDepositRefundVO;
         }
-        
+
         EleDepositOrder eleDepositOrder = finalEleDepositOrderMap.get(orderId);
         if (Objects.nonNull(eleDepositOrder)) {
             eleDepositRefundVO.setOrderId(eleDepositOrder.getOrderId());
@@ -3592,14 +3598,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             eleDepositRefundVO.setPayType(eleDepositOrder.getPayType());
             eleDepositRefundVO.setPayAmount(eleDepositOrder.getPayAmount());
         }
-        
+
         if (MapUtils.isNotEmpty(finalEleRefundOrderMap) && finalEleRefundOrderMap.containsKey(orderId)) {
             List<EleRefundOrder> eleRefundOrders = finalEleRefundOrderMap.get(orderId);
             if (CollectionUtils.isEmpty(eleRefundOrders)) {
                 userEleInfoProVO.setEleDepositRefund(eleDepositRefundVO);
                 return eleDepositRefundVO;
             }
-            
+
             if (eleRefundOrders.stream()
                     .anyMatch(o -> Objects.equals(o.getStatus(), EleRefundOrder.STATUS_SUCCESS) || Objects.equals(o.getStatus(), EleRefundOrder.STATUS_REFUND))) {
                 eleDepositRefundVO.setRefundFlag(false);
@@ -3607,17 +3613,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return eleDepositRefundVO;
             }
         }
-        
+
         eleDepositRefundVO.setRefundFlag(true);
-        
+
         return eleDepositRefundVO;
     }
-    
+
     private Boolean getEleRentRefundFlagPro(UserEleInfoProVO userEleInfoProVO, Map<Long, UserBatteryMemberCard> finalUserBatteryMemberCardMap,
             Map<String, ElectricityMemberCardOrder> finalUsingOrderMap, Map<Long, Boolean> noUsingRefundMap) {
         Long uid = userEleInfoProVO.getUid();
         boolean isRentRefund = false;
-        
+
         if (MapUtils.isNotEmpty(finalUserBatteryMemberCardMap) && finalUserBatteryMemberCardMap.containsKey(uid)) {
             UserBatteryMemberCard userBatteryMemberCard = finalUserBatteryMemberCardMap.get(uid);
             if (Objects.nonNull(userBatteryMemberCard)) {
@@ -3625,7 +3631,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (MapUtils.isNotEmpty(finalUsingOrderMap) && finalUsingOrderMap.containsKey(userBatteryMemberCard.getOrderId())) {
                     usingOrder = finalUsingOrderMap.get(userBatteryMemberCard.getOrderId());
                 }
-                
+
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                 if (Objects.nonNull(batteryMemberCard)) {
                     // 如果套餐未过期，且是可退套餐,且未过可退期，则可退
@@ -3638,45 +3644,45 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             }
         }
-        
+
         if (!isRentRefund) {
             if (MapUtils.isNotEmpty(noUsingRefundMap) && noUsingRefundMap.containsKey(uid)) {
                 isRentRefund = noUsingRefundMap.get(uid);
             }
         }
-        
+
         return isRentRefund;
     }
-    
+
     private Map<Long, Boolean> getEleNoUsingOrderPro(List<Long> uidList, Integer tenantId) {
         List<UserBatteryMemberCardPackageBO> noUsingOrderList = userBatteryMemberCardPackageService.listByUidList(uidList, tenantId);
         if (CollectionUtils.isEmpty(noUsingOrderList)) {
             return null;
         }
-        
+
         Map<Long, List<UserBatteryMemberCardPackageBO>> noUsingMap = noUsingOrderList.stream()
                 .collect(Collectors.groupingBy(UserBatteryMemberCardPackageBO::getUid, Collectors.toList()));
         if (MapUtils.isEmpty(noUsingMap)) {
             return null;
         }
-        
+
         Map<Long, Boolean> noUsingRefundMap = new HashMap<>();
         noUsingMap.forEach((uid, noUsingList) -> {
             boolean refundFlag = false;
             if (CollectionUtils.isEmpty(noUsingList)) {
                 return;
             }
-            
+
             for (UserBatteryMemberCardPackageBO noUsingBo : noUsingList) {
                 if (Objects.isNull(noUsingBo.getMemberCardId())) {
                     continue;
                 }
-                
+
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(noUsingBo.getMemberCardId());
                 if (Objects.isNull(batteryMemberCard)) {
                     continue;
                 }
-                
+
                 if (Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)) {
                     refundFlag = true;
                     break;
@@ -3684,10 +3690,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             noUsingRefundMap.put(uid, refundFlag);
         });
-        
+
         return noUsingRefundMap;
     }
-    
+
     @Override
     public void deleteCache(Long uid) {
         redisService.delete(CacheConstant.CACHE_USER_INFO + uid);
@@ -3907,6 +3913,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                             return R.fail("100327", "绑定电池异常!");
                         }
                     }
+                }
+
+                if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBindBattery(),
+                        ElectricityConfig.NOT_IS_BIND_BATTERY)) {
+                    return R.fail("402035", "运营商暂未开放此功能!");
                 }
                 
                 //修改按此套餐的次数

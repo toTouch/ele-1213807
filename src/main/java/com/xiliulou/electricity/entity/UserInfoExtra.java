@@ -89,4 +89,9 @@ public class UserInfoExtra {
      * 用户每月套餐冻结次数
      */
     private Integer packageFreezeCount;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }
