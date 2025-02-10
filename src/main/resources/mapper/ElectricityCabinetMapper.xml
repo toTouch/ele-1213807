@@ -6,154 +6,163 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
-        id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,power_type,
-        online_status, model_id, version, fully_charged, service_phone, business_time, create_time, pattern,
-        update_time, del_flag,tenant_id,store_id,franchisee_id, exchange_type,stock_status,warehouse_id,area_id,place_fee
-        from t_electricity_cabinet
-        where del_flag=0
+        c.id, c.name,c.sn, c.address, c.longitude, c.latitude, c.product_key, c.device_name, c.usable_status,c.power_type,
+        c.online_status, c.model_id, c.version, c.fully_charged, c.service_phone, c.business_time, c.create_time, c.pattern,
+        c.update_time, c.del_flag,c.tenant_id,c.store_id,c.franchisee_id, c.exchange_type,c.stock_status,c.warehouse_id,c.area_id,c.place_fee
+        from t_electricity_cabinet c
+        where c.del_flag=0
         <if test="query.name != null and query.name != ''">
-            and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+            and c.name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
         </if>
         <if test="query.address != null and query.address != ''">
-            and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+            and c.address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
         </if>
         <if test="query.usableStatus != null">
-            and usable_status = #{query.usableStatus}
+            and c.usable_status = #{query.usableStatus}
         </if>
         <if test="query.powerType != null">
-            and power_type = #{query.powerType}
+            and c.power_type = #{query.powerType}
         </if>
         <if test="query.id != null">
-            and id =#{query.id}
+            and c.id =#{query.id}
         </if>
         <if test="query.idList != null and query.idList.size() > 0">
-            and id in
+            and c.id in
             <foreach collection="query.idList" item="id" close=")" open="(" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test="query.onlineStatus != null">
-            and online_status = #{query.onlineStatus}
+            and c.online_status = #{query.onlineStatus}
         </if>
         <if test="query.stockStatus != null">
-            and stock_status = #{query.stockStatus}
+            and c.stock_status = #{query.stockStatus}
         </if>
         <if test="query.warehouseId != null">
-            and warehouse_id = #{query.warehouseId}
+            and c.warehouse_id = #{query.warehouseId}
         </if>
         <if test="query.tenantId != null ">
-            and tenant_id = #{query.tenantId}
+            and c.tenant_id = #{query.tenantId}
         </if>
         <if test="query.beginTime != null">
-            and create_time &gt;=#{query.beginTime}
+            and c.create_time &gt;=#{query.beginTime}
         </if>
         <if test="query.endTime != null">
-            and create_time &lt;=#{query.endTime}
+            and c.create_time &lt;=#{query.endTime}
         </if>
         <if test="query.eleIdList!=null and query.eleIdList!=''">
-            and id in
+            and c.id in
             <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         <if test=" query.franchiseeIdList != null and query.franchiseeIdList.size > 0 ">
-            AND `franchisee_id` IN
+            AND c.`franchisee_id` IN
             <foreach collection="query.franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
                 #{franchiseeId}
             </foreach>
         </if>
         <if test=" query.storeIdList != null and query.storeIdList.size > 0 ">
-            AND `store_id` IN
+            AND c.`store_id` IN
             <foreach collection="query.storeIdList" item="storeId" open="(" close=")" separator=",">
                 #{storeId}
             </foreach>
         </if>
         <if test="query.areaId != null">
-            and area_id = #{query.areaId}
+            and c.area_id = #{query.areaId}
         </if>
         <if test="query.productKey != null and query.productKey != ''">
-            and product_key = #{query.productKey}
+            and c.product_key = #{query.productKey}
         </if>
         <if test="query.deviceName != null and query.deviceName != ''">
-            and device_name = #{query.deviceName}
+            and c.device_name = #{query.deviceName}
         </if>
         <if test="query.sn != null and query.sn != ''">
-            and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+            and c.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
         <if test="query.franchiseeId != null">
-            AND `franchisee_id` = #{query.franchiseeId}
+            AND c.`franchisee_id` = #{query.franchiseeId}
         </if>
-
-        order by id desc
+        <if test="query.lockCellFlag != null">
+            and  exists (
+            select 1 from t_electricity_cabinet_box b where b.electricity_cabinet_id = c.id and b.usable_status = 1
+            )
+        </if>
+        order by c.id desc
         limit #{query.offset}, #{query.size}
     </select>
 
 	<select id="queryCount" resultType="java.lang.Integer">
 		select count(1)
-		from t_electricity_cabinet
-		where del_flag=0
+		from t_electricity_cabinet c
+		where c.del_flag=0
 		<if test="query.name != null and query.name != ''">
-			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+			and c.name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
 		</if>
 		<if test="query.address != null and query.address != ''">
-			and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+			and c.address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
 		</if>
         <if test="query.powerType != null">
-            and power_type = #{query.powerType}
+            and c.power_type = #{query.powerType}
         </if>
 		<if test="query.usableStatus != null">
-			and usable_status = #{query.usableStatus}
+			and c.usable_status = #{query.usableStatus}
 		</if>
 		<if test="query.onlineStatus != null">
-			and online_status = #{query.onlineStatus}
+			and c.online_status = #{query.onlineStatus}
 		</if>
         <if test="query.stockStatus != null">
-            and stock_status = #{query.stockStatus}
+            and c.stock_status = #{query.stockStatus}
         </if>
         <if test="query.warehouseId != null">
-            and warehouse_id = #{query.warehouseId}
+            and c.warehouse_id = #{query.warehouseId}
         </if>
         <if test="query.tenantId != null ">
-            and tenant_id = #{query.tenantId}
+            and c.tenant_id = #{query.tenantId}
         </if>
         <if test="query.beginTime != null">
-            and create_time &gt;=#{query.beginTime}
+            and c.create_time &gt;=#{query.beginTime}
         </if>
         <if test="query.endTime != null">
-            and create_time &lt;=#{query.endTime}
+            and c.create_time &lt;=#{query.endTime}
         </if>
         <if test="query.sn != null and query.sn != ''">
-            and sn like concat('%',#{query.sn, jdbcType=VARCHAR},'%')
+            and c.sn like concat('%',#{query.sn, jdbcType=VARCHAR},'%')
         </if>
         <if test="query.modelId != null">
-            and model_id = #{query.modelId}
+            and c.model_id = #{query.modelId}
         </if>
         <if test="query.areaId != null">
-            and area_id = #{query.areaId}
+            and c.area_id = #{query.areaId}
         </if>
         <if test="query.idList != null and query.idList.size() > 0">
-            and id in
+            and c.id in
             <foreach collection="query.idList" item="id" close=")" open="(" separator=",">
                 #{id}
             </foreach>
         </if>
 		<if test="query.eleIdList!=null and query.eleIdList!=''">
-			and id in
+			and c.id in
 			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
 				#{id}
 			</foreach>
 		</if>
         <if test="query.productKey != null and query.productKey != ''">
-            and product_key = #{query.productKey}
+            and c.product_key = #{query.productKey}
         </if>
         <if test="query.deviceName != null and query.deviceName != ''">
-            and device_name = #{query.deviceName}
+            and c.device_name = #{query.deviceName}
         </if>
         <if test="query.version != null and query.version != ''">
-            and version = #{query.version}
+            and c.version = #{query.version}
         </if>
         <if test="query.franchiseeId != null">
-            AND `franchisee_id` = #{query.franchiseeId}
+            AND c.`franchisee_id` = #{query.franchiseeId}
+        </if>
+        <if test="query.lockCellFlag != null">
+            and  exists (
+            select 1 from t_electricity_cabinet_box b where b.electricity_cabinet_id = c.id and b.usable_status = 1
+            )
         </if>
     </select>
 
@@ -556,6 +565,9 @@
         </if>
         <if test="areaId != null">
             and tec.area_id = #{areaId}
+        </if>
+        <if test="powerType != null ">
+            and tec.power_type = #{powerType}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -1019,6 +1031,9 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
+        <if test="powerType != null ">
+            and tec.power_type = #{powerType}
+        </if>
         <if test="areaId != null">
             and tec.area_id = #{areaId}
         </if>
@@ -1042,7 +1057,7 @@
     </select>
     
     <select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO">
-        select tec.id, tec.name, tec.address, tec.longitude, tec.latitude, tec.online_status, tece.battery_count_type
+        select tec.id, tec.name, tec.address, tec.longitude, tec.latitude, tec.online_status, tece.battery_count_type, tec.power_type
         from t_electricity_cabinet tec
         left join t_electricity_cabinet_extra tece on tece.eid=tec.id
         where tec.del_flag=0
@@ -1569,5 +1584,220 @@
         <include refid="pageFilter"/>
         order by id desc
         limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="selectListLowPowerPage" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select
+        any_value(tec.id) AS id,
+        any_value(tec.name) AS name,
+        any_value(tec.sn) AS sn,
+        any_value(tec.address) AS address,
+        any_value(tec.longitude) AS longitude,
+        any_value(tec.latitude) AS latitude,
+        any_value(tec.product_key) as product_key,
+        any_value(tec.device_name) as device_name,
+        any_value(tec.usable_status) AS usable_status,
+        any_value(tec.power_type) AS power_type,
+        any_value(tec.online_status) AS online_status,
+        any_value(tec.model_id) AS model_id,
+        any_value(tec.version) AS version,
+        any_value(tec.fully_charged) AS fully_charged,
+        any_value(tec.service_phone) AS service_phone,
+        any_value(tec.business_time) AS business_time,
+        any_value(tec.create_time) AS create_time,
+        any_value(tec.pattern) AS pattern,
+        any_value(tec.update_time) AS update_time,
+        any_value(tec.del_flag) AS del_flag,
+        any_value(tec.tenant_id) AS tenant_id,
+        any_value(tec.store_id) AS store_id,
+        any_value(tec.franchisee_id) as franchisee_id,
+        any_value(tec.exchange_type) as exchange_type,
+        any_value(tec.stock_status) AS stock_status,
+        any_value(tec.warehouse_id) AS warehouse_id,
+        any_value(tec.area_id) AS area_id,
+        any_value(tec.place_fee) AS place_fee
+
+        from t_electricity_cabinet_box ecb
+        LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
+        LEFT JOIN t_electricity_cabinet_extra tece ON tece.eid = tec.id
+
+        where
+        tec.tenant_id = #{tenantId}
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="areaId != null">
+            and tec.area_id = #{areaId}
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIdList != null and franchiseeIdList.size > 0 ">
+            AND tec.`franchisee_id` IN
+            <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test="storeIdList != null and storeIdList.size > 0 ">
+            AND tec.`store_id` IN
+            <foreach collection="storeIdList" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        <if test="franchiseeId != null">
+            AND tec.`franchisee_id` = #{franchiseeId}
+        </if>
+
+        <if test="stockStatus != null">
+            and tec.stock_status = #{stockStatus}
+        </if>
+        <if test="warehouseId != null">
+            and tec.warehouse_id = #{warehouseId}
+        </if>
+        <if test="productKey != null and productKey != ''">
+            and tec.product_key = #{productKey}
+        </if>
+        <if test="deviceName != null and deviceName != ''">
+            and tec.device_name = #{deviceName}
+        </if>
+        <if test="id != null">
+            and tec.id =#{id}
+        </if>
+        <if test="beginTime != null">
+            and tec.create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and tec.create_time &lt;=#{endTime}
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="powerType != null">
+            and tec.power_type = #{powerType}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="idList != null and idList.size() > 0">
+            and tec.id in
+            <foreach collection="query.idList" item="id" close=")" open="(" separator=",">
+                #{id}
+            </foreach>
+        </if>
+
+        <if test="batteryCountType != null">
+            and tece.battery_count_type = #{batteryCountType}
+        </if>
+        GROUP BY
+        ecb.electricity_cabinet_id
+        having del_flag=0
+        <if test="lowChargeRate != null">
+            and FLOOR(sum( status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &lt;= #{lowChargeRate}
+        </if>
+        <if test="fullChargeRate != null">
+            and FLOOR(sum( status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &gt;= #{fullChargeRate}
+        </if>
+
+        order by tec.id desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="countLowPowerTotal" resultType="java.lang.Integer">
+      select count(1) from (
+        select
+        any_value(tec.del_flag) del_flag
+        from t_electricity_cabinet_box ecb
+        LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
+        LEFT JOIN t_electricity_cabinet_extra tece ON tece.eid = tec.id
+
+        where
+        tec.tenant_id = #{tenantId}
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="areaId != null">
+            and tec.area_id = #{areaId}
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIdList != null and franchiseeIdList.size > 0 ">
+            AND tec.`franchisee_id` IN
+            <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test="storeIdList != null and storeIdList.size > 0 ">
+            AND tec.`store_id` IN
+            <foreach collection="storeIdList" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        <if test="franchiseeId != null">
+            AND tec.`franchisee_id` = #{franchiseeId}
+        </if>
+
+        <if test="stockStatus != null">
+            and tec.stock_status = #{stockStatus}
+        </if>
+        <if test="warehouseId != null">
+            and tec.warehouse_id = #{warehouseId}
+        </if>
+        <if test="productKey != null and productKey != ''">
+            and tec.product_key = #{productKey}
+        </if>
+        <if test="deviceName != null and deviceName != ''">
+            and tec.device_name = #{deviceName}
+        </if>
+        <if test="id != null">
+            and tec.id =#{id}
+        </if>
+        <if test="beginTime != null">
+            and tec.create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and tec.create_time &lt;=#{endTime}
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="powerType != null">
+            and tec.power_type = #{powerType}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="idList != null and idList.size() > 0">
+            and tec.id in
+            <foreach collection="query.idList" item="id" close=")" open="(" separator=",">
+                #{id}
+            </foreach>
+        </if>
+
+        <if test="batteryCountType != null">
+            and tece.battery_count_type = #{batteryCountType}
+        </if>
+        GROUP BY
+        ecb.electricity_cabinet_id
+        having del_flag=0
+        <if test="lowChargeRate != null">
+            and FLOOR(sum( ecb.status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &lt;= #{lowChargeRate}
+        </if>
+        <if test="fullChargeRate != null">
+            and FLOOR(sum( ecb.status = 0 ) * 100 / count( ecb.electricity_cabinet_id )) &gt;= #{fullChargeRate}
+        </if>
+        ) a
+
     </select>
 </mapper>

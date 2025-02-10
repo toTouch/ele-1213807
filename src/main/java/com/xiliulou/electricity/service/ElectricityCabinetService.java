@@ -290,4 +290,12 @@ public interface ElectricityCabinetService {
     R getQuickExchangeResult(String sessionId);
 
     R showInfoByDistanceV3(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listLowPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countFullPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
 }
