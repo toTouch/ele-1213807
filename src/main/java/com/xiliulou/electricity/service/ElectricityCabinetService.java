@@ -283,4 +283,12 @@ public interface ElectricityCabinetService {
 
 
     List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
+
+    R listLowPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countFullPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
 }

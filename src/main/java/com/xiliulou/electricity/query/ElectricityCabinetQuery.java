@@ -63,6 +63,8 @@ public class ElectricityCabinetQuery {
 
     private Long franchiseeId;
 
+    private Integer lockCellFlag;
+
     /**
      *电柜型号id
      */
