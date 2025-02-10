@@ -945,7 +945,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
                 // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
                 Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                Boolean everDel = userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), tenantId);
+                if ((oldUserFlag || everDel) && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
                     log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
                     throw new BizException("300005", "套餐不匹配");
                 }
@@ -2965,7 +2966,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
                 // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
                 Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                Boolean everDel = userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), tenantId);
+                if ((oldUserFlag || everDel) && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
                     log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
                     return R.fail("300005", "套餐不匹配");
                 }

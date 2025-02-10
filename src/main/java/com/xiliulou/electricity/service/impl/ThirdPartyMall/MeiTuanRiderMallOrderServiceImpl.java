@@ -46,7 +46,6 @@ import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallConfigSer
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ThirdMallConfigHolder;
@@ -260,8 +259,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     log.warn("MeiTuan order redeem fail! SystemGroup cannot purchase useInfoGroup memberCard, uid={}, mid={}", uid, memberCardId);
                     return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
-                
-                if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+    
+                Boolean oldUser = userInfoService.isOldUser(userInfo);
+                if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                     log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
                     return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }

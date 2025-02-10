@@ -126,6 +126,13 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
         executorWrapper.execute(() -> {
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, userInfo is null, uid={}", uid);
+                return;
+            }
+    
+            //未实名认证
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, user not auth, uid={}", uid);
                 return;
             }
         
@@ -133,42 +140,49 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
             String phone = userInfo.getPhone();
             String idNumber = userInfo.getIdNumber();
             if (StringUtils.isBlank(phone) && StringUtils.isBlank(idNumber)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, phone and idNumber is blank, uid={}", uid);
                 return;
             }
         
             // 判断用户是否曾被删除/注销过
             Boolean exists = this.existsByDelPhoneAndDelIdNumber(phone, idNumber, tenantId);
             if (!exists) {
+                log.warn("asyncRecoverUserInfoGroup after auth, never deleted, uid={}", uid);
                 return;
             }
         
             // 1.若当前uid已存在用户分组,则不恢复历史分组
             Integer existsGroup = userInfoGroupDetailService.existsByUid(uid);
             if (Objects.nonNull(existsGroup)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, exists Group, uid={}", uid);
                 return;
             }
         
             // 根据身份证号查询曾被删除过的uid
             Long delUid = userInfoService.queryDelUidByIdNumber(idNumber, tenantId);
             if (Objects.isNull(delUid)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, delUid is null, uid={}", uid);
                 return;
             }
         
             // 2.按加盟商查询最新分组信息（非退押的分组信息，因为退押后分组信息加盟商为0。 说明：用户可以绑定多个加盟商分组信息这个功能上线后，退押不再删除分组信息）
             List<UserInfoGroupDetailHistory> franchiseeHistoryList = userInfoGroupDetailHistoryService.listFranchiseeLatestHistory(delUid, tenantId);
             if (CollectionUtils.isEmpty(franchiseeHistoryList)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, list group by franchisee is empty, uid={}", uid);
                 return;
             }
     
             // 最新分组如果为空，则无需恢复
             franchiseeHistoryList = franchiseeHistoryList.stream().filter(h -> Objects.nonNull(h) && StringUtils.isNotBlank(h.getNewGroupIds())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(franchiseeHistoryList)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, franchiseeHistoryList is empty, uid={}", uid);
                 return;
             }
     
             Map<Long, String>franchiseeGroupIdMap = franchiseeHistoryList.stream()
                     .collect(Collectors.toMap(UserInfoGroupDetailHistory::getFranchiseeId, UserInfoGroupDetailHistory::getNewGroupIds, (item1, item2) -> item2));
             if (MapUtils.isEmpty(franchiseeGroupIdMap)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, franchiseeGroupIdMap is empty, uid={}", uid);
                 return;
             }
         

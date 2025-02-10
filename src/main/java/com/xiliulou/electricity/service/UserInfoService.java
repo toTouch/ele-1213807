@@ -220,4 +220,11 @@ public interface UserInfoService extends IService<UserInfo> {
      * 0-正常,1-已删除, 2-已注销
      */
     Integer queryUserDelStatus(Long uid);
+    
+    /**
+     * 满足下面条件之一，即为老用户：
+     *  1、根据uid查询，payCount>0的用户
+     *  2、根据手机号查询，曾被删除后又重新注册的用户（删除前payCount>0）
+     */
+    Boolean isOldUser(UserInfo userInfo);
 }

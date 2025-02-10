@@ -26,6 +26,7 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -95,6 +96,9 @@ public class JsonAdminUserInfoController extends BaseController {
     
     @Resource
     private UserInfoExtraService userInfoExtraService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     // 列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -276,6 +280,9 @@ public class JsonAdminUserInfoController extends BaseController {
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         log.info("handle activity after manual review success: {}", JsonUtil.toJson(activityProcessDTO));
         activityService.asyncProcessActivity(activityProcessDTO);
+    
+        // 老用户实名认证后,恢复用户历史分组
+        userDelRecordService.asyncRecoverUserInfoGroup(userInfo.getUid());
         
         return result;
     }

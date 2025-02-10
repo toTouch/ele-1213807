@@ -4182,7 +4182,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             
             // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+            if (isOldUser(userInfo) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                 log.warn(
                         "INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}",
                         userInfo.getUid(), batteryMemberCard.getId());
@@ -4413,5 +4413,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         return userStatus;
+    }
+    
+    @Override
+    public Boolean isOldUser(UserInfo userInfo) {
+        return userInfo.getPayCount() > 0 || userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
     }
 }
