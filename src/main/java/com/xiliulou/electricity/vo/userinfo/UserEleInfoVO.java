@@ -140,4 +140,7 @@ public class UserEleInfoVO {
      */
     private List<UserInfoGroupIdAndNameVO> groupList;
 
+
+    private String remark;
+
 }

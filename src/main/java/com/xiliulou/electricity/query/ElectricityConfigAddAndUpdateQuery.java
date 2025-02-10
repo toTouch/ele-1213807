@@ -254,6 +254,12 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否互通换电,默认是1关闭,0开启
      */
     private Integer isSwapExchange;
+
+
+    /**
+     * 是否绑定电池
+     */
+    private Integer isBindBattery;
 }
 
 
