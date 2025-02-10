@@ -281,9 +281,7 @@ public interface ElectricityCabinetService {
 
     R showInfoByDistanceV3(ElectricityCabinetQuery electricityCabinetQuery);
 
-
     List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
-
     R listLowPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
 
     R countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);

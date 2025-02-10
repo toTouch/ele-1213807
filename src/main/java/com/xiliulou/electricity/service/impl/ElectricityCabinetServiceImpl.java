@@ -5710,12 +5710,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
     }
 
-
-    @Override
-    public List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query) {
-        return electricityCabinetMapper.selectCabinetIdByFilter(query);
-    }
-
     @Override
     @Slave
     public R listLowPowerByPage(ElectricityCabinetQuery electricityCabinetQuery) {
@@ -5968,5 +5962,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             });
         }
+    }
+
+
+    @Override
+    public List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query) {
+        return electricityCabinetMapper.selectCabinetIdByFilter(query);
     }
 }
