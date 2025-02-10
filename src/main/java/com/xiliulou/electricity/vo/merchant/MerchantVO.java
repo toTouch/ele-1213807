@@ -128,6 +128,11 @@ public class MerchantVO {
      * 企业云豆总数
      */
     private BigDecimal totalCloudBeanAmount;
+
+    /**
+     * 逾期用户数量
+     */
+    private Integer overdueUserCount;
     
     /**
      * 创建时间

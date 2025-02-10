@@ -1437,6 +1437,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return enterpriseChannelUserMapper.existsRenewCloseUser(id);
     }
     
+    @Slave
+    @Override
+    public List<EnterpriseChannelUserVO> listByUidList(List<Long> uidList, Integer tenantId) {
+        return enterpriseChannelUserMapper.selectListByUidList(uidList, tenantId);
+    }
+    
     private Triple<Boolean, String, Object> channelUserAdminExitCheck(EnterpriseUserAdminExitCheckRequest request, EnterpriseChannelUser channelUser, Integer tenantId) {
         // 判断用户是否存在当前站长的企业内
         Long uid = request.getUid();

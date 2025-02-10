@@ -9,13 +9,16 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.request.userinfo.EleUserAuthRequest;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.ValidList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,7 +51,7 @@ public class JsonUserEleUserAuthController {
     
     //实名认证
     @PostMapping("/user/auth")
-    public R webAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
+    public R webAuth(@RequestBody @Validated ValidList<EleUserAuthRequest> eleUserAuthList) {
         if (!DataUtil.collectionIsUsable(eleUserAuthList)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -58,7 +61,7 @@ public class JsonUserEleUserAuthController {
         }
         
         //限频
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }

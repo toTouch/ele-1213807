@@ -140,6 +140,11 @@ public interface MqProducerConstant {
     String BATTERY_RECYCLE_TOPIC_NAME = "BATTERY_RECYCLE_TOPIC";
 
     /**
+     * 下发normal模式 结果监听topic
+     */
+    String CABINET_NORMAL_RESULT_TOPIC_NAME = "CABINET_NORMAL_RESULT_TOPIC";
+
+    /**
      * 免押tag
      */
     String FREE_DEPOSIT_TAG_NAME = "FREE_DEPOSIT_TAG";

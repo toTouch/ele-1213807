@@ -58,4 +58,6 @@ public interface UserBatteryDepositMapper extends BaseMapper<UserBatteryDeposit>
     int insertOrUpdate(UserBatteryDeposit userBatteryDeposit);
     
     Integer update(UserBatteryDeposit userBatteryDeposit);
+    
+    List<UserBatteryDeposit> selectListByUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
 }

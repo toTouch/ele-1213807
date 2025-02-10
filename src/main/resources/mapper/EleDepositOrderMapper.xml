@@ -547,6 +547,17 @@
             limit 1
     </select>
     
+    <select id="selectListByOrderIdList" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
+        select uid, order_id, status, order_type, pay_type, pay_amount
+        from t_ele_deposit_order
+        <where>
+            order_id in
+            <foreach collection="orderIdList" item="orderId" index="index" open="(" close=")" separator=",">
+                #{orderId}
+            </foreach>
+        </where>
+    </select>
+    
     <update id="updatePhoneByUid">
         update t_ele_deposit_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>

@@ -1490,4 +1490,15 @@
             </foreach>
         </if>
     </select>
+    
+    <select id="selectLUserBatteryByUidList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        select sn, model, create_time, uid
+        FROM t_electricity_battery
+        where del_flag = 0 and tenant_id = #{tenantId} and uid in
+        <foreach collection="uidList" item="uid" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
+
+
 </mapper>

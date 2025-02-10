@@ -54,4 +54,6 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
     List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(@Param("list") Collection<Long> ids);
     
     List<FranchiseeInsuranceOrderIdsVo> selectOrderIds(FranchiseeInsuranceQuery franchiseeInsuranceQuery);
+
+    FranchiseeInsurance selectByFranchiseeIdAndBatteryType(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("insuranceType") Integer insuranceType, @Param("batteryType") String batteryType, @Param("carModelId") Long carModelId);
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.request.userinfo.EleUserAuthRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public interface EleUserAuthService {
      */
     Integer update(EleUserAuth eleUserAuth);
 
-    R webAuth(List<EleUserAuth> eleUserAuthList);
+    R webAuth(List<EleUserAuthRequest> eleUserAuthList);
 
 
     R getEleUserAuthSpecificStatus(Long uid);
