@@ -263,6 +263,20 @@
         )
     </select>
     
+    <select id="selectListByOrders" resultType="com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo">
+        SELECT
+        <include refid="all_field"/>
+        FROM
+        <include refid="table_name"/>
+        <where>
+            `order_no` IN(
+            <foreach collection="orderNoList" item="item" separator=",">
+                #{item}
+            </foreach>
+            )
+        </where>
+    </select>
+    
     <!-- 条件新增 -->
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO

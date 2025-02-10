@@ -29,7 +29,35 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
+import com.xiliulou.electricity.entity.EleUserOperateHistory;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserAuthMessage;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -874,34 +902,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("Query user battery info error for car rental pro.", e);
             return null;
         });
-
-        // 查询用户全量信息
-        userCarRentalPackageVOList.forEach(item -> item.setUserMemberInfoVo(carRentalPackageMemberTermBizService.queryUserMemberInfo(tenantId, item.getUid())));
-
+        
+        CarUserMemberInfoProDTO carUserMemberInfoProDTO = carRentalPackageMemberTermBizService.queryUserMemberInfoForProPreSelect(tenantId, uidList);
         // 使用中订单是否可退
-        Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, tenantId);
+        Map<Long, Boolean> usingRefundMap = getUsingRentedOrderPro(uidList, carUserMemberInfoProDTO);
         // 待使用订单是否有可退套餐
         Map<Long, Boolean> noUsingRefundMap = getCarNoUsingOrderPro(uidList);
-        userCarRentalPackageVOList.forEach(item -> {
-            UserMemberInfoVo userMemberInfoVo = item.getUserMemberInfoVo();
-            if (Objects.nonNull(userMemberInfoVo)) {
-                // 当前订单不可退时，需要判断未使用套餐是否可退
-                if (!userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
-                    if (MapUtils.isNotEmpty(noUsingRefundMap) && noUsingRefundMap.containsKey(item.getUid())) {
-                        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(noUsingRefundMap.get(item.getUid()));
-                    }
-                }
-
-                // 当前订单是否已失效/已退租
-                if (MapUtils.isNotEmpty(usingRefundMap) && usingRefundMap.containsKey(item.getUid())) {
-                    if (userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
-                        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(usingRefundMap.get(item.getUid()));
-                    }
-                }
-            }
+    
+        // 查询用户全量信息
+        CompletableFuture<Void> queryUserMemberInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
+            item.setUserMemberInfoVo(
+                    carRentalPackageMemberTermBizService.queryUserMemberInfoForPro(tenantId, item.getUid(), uidList, carUserMemberInfoProDTO, usingRefundMap, noUsingRefundMap));
+        }), threadPoolPro).exceptionally(e -> {
+            log.error("Query user member info error for car rental pro.", e);
+            return null;
         });
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryUserBatteryInfo, queryUserMemberInfo);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -914,33 +931,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     /**
      * 当前订单是否已失效/已退租
      */
-    private Map<Long, Boolean> getUsingRentedOrderPro(List<Long> uidList, Integer tenantId) {
-        if (CollectionUtils.isEmpty(uidList)) {
+    private Map<Long, Boolean> getUsingRentedOrderPro(List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO) {
+        if (CollectionUtils.isEmpty(uidList) || Objects.isNull(carUserMemberInfoProDTO)) {
             return null;
         }
-
-        List<String> orderNoList = new ArrayList<>();
-        uidList.forEach(uid -> {
-            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-            if (Objects.isNull(memberTermEntity)) {
-                return;
-            }
-
-            orderNoList.add(memberTermEntity.getRentalPackageOrderNo());
-        });
-
-
-        if (CollectionUtils.isEmpty(orderNoList)) {
-            return null;
-        }
-
-        List<CarRentalPackageOrderPo> packageOrderPoList = carRentalPackageOrderService.queryListByOrderNo(tenantId, orderNoList);
-        if (CollectionUtils.isEmpty(packageOrderPoList)) {
+    
+        List<CarRentalPackageOrderPo> usingPackageOrderList = carUserMemberInfoProDTO.getUsingPackageOrderList();
+        if (CollectionUtils.isEmpty(usingPackageOrderList)) {
             return null;
         }
 
         Map<Long, Boolean> usingRentRefundFlagMap = new HashMap<>();
-        packageOrderPoList.forEach(item -> {
+        usingPackageOrderList.forEach(item -> {
             Integer useState = item.getUseState();
             if (Objects.equals(useState, UseStateEnum.IN_USE.getCode())) {
                 usingRentRefundFlagMap.put(item.getUid(), true);
@@ -948,7 +950,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 usingRentRefundFlagMap.put(item.getUid(), false);
             }
         });
-
+    
         return usingRentRefundFlagMap;
     }
 

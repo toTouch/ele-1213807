@@ -121,4 +121,6 @@ public interface CarRentalPackageOrderSlippageMapper {
      * @return 逾期订单信息
      */
     List<CarRentalPackageOrderSlippagePo> selectListByPackageOrderNosAndType(@Param("rentalPackageOrderNos")List<String> rentalPackageOrderNos, @Param("type")Integer type);
+    
+    List<CarRentalPackageOrderSlippagePo> selectListUnPayByByUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
 }

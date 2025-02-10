@@ -236,4 +236,10 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
             Integer type) {
         return carRentalPackageOrderSlippageMapper.selectListByPackageOrderNosAndType(rentalPackageOrderNos, type);
     }
+    
+    @Slave
+    @Override
+    public List<CarRentalPackageOrderSlippagePo> listUnPayByByUidList(Integer tenantId, List<Long> uidList) {
+        return carRentalPackageOrderSlippageMapper.selectListUnPayByByUidList(tenantId, uidList);
+    }
 }
