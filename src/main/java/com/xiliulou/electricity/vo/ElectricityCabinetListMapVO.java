@@ -69,4 +69,9 @@ public class ElectricityCabinetListMapVO {
      * 是否锁仓柜机：柜机中只要有一个仓被锁就算锁仓柜机
      */
     private Boolean isUnusable;
+
+    /**
+     * 柜机供电类型：0--市电，1--反向供电
+     */
+    private Integer powerType;
 }

@@ -281,6 +281,14 @@ public interface ElectricityCabinetService {
 
     R showInfoByDistanceV3(ElectricityCabinetQuery electricityCabinetQuery);
 
+    R listLowPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R countFullPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
 
     List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
 }

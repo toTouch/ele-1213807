@@ -145,5 +145,9 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     List<ElectricityCabinetVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
+    List<ElectricityCabinetVO> selectListLowPowerPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    Integer countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
     List<Integer> selectCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
 }
