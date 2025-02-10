@@ -1800,4 +1800,20 @@
         ) a
 
     </select>
+
+
+    <select id="selectCabinetIdByFilter" resultType="integer">
+        select id from t_electricity_cabinet
+        where del_flag=0
+        and tenant_id = #{tenantId}
+        <if test="name != null and '' != name">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and address like concat('%',#{address},'%')
+        </if>
+        <if test="areaId != null">
+            and area_id = #{areaId}
+        </if>
+    </select>
 </mapper>

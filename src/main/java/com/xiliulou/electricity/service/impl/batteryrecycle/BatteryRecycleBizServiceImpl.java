@@ -119,7 +119,7 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
     
                     // 修改锁仓原因
                     BoxOtherProperties boxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(electricityCabinetBox.getCellNo())
-                            .remark(batteryRecycleRecord.getRecycleReason()).lockReason(LockReasonEnum.OTHER.getCode()).build();
+                            .remark(batteryRecycleRecord.getRecycleReason()).lockReason(LockReasonEnum.OTHERS.getCode()).build();
                     boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
     
                     EleOuterCommandQuery eleOuterCommandQuery = new EleOuterCommandQuery();
