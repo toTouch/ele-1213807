@@ -1096,16 +1096,18 @@ public class UserServiceImpl implements UserService {
             userDelRecordService.updateStatusById(userDelRecord.getId(), UserStatusEnum.USER_STATUS_DELETED.getCode(), System.currentTimeMillis());
             return;
         }
-    
+        
         String delPhone = StringUtils.EMPTY;
         String delIdNumber = StringUtils.EMPTY;
+        // 注意：payCount=0时，delPhone=""、delIdNumber=""
         UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userRentInfo, tenantId);
         if (Objects.nonNull(remarkPhoneAndIdNumber)) {
             delPhone = remarkPhoneAndIdNumber.getDelPhone();
             delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
         }
         
-        userDelRecordService.insert(uid, delPhone, delIdNumber, UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
+        userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
+                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
     }
     
     @Override
