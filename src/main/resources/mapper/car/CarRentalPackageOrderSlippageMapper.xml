@@ -316,6 +316,20 @@
         </where>
     </select>
     
+    <select id="selectListUnPayByByUidList" resultType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo">
+        SELECT
+        <include refid="all_field"/>
+        FROM
+        <include refid="table_name"/>
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` in
+            <foreach collection="uidList" open="(" close=")" separator="," item="uid">
+                #{uid}
+            </foreach>
+            AND `pay_state` = 1 AND `del_flag` = 0
+        </where>
+    </select>
+    
     <!-- 条件新增 -->
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO

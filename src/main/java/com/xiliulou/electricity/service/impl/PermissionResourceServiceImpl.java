@@ -394,4 +394,10 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
         List<PermissionResource> permissionResources = permissionResourceMapper.queryListByRids(rids, type);
         return permissionResources;
     }
+
+    @Override
+    @Slave
+    public List<PermissionResource> listByIdList(List<Long> sourceIds) {
+        return permissionResourceMapper.queryListByIds(sourceIds);
+    }
 }

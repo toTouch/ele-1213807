@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * description:
@@ -135,6 +136,10 @@ public class JsonAdminProfitSharingReceiverConfigController extends AbstractFran
     public R details(@PathVariable(value = "id") Long id) {
         
         ProfitSharingReceiverConfigDetailsVO detailsVO = profitSharingReceiverConfigService.queryDetailsById(TenantContextHolder.getTenantId(), id);
+        
+        if(Objects.isNull(detailsVO)){
+            return R.ok(null);
+        }
         
         this.checkFranchiseeDataPermissionByFranchiseeId(detailsVO.getFranchiseeId());
         
