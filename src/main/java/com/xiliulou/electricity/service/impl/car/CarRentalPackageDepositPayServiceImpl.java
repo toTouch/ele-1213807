@@ -247,4 +247,10 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         }
         return list.stream().collect(Collectors.toMap(UserDepositPayTypeDO::getOrderNo, UserDepositPayTypeDO::getPayType,(k1,k2)->k1));
     }
+    
+    @Slave
+    @Override
+    public List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList) {
+        return carRentalPackageDepositPayMapper.selectListByOrders(tenantId, orderNoList);
+    }
 }

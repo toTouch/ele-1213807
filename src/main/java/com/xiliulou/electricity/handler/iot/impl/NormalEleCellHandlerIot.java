@@ -1,16 +1,20 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
+import com.xiliulou.electricity.enums.LockTypeEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.service.BoxOtherPropertiesService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 
@@ -37,6 +42,14 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     BoxOtherPropertiesService boxOtherPropertiesService;
+
+    @Resource
+    ElectricityCabinetBoxLockService boxLockService;
+
+
+    private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport.get(
+            XllThreadPoolExecutors.newFixedThreadPool("LOCK_BOX_CELL_EXECUTOR", 2, "lock-box-cell-executor"));
+
 
 
     @Override
@@ -117,6 +130,9 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             boxOtherProperties.setLockReason(eleCellVo.getLockReason());
             boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
             boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+
+            // 保存锁仓列表
+            saveLockBox(electricityCabinet, eleCellVo);
         }
         
         //启用格挡 移除格挡禁用原因
@@ -129,6 +145,53 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
             boxOtherProperties.setRemark(StringUtils.EMPTY);
             boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+
+            // 移除锁仓列表
+            removeLockBox(electricityCabinet.getId(), eleCellVo);
+        }
+    }
+
+    private void removeLockBox(Integer eid, EleCellVO eleCellVo) {
+        TtlTraceIdSupport.set(eleCellVo.getSessionId());
+        try {
+            serviceWrapper.execute(() -> {
+                boxLockService.updateElectricityCabinetBoxLock(eid, eleCellVo.getCell_no());
+            });
+        } catch (Exception e) {
+            log.error("removeLockBox Error! sessionId is {}", eleCellVo.getSessionId());
+        } finally {
+            TtlTraceIdSupport.clear();
+        }
+    }
+
+    private void saveLockBox(ElectricityCabinet electricityCabinet, EleCellVO eleCellVo) {
+        // 这里只保存锁仓类型为人工和系统的
+        TtlTraceIdSupport.set(eleCellVo.getSessionId());
+        try {
+            if (LockTypeEnum.lockTypeCodeByDefined(eleCellVo.getLockType())) {
+                serviceWrapper.execute(() -> {
+                    if (StrUtil.isEmpty(eleCellVo.getCell_no())) {
+                        log.error("SaveLockBox Error! cellNo is empty,sessionId is {}", eleCellVo.getSessionId());
+                        return;
+                    }
+                    if (Objects.isNull(eleCellVo.getLockReason())) {
+                        log.warn("SaveLockBox warn! lockReason is empty,sessionId is {}", eleCellVo.getSessionId());
+                        return;
+                    }
+                    ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(eleCellVo.getCell_no()))
+                            .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime())
+                             .sn(electricityCabinet.getSn())
+                             .createTime(System.currentTimeMillis())
+                            .deviceName(electricityCabinet.getDeviceName()).productKey(electricityCabinet.getProductKey())
+                            .updateTime(System.currentTimeMillis()).tenantId(electricityCabinet.getTenantId())
+                            .storeId(electricityCabinet.getStoreId()).franchiseeId(electricityCabinet.getFranchiseeId()).build();
+                    boxLockService.insertElectricityCabinetBoxLock(cabinetBoxLock);
+                });
+            }
+        } catch (Exception e) {
+            log.error("saveLockBox Error! sessionId is {}", eleCellVo.getSessionId());
+        } finally {
+            TtlTraceIdSupport.clear();
         }
     }
 
@@ -166,6 +229,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
          * 在位检测 1：打开 0：关闭
          */
         private Integer is_battery_exit;
+
+        private String sessionId;
     }
 }
 

@@ -11,6 +11,7 @@ import com.xiliulou.electricity.query.FaceidResultQuery;
 import com.xiliulou.electricity.query.UserCertifyInfoQuery;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.FaceidService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 
 /**
  * 人脸核身
@@ -41,6 +44,9 @@ public class JsonUserFaceidController extends BaseController {
     @Autowired
     ActivityService activityService;
     
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
     /**
      * 获取人脸核身token
      */
@@ -57,12 +63,16 @@ public class JsonUserFaceidController extends BaseController {
         Triple<Boolean, String, Object> result = faceidService.verifyEidResult(faceidResultQuery);
         
         //人脸核身成功后，异步触发活动处理流程
+        Long uid = SecurityUtils.getUid();
         ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
-        activityProcessDTO.setUid(SecurityUtils.getUid());
+        activityProcessDTO.setUid(uid);
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode());
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         log.info("handle activity after face id auth success: {}", JsonUtil.toJson(activityProcessDTO));
         activityService.asyncProcessActivity(activityProcessDTO);
+    
+        // 老用户实名认证后,恢复用户历史分组
+        userDelRecordService.asyncRecoverUserInfoGroup(uid);
         
         return returnTripleResult(result);
     }

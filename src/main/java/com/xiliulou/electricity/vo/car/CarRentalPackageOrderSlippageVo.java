@@ -159,4 +159,9 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      * 套餐过期保护期，单位:小时，0-24表示套餐过期滞纳金起算时间 (冻结滞纳金为null)
      */
     private Integer expiredProtectionTime;
+    
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
 }

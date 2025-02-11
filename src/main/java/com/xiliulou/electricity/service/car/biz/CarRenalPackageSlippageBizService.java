@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.car.biz;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 逾期业务聚合 BizService
@@ -34,5 +36,6 @@ public interface CarRenalPackageSlippageBizService {
      * @return true(存在)、false(不存在)
      */
     boolean isExitUnpaid(Integer tenantId, Long uid);
-
+    
+    Map<Long, BigDecimal> listCarPackageUnpaidAmountByUidList(Integer tenantId, List<Long> uidList);
 }

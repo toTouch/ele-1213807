@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.enums.SignStatusEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.userinfo.emergencyContact.EmergencyContactVO;
 import lombok.Data;
@@ -157,4 +158,13 @@ public class DetailsUserInfoVo {
      * 紧急联系人
      */
     private List<EmergencyContactVO> emergencyContactList;
+
+
+    private String remark;
+    
+    /**
+     * 用户状态：0-正常 1-已删除 2-已注销
+     * @see UserStatusEnum
+     */
+    private Integer userStatus;
 }

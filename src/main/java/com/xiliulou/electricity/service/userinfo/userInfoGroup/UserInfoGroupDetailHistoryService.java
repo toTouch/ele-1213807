@@ -20,4 +20,6 @@ public interface UserInfoGroupDetailHistoryService {
     Integer countTotal(UserInfoGroupDetailHistoryQuery query);
     
     Integer insertOne(UserInfoGroupDetailHistory detail);
+    
+    List<UserInfoGroupDetailHistory> listFranchiseeLatestHistory(Long uid, Integer tenantId);
 }

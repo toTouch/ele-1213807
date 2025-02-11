@@ -33,18 +33,23 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.FreezeTimeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * 逾期业务聚合 BizServiceImpl
@@ -335,5 +340,53 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         return carRentalPackageOrderSlippageService.isExitUnpaid(tenantId, uid);
+    }
+    
+    @Override
+    public Map<Long, BigDecimal> listCarPackageUnpaidAmountByUidList(Integer tenantId, List<Long> uidList) {
+        if (Objects.isNull(tenantId) || CollectionUtils.isEmpty(uidList)) {
+            return null;
+        }
+    
+        List<CarRentalPackageOrderSlippagePo> slippageEntityList = carRentalPackageOrderSlippageService.listUnPayByByUidList(tenantId, uidList);
+        if (CollectionUtils.isEmpty(slippageEntityList)) {
+            return null;
+        }
+    
+        Map<Long, List<CarRentalPackageOrderSlippagePo>> slippageEntityMap = slippageEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageOrderSlippagePo::getUid));
+        if (MapUtils.isEmpty(slippageEntityMap)) {
+            return null;
+        }
+    
+        Map<Long, BigDecimal> resultMap = new HashMap<>();
+    
+        slippageEntityMap.forEach((uid, slippageList) -> {
+            BigDecimal totalAmount = BigDecimal.ZERO;
+        
+            if (CollectionUtils.isEmpty(slippageList)) {
+                return;
+            }
+        
+            for (CarRentalPackageOrderSlippagePo slippageEntity : slippageList) {
+                long now = System.currentTimeMillis();
+                // 结束时间，不为空
+                if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {
+                    now = slippageEntity.getLateFeeEndTime();
+                }
+            
+                // 时间比对
+                long lateFeeStartTime = slippageEntity.getLateFeeStartTime();
+            
+                // 转换天
+                long diffDay = DateUtils.diffDay(lateFeeStartTime, now);
+                // 计算滞纳金金额
+                BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
+                totalAmount = totalAmount.add(amount);
+            }
+        
+            resultMap.put(uid, BigDecimal.ZERO.compareTo(totalAmount) == 0 ? null : totalAmount.setScale(2, RoundingMode.HALF_UP));
+        });
+    
+        return resultMap;
     }
 }

@@ -46,6 +46,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -145,6 +146,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
     @Resource
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Override
     @Slave
@@ -934,7 +938,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfoExtra)) {
-            log.warn("joinActivity  WARN! Not found userInfoExtra, joinUid={}", SecurityUtils.getUid());
+            log.warn("INVITATION ACTIVITY WARN! Not found userInfoExtra, joinUid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
         
@@ -942,6 +946,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, null, null);
         if (!canJoinActivity.isSuccess()) {
             return Triple.of(false, canJoinActivity.getErrCode(), canJoinActivity.getErrMsg());
+        }
+    
+        // 是否被删除过的老用户
+        if (userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId())) {
+            log.warn("INVITATION ACTIVITY WARN! The user ever deleted, joinUid={}, phone={}", SecurityUtils.getUid(), userInfo.getPhone());
+            return Triple.of(false, "120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
         }
         
         String decrypt = null;

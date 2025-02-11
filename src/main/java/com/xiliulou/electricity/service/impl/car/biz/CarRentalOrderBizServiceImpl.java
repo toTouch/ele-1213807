@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -27,6 +28,7 @@ import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.RentalTypeEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
@@ -47,7 +49,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
-import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
@@ -59,6 +61,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.CacheConstant.VEHICLE_BINDING_IDEMPOTENT_LOCK;
@@ -122,6 +125,9 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     
     @Resource
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     /**
      * 还车申请审批
@@ -705,6 +711,12 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
             //未实名认证
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 throw new BizException("ELECTRICITY.0041", "未实名认证");
+            }
+    
+            // 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
             }
             
             // 未缴纳押金

@@ -1105,4 +1105,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     public List<ElectricityCar> queryListByTenantIdAndUidList(Integer tenantId, List<Long> uidList) {
         return electricityCarMapper.selectListByTenantIdAndUidList(tenantId,uidList);
     }
+    
+    @Slave
+    @Override
+    public List<ElectricityCar> listNoDelByUidList(Integer tenantId, List<Long> uidList) {
+        return electricityCarMapper.selectListNoDelByUidList(tenantId, uidList);
+    }
+    
+    @Override
+    public List<ElectricityCar> listByUidList(List<Long> uidList, Integer userInfoDelFlag) {
+        return electricityCarMapper.selectListByUidList(uidList, userInfoDelFlag);
+    }
 }

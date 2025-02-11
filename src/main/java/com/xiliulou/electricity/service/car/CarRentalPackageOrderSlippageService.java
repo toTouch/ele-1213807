@@ -124,4 +124,6 @@ public interface CarRentalPackageOrderSlippageService {
      */
     List<CarRentalPackageOrderSlippagePo> queryListByPackageOrderNoAndType(List<String> rentalPackageOrderNos,
             Integer type);
+    
+    List<CarRentalPackageOrderSlippagePo> listUnPayByByUidList(Integer tenantId, List<Long> uidList);
 }

@@ -275,6 +275,11 @@ public class ElectricityConfig {
      * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
      */
     private Integer expiredProtectionTime;
+
+    /**
+     * 是否绑定电池
+     */
+    private Integer isBindBattery;
     
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
@@ -452,4 +457,12 @@ public class ElectricityConfig {
     public static Integer EXPIRED_PROTECTION_TIME_DEFAULT = 24;
     
     public static Integer FREEZE_COUNT_NOT_LIMIT = 0;
+
+
+    /**
+     * 是否绑定电池 0--开启，1--关闭
+     */
+    public static Integer IS_BIND_BATTERY = 0;
+
+    public static Integer NOT_IS_BIND_BATTERY = 1;
 }

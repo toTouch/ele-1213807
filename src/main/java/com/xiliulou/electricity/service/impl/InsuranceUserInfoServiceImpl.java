@@ -13,12 +13,14 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.query.InsuranceUserInfoQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -30,9 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -79,6 +79,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     
     @Autowired
     EleUserOperateRecordService eleUserOperateRecordService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Slave
     @Override
@@ -482,6 +485,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+        }
         
         if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY) && !Objects.equals(userInfo.getBatteryDepositStatus(),
                 UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -580,6 +589,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
         }
         
         InsuranceUserInfo insuranceUserInfo = selectByUidAndTypeFromCache(userInfo.getUid(), query.getType());
@@ -737,6 +752,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
         }
         
         if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY) && !Objects.equals(userInfo.getBatteryDepositStatus(),

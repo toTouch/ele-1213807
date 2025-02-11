@@ -939,7 +939,7 @@ public interface CacheConstant {
      * 标记电池缓存
      */
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
-    
+
     String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
 
     /**
@@ -952,5 +952,8 @@ public interface CacheConstant {
      */
     String REBATE_CONSUMER_MODIFY_LOCK_KEY = "REBATE_CONSUMER_MODIFY_LOCK_KEY:%s";
 
+
+
+    String LOCK_CELL_ENABLE_KEY = "lock_cell_enable:";
 }
 

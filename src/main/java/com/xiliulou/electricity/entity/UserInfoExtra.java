@@ -104,4 +104,9 @@ public class UserInfoExtra {
      * 流失用户首次拉新返利时间
      */
     private Long lostUserFirstRebateTime;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

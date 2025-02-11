@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoDataEntity;
 import com.xiliulou.electricity.query.UserInfoDataQuery;
@@ -29,6 +30,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
      * @return 用户集
      */
     List<UserInfo> page(UserInfoQuery userInfoQuery);
+    
+    List<UserInfoBO> pageV2(UserInfoQuery userInfoQuery);
     
     /**
      * 查询总数
@@ -181,4 +184,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     List<UserInfo> selectListUserInfoByPhone(@Param("phone") String phone);
     
     Integer updatePayCountByUid(UserInfo userInfo);
+    
+    Long selectDelUidByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
 }

@@ -47,6 +47,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -138,6 +139,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     
     @Resource
     private FyConfigService fyConfigService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     /**
      * 获取用户可以购买的套餐
@@ -247,6 +251,11 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
                     confine = carRentalPackagePo.getConfine();
                 }
             }
+        }
+    
+        // 如果用户曾被删除过，则为老用户
+        if (userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId())) {
+            oldUserFlag = true;
         }
         
         // 结合如上两点，从数据库中筛选合适的套餐
