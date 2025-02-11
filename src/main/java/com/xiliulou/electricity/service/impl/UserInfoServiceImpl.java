@@ -4356,46 +4356,47 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(tokenUser)) {
             return R.fail("120138", "您还未登录，请去【我的】页面登录");
         }
-        
+    
         Long uid = tokenUser.getUid();
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
             log.warn("DeleteAccount WARN! not found user,uid={} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        
+    
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("DeleteAccount WARN! not found userInfo,uid={} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        
+    
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.warn("DeleteAccount WARN! not found userInfoExtra,uid={} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        
+    
         // 是否为"注销中"
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
             log.warn("DeleteAccount WARN! userAccount is cancelling, uid={}", uid);
             return R.fail("120139", "账号处于注销缓冲期内，无法操作");
         }
-        
+    
         Integer tenantId = userInfo.getTenantId();
         String delPhone = StringUtils.EMPTY;
         String delIdNumber = StringUtils.EMPTY;
+        // 注意：payCount=0时，delPhone=""、delIdNumber=""
         UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userInfo, tenantId);
         if (Objects.nonNull(remarkPhoneAndIdNumber)) {
             delPhone = remarkPhoneAndIdNumber.getDelPhone();
             delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
         }
-        
+    
         //给用户打注销中标记
-        userDelRecordService.insert(uid, delPhone, delIdNumber, UserStatusEnum.USER_STATUS_CANCELLING.getCode(), tenantId, userInfo.getFranchiseeId(),
-                UserStatusEnum.USER_DELAY_DAY_30.getCode());
-        
+        userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
+                UserStatusEnum.USER_STATUS_CANCELLING.getCode(), tenantId, userInfo.getFranchiseeId(), UserStatusEnum.USER_DELAY_DAY_30.getCode());
+    
         return R.ok();
     }
     
