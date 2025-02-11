@@ -251,7 +251,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                         userInfo);
                 if (!matchOrNot) {
                     log.warn("MeiTuan order redeem fail! deposit or batteryTypes not match,uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
-                    return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+                    return Triple.of(false, "120140", "灵活续费已禁用，请刷新后重新购买");
                 }
                 
                 // 用户绑定的套餐
