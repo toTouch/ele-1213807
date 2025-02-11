@@ -226,5 +226,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      */
     List<ElectricityCar> selectListByTenantIdAndUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
     
+    List<ElectricityCar> selectListNoDelByUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
+    
     List<ElectricityCar> selectListByUidList(@Param("uidList")List<Long> uidList, @Param("userInfoDelFlag")Integer userInfoDelFlag);
 }

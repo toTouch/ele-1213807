@@ -139,6 +139,10 @@ public class UserEleInfoVO {
      * 所属分组
      */
     private List<UserInfoGroupIdAndNameVO> groupList;
+
+
+    private String remark;
+
     
     private Integer delFlag;
     

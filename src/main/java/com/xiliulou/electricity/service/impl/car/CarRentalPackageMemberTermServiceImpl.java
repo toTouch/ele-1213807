@@ -373,6 +373,12 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         return carRentalPackageMemberTermMapper.selectListExpireByParam(qryModel);
     }
     
+    @Slave
+    @Override
+    public List<CarRentalPackageMemberTermPo> listByTenantIdAndUidList(Integer tenantId, List<Long> uidList) {
+        return carRentalPackageMemberTermMapper.selectListByTenantIdAndUidList(tenantId, uidList);
+    }
+    
     @Override
     public Integer removeByUid(Integer tenantId, Long uid) {
         Integer remove = carRentalPackageMemberTermMapper.removeByUid(tenantId, uid);

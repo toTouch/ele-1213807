@@ -152,6 +152,9 @@ public class DetailsUserInfoVo {
      * 紧急联系人
      */
     private List<EmergencyContactVO> emergencyContactList;
+
+
+    private String remark;
     
     /**
      * 用户状态：0-正常 1-已删除 2-已注销

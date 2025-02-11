@@ -20,6 +20,7 @@ import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
+import com.xiliulou.electricity.request.userinfo.UserInfoExtraRequest;
 import com.xiliulou.electricity.request.userinfo.UserInfoLimitRequest;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -911,6 +912,28 @@ public class JsonAdminUserInfoController extends BaseController {
         }
         
         return userInfoExtraService.updateEleLimit(request, franchiseeIds);
+    }
+
+
+    @PostMapping("/admin/userInfo/editUserInfoExtra")
+    public R editUserInfoExtra(@RequestBody @Validated UserInfoExtraRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+
+        return userInfoExtraService.editUserInfoExtra(request);
     }
     
     private void verifyUserStatus(Integer accountStatus, UserInfoQuery userInfoQuery) {

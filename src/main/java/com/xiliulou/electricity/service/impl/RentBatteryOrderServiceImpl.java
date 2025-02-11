@@ -2037,11 +2037,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //判断该换电柜加盟商和用户加盟商是否一致
-            if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-                log.warn("RETURN BATTERY WARN!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(),
-                        userInfo.getFranchiseeId());
+            if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId())) {
+                log.warn("RETURN Check BATTERY WARN! FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", userInfo.getUid(), userInfo.getFranchiseeId(),
+                        electricityCabinet.getFranchiseeId());
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
+
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {

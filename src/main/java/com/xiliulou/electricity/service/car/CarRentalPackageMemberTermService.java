@@ -191,5 +191,7 @@ public interface CarRentalPackageMemberTermService {
      */
     List<CarRentalPackageMemberTermPo> queryListExpireByParam(CarRentalPackageMemberTermExpiredQryModel qryModel);
     
+    List<CarRentalPackageMemberTermPo> listByTenantIdAndUidList(Integer tenantId, List<Long> uidList);
+    
     Integer removeByUid(Integer tenantId, Long uid);
 }

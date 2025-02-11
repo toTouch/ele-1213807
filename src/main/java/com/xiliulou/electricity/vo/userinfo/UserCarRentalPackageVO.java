@@ -141,6 +141,8 @@ public class UserCarRentalPackageVO {
      * 用户所属分组
      */
     private List<UserInfoGroupIdAndNameVO> groupList;
+
+    private String remark;
     
     /**
      * 用户状态:0-正常,1-已删除, 2-已注销

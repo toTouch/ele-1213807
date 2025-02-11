@@ -962,4 +962,13 @@
         </foreach>
     </select>
     
+    <select id="selectListNoDelByUidList" resultType="com.xiliulou.electricity.entity.ElectricityCar">
+        <include refid="selectElectricityCar"/>
+        where tenant_id = #{tenantId} and del_flag = 0
+        and uid in
+        <foreach collection="uidList" open="(" item="uid" separator="," close=")">
+            #{uid}
+        </foreach>
+    </select>
+
 </mapper>
