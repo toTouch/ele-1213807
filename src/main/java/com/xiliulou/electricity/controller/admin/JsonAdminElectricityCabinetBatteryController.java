@@ -386,7 +386,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * 批量出库
      */
     @PostMapping(value = "/admin/franchisee/bindElectricityBatteryV2")
-    @Log(title = "电池绑定/解绑加盟商")
+    @Log(title = "批量出库")
     public R<Object> bindElectricityBatteryV2(
             @RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery) {
         
