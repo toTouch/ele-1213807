@@ -131,4 +131,6 @@ public interface CarRentalPackageDepositPayService {
      * @since V1.0 2024/3/13
      */
     Map<String, Integer> selectPayTypeByOrders(Collection<String> ordersOn);
+    
+    List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList);
 }

@@ -209,4 +209,5 @@ public interface ElectricityCarService {
      */
     List<ElectricityCar> queryListByTenantIdAndUidList(Integer tenantId, List<Long> uidList);
     
+    List<ElectricityCar> listNoDelByUidList(Integer tenantId, List<Long> uidList);
 }

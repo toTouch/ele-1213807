@@ -6,6 +6,7 @@ import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.query.ElectricityCabinetIdByFilterQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
@@ -143,4 +144,10 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinetBO> selectListBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
     
     List<ElectricityCabinetVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+
+    List<ElectricityCabinetVO> selectListLowPowerPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    Integer countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
+
+    List<Integer> selectCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
 }

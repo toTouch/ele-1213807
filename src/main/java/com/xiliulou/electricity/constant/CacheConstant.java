@@ -940,6 +940,9 @@ public interface CacheConstant {
 
     String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
 
+
+    String LOCK_CELL_ENABLE_KEY = "lock_cell_enable:";
+
     /**
      * 优惠券包下发结果缓存key
      */
