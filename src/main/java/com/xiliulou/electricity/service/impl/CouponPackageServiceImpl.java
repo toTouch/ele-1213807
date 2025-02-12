@@ -128,7 +128,6 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R addOrEdit(CouponPackageEditQuery query) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -306,7 +305,7 @@ public class CouponPackageServiceImpl implements CouponPackageService {
             R.fail("402025", "优惠券包不存在");
         }
 
-        List<CouponPackageItem> packageItemList = packageItemService.listCouponPackageItemByPackageId(couponPackage.getId());
+        List<CouponPackageItem> packageItemList = packageItemService.listCouponPackageItemByPackageId(request.getPackageId());
         if (CollUtil.isEmpty(packageItemList)) {
             R.fail("402026", "优惠券包下的优惠券为空");
         }
