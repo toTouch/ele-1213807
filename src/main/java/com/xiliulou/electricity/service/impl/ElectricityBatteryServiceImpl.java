@@ -1372,7 +1372,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         List<Long> idsWaitBind = new ArrayList<>();
         batteryQuery.getElectricityBatterySnList().forEach(sn -> {
             try {
-                ElectricityBattery electricityBattery = queryBySnFromDb(sn);
+                ElectricityBattery electricityBattery = queryBySnFromDb(sn, TenantContextHolder.getTenantId());
                 if (Objects.isNull(electricityBattery)) {
                     reasonVOList.add(new BindBatteryFailReasonVO(sn, BindBatteryConstants.FAIL_REASON_NOT_FOUND));
                     return;
