@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CouponPackageMapper">
+
+    <sql id="baseSql">
+        id
+        ,  name,
+               coupon_count,
+               is_can_buy,
+               user_name,
+               amount,
+               tenant_id,
+               franchisee_id,
+               create_time,
+               update_time
+    </sql>
+
+    <insert id="saveCouponPackage" keyProperty="id" useGeneratedKeys="true">
+        insert into t_coupon_package (name, coupon_count, is_can_buy, user_name, amount, tenant_id,
+                                      franchisee_id, create_time, update_time)
+        values (#{name}, #{couponCount}, #{isCanBuy}, #{userName}, #{amount}, #{tenantId},
+                #{franchiseeId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="updateCouponPackage">
+        update t_coupon_package
+        set
+        <if test="name != null and name != ''">
+            name = #{name},
+        </if>
+        <if test="couponCount != null">
+            coupon_count = #{couponCount},
+        </if>
+        <if test="isCanBuy != null">
+            is_can_buy = #{isCanBuy},
+        </if>
+        <if test="userName != null and userName != ''">
+            user_name = #{userName},
+        </if>
+        <if test="amount != null">
+            amount = #{amount},
+        </if>
+        <if test="tenantId != null">
+            tenant_id = #{tenantId},
+        </if>
+        <if test="franchiseeId != null">
+            franchisee_id = #{franchiseeId},
+        </if>
+        <if test="updateTime != null">
+            update_time = #{updateTime}
+        </if>
+        where id=#{id}
+    </update>
+
+    <select id="selectCouponPackageById" resultType="com.xiliulou.electricity.entity.CouponPackage">
+        select
+        <include refid="baseSql"/>
+        from t_coupon_package
+        where id = #{id}
+    </select>
+
+    <delete id="deleteCouponPackageById">
+        delete
+        from t_coupon_package
+        where id = #{id}
+    </delete>
+
+
+    <select id="selectPageCouponPackage" resultType="com.xiliulou.electricity.entity.CouponPackage">
+        select
+        <include refid="baseSql"/>
+        from t_coupon_package
+        where tenant_id = #{tenantId}
+        <if test="packageName != null and packageName != '' ">
+            and name like concat('%',#{packageName},'%')
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="isCanBuy != null">
+            and is_can_buy = #{isCanBuy}
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by id desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="selectCountCouponPackage" resultType="integer">
+        select count(1)
+        from t_coupon_package
+        where tenant_id = #{tenantId}
+        <if test="packageName != null and packageName != ''">
+            and name like concat('%',#{packageName},'%')
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="isCanBuy != null">
+            and is_can_buy = #{isCanBuy}
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+</mapper>

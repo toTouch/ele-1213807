@@ -103,12 +103,12 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.storeIds != null and query.storeIds.size()>0">
-                and tc.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
+<!--            <if test="query.storeIds != null and query.storeIds.size()>0">-->
+<!--                and tc.store_id in-->
+<!--                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">-->
+<!--                    #{id}-->
+<!--                </foreach>-->
+<!--            </if>-->
             <if test="query.couponType != null and query.couponType.size()>0">
                 and tuc.coupon_type in
                 <foreach collection="query.couponType" item="item" index="index" open="(" close=")" separator=",">
@@ -184,12 +184,12 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.storeIds != null and query.storeIds.size()>0">
-                and tc.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
+<!--            <if test="query.storeIds != null and query.storeIds.size()>0">-->
+<!--                and tc.store_id in-->
+<!--                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">-->
+<!--                    #{id}-->
+<!--                </foreach>-->
+<!--            </if>-->
             <if test="query.couponType != null and query.couponType.size()>0">
                 and tuc.coupon_type in
                 <foreach collection="query.couponType" item="item" index="index" open="(" close=")" separator=",">
