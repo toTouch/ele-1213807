@@ -1032,6 +1032,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         if (Objects.equals(orderStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)) {
             // 8. 处理分账
+            // ！！！分期套餐若使用分账需注意，期数问题，当前代码会在第一期就把全部的总金额分账完毕，代扣成功绑定套餐代码位置：com.xiliulou.electricity.service.impl.installment.InstallmentBizServiceImpl.handleBatteryMemberCard
             DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
             divisionAccountOrderDTO.setOrderNo(orderNo);
             divisionAccountOrderDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
@@ -1040,6 +1041,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
             
             // 9. 处理活动
+            // 分期套餐若使用活动需核对业务逻辑，同样存在期数问题，当前代码会在第一期代扣完成时处理活动，其他期不处理活动，无论0元还是非0元
             ActivityProcessDTO activityProcessDTO = new ActivityProcessDTO();
             activityProcessDTO.setOrderNo(orderNo);
             activityProcessDTO.setType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());

@@ -72,6 +72,8 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
             
             if (Objects.equals(item.getType(), UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT)) {
                 bo.setOperatorName(UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT_NAME);
+            } else if (Objects.equals(item.getType(), UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_SYSTEM)) {
+                bo.setOperatorName(UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_SYSTEM_NAME);
             } else {
                 bo.setOperatorName(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).map(User::getName).orElse(""));
             }
@@ -120,5 +122,11 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
         }
         
         return boList;
+    }
+    
+    @Slave
+    @Override
+    public List<UserInfoGroupDetailHistory> listFranchiseeLatestHistory(Long uid, Integer tenantId) {
+        return userInfoGroupDetailHistoryMapper.selectListFranchiseeLatestHistory(uid, tenantId);
     }
 }

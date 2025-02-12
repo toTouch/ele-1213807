@@ -425,6 +425,10 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             shareActivityRecord.setCode(code);
             shareActivityRecord.setCreateTime(System.currentTimeMillis());
             shareActivityRecord.setUpdateTime(System.currentTimeMillis());
+            Integer franchiseeId = this.getFranchiseeId(activityId);
+            if (Objects.nonNull(franchiseeId)) {
+                shareActivityRecord.setFranchiseeId(franchiseeId.longValue());
+            }
             // 直接成功，小程序端生成不存在失败
             shareActivityRecord.setStatus(ShareActivityRecord.STATUS_SUCCESS);
             shareActivityRecordMapper.insert(shareActivityRecord);

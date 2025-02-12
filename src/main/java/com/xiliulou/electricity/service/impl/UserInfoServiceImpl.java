@@ -18,6 +18,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
+import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
@@ -30,38 +31,13 @@ import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.EleAuthEntry;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.EleUserAuth;
-import com.xiliulou.electricity.entity.EleUserEsignRecord;
-import com.xiliulou.electricity.entity.EleUserOperateHistory;
-import com.xiliulou.electricity.entity.EleUserOperateRecord;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserAuthMessage;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserInfoExtra;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -70,8 +46,10 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SignStatusEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageStatusVOEnum;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
@@ -138,12 +116,14 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -183,7 +163,6 @@ import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageProVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoProVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
-import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
@@ -426,6 +405,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Resource
     private EmergencyContactService emergencyContactService;
 
+    @Resource
+    private EnterpriseInfoService enterpriseInfoService;
+
+    @Resource
+    private UserDelRecordService userDelRecordService;
+
     /**
      * 分页查询
      *
@@ -441,6 +426,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.page(userInfoQuery);
     }
     
+    /**
+     * 分页查询
+     *
+     * @param userInfoQuery 查询条件
+     * @return 用户集
+     */
+    @Slave
+    @Override
+    public List<UserInfoBO> pageV2(UserInfoQuery userInfoQuery) {
+        if (ObjectUtil.isEmpty(userInfoQuery)) {
+            userInfoQuery = UserInfoQuery.builder().tenantId(TenantContextHolder.getTenantId()).offset(0L).size(10L).build();
+        }
+        return userInfoMapper.pageV2(userInfoQuery);
+    }
+
     /**
      * 查询总数
      *
@@ -647,12 +647,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Slave
     @Override
     public R queryCarRentalList(UserInfoQuery userInfoQuery) {
-        
         List<UserCarRentalPackageDO> userCarRentalPackageDOList = carRentalPackageMemberTermService.queryUserCarRentalPackageList(
                 userInfoQuery);
         if (ObjectUtil.isEmpty(userCarRentalPackageDOList)) {
             return R.ok(Collections.emptyList());
         }
+
+        List<Long> uids = userCarRentalPackageDOList.stream().map(UserCarRentalPackageDO::getUid).collect(Collectors.toList());
+        List<ElectricityCar> carList = electricityCarService.listByUidList(uids, CommonConstant.DEL_N);
+        Map<Long, ElectricityCar> carMap = null;
+        if (CollectionUtils.isNotEmpty(carList)) {
+            carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
+        }
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uids,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+
         List<String> ordersOn = userCarRentalPackageDOList.stream()
                 .filter(f -> f.getCarDepositStatus() == 1 || f.getCarBatteryDepositStatus() == 0)
                 .map(UserCarRentalPackageDO::getDepositOrderNo).filter(StrUtil::isNotBlank)
@@ -684,6 +694,30 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userCarRentalPackageVO.setPackageFreezeStatus(1);
             }
             
+            if (MapUtil.isNotEmpty(carMap) && carMap.containsKey(userCarRentalPackageDO.getUid())) {
+                ElectricityCar car = carMap.get(userCarRentalPackageDO.getUid());
+                if (Objects.nonNull(car)) {
+                    userCarRentalPackageVO.setCarSn(car.getSn());
+                    userCarRentalPackageVO.setCarModel(car.getModel());
+                }
+            }
+
+            // 查询已删除/已注销
+            Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+            if (MapUtils.isEmpty(userStatusMap)) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+            } else {
+                if (userStatusMap.containsKey(userCarRentalPackageDO.getUid())) {
+                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(userCarRentalPackageDO.getUid());
+                    if (Objects.nonNull(userDelStatusDTO)) {
+                        userCarRentalPackageVO.setDelTime(userDelStatusDTO.getDelTime());
+                        userStatus = userDelStatusDTO.getUserStatus();
+                    }
+                }
+            }
+
+            userCarRentalPackageVO.setUserStatus(userStatus);
+
             userCarRentalPackageVOList.add(userCarRentalPackageVO);
         }
         
@@ -841,6 +875,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userOauthBindListQueryList.add(query);
         }
 
+        // 查询车辆
+        List<ElectricityCar> carList = electricityCarService.listByUidList(uidList, CommonConstant.DEL_N);
+        Map<Long, ElectricityCar> carMap = null;
+        if (CollectionUtils.isNotEmpty(carList)) {
+            carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
+        }
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+
         // 查询认证信息
         Map<Long, List<UserOauthBind>> userOauthMap = null;
         if (CollectionUtils.isNotEmpty(userOauthBindListQueryList)) {
@@ -854,6 +898,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<Long, ElectricityBattery> userBatteryMap = electricityBatteryService.listUserBatteryByUidList(uidList, tenantId);
 
         Map<Long, List<UserOauthBind>> finalUserOauthMap = userOauthMap;
+        Map<Long, ElectricityCar> finalCarMap = carMap;
         CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
             Long uid = item.getUid();
 
@@ -903,6 +948,29 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
 
             item.setBasicInfo(basicInfo);
+
+            if (MapUtil.isNotEmpty(finalCarMap) && finalCarMap.containsKey(uid)) {
+                ElectricityCar car = finalCarMap.get(uid);
+                if (Objects.nonNull(car)) {
+                    item.setCarSn(car.getSn());
+                    item.setCarModel(car.getModel());
+                }
+            }
+
+            // 查询已删除/已注销
+            Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+            if (MapUtils.isEmpty(userStatusMap)) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+            } else {
+                if (userStatusMap.containsKey(uid)) {
+                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
+                    if (Objects.nonNull(userDelStatusDTO)) {
+                        item.setDelTime(userDelStatusDTO.getDelTime());
+                        userStatus = userDelStatusDTO.getUserStatus();
+                    }
+                }
+            }
+            item.setUserStatus(userStatus);
         }), threadPoolPro).exceptionally(e -> {
             log.error("Query user battery info error for car rental pro.", e);
             return null;
@@ -1423,7 +1491,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 return R.fail("ELECTRICITY.0024", "用户已被禁用");
             }
-            
+
+            // 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(oldUserInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+            }
+
             // 判断是否缴纳押金
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(
                     oldUserInfo.getUid());
@@ -2605,6 +2679,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 紧急联系人
         vo.setEmergencyContactList(emergencyContactService.listVOByUid(uid));
         vo.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
+        // 查询已删除/已注销
+        vo.setUserStatus(this.queryUserDelStatus(uid));
+
         return R.ok(vo);
     }
     
@@ -3243,7 +3320,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(userEleInfoVOS)) {
             return R.ok(Collections.emptyList());
         }
-        // 获取用户电池套餐相关信息
+
+        // 查询已删除/已注销
+        List<Long> uidList = userEleInfoVOS.stream().map(UserEleInfoVO::getUid).collect(Collectors.toList());
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+
+        //获取用户电池套餐相关信息
         CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
                 // 获取用户所属加盟商
@@ -3281,6 +3364,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(item.getUid());
                 item.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
+
+                // 查询已删除/已注销
+                Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+                if (org.apache.commons.collections4.MapUtils.isEmpty(userStatusMap)) {
+                    userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+                } else {
+                    if (userStatusMap.containsKey(item.getUid())) {
+                        UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
+                        if (Objects.nonNull(userDelStatusDTO)) {
+                            item.setDelTime(userDelStatusDTO.getDelTime());
+                            userStatus = userDelStatusDTO.getUserStatus();
+                        }
+                    }
+                }
+                item.setUserStatus(userStatus);
 
                 threadPool.execute(() -> userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid()));
             });
@@ -3419,6 +3517,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             eleInfoProVO.setBasicInfo(basicInfo);
 
+            // 查询已删除/已注销
+            Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+            if (Objects.equals(item.getDelFlag(), CommonConstant.DEL_Y)) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+
+                UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(item.getUid(),
+                        List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+                if (Objects.nonNull(userDelRecord)) {
+                    item.setDelTime(userDelRecord.getDelTime());
+                    if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
+                        userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
+                    }
+                }
+            }
+            item.setUserStatus(userStatus);
+
             uidList.add(uid);
             UserOauthBindListQuery query = UserOauthBindListQuery.builder().phone(item.getPhone()).uid(uid).build();
             userOauthBindListQueryList.add(query);
@@ -3444,6 +3558,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (CollectionUtils.isNotEmpty(enterpriseChannelUserList)) {
             enterpriseChannelUserMap = enterpriseChannelUserList.stream().collect(Collectors.toMap(EnterpriseChannelUserVO::getUid, Function.identity(), (k1, k2) -> k1));
         }
+
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
 
         // 查询用户电池、电池型号及当前套餐，滞纳金，认证信息
         Map<Long, List<UserOauthBind>> finalUserOauthMap = userOauthMap;
@@ -3471,6 +3589,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (MapUtils.isNotEmpty(finalEnterpriseChannelUserMap) && finalEnterpriseChannelUserMap.containsKey(uid)) {
                     basicInfo.setEnterpriseChannelUserInfo(finalEnterpriseChannelUserMap.get(uid));
                 }
+
+                // 查询已删除/已注销
+                Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+                if (MapUtils.isEmpty(userStatusMap)) {
+                    userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+                } else {
+                    if (userStatusMap.containsKey(item.getUid())) {
+                        UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
+                        if (Objects.nonNull(userDelStatusDTO)) {
+                            item.setDelTime(userDelStatusDTO.getDelTime());
+                            userStatus = userDelStatusDTO.getUserStatus();
+                        }
+                    }
+                }
+                item.setUserStatus(userStatus);
             });
         }, threadPoolPro).exceptionally(e -> {
             log.error("ELE ERROR! query user battery info for pro error!", e);
@@ -3747,7 +3880,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public UserAccountInfoVO selectAccountInfo() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(tokenUser)) {
-            log.error("selectAccountInfo error! tokenUser is null");
+            log.warn("selectAccountInfo warn! tokenUser is null");
             return null;
         }
         
@@ -4050,7 +4183,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             
             // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+            if (isOldUser(userInfo) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                 log.warn(
                         "INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}",
                         userInfo.getUid(), batteryMemberCard.getId());
@@ -4113,5 +4246,179 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         operateRecordUtil.record(null, recordMap);
 
     }
+    @Slave
+    @Override
+    public Long queryDelUidByIdNumber(String idNumber, Integer tenantId) {
+        return userInfoMapper.selectDelUidByIdNumber(idNumber, tenantId);
+    }
 
+    @Override
+    public R deleteAccountPreCheck() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            return R.fail("120138", "您还未登录，请去【我的】页面登录");
+        }
+
+        Long uid = tokenUser.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
+            log.warn("DeleteAccountPreCheck WARN! not found user,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("DeleteAccountPreCheck WARN! not found userInfo,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("DeleteAccountPreCheck WARN! not found userInfoExtra,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        Integer tenantId = userInfo.getTenantId();
+
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
+        if (Objects.nonNull(enterpriseInfo)) {
+            log.warn("DeleteAccountPreCheck WARN! enterprise user cannot be delete! uid={}", uid);
+            return R.fail("120130", "请先删除企业用户配置");
+        }
+
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
+        if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
+            log.warn("DeleteAccountPreCheck WARN! enterprise user cloudBean not recycled! uid={}", uid);
+            return R.fail("120131", "您名下有未回收的云豆，暂无法注销，请联系站点回收后操作");
+        }
+
+        BigDecimal batteryLateFees = serviceFeeUserInfoService.selectBatteryServiceFeeByUid(uid);
+        if (Objects.nonNull(batteryLateFees) && batteryLateFees.compareTo(BigDecimal.ZERO) > 0) {
+            log.warn("DeleteAccountPreCheck WARN! has batteryLateFees! uid={}", uid);
+            return R.fail("120134", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
+        }
+
+        boolean carLateFees = carRentalPackageOrderSlippageService.isExitUnpaid(tenantId, uid);
+        if (carLateFees) {
+            log.warn("DeleteAccountPreCheck WARN! has carLateFees! uid={}", uid);
+            return R.fail("120134", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
+        }
+
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.warn("DeleteAccountPreCheck WARN! has unreturned battery! uid={}", uid);
+            return R.fail("120132", "您名下有未归还的电池，暂无法注销，请归还后操作");
+        }
+
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.warn("DeleteAccountPreCheck WARN! has unreturned car! uid={}", uid);
+            return R.fail("120133", "您名下有未归还的车辆，暂无法注销，请归还后操作");
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("DeleteAccountPreCheck WARN! userBatteryMemberCard is freezing! uid={}, memberCardId={}", uid, userBatteryMemberCard.getMemberCardId());
+                return R.fail("120136", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
+            }
+
+            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                log.warn("DeleteAccountPreCheck warn! userBatteryMemberCard has been frozen! uid={}, memberCardId={}", uid, userBatteryMemberCard.getMemberCardId());
+                return R.fail("120135", "您当前套餐已冻结，暂无法注销，请启用后操作");
+            }
+        }
+
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (Objects.nonNull(memberTermEntity)) {
+            Integer memberTermEntityStatus = memberTermEntity.getStatus();
+            if (MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermEntityStatus)) {
+                log.warn("DeleteAccountPreCheck WARN! memberTermEntityStatus is freezing! uid={}, rentalPackageId={}", uid, memberTermEntity.getRentalPackageId());
+                return R.fail("120136", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
+            }
+
+            if (MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntityStatus)) {
+                log.warn("DeleteAccountPreCheck WARN! memberTermEntityStatus has been frozen! uid={}, rentalPackageId={}", uid, memberTermEntity.getRentalPackageId());
+                return R.fail("120135", "您当前套餐已冻结，暂无法注销，请启用后操作");
+            }
+        }
+
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarDepositStatus(),
+                UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            log.warn("DeleteAccountPreCheck WARN! has unreturned deposit! uid={}", uid);
+            return R.fail("402030", "请退还押金后，进行删除操作");
+        }
+
+        return R.ok();
+    }
+
+    @Override
+    public R deleteAccount() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            return R.fail("120138", "您还未登录，请去【我的】页面登录");
+        }
+
+        Long uid = tokenUser.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
+            log.warn("DeleteAccount WARN! not found user,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("DeleteAccount WARN! not found userInfo,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("DeleteAccount WARN! not found userInfoExtra,uid={} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            log.warn("DeleteAccount WARN! userAccount is cancelling, uid={}", uid);
+            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+        }
+
+        Integer tenantId = userInfo.getTenantId();
+        String delPhone = StringUtils.EMPTY;
+        String delIdNumber = StringUtils.EMPTY;
+        // 注意：payCount=0时，delPhone=""、delIdNumber=""
+        UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userInfo, tenantId);
+        if (Objects.nonNull(remarkPhoneAndIdNumber)) {
+            delPhone = remarkPhoneAndIdNumber.getDelPhone();
+            delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+        }
+
+        //给用户打注销中标记
+        userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
+                UserStatusEnum.USER_STATUS_CANCELLING.getCode(), tenantId, userInfo.getFranchiseeId(), UserStatusEnum.USER_DELAY_DAY_30.getCode());
+
+        return R.ok();
+    }
+
+    @Override
+    public Integer queryUserDelStatus(Long uid) {
+        Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
+            } else {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+            }
+        }
+
+        return userStatus;
+    }
+
+    @Override
+    public Boolean isOldUser(UserInfo userInfo) {
+        return userInfo.getPayCount() > 0 || userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
+    }
 }

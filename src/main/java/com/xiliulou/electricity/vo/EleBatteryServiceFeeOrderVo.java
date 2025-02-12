@@ -134,6 +134,11 @@ public class EleBatteryServiceFeeOrderVo {
      * 租户名称
      */
     private String tenantName;
+    
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

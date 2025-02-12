@@ -16,4 +16,6 @@ public class MerchantModify {
     private Long merchantId;
     
     private Long uid;
+
+    private String messageId;
 }

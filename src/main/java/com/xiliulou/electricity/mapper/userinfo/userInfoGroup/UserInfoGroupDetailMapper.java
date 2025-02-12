@@ -37,4 +37,6 @@ public interface UserInfoGroupDetailMapper {
     Integer deleteForUpdate(@Param("uid") Long uid, @Param("tenantId") Long tenantId, @Param("franchiseeId") Long franchiseeId);
     
     List<Long> selectListFranchiseeForUpdate(@Param("uid") Long uid);
+    
+    Integer existsByUid(@Param("uid") Long uid);
 }

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.userinfo.UserDelRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id
+        ,uid,del_phone,del_id_number,del_time,delay_day,status,create_time,update_time,franchisee_id,tenant_id
+    </sql>
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_del_record(uid, del_phone, del_id_number, del_time, delay_day, status, create_time, update_time, franchisee_id, tenant_id)
+        values (#{uid}, #{delPhone}, #{delIdNumber}, #{delTime}, #{delayDay}, #{status}, #{createTime}, #{updateTime}, #{franchiseeId}, #{tenantId})
+    </insert>
+    
+    <update id="updateStatusById">
+        update t_user_del_record
+        set status = #{status}, del_time = #{updateTime}, update_time = #{updateTime}
+        where id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        delete
+        from t_user_del_record
+        where id = #{id}
+    </delete>
+    
+    <select id="existsByDelPhone" resultType="java.lang.Boolean">
+        select 1
+        from t_user_del_record
+        where tenant_id = #{tenantId}
+          and del_phone is not null
+          and del_phone != ''
+          and del_phone = #{phone}
+          and status in (1, 3) limit 1
+    </select>
+    
+    <select id="existsByDelIdNumber" resultType="java.lang.Boolean">
+        select 1
+        from t_user_del_record
+        where tenant_id = #{tenantId}
+          and del_id_number is not null
+          and del_id_number != ''
+          and del_id_number = #{idNumber}
+          and status in (1, 3) limit 1
+    </select>
+    
+    <select id="existsByDelPhoneAndDelIdNumber" resultType="java.lang.Boolean">
+        select 1
+        from t_user_del_record
+        where tenant_id = #{tenantId}
+          and ((del_phone is not null and del_phone != '' and del_phone = #{phone}) or (del_id_number is not null and del_id_number != '' and del_id_number = #{idNumber}))
+          and status in (1, 3) limit 1
+    </select>
+    
+    <select id="selectByUidAndStatus" resultType="com.xiliulou.electricity.entity.UserDelRecord">
+        select
+        <include refid="basic_field"/>
+        from t_user_del_record
+        where uid = #{uid}
+        and status in
+        <foreach collection="statusList" item="status" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+        order by id desc limit 1
+    </select>
+    
+    <select id="selectListByUidListAndStatus" resultType="com.xiliulou.electricity.entity.UserDelRecord">
+        select
+        <include refid="basic_field"/>
+        from t_user_del_record
+        where uid in
+        <foreach collection="uidList" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+        and status in
+        <foreach collection="statusList" item="status" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+        order by id desc
+    </select>
+
+</mapper>
+
+
+
+

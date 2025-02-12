@@ -358,10 +358,10 @@
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_rebate_record(uid, name, phone, order_id, original_order_id, member_card_id, member_card_name, type, order_type, refund_flag, franchisee_id, level,
                                     merchant_id, merchant_uid, status, channeler, channeler_rebate, merchant_rebate, place_id, place_uid, rebate_time, settle_time, tenant_id,
-                                    create_time, update_time, month_date)
+                                    create_time, update_time, month_date, message_id)
         values (#{uid}, #{name}, #{phone}, #{orderId}, #{originalOrderId}, #{memberCardId}, #{memberCardName}, #{type}, #{orderType}, #{refundFlag}, #{franchiseeId}, #{level},
                 #{merchantId}, #{merchantUid}, #{status}, #{channeler}, #{channelerRebate}, #{merchantRebate}, #{placeId}, #{placeUid}, #{rebateTime}, #{settleTime}, #{tenantId},
-                #{createTime}, #{updateTime}, #{monthDate})
+                #{createTime}, #{updateTime}, #{monthDate}, #{messageId})
     </insert>
     
     <!--通过主键修改数据-->
@@ -617,6 +617,10 @@
                 </if>
             </where>
         group by month_date
+    </select>
+
+    <select id="existsRebateRecord" resultType="java.lang.Integer">
+        select 1 from t_rebate_record where message_id = #{messageId} limit 1
     </select>
 
 </mapper>

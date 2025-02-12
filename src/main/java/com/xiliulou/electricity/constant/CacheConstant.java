@@ -267,6 +267,8 @@ public interface CacheConstant {
      */
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
+    
+    String CACHE_ELE_SET_CONFIG_EXTRA = "ele_set_config_extra:";
     String CACHE_ELE_APP_SET_CONFIG = "ele_app_set_config:";
     
     /**
@@ -941,6 +943,17 @@ public interface CacheConstant {
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
 
     String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
+
+    /**
+     * 返利消费
+     */
+    String REBATE_CONSUMER_LOCK_KEY = "REBATE_CONSUMER_LOCK_KEY:%s";
+
+    /**
+     * 返利修改消费
+     */
+    String REBATE_CONSUMER_MODIFY_LOCK_KEY = "REBATE_CONSUMER_MODIFY_LOCK_KEY:%s";
+
 
 
     String LOCK_CELL_ENABLE_KEY = "lock_cell_enable:";

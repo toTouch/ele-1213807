@@ -82,7 +82,7 @@
                package_freeze_days,
                package_freeze_days_with_assets,
                expired_protection_time,
-               is_bind_battery,
+               is_bind_battery
                lost_user_first,
                lost_user_days,
                allow_original_inviter

@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityConfigExtra;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.entity.PxzConfig;
@@ -28,6 +29,7 @@ import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityConfigExtraService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -121,7 +123,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Autowired
     ServicePhoneService servicePhoneService;
     
-    
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
+
+
     @Override
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         // 用户
@@ -235,11 +240,12 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
             electricityConfig.setIsBindBattery(electricityConfigAddAndUpdateQuery.getIsBindBattery());
 
-
             electricityConfig.setAllowOriginalInviter(electricityConfigAddAndUpdateQuery.getAllowOriginalInviter());
             electricityConfig.setLostUserDays(electricityConfigAddAndUpdateQuery.getLostUserDays());
             electricityConfig.setLostUserFirst(electricityConfigAddAndUpdateQuery.getLostUserFirst());
             electricityConfigMapper.insert(electricityConfig);
+
+            editElectricityConfigExtra(electricityConfigAddAndUpdateQuery);
             return R.ok();
         }
         
@@ -293,7 +299,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setLostUserFirst(electricityConfigAddAndUpdateQuery.getLostUserFirst());
 
         electricityConfigMapper.update(electricityConfig);
-        
+        editElectricityConfigExtra(electricityConfigAddAndUpdateQuery);
+
         // 清理缓存
         redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         
@@ -301,6 +308,24 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         return R.ok();
     }
     
+    private void editElectricityConfigExtra(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
+        ElectricityConfigExtra oldElectricityConfigExtra = new ElectricityConfigExtra();
+        BeanUtil.copyProperties(electricityConfigExtra, oldElectricityConfigExtra, CopyOptions.create().ignoreNullValue().ignoreError());
+        if (Objects.isNull(electricityConfigExtra)) {
+            electricityConfigExtraService.insert(
+                    ElectricityConfigExtra.builder().tenantId(tenantId).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
+        } else {
+            electricityConfigExtra.setAccountDelSwitch(electricityConfigAddAndUpdateQuery.getAccountDelSwitch());
+        }
+
+        // 清理缓存
+        redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG_EXTRA + tenantId);
+
+        operateRecordUtil.record(oldElectricityConfigExtra, electricityConfigExtra);
+    }
+
     @Override
     public ElectricityConfig queryFromCacheByTenantId(Integer tenantId) {
         ElectricityConfig cache = redisService.getWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, ElectricityConfig.class);
