@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CouponPackageItemMapper">
+
+    <sql id="basicSql">
+        id
+        , coupon_id, package_id, coupon_name, discount_type, discount, effect, days, count, superposition, create_time, update_time
+    </sql>
+
+    <select id="existsCouponBindPackage" resultType="integer">
+        select 1
+        from t_coupon_package_item
+        where coupon_id = #{couponId} limit 1
+    </select>
+
+    <insert id="savePackItemBatch">
+        insert into t_coupon_package_item
+        (coupon_id,package_id,coupon_name,discount_type,discount,effect,days,count,superposition,tenant_id,create_time,update_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.couponId},#{item.packageId},#{item.couponName},#{item.discountType},#{item.discount},#{item.effect},#{item.days},#{item.count},#{item.superposition},#{item.tenantId},#{item.createTime},#{item.updateTime})
+        </foreach>
+    </insert>
+
+    <delete id="deletePackItemByPackageId">
+        delete
+        from t_coupon_package_item
+        where package_id = #{packageId}
+    </delete>
+
+
+    <select id="selectListCouponPackageItemByPackageId"
+            resultType="com.xiliulou.electricity.entity.CouponPackageItem">
+        select
+        <include refid="basicSql"/>
+        from t_coupon_package_item
+        where package_id =#{packageId}
+    </select>
+
+    <select id="selectListCouponPackageItemByPackageIds"
+            resultType="com.xiliulou.electricity.bo.CouponPackageItemBO">
+        select
+        package_id as 'packageId',group_concat(coupon_name) as 'couponNameStr',group_concat(effect) as 'effectStr'
+        from t_coupon_package_item
+        where package_id in
+        <foreach collection="packageIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        group by package_id
+    </select>
+
+</mapper>

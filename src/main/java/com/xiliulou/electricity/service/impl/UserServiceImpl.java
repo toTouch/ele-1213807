@@ -1022,7 +1022,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(true, null, null);
         }
         
-        UserInfo userRentInfo = userInfoService.queryByUidFromCache(uid);
+        UserInfo userRentInfo = userInfoService.queryByUidFromDB(uid);
         if (Objects.isNull(userRentInfo)) {
             log.warn("ELE WARN! not found userInfo,uid={} ", uid);
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");

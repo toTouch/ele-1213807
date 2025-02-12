@@ -104,6 +104,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
 
     R bindFranchiseeForBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
+    
+    R<Object> bindFranchiseeForBatteryV2(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
     List<ElectricityBattery> selectByBatteryIds(List<Long> batteryIds);
 

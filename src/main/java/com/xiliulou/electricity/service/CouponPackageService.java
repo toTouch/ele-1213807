@@ -1,0 +1,98 @@
+package com.xiliulou.electricity.service;
+
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.CouponPackage;
+import com.xiliulou.electricity.query.CouponPackageEditQuery;
+import com.xiliulou.electricity.query.CouponPackagePageQuery;
+import com.xiliulou.electricity.request.CouponPackageAppointReleaseRequest;
+import com.xiliulou.electricity.request.CouponPackageBatchReleaseRequest;
+import com.xiliulou.electricity.vo.CouponPackageDetailsVO;
+
+/**
+ * @Description: CouponPackageService
+ * @Author: renhang
+ * @Date: 2025/01/16
+ */
+
+public interface CouponPackageService {
+
+    /**
+     * 新增/编辑优惠券包
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+
+    R addOrEdit(CouponPackageEditQuery query);
+
+
+    /**
+     * 编辑回显获取详情
+     *
+     * @param packageId packageId
+     * @return: @return {@link CouponPackageDetailsVO }
+     */
+
+    CouponPackageDetailsVO editEcho(Long packageId);
+
+    /**
+     * 删除优惠券包
+     *
+     * @param packageId packageId
+     * @return:
+     */
+    void del(Long packageId);
+
+    /**
+     * 分页list
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+
+    R pageList(CouponPackagePageQuery query);
+
+    /**
+     * 分页count
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+    R<Integer> pageCount(CouponPackagePageQuery query);
+
+    /**
+     * 批量下发优惠券包
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+    R batchRelease(CouponPackageBatchReleaseRequest request);
+
+    /**
+     * 指定用户下发
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+
+    R appointRelease(CouponPackageAppointReleaseRequest request);
+
+    /**
+     * 查询批量下发结果
+     *
+     * @param sessionId sessionId
+     * @return: @return {@link R }
+     */
+
+    R queryBatchReleaseStatus(String sessionId);
+
+
+    /**
+     * 查询服务包
+     *
+     * @param id id
+     * @return: @return {@link CouponPackage }
+     */
+
+    CouponPackage queryByIdFromCache(Long id);
+}
