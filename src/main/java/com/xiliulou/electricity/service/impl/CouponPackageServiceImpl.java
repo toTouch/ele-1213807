@@ -302,12 +302,12 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
         CouponPackage couponPackage = queryByIdFromCache(request.getPackageId());
         if (Objects.isNull(couponPackage)) {
-            R.fail("402025", "优惠券包不存在");
+            return R.fail("402025", "优惠券包不存在");
         }
 
         List<CouponPackageItem> packageItemList = packageItemService.listCouponPackageItemByPackageId(request.getPackageId());
         if (CollUtil.isEmpty(packageItemList)) {
-            R.fail("402026", "优惠券包下的优惠券为空");
+            return R.fail("402026", "优惠券包下的优惠券为空");
         }
 
         Set<User> existUserSet = new ConcurrentHashSet<>();
@@ -402,12 +402,12 @@ public class CouponPackageServiceImpl implements CouponPackageService {
 
         CouponPackage couponPackage = queryByIdFromCache(request.getPackageId());
         if (Objects.isNull(couponPackage)) {
-            R.fail("402025", "优惠券包不存在");
+            return R.fail("402025", "优惠券包不存在");
         }
 
         List<CouponPackageItem> packageItemList = packageItemService.listCouponPackageItemByPackageId(couponPackage.getId());
         if (CollUtil.isEmpty(packageItemList)) {
-            R.fail("402026", "优惠券包下的优惠券为空");
+            return R.fail("402026", "优惠券包下的优惠券为空");
         }
 
 
