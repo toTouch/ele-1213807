@@ -88,6 +88,15 @@
             <if test="remark != null">
                 remark = #{remark}
             </if>
+            <if test="lostUserStatus != null">
+                lost_user_status = #{lostUserStatus},
+            </if>
+            <if test="lostUserTime != null">
+                lost_user_time = #{lostUserTime},
+            </if>
+            <if test="lostUserFirstRebateTime">
+                lost_user_first_rebate_time = #{lostUserFirstRebateTime},
+            </if>
         </set>
         where uid = #{uid}
     </update>

@@ -71,7 +71,7 @@ public class JsonUserFaceidController extends BaseController {
         log.info("handle activity after face id auth success: {}", JsonUtil.toJson(activityProcessDTO));
         activityService.asyncProcessActivity(activityProcessDTO);
     
-        // 老用户实名认证后,恢复用户历史分组
+        // 老用户实名认证后,恢复用户历史分组及流失用户标记
         userDelRecordService.asyncRecoverUserInfoGroup(uid);
         
         return returnTripleResult(result);

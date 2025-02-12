@@ -282,7 +282,7 @@ public class JsonAdminUserInfoController extends BaseController {
         log.info("handle activity after manual review success: {}", JsonUtil.toJson(activityProcessDTO));
         activityService.asyncProcessActivity(activityProcessDTO);
     
-        // 老用户实名认证后,恢复用户历史分组
+        // 老用户实名认证后,恢复用户历史分组及流失用户标记
         userDelRecordService.asyncRecoverUserInfoGroup(userInfo.getUid());
         
         return result;
