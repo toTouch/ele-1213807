@@ -18,6 +18,7 @@
         <result property="eleLimit" column="ele_limit" jdbcType="INTEGER"/>
         <result property="minTimeOfMonth" column="min_time_of_month" jdbcType="BIGINT"/>
         <result property="packageFreezeCount" column="package_freeze_count" jdbcType="TINYINT"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="lostUserStatus" column="lost_user_status" jdbcType="INTEGER"/>
         <result property="lostUserTime" column="lost_user_time" jdbcType="BIGINT"/>
         <result property="lostUserFirstRebateTime" column="lost_user_first_rebate_time" jdbcType="BIGINT"/>
@@ -27,7 +28,7 @@
     <select id="selectByUid" resultMap="UserInfoExtraMap">
         select
           uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid,
-          latest_activity_source, ele_limit, min_time_of_month, package_freeze_count,lost_user_status, lost_user_time, lost_user_first_rebate_time
+          latest_activity_source, ele_limit, min_time_of_month, package_freeze_count,remark,lost_user_status, lost_user_time, lost_user_first_rebate_time
         from t_user_info_extra
         where uid = #{uid}
     </select>
@@ -86,6 +87,9 @@
             </if>
             <if test="packageFreezeCount != null">
                 package_freeze_count = #{packageFreezeCount},
+            </if>
+            <if test="remark != null">
+                remark = #{remark}
             </if>
             <if test="lostUserStatus != null">
                 lost_user_status = #{lostUserStatus},

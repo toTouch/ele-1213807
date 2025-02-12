@@ -74,4 +74,6 @@ public interface PermissionResourceService {
 	 * @return 实例对象
 	 */
 	List<PermissionResource> queryByRoleIds(List<Long> rids,Integer type);
+
+    List<PermissionResource> listByIdList(List<Long> sourceIds);
 }

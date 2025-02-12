@@ -91,6 +91,11 @@ public class UserInfoExtra {
     private Integer packageFreezeCount;
 
     /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * '是否为流失用户 0 - 是, 1 - 否
      */
     private Integer lostUserStatus;

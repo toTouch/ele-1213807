@@ -152,9 +152,12 @@ public class DetailsUserInfoVo {
      * 是否对换电套餐购买次数限制:0-不限制 1-限制
      */
     private Integer eleLimit;
-    
+
     /**
      * 紧急联系人
      */
     private List<EmergencyContactVO> emergencyContactList;
+
+
+    private String remark;
 }

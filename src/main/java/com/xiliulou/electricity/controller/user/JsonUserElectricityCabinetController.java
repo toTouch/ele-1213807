@@ -257,8 +257,8 @@ public class JsonUserElectricityCabinetController extends BaseController {
     /**
      * 选仓换电查询格挡信息
      *
-     * @param electricityCabinetId
-     * @return
+     * @param electricityCabinetId electricityCabinetId
+     * @return R
      */
     @GetMapping("/user/selectionExchangeable/electricityCabinetBoxInfo/{electricityCabinetId}")
     public R queryElectricityCabinetBoxInfoByCabinetId(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {

@@ -136,4 +136,6 @@ public class CouponQuery {
      */
     private String userName;
 
+
+    private Integer enabledState;
 }
