@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.enums.ElectricityConfigExtraEnum;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -278,6 +279,13 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否绑定电池
      */
     private Integer isBindBattery;
+    
+    /**
+     * 用户账号注销开关：0-开启 1-关闭（默认）
+     *
+     * @see ElectricityConfigExtraEnum
+     */
+    private Integer accountDelSwitch;
 }
 
 

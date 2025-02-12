@@ -7,11 +7,14 @@ import com.xiliulou.electricity.constant.UserInfoGroupConstant;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory;
 import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.userinfo.UserDelRecordMapper;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
@@ -61,6 +64,9 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
     
     @Resource
     private UserInfoGroupService userInfoGroupService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     @Slave
     @Override
@@ -150,18 +156,21 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
                 log.warn("asyncRecoverUserInfoGroup after auth, never deleted, uid={}", uid);
                 return;
             }
-        
-            // 1.若当前uid已存在用户分组,则不恢复历史分组
-            Integer existsGroup = userInfoGroupDetailService.existsByUid(uid);
-            if (Objects.nonNull(existsGroup)) {
-                log.warn("asyncRecoverUserInfoGroup after auth, exists Group, uid={}", uid);
-                return;
-            }
-        
+    
             // 根据身份证号查询曾被删除过的uid
             Long delUid = userInfoService.queryDelUidByIdNumber(idNumber, tenantId);
             if (Objects.isNull(delUid)) {
                 log.warn("asyncRecoverUserInfoGroup after auth, delUid is null, uid={}", uid);
+                return;
+            }
+            
+            // 恢复流失用户标记
+            recoverLostUserMark(uid, delUid);
+    
+            // 1.若当前uid已存在用户分组,则不恢复历史分组
+            Integer existsGroup = userInfoGroupDetailService.existsByUid(uid);
+            if (Objects.nonNull(existsGroup)) {
+                log.warn("asyncRecoverUserInfoGroup after auth, exists Group, uid={}", uid);
                 return;
             }
         
@@ -188,6 +197,19 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
         
             handleRecoverUserInfoGroup(uid, tenantId, franchiseeGroupIdMap);
         });
+    }
+    
+    private void recoverLostUserMark(Long uid, Long delUid) {
+        // 判断被删前是否为流失用户
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(delUid);
+        if (Objects.isNull(userInfoExtra)) {
+            return;
+        }
+        
+        // 恢复流失用户标记
+        if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+            userInfoExtraService.updateByUid(UserInfoExtra.builder().lostUserStatus(YesNoEnum.YES.getCode()).uid(uid).build());
+        }
     }
     
     private void handleRecoverUserInfoGroup(Long uid, Integer tenantId, Map<Long, String> franchiseeGroupIdMap) {
