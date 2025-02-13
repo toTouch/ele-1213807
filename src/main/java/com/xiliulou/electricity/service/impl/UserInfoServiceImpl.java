@@ -4177,7 +4177,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 // 流失用户不允许购买续租类型的套餐
                 if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
                     log.warn("INTEGRATED PAYMENT WARN. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", userInfo.getUid(), batteryMemberCard.getId());
-                    throw new BizException( "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                    return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
                 }
             } else  if (isOldUser(userInfo) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                 // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买

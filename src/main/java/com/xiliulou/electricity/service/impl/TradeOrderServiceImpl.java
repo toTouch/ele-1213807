@@ -986,7 +986,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
             UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userInfoExtra)) {
-                throw new BizException( "120125", "未找到用户");
+                log.warn("INSTALLMENT PAY WARN! not found user extra,uid={}", uid);
+                return R.fail("120125", "未找到用户");
             }
 
             InstallmentRecord installmentRecord = installmentSearchApiService.queryUsingRecordForUser(uid);
