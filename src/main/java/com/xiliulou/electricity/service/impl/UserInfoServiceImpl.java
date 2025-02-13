@@ -4235,12 +4235,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         operateRecordUtil.record(null, recordMap);
         
     }
-    @Slave
-    @Override
-    public Long queryDelUidByIdNumber(String idNumber, Integer tenantId) {
-        return userInfoMapper.selectDelUidByIdNumber(idNumber, tenantId);
-    }
-    
     @Override
     public R deleteAccountPreCheck() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();

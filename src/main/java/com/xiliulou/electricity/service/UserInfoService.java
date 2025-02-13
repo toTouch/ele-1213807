@@ -210,8 +210,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
     UserInfo queryByUidFromDB(Long uid);
     
-    Long queryDelUidByIdNumber(String idNumber, Integer tenantId);
-    
     R deleteAccountPreCheck();
     
     R deleteAccount();

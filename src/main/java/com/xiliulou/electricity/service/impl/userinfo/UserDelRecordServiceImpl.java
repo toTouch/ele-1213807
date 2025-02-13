@@ -158,7 +158,7 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
             }
     
             // 根据身份证号查询曾被删除过的uid
-            Long delUid = userInfoService.queryDelUidByIdNumber(idNumber, tenantId);
+            Long delUid = this.queryDelUidByDelIdNumber(idNumber, tenantId);
             if (Objects.isNull(delUid)) {
                 log.warn("asyncRecoverUserInfoGroup after auth, delUid is null, uid={}", uid);
                 return;
@@ -339,6 +339,12 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
         }
     
         return userStatus;
+    }
+    
+    @Slave
+    @Override
+    public Long queryDelUidByDelIdNumber(String idNumber, Integer tenantId) {
+        return userDelRecordMapper.selectDelUidByDelIdNumber(idNumber, tenantId);
     }
     
 }
