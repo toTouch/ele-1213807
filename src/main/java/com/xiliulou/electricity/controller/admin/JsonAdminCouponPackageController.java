@@ -1,0 +1,127 @@
+package com.xiliulou.electricity.controller.admin;
+
+import com.xiliulou.common.sentinel.annotation.IdempotentCheck;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.CouponPackageEditQuery;
+import com.xiliulou.electricity.query.CouponPackagePageQuery;
+import com.xiliulou.electricity.request.CouponPackageAppointReleaseRequest;
+import com.xiliulou.electricity.request.CouponPackageBatchReleaseRequest;
+import com.xiliulou.electricity.service.CouponPackageService;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+
+/**
+ * @Description: 优惠券包Controller
+ * @Author: renhang
+ * @Date: 2025/01/16
+ */
+@RestController
+@RequestMapping("/admin/couponPackage")
+public class JsonAdminCouponPackageController {
+
+    @Resource
+    private CouponPackageService couponPackageService;
+
+
+    /**
+     * 新增/编辑优惠券包
+     *
+     * @param query query
+     * @return R
+     */
+    @PostMapping(value = "addOrEdit")
+    public R addOrEdit(@RequestBody @Validated CouponPackageEditQuery query) {
+        return couponPackageService.addOrEdit(query);
+    }
+
+
+    /**
+     * 编辑回显
+     *
+     * @param packageId query
+     * @return R
+     */
+    @GetMapping(value = "editEcho")
+    public R editEcho(@RequestParam("packageId") Long packageId) {
+        return R.ok(couponPackageService.editEcho(packageId));
+    }
+
+
+    /**
+     * 删除
+     *
+     * @param packageId query
+     * @return R
+     */
+    @GetMapping(value = "del")
+    public R del(@RequestParam("packageId") Long packageId) {
+        couponPackageService.del(packageId);
+        return R.ok();
+    }
+
+
+    /**
+     * 分页list
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+    @PostMapping(value = "pageList")
+    public R pageList(@RequestBody CouponPackagePageQuery query) {
+        return couponPackageService.pageList(query);
+    }
+
+
+    /**
+     * 分页count
+     *
+     * @param query query
+     * @return: @return {@link R }
+     */
+    @PostMapping(value = "pageCount")
+    public R pageCount(@RequestBody CouponPackagePageQuery query) {
+        return couponPackageService.pageCount(query);
+    }
+
+
+    /**
+     * 批量用户方法下发优惠券包
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+
+    @PostMapping(value = "batchRelease")
+    @IdempotentCheck(prefix = "coupon_pack_batch_release")
+    public R batchRelease(@RequestBody @Validated CouponPackageBatchReleaseRequest request) {
+        return couponPackageService.batchRelease(request);
+    }
+
+
+    /**
+     * 指定用户方法下发优惠券包
+     *
+     * @param request request
+     * @return: @return {@link R }
+     */
+    @PostMapping(value = "appointRelease")
+    @IdempotentCheck(prefix = "coupon_pack_appoint_release")
+    public R appointRelease(@RequestBody @Validated CouponPackageAppointReleaseRequest request) {
+        return couponPackageService.appointRelease(request);
+    }
+
+
+    /**
+     * 轮训批量下发结果查询
+     *
+     * @param sessionId sessionId
+     * @return: @return {@link R }
+     */
+
+    @GetMapping(value = "queryStatus")
+    public R queryBatchReleaseStatus(@RequestParam("sessionId") String sessionId) {
+        return couponPackageService.queryBatchReleaseStatus(sessionId);
+    }
+}

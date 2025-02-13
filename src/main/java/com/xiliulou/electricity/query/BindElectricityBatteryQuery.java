@@ -21,9 +21,14 @@ public class BindElectricityBatteryQuery {
     */
     private Integer franchiseeId;
     /**
-     * 换电柜Id
+     * 电池Id
      */
     private List<Long> electricityBatteryIdList;
+    
+    /**
+     * 电池sn
+     */
+    private List<String> electricityBatterySnList;
 
     /**
      * 租户id

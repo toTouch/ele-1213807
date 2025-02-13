@@ -1293,7 +1293,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param freezeEntity         冻结申请单DB数据
      * @param slippageInsertEntity 滞纳金订单
      * @param memberTermEntity     会员期限DB数据
-     * @return void
      * @author xiaohui.song
      **/
     @Transactional(rollbackFor = Exception.class)
@@ -1366,14 +1365,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      *
      * @param refundRentOrderNo 退租申请单编码
      * @param approveFlag       审批标识，true(同意)；false(驳回)
-     * @param apploveDesc       审批意见
-     * @param apploveUid        审批人
+     * @param approveDesc       审批意见
+     * @param approveUid        审批人
      * @param compelOffLine     强制线下退款
-     * @return
      */
     @Override
-    public Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, Integer compelOffLine) {
-        if (!ObjectUtils.allNotNull(refundRentOrderNo, approveFlag, apploveUid)) {
+    public Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String approveDesc, Long approveUid, Integer compelOffLine) {
+        if (!ObjectUtils.allNotNull(refundRentOrderNo, approveFlag, approveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         
@@ -1406,8 +1404,20 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300000", "数据有误");
         }
         
+        // 判断套餐是否过期，过期后修改申请为退款失败
+        boolean expireFlag = false;
+        long nowTime = System.currentTimeMillis();
+        if (nowTime >= memberTermEntity.getDueTime() || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
+                && memberTermEntity.getResidue() <= 0L)) {
+            expireFlag = true;
+        }
+        
         // TX 事务落库
-        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity, packageOrderEntity, compelOffLine);
+        saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, approveDesc, approveUid, rentRefundEntity, packageOrderEntity, compelOffLine, expireFlag);
+        
+        if (expireFlag) {
+            throw new BizException("300067", "套餐已过期，退款失败");
+        }
         
         return true;
     }
@@ -1417,7 +1427,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (!ObjectUtils.allNotNull(carRentRefundVo.getOrderNo(), carRentRefundVo.getApproveFlag(), carRentRefundVo.getUid(), carRentRefundVo.getAmount())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.APPROVE_REFUND_RENT_ORDER_LOCK_KEY, carRentRefundVo.getOrderNo()), IdUtil.fastSimpleUUID(),
+        boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.APPROVE_REFUND_RENT_ORDER_LOCK_KEY, carRentRefundVo.getOrderNo()), IdUtil.fastSimpleUUID(),
                 10 * 1000L, false);
         if (!getLockSuccess) {
             throw new BizException("ELECTRICITY.0034", "操作频繁");
@@ -1457,8 +1467,20 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300000", "数据有误");
         }
         
+        // 判断套餐是否过期，过期后修改申请为退款失败
+        boolean expireFlag = false;
+        long nowTime = System.currentTimeMillis();
+        if (nowTime >= memberTermEntity.getDueTime() || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
+                && memberTermEntity.getResidue() <= 0L)) {
+            expireFlag = true;
+        }
+        
         // TX 事务落库
-        saveApproveRefundRentOrderTx(carRentRefundVo, rentRefundEntity, packageOrderEntity);
+        saveApproveRefundRentOrderTx(carRentRefundVo, rentRefundEntity, packageOrderEntity, expireFlag);
+        
+        if (expireFlag) {
+            throw new BizException("300067", "套餐已过期，退款失败");
+        }
         
         return true;
     }
@@ -1556,35 +1578,35 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      *
      * @param refundRentOrderNo  退租申请单编码
      * @param approveFlag        审批标识，true(同意)；false(驳回)
-     * @param apploveDesc        审批意见
-     * @param apploveUid         审批人
+     * @param approveDesc        审批意见
+     * @param approveUid         审批人
      * @param rentRefundEntity   退租申请单DB数据
      * @param packageOrderEntity 套餐购买订单信息
      * @param compelOffLine      强制线下退款
-     * @return void
      * @author xiaohui.song
      **/
     @Transactional(rollbackFor = Exception.class)
-    public void saveApproveRefundRentOrderTx(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, CarRentalPackageOrderRentRefundPo rentRefundEntity,
-            CarRentalPackageOrderPo packageOrderEntity, Integer compelOffLine) {
+    public void saveApproveRefundRentOrderTx(String refundRentOrderNo, boolean approveFlag, String approveDesc, Long approveUid, CarRentalPackageOrderRentRefundPo rentRefundEntity,
+            CarRentalPackageOrderPo packageOrderEntity, Integer compelOffLine, boolean expireFlag) {
         
         CarRentalPackageOrderRentRefundPo rentRefundUpdateEntity = new CarRentalPackageOrderRentRefundPo();
         rentRefundUpdateEntity.setOrderNo(refundRentOrderNo);
         rentRefundUpdateEntity.setAuditTime(System.currentTimeMillis());
-        rentRefundUpdateEntity.setRemark(apploveDesc);
-        rentRefundUpdateEntity.setUpdateUid(apploveUid);
+        rentRefundUpdateEntity.setRemark(approveDesc);
+        rentRefundUpdateEntity.setUpdateUid(approveUid);
         // 1. 更新退租申请单状态
-        rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
+        rentRefundUpdateEntity.setRefundState(expireFlag ? RefundStateEnum.FAILED.getCode() : RefundStateEnum.AUDIT_REJECT.getCode());
         //        rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
         carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
         
         // 2. 更新会员期限
         carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(),
-                apploveUid);
+                approveUid);
     }
     
     @Transactional(rollbackFor = Exception.class)
-    public void saveApproveRefundRentOrderTx(CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo rentRefundEntity, CarRentalPackageOrderPo packageOrderEntity) {
+    public void saveApproveRefundRentOrderTx(CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo rentRefundEntity, CarRentalPackageOrderPo packageOrderEntity,
+            boolean expireFlag) {
         CarRentalPackageOrderRentRefundPo rentRefundUpdateEntity = new CarRentalPackageOrderRentRefundPo();
         rentRefundUpdateEntity.setOrderNo(carRentRefundVo.getOrderNo());
         rentRefundUpdateEntity.setAuditTime(System.currentTimeMillis());
@@ -1594,7 +1616,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         log.info("approve refund flow start, order No = {}, refund amount = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getAmount(),
                 carRentRefundVo.getUid());
         // 审核通过
-        if (carRentRefundVo.getApproveFlag()) {
+        if (carRentRefundVo.getApproveFlag() && !expireFlag) {
             rentRefundUpdateEntity.setRefundAmount(carRentRefundVo.getAmount());
             // 购买订单时的支付方式
             Integer payType = packageOrderEntity.getPayType();
@@ -1646,13 +1668,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             couponDayRecordService.cleanDaysByUidAndPackageOrderNo(packageOrderEntity.getTenantId(), packageOrderEntity.getUid(), orderNo, scope.getCode());
         } else {
             // 1. 更新退租申请单状态
-            rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
+            rentRefundUpdateEntity.setRefundState(expireFlag ? RefundStateEnum.FAILED.getCode() : RefundStateEnum.AUDIT_REJECT.getCode());
             //            rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             
             // 2. 更新会员期限
-            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(),
-                    carRentRefundVo.getUid());
+            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), carRentRefundVo.getUid());
         }
         log.info("approve refund flow end, order No = {}, approve flag = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getApproveFlag());
     }
