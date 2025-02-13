@@ -133,7 +133,8 @@ public class PlaceOrderChainManager {
 
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userInfoExtra)) {
-            throw new BizException( "120125", "未找到用户");
+            log.warn("PLACE ORDER WARN! not found user extra,uid={}", uid);
+            return R.fail("120125", "未找到用户");
         }
         context.setUserInfoExtra(userInfoExtra);
 

@@ -262,7 +262,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     // 流失用户不允许购买续租类型的套餐
                     if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
                         log.warn("MeiTuan order redeem fail. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", uid, memberCardId);
-                        throw new BizException( "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                        return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
                     }
                 } else if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                     log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
