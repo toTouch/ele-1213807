@@ -313,6 +313,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
         ElectricityConfigExtra oldElectricityConfigExtra = new ElectricityConfigExtra();
         BeanUtil.copyProperties(electricityConfigExtra, oldElectricityConfigExtra, CopyOptions.create().ignoreNullValue().ignoreError());
+        
         if (Objects.isNull(electricityConfigExtra)) {
             electricityConfigExtraService.insert(
                     ElectricityConfigExtra.builder().tenantId(tenantId).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
@@ -364,6 +365,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         // 获取租户配置信息
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
+    
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfigExtra)) {
+            BeanUtils.copyProperties(electricityConfigExtra, tenantConfigVO);
+        }
         
         // 获取租户模板id
         List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, ChannelEnum.WECHAT.getCode());
@@ -409,6 +415,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         // 获取租户配置信息
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
+        
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfigExtra)) {
+            BeanUtils.copyProperties(electricityConfigExtra, tenantConfigVO);
+        }
         
         // 获取租户模板id
         List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, channel);
