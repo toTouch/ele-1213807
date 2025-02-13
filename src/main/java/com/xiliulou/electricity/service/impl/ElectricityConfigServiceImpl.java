@@ -306,6 +306,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
         ElectricityConfigExtra oldElectricityConfigExtra = new ElectricityConfigExtra();
         BeanUtil.copyProperties(electricityConfigExtra, oldElectricityConfigExtra, CopyOptions.create().ignoreNullValue().ignoreError());
+        
         if (Objects.isNull(electricityConfigExtra)) {
             electricityConfigExtraService.insert(
                     ElectricityConfigExtra.builder().tenantId(tenantId).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
