@@ -25,9 +25,15 @@ public class JsonUserShareMoneyActivityRecordController {
     
     /**
      * 生成分享图片
+     * <p>
+     * 旧版小程序调用的接口生成菊花二维码，新版本调用的接口{@link
+     * JsonUserShareMoneyActivityRecordController#getQrCodeShareParam(Integer)}获取生成二维码参数，由前段生成
+     * </p>
      */
+    @Deprecated
     @PostMapping(value = "/user/shareMoneyActivityRecord/generateSharePicture")
-    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId, @RequestParam(value = "page", required = false) String page,
+    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId,
+            @RequestParam(value = "page", required = false) String page,
             @RequestParam(value = "env", required = false) String envVersion) {
         return shareMoneyActivityRecordService.generateSharePicture(activityId, page, envVersion);
     }

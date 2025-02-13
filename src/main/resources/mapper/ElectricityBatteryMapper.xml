@@ -475,7 +475,31 @@
     </select>
     
     <select id="selectListBatteryBySnList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select id, sn, capacity, model
+        select
+        id,
+        sn,
+        longitude,
+        latitude,
+        power,
+        voltage,
+        capacity,
+        model,
+        status,
+        electricity_cabinet_id,
+        electricity_cabinet_name,
+        uid,
+        create_time,
+        update_time,
+        charge_status,
+        health_status,
+        tenant_id,
+        borrow_expire_time,
+        iot_card_number,
+        exchange_count,
+        franchisee_id,
+        business_status,
+        physics_status,
+        stock_status
         from t_electricity_battery
         where del_flag = 0 and sn in
         <foreach collection="snList" item="sn" open="(" close=")" separator=",">

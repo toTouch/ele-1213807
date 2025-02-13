@@ -13,5 +13,9 @@ public class SearchVo {
     private Long id;
     
     private String name;
-    
+
+    /**
+     * 是否启用；0禁用,1启用
+     */
+    private Integer enabledState;
 }

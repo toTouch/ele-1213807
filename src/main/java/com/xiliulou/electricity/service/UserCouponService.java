@@ -117,4 +117,6 @@ public interface UserCouponService {
     Integer getDaysForMemberCardOrderFromUseDayCoupon(String orderId);
     
     Integer queryTheVoucherHasBeenCollected( Integer activityId, Long activityRuleId, Long uid,List<Long> idList);
+
+    void batchInsert(List<UserCoupon> userCouponList);
 }

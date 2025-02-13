@@ -67,13 +67,10 @@ public class JsonAdminUserCouponController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        List<Long> storeIds = null;
+
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(storeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
+            return R.ok(Collections.EMPTY_LIST);
         }
         
         List<Long> franchiseeIds = null;
@@ -85,7 +82,7 @@ public class JsonAdminUserCouponController {
         }
         
         UserCouponQuery userCouponQuery = UserCouponQuery.builder().offset(offset).size(size).beginTime(beginTime).endTime(endTime).couponId(couponId).uid(uid).orderId(orderId)
-                .status(status).superposition(superposition).userName(userName).phone(phone).discountType(discountType).storeIds(storeIds).franchiseeIds(franchiseeIds)
+                .status(status).superposition(superposition).userName(userName).phone(phone).discountType(discountType).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).couponType(couponType).couponWay(couponWay).build();
         return userCouponService.queryList(userCouponQuery);
     }
@@ -106,12 +103,9 @@ public class JsonAdminUserCouponController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        List<Long> storeIds = null;
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(NumberConstant.ZERO);
-            }
         }
         
         List<Long> franchiseeIds = null;
@@ -123,7 +117,7 @@ public class JsonAdminUserCouponController {
         }
         
         UserCouponQuery userCouponQuery = UserCouponQuery.builder().couponId(couponId).uid(uid).beginTime(beginTime).endTime(endTime).orderId(orderId).userName(userName)
-                .discountType(discountType).status(status).superposition(superposition).phone(phone).storeIds(storeIds).franchiseeIds(franchiseeIds)
+                .discountType(discountType).status(status).superposition(superposition).phone(phone).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).couponType(couponType).couponWay(couponWay).build();
         return userCouponService.queryCount(userCouponQuery);
     }
