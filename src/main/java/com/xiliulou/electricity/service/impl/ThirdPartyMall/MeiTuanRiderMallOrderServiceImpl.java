@@ -9,37 +9,20 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.dto.thirdMallParty.MtDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.thirdPartyMall.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.thirdPartyMall.OrderQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.thirdPartyMall.NotifyMeiTuanDeliverReq;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.ThirdPartyMallRetrofitService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanOrderRedeemTxService;
@@ -139,6 +122,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
 
     @Resource
     private LostUserActivityDealPublish lostUserActivityDealPublish;
+
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     @Slave
     @Override
@@ -179,7 +165,13 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.warn("MeiTuan order redeem fail! not found user,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
             }
-            
+
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userInfoExtra)) {
+                log.warn("MeiTuan order redeem fail! not found user extra,uid={}", uid);
+                return Triple.of(false, "120125", "未找到用户");
+            }
+
             String phone = userInfo.getPhone();
             
             // 校验是否开启美团商城
@@ -263,9 +255,16 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     log.warn("MeiTuan order redeem fail! SystemGroup cannot purchase useInfoGroup memberCard, uid={}, mid={}", uid, memberCardId);
                     return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
-    
+
                 Boolean oldUser = userInfoService.isOldUser(userInfo);
-                if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+
+                if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                    // 流失用户不允许购买续租类型的套餐
+                    if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
+                        log.warn("MeiTuan order redeem fail. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", uid, memberCardId);
+                        throw new BizException( "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                    }
+                } else if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                     log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
                     return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }

@@ -4,15 +4,10 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.PlaceOrderConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserDelRecord;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
@@ -90,6 +85,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     @Override
     public void dealWithBusiness(PlaceOrderContext context, R<Object> result, Integer placeOrderType) {
         UserInfo userInfo = context.getUserInfo();
+        UserInfoExtra userInfoExtra = context.getUserInfoExtra();
         BatteryMemberCard batteryMemberCard = context.getBatteryMemberCard();
         ElectricityConfig electricityConfig = context.getElectricityConfig();
     
@@ -177,10 +173,17 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 throw new BizException("100318", "您浏览的套餐已下架，请看看其他的吧");
             }
-            
-            // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
+
             Boolean oldUser = userInfoService.isOldUser(userInfo);
-            if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+
+            if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户不允许购买续租类型的套餐
+                if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
+                    log.warn("PLACE ORDER WARN. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", userInfo.getUid(), batteryMemberCard.getId());
+                    throw new BizException( "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                }
+            } else if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+                // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
                 log.warn("PLACE ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
                 throw new BizException("100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }

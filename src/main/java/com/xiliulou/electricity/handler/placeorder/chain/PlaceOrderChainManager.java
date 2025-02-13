@@ -5,36 +5,14 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.PlaceOrderConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.UnionPayOrder;
-import com.xiliulou.electricity.entity.UnionTradeOrder;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserDelRecord;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.TradeOrderService;
-import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
@@ -99,6 +77,8 @@ public class PlaceOrderChainManager {
     private final EnterpriseChannelUserService enterpriseChannelUserService;
     
     private final UserDelRecordService userDelRecordService;
+
+    private final UserInfoExtraService userInfoExtraService;
     
     private final HashMap<Integer, AbstractPlaceOrderHandler> FIRST_NODES = new HashMap<>();
     
@@ -150,7 +130,13 @@ public class PlaceOrderChainManager {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         context.setUserInfo(userInfo);
-        
+
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            throw new BizException( "120125", "未找到用户");
+        }
+        context.setUserInfoExtra(userInfoExtra);
+
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("PLACE ORDER WARN! user is unUsable,uid={}", uid);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");

@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -198,11 +199,13 @@ public interface UserInfoService extends IService<UserInfo> {
     
     /**
      * 检查用户与换电套餐的分组是否匹配
-     * @param userInfo 用户信息
+     *
+     * @param userInfo          用户信息
      * @param batteryMemberCard 套餐信息
+     * @param userInfoExtra
      * @return 校验结果
      */
-    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard);
+    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserInfoExtra userInfoExtra);
     
     R bindBattery(BindBatteryRequest bindBatteryRequest);
     

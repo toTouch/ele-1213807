@@ -38,16 +38,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
-import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.OverdueType;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
-import com.xiliulou.electricity.enums.SignStatusEnum;
-import com.xiliulou.electricity.enums.UseStateEnum;
-import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
-import com.xiliulou.electricity.enums.UserStatusEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageStatusVOEnum;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
@@ -55,6 +46,7 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -121,7 +113,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
-import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
@@ -4160,7 +4151,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo,
-            BatteryMemberCard batteryMemberCard) {
+                                                                BatteryMemberCard batteryMemberCard, UserInfoExtra userInfoExtra) {
         // 判断套餐用户分组和用户的用户分组是否匹配
         List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(userInfo.getUid())
@@ -4181,14 +4172,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
-            
-            // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-            if (isOldUser(userInfo) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+
+            if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户不允许购买续租类型的套餐
+                if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
+                    log.warn("INTEGRATED PAYMENT WARN. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", userInfo.getUid(), batteryMemberCard.getId());
+                    throw new BizException( "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                }
+            } else  if (isOldUser(userInfo) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+                // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
                 log.warn(
                         "INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}",
                         userInfo.getUid(), batteryMemberCard.getId());
                 return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }
+
             // 新用户无法购买续费套餐
             if (userInfo.getPayCount() == 0 && BatteryMemberCard.RENT_TYPE_OLD.equals(
                     batteryMemberCard.getRentType())) {
