@@ -40,6 +40,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.ElectricityConfigExtraEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
@@ -80,6 +81,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigExtraService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
@@ -405,6 +407,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private UserDelRecordService userDelRecordService;
+    
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
     
     /**
      * 分页查询
@@ -4248,6 +4253,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
             log.warn("DeleteAccountPreCheck WARN! not found user,uid={} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+    
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfigExtra) && Objects.equals(electricityConfigExtra.getAccountDelSwitch(), ElectricityConfigExtraEnum.SWITCH_OFF.getCode())) {
+            log.warn("DeleteAccountPreCheck WARN! electricityConfigExtra is null or accountDelSwitch off,uid={} ", uid);
+            return R.fail("120153", "自主注销账号功能已关闭");
         }
         
         UserInfo userInfo = this.queryByUidFromCache(uid);
