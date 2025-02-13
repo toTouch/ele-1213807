@@ -184,7 +184,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      * 流失用户转化条件
      */
-    @Range(min = 30, max = 360, message = "流失用户转化条件: 最小30，最大365", groups = {CreateGroup.class, UpdateGroup.class})
+    @Range(min = 30, max = 365, message = "流失用户转化条件: 最小30，最大365", groups = {CreateGroup.class, UpdateGroup.class})
     @NotNull(message = "流失用户转化条件不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer lostUserDays;
     
