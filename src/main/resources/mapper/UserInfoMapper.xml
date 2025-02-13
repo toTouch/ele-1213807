@@ -1348,14 +1348,4 @@
         from t_user_info where phone =#{phone}
     </select>
     
-    <select id="selectDelUidByIdNumber" resultType="java.lang.Long">
-        select uid
-        from t_user_info
-        where tenant_id = #{tenantId}
-          and id_number is not null
-          and id_number != ''
-          and id_number = #{idNumber}
-          and del_flag = 1
-        order by id desc limit 1
-    </select>
 </mapper>

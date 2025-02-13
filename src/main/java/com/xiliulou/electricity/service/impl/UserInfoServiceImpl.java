@@ -72,6 +72,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigExtraService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
@@ -401,7 +402,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Resource
     private UserDelRecordService userDelRecordService;
-
+    
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
+    
     /**
      * 分页查询
      *
@@ -4244,12 +4248,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         operateRecordUtil.record(null, recordMap);
 
     }
-    @Slave
-    @Override
-    public Long queryDelUidByIdNumber(String idNumber, Integer tenantId) {
-        return userInfoMapper.selectDelUidByIdNumber(idNumber, tenantId);
-    }
-
     @Override
     public R deleteAccountPreCheck() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
@@ -4263,7 +4261,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.warn("DeleteAccountPreCheck WARN! not found user,uid={} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-
+    
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfigExtra) && Objects.equals(electricityConfigExtra.getAccountDelSwitch(), ElectricityConfigExtraEnum.SWITCH_OFF.getCode())) {
+            log.warn("DeleteAccountPreCheck WARN! electricityConfigExtra is null or accountDelSwitch off,uid={} ", uid);
+            return R.fail("120154", "自主注销账号功能已关闭");
+        }
+        
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("DeleteAccountPreCheck WARN! not found userInfo,uid={} ", uid);

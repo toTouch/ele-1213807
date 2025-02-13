@@ -26,4 +26,6 @@ public interface UserDelRecordMapper {
     Integer deleteById(Long id);
     
     List<UserDelRecord> selectListByUidListAndStatus(@Param("uidList") List<Long> uidList, @Param("statusList") List<Integer> statusList);
+    
+    Long selectDelUidByDelIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
 }
