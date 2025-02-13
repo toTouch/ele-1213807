@@ -312,6 +312,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                     ElectricityConfigExtra.builder().tenantId(tenantId).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
         } else {
             electricityConfigExtra.setAccountDelSwitch(electricityConfigAddAndUpdateQuery.getAccountDelSwitch());
+    
+            electricityConfigExtraService.update(electricityConfigExtra);
         }
         
         // 清理缓存
