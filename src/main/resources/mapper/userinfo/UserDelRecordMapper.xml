@@ -78,6 +78,17 @@
         </foreach>
         order by id desc
     </select>
+    
+    <select id="selectDelUidByDelIdNumber" resultType="java.lang.Long">
+        select uid
+        from t_user_del_record
+        where tenant_id = #{tenantId}
+          and del_id_number is not null
+          and del_id_number != ''
+          and del_id_number = #{idNumber}
+          and status in (1, 3)
+        order by id desc limit 1
+    </select>
 
 </mapper>
 

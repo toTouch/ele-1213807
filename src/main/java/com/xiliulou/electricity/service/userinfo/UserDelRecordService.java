@@ -43,4 +43,6 @@ public interface UserDelRecordService {
     Map<Long, UserDelStatusDTO> listUserStatus(List<Long> uidList, List<Integer> status);
     
     Integer getUserStatus(Long uid, Map<Long, UserDelStatusDTO> userStatusMap);
+    
+    Long queryDelUidByDelIdNumber(String idNumber, Integer tenantId);
 }

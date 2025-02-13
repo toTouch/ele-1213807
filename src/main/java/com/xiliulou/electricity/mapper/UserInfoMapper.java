@@ -185,5 +185,4 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     
     Integer updatePayCountByUid(UserInfo userInfo);
     
-    Long selectDelUidByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
 }
