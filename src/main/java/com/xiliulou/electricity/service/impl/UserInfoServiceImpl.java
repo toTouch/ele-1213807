@@ -915,7 +915,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             // 用户所属门店
             UserInfo userInfo = queryByUidFromCache(uid);
-            if (Objects.nonNull(userInfo.getStoreId())) {
+            if (Objects.nonNull(userInfo) && Objects.nonNull(userInfo.getStoreId())) {
                 item.setStoreId(userInfo.getStoreId());
                 Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
                 item.setStoreName(Objects.isNull(store) ? "" : store.getName());
@@ -3482,7 +3482,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             UserBasicInfoEleProVO basicInfo = UserBasicInfoEleProVO.builder().name(item.getName()).phone(item.getPhone()).batteryDepositStatus(item.getBatteryDepositStatus())
                     .build();
             UserInfo userInfo = this.queryByUidFromCache(item.getUid());
-            if (Objects.nonNull(userInfo.getFranchiseeId())) {
+            if (Objects.nonNull(userInfo) && Objects.nonNull(userInfo.getFranchiseeId())) {
                 basicInfo.setFranchiseeId(userInfo.getFranchiseeId());
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
                 if (Objects.nonNull(franchisee)) {
@@ -3491,7 +3491,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             }
 
-            if (Objects.nonNull(userInfo.getStoreId())) {
+            if (Objects.nonNull(userInfo) && Objects.nonNull(userInfo.getStoreId())) {
                 basicInfo.setStoreId(userInfo.getStoreId());
                 Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
                 if (Objects.nonNull(store)) {
