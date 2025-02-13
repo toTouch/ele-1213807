@@ -4258,7 +4258,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(TenantContextHolder.getTenantId());
         if (Objects.nonNull(electricityConfigExtra) && Objects.equals(electricityConfigExtra.getAccountDelSwitch(), ElectricityConfigExtraEnum.SWITCH_OFF.getCode())) {
             log.warn("DeleteAccountPreCheck WARN! electricityConfigExtra is null or accountDelSwitch off,uid={} ", uid);
-            return R.fail("120153", "自主注销账号功能已关闭");
+            return R.fail("120154", "自主注销账号功能已关闭");
         }
         
         UserInfo userInfo = this.queryByUidFromCache(uid);
