@@ -180,6 +180,21 @@ public class ElectricityConfigVO {
     private Integer chargeRateType;
     
     /**
+     * 流失用户拉新 0 - 开启, 1 - 关闭
+     */
+    private Integer lostUserFirst;
+    
+    /**
+     * 流失用户转化条件
+     */
+    private Integer lostUserDays;
+    
+    /**
+     * 允许原邀请人重新邀请：0-允许, 1 - 不允许
+     */
+    private Integer allowOriginalInviter;
+    
+    /**
      * 是否舒适换电，默认0关闭，1是开启
      */
     private Integer isComfortExchange;
@@ -206,7 +221,6 @@ public class ElectricityConfigVO {
     
     /**
      * 灵活续费开关
-     *
      * @see FlexibleRenewalEnum
      */
     private Integer isEnableFlexibleRenewal;
@@ -233,12 +247,16 @@ public class ElectricityConfigVO {
     private Integer packageFreezeCount;
     
     /**
-     * 与套餐冻结次数限制参数 packageFreezeCount 联动 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60 packageFreezeCount 为其他数值时， packageFreezeDays 为无资产情况下限制申请冻结最大天数
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDays 为无资产情况下限制申请冻结最大天数
      */
     private Integer packageFreezeDays;
     
     /**
-     * 与套餐冻结次数限制参数 packageFreezeCount 联动 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60 packageFreezeCount 为其他数值时， packageFreezeDaysWithAssets 为有资产情况下限制申请冻结最大天数
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60
+     * packageFreezeCount 为其他数值时， packageFreezeDaysWithAssets 为有资产情况下限制申请冻结最大天数
      */
     private Integer packageFreezeDaysWithAssets;
     
