@@ -1478,7 +1478,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
                 log.warn("purchase package with deposit by enterprise user warn, userAccount is cancelling, uid={}", uid);
-                return Triple.of(false, "120139", "账号处于注销缓冲期内，无法操作");
+                return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
             }
             
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -1779,7 +1779,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
                 log.warn("purchase Package with free deposit warn, userAccount is cancelling, uid={}", uid);
-                return Triple.of(false, "120139", "账号处于注销缓冲期内，无法操作");
+                return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
             }
     
            /* ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);

@@ -428,7 +428,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
                 log.warn("Modify inviter fail! userAccount is cancelling, uid={}", uid);
-                return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+                return R.fail("120163", "账号处于注销缓冲期内，无法操作");
             }
             
             Merchant merchant = merchantService.queryByIdFromCache(merchantId);
@@ -801,7 +801,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
             log.warn("UpdateEleLimit warn! userAccount is cancelling, uid={}", uid);
-            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+            return R.fail("120163", "账号处于注销缓冲期内，无法操作");
         }
         
         // 加盟商一致性校验

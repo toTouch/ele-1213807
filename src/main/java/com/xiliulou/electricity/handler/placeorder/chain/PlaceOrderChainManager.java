@@ -152,7 +152,7 @@ public class PlaceOrderChainManager {
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
             log.warn("PLACE ORDER WARN! userAccount is cancelling, uid={}", uid);
-            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+            return R.fail("120163", "账号处于注销缓冲期内，无法操作");
         }
         
         // 检查是否为自主续费状态
