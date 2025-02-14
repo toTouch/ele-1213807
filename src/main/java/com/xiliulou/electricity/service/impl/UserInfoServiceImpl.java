@@ -1495,7 +1495,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             // 是否为"注销中"
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(oldUserInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
-                return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+                return R.fail("120163", "账号处于注销缓冲期内，无法操作");
             }
             
             // 判断是否缴纳押金
@@ -4239,7 +4239,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R deleteAccountPreCheck() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(tokenUser)) {
-            return R.fail("120138", "您还未登录，请去【我的】页面登录");
+            return R.fail("120162", "您还未登录，请去【我的】页面登录");
         }
         
         Long uid = tokenUser.getUid();
@@ -4278,41 +4278,41 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
             log.warn("DeleteAccountPreCheck WARN! enterprise user cloudBean not recycled! uid={}", uid);
-            return R.fail("120131", "您名下有未回收的云豆，暂无法注销，请联系站点回收后操作");
+            return R.fail("120156", "您名下有未回收的云豆，暂无法注销，请联系站点回收后操作");
         }
         
         BigDecimal batteryLateFees = serviceFeeUserInfoService.selectBatteryServiceFeeByUid(uid);
         if (Objects.nonNull(batteryLateFees) && batteryLateFees.compareTo(BigDecimal.ZERO) > 0) {
             log.warn("DeleteAccountPreCheck WARN! has batteryLateFees! uid={}", uid);
-            return R.fail("120134", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
+            return R.fail("120159", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
         }
         
         boolean carLateFees = carRentalPackageOrderSlippageService.isExitUnpaid(tenantId, uid);
         if (carLateFees) {
             log.warn("DeleteAccountPreCheck WARN! has carLateFees! uid={}", uid);
-            return R.fail("120134", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
+            return R.fail("120159", "您有未缴纳的滞纳金，暂无法注销，请缴纳后操作");
         }
         
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.warn("DeleteAccountPreCheck WARN! has unreturned battery! uid={}", uid);
-            return R.fail("120132", "您名下有未归还的电池，暂无法注销，请归还后操作");
+            return R.fail("120157", "您名下有未归还的电池，暂无法注销，请归还后操作");
         }
         
         if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             log.warn("DeleteAccountPreCheck WARN! has unreturned car! uid={}", uid);
-            return R.fail("120133", "您名下有未归还的车辆，暂无法注销，请归还后操作");
+            return R.fail("120158", "您名下有未归还的车辆，暂无法注销，请归还后操作");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
                 log.warn("DeleteAccountPreCheck WARN! userBatteryMemberCard is freezing! uid={}, memberCardId={}", uid, userBatteryMemberCard.getMemberCardId());
-                return R.fail("120136", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
+                return R.fail("120161", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
             }
             
             if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                 log.warn("DeleteAccountPreCheck warn! userBatteryMemberCard has been frozen! uid={}, memberCardId={}", uid, userBatteryMemberCard.getMemberCardId());
-                return R.fail("120135", "您当前套餐已冻结，暂无法注销，请启用后操作");
+                return R.fail("120160", "您当前套餐已冻结，暂无法注销，请启用后操作");
             }
         }
         
@@ -4321,19 +4321,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             Integer memberTermEntityStatus = memberTermEntity.getStatus();
             if (MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermEntityStatus)) {
                 log.warn("DeleteAccountPreCheck WARN! memberTermEntityStatus is freezing! uid={}, rentalPackageId={}", uid, memberTermEntity.getRentalPackageId());
-                return R.fail("120136", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
+                return R.fail("120161", "您有在申请的冻结套餐，暂无法注销，请启用后操作");
             }
             
             if (MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntityStatus)) {
                 log.warn("DeleteAccountPreCheck WARN! memberTermEntityStatus has been frozen! uid={}, rentalPackageId={}", uid, memberTermEntity.getRentalPackageId());
-                return R.fail("120135", "您当前套餐已冻结，暂无法注销，请启用后操作");
+                return R.fail("120160", "您当前套餐已冻结，暂无法注销，请启用后操作");
             }
         }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarDepositStatus(),
                 UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             log.warn("DeleteAccountPreCheck WARN! has unreturned deposit! uid={}", uid);
-            return R.fail("402030", "请退还押金后，进行删除操作");
+            return R.fail("120155", "请退还押金后，进行注销操作");
         }
         
         return R.ok();
@@ -4343,7 +4343,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R deleteAccount() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(tokenUser)) {
-            return R.fail("120138", "您还未登录，请去【我的】页面登录");
+            return R.fail("120162", "您还未登录，请去【我的】页面登录");
         }
     
         Long uid = tokenUser.getUid();
@@ -4369,7 +4369,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
             log.warn("DeleteAccount WARN! userAccount is cancelling, uid={}", uid);
-            return R.fail("120139", "账号处于注销缓冲期内，无法操作");
+            return R.fail("120163", "账号处于注销缓冲期内，无法操作");
         }
     
         Integer tenantId = userInfo.getTenantId();

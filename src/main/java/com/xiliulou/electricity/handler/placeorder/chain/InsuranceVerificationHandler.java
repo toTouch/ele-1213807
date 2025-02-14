@@ -70,7 +70,7 @@ public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
                 log.warn("CREATE INSURANCE_ORDER ERROR! userAccount is cancelling, uid={}", uid);
-                throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
+                throw new BizException("120163", "账号处于注销缓冲期内，无法操作");
             }
         }
         

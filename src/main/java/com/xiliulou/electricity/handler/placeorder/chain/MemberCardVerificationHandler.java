@@ -98,7 +98,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
                 log.warn("BATTERY DEPOSIT WARN! userAccount is cancelling, uid={}", userInfo.getUid());
-                throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
+                throw new BizException("120163", "账号处于注销缓冲期内，无法操作");
             }
         }
         

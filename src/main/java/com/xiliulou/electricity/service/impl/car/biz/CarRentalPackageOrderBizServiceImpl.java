@@ -872,7 +872,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 1.3 是否为"注销中"
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
-                throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
+                throw new BizException("120163", "账号处于注销缓冲期内，无法操作");
             }
             
             // 1.4 查询用户当前所在分组
@@ -1963,7 +1963,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (Objects.equals(systemDefinitionEnum.getCode(), SystemDefinitionEnum.BACKGROUND.getCode())) {
             UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
             if (Objects.nonNull(userDelRecord)) {
-                throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
+                throw new BizException("120163", "账号处于注销缓冲期内，无法操作");
             }
         }
         

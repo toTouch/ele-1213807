@@ -1346,7 +1346,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(request.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
             log.warn("channel user admin exit check warn, userAccount is cancelling, uid={}", request.getUid());
-            return Triple.of(false, "120139", "账号处于注销缓冲期内，无法操作");
+            return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
         }
         
         EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(request.getUid());

@@ -331,7 +331,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         // 是否为"注销中"
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
-            throw new BizException("120139", "账号处于注销缓冲期内，无法操作");
+            throw new BizException("120163", "账号处于注销缓冲期内，无法操作");
         }
         
         // 查询滞纳金信息
