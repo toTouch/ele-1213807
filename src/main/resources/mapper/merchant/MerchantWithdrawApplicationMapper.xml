@@ -19,7 +19,7 @@
         <result property="receiptTime" column="receipt_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
-        
+        <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -42,7 +42,8 @@
             create_time,
             update_time,
             tenant_id,
-            franchisee_id
+            franchisee_id,
+            type
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -58,7 +59,8 @@
             #{createTime},
             #{updateTime},
             #{tenantId},
-            #{franchiseeId}
+            #{franchiseeId},
+            #{type}
         </trim>
     </insert>
     
@@ -130,6 +132,15 @@
             <if test="wechatMerchantId != null">
                 wechat_merchant_id = #{wechatMerchantId},
             </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="state != null">
+                state = #{state},
+            </if>
+            <if test="packageInfo != null">
+                package_info = #{packageInfo},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -166,6 +177,9 @@
             </if>
             <if test="merchantWithdrawApplication.wechatMerchantId != null">
                 wechat_merchant_id = #{merchantWithdrawApplication.wechatMerchantId},
+            </if>
+            <if test="merchantWithdrawApplication.type != null">
+                type = #{merchantWithdrawApplication.type},
             </if>
         </set>
         

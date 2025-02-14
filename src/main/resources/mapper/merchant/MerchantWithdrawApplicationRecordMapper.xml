@@ -17,7 +17,10 @@
             create_time,
             update_time,
             pay_config_type,
-            franchisee_id
+            franchisee_id,
+            type,
+            transaction_batch_id,
+            transaction_detail_id
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -32,7 +35,10 @@
             #{createTime},
             #{updateTime},
             #{payConfigType},
-            #{franchiseeId}
+            #{franchiseeId},
+            #{type},
+            #{transactionBatchId},
+            #{transactionBatchDetailId}
         </trim>
     </insert>
     
@@ -51,7 +57,8 @@
             create_time,
             update_time,
             pay_config_type,
-            franchisee_id
+            franchisee_id,
+            type
         </trim>
         values
         <foreach collection="list" item="item" index="index" separator=",">
@@ -68,7 +75,8 @@
             #{item.createTime},
             #{item.updateTime},
             #{item.payConfigType},
-            #{item.franchiseeId}
+            #{item.franchiseeId},
+            #{item.type}
             )
         </foreach>
     

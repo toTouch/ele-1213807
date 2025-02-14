@@ -5,6 +5,7 @@ import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationR
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.ReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawProcessVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.math.BigDecimal;
@@ -53,5 +54,6 @@ public interface MerchantWithdrawApplicationService {
     List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
     Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
-    
+
+    Triple<Boolean, String, Object> getMerchantWithdrawProcess(Long uid);
 }
