@@ -46,5 +46,6 @@ public interface MerchantWithdrawApplicationRecordMapper {
     Integer updateApplicationRecordStatus(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord);
     
     List<MerchantWithdrawApplicationRecordBO> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
-    
+
+    Integer updateById(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecordUpdate);
 }

@@ -138,7 +138,7 @@
             <if test="state != null">
                 state = #{state},
             </if>
-            <if test="packageInfo != null">
+            <if test="packageInfo != null and packageInfo != ''">
                 package_info = #{packageInfo},
             </if>
         </set>
@@ -555,7 +555,34 @@
         </where>
         
     </select>
-    
+
+    <select id="selectListAuditSuccess"
+            resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO">
+        SELECT
+                a.id 'applicationId',
+                r.id 'recordId',
+                a.amount 'amount',
+                r.batch_detail_no 'batchDetailNo',
+                a.batch_no 'batchNo',
+                a.uid,
+                a.franchisee_id 'franchiseeId',
+                a.tenant_id 'tenantId'
+        FROM
+            t_merchant_withdraw_application a
+                INNER JOIN t_merchant_withdraw_application_record r ON r.order_no = a.order_no and r.batch_no = a.batch_no
+        where
+            a.type = #{type}
+          and a.`status` = 3
+          and a.id > #{startId}
+          <if test="tenantId != null">
+              and a.tenant_id = #{tenantId}
+          </if>
+
+        order by a.id
+            limit #{size}
+
+    </select>
+
     <update id="updateApplicationStatusByBatchNo">
         update t_merchant_withdraw_application
         set status = #{status},

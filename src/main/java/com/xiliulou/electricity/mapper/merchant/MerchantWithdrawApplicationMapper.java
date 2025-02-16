@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO;
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
@@ -67,4 +68,6 @@ public interface MerchantWithdrawApplicationMapper {
     List<MerchantWithdrawApplicationBO> selectListByBatchNoList(@Param("batchNoList") List<String> batchNoList);
     
     Integer updatePayConfigWhetherChangeByBatchNo(MerchantWithdrawApplication updateWithdrawApplicationUpdate);
+
+    List<MerchantWithdrawSendBO> selectListAuditSuccess(@Param("tenantId") Integer tenantId,@Param("size") Long size,@Param("startId") Long startId,@Param("code") Integer code);
 }

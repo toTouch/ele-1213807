@@ -272,7 +272,13 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     public List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList, Integer tenantId) {
         return userOauthBindMapper.selectListByUidAndPhoneList(queryList, tenantId);
     }
-    
+
+    @Override
+    @Slave
+    public List<UserOauthBind> listByUidAndTenantAndSource(List<Long> uidList, Integer tenantId, Integer sourceWxPro) {
+        return userOauthBindMapper.selectListByUidAndTenantAndSource(uidList, tenantId, sourceWxPro);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean checkOpenIdByJsCode(String jsCode) {

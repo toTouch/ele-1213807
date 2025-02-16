@@ -1,11 +1,12 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.ReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
-import com.xiliulou.electricity.vo.merchant.MerchantWithdrawProcessVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.math.BigDecimal;
@@ -56,4 +57,8 @@ public interface MerchantWithdrawApplicationService {
     Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
 
     Triple<Boolean, String, Object> getMerchantWithdrawProcess(Long uid);
+
+    List<MerchantWithdrawSendBO> listAuditSuccess(Integer tenantId, Long size, Long startId, Integer type);
+
+    Triple<Boolean, String, Object> sendTransfer(MerchantWithdrawSendBO merchantWithdrawSendBO, String userThird, WechatPayParamsDetails finalWechatPayParamsDetails, Integer payConfigType);
 }

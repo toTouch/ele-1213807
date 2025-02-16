@@ -320,7 +320,31 @@
 
         </where>
     </update>
-    
+
+    <update id="updateById">
+        update t_merchant_withdraw_application_record 
+        <set>
+
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="transactionBatchDetailId != null and transactionBatchDetailId != ''">
+                transaction_detail_id = #{transactionBatchDetailId},
+            </if>
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+            <if test="payConfigType != null">
+                pay_config_type = #{payConfigType},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+            
+        where id = #{id}
+    </update>
+
     <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO">
         select mwar.id,
                mwar.create_time,
