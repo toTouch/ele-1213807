@@ -2846,7 +2846,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCardToBuy, userBatteryMemberCard, userBindbatteryMemberCard,
-                null, null);
+                null, null, null);
         
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
@@ -2976,7 +2976,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
-            UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source) {
+            UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source,
+            List<InstallmentDeductionPlan> deductionPlans) {
         
         // 分期套餐由此接入，若不传递代扣记录则为普通的后台续费套餐
         ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
@@ -3004,7 +3005,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         } else {
             // 传递代扣记录则为续费分期套餐子订单
             memberCardOrder = applicationContext.getBean(ElectricityMemberCardOrderServiceImpl.class)
-                    .generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, null, installmentRecord).getRight();
+                    .generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, null, installmentRecord, deductionPlans).getRight();
             memberCardOrder.setValidDays(InstallmentUtil.calculateSuborderRentTime(installmentRecord.getPaidInstallment() + 1, installmentRecord, batteryMemberCard));
             memberCardOrder.setSource(source);
         }
@@ -3924,7 +3925,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public Triple<Boolean, String, ElectricityMemberCardOrder> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard memberCard, ElectricityCabinet cabinet,
-            InstallmentRecord installmentRecord) {
+            InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans) {
         
         if (Objects.isNull(installmentRecord) || Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment())) {
             return Triple.of(false, "分期订单已代扣完成", null);
@@ -3933,11 +3934,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         
-        // 根据代扣计划设置子订单金额
-        BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord.getPaidInstallment() + 1, installmentRecord, memberCard);
-        
-        // 计算子套餐订单租期
-        Integer validDays = calculateSuborderValidDays(installmentRecord);
+        // 迭代过一次，一期与其他期代扣成功续费套餐的代码逻辑顺序差别较大
+        // 生成第一期套餐订单时，代扣计划还未生成，金额与租期需要计算，后面的都从代扣计划中取
+        BigDecimal payAmount = BigDecimal.ZERO;
+        Integer validDays;
+        if (installmentRecord.getPaidInstallment() == 0) {
+            // 首期，计算子套餐订单金额，租期
+            payAmount = InstallmentUtil.calculateSuborderAmount(1, installmentRecord, memberCard);
+            validDays = calculateSuborderValidDays(installmentRecord);
+        } else {
+            // 非首期，根据代扣计划设置子订单金额与租期
+            for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+                payAmount = payAmount.add(deductionPlan.getAmount());
+            }
+            validDays = deductionPlans.get(0).getRentTime();
+        }
         
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));

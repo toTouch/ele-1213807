@@ -78,6 +78,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -698,7 +699,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 
                 // 代扣0元，0元只有一个代扣计划，也只会出现在第一期，直接在0元处理中续费套餐就可以了，也不用考虑代扣完解约的问题
                 if (deductionPlan.getAmount().compareTo(BigDecimal.ZERO) == 0) {
-                    handleDeductZero(installmentRecord, deductionPlan, deductionRecord);
+                    handleDeductZero(installmentRecord, List.of(deductionPlan), deductionRecord);
                     return Triple.of(true, null, null);
                 }
                 
@@ -783,22 +784,24 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public void handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, InstallmentDeductionRecord deductionRecord) {
-        handleBatteryMemberCard(installmentRecord, deductionPlan, installmentRecord.getUid());
+    public void handleDeductZero(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, InstallmentDeductionRecord deductionRecord) {
+        handleBatteryMemberCard(installmentRecord, deductionPlans, installmentRecord.getUid());
         
-        InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
-        deductionPlanUpdate.setId(deductionPlan.getId());
-        deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
-        deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
-        deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
-        deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
-        installmentDeductionPlanService.update(deductionPlanUpdate);
-        
-        InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
-        installmentRecordUpdate.setId(installmentRecord.getId());
-        installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-        installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
-        installmentRecordService.update(installmentRecordUpdate);
+        for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+            InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+            deductionPlanUpdate.setId(deductionPlan.getId());
+            deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
+            deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
+            deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
+            deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentDeductionPlanService.update(deductionPlanUpdate);
+            
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+            installmentRecordUpdate.setId(installmentRecord.getId());
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
+            installmentRecordService.update(installmentRecordUpdate);
+        }
     }
     
     @Override
@@ -855,13 +858,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, Long uid) {
+    public Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         
+        InstallmentDeductionPlan deductionPlan = deductionPlans.get(0);
         ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.queryOrderByAgreementNoAndIssue(deductionPlan.getExternalAgreementNo(), 1);
         
         // 给用户绑定套餐
@@ -887,7 +891,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return Triple.of(false, "套餐不存在", null);
             }
             electricityMemberCardOrderService.saveRenewalUserBatteryMemberCardOrder(null, userInfo, batteryMemberCard, userBatteryMemberCard, batteryMemberCard, installmentRecord,
-                    memberCardOrder.getSource());
+                    memberCardOrder.getSource(), deductionPlans);
         }
         
         return Triple.of(true, null, null);
