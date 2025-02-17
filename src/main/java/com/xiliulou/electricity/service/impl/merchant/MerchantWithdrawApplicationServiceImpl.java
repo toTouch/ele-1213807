@@ -875,7 +875,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             int size = 200;
             
             while (true) {
-                List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListForWithdrawInProgress(checkTime, offset, size);
+                List<MerchantWithdrawApplication> merchantWithdrawApplications = merchantWithdrawApplicationMapper.selectListForWithdrawInProgress(checkTime, offset, size, MerchantWithdrawTypeEnum.OLD.getCode());
                 if (CollectionUtils.isEmpty(merchantWithdrawApplications)) {
                     return;
                 }

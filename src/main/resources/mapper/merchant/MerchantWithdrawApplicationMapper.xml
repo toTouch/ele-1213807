@@ -501,6 +501,7 @@
         where tmwa.del_flag = 0
           and tmwa.status = 4
           and tmwa.check_time <![CDATA[ <=  ]]> #{checkTime}
+          and tmwa.type = #{type}
         limit #{offset},#{size}
     </select>
     
