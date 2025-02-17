@@ -42,4 +42,6 @@ public interface MerchantWithdrawApplicationRecordService {
     Integer selectWithdrawRecordListCount(MerchantWithdrawApplicationRecordRequest merchantWithdrawApplicationRecordRequest);
 
     Integer updateById(MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecordUpdate);
+
+    MerchantWithdrawApplicationRecord queryByBatchDetailNo(String outBillNo, String transferBillNo);
 }

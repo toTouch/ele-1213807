@@ -108,5 +108,11 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
         return merchantWithdrawApplicationRecordMapper.updateById(merchantWithdrawApplicationRecordUpdate);
     }
 
+    @Override
+    @Slave
+    public MerchantWithdrawApplicationRecord queryByBatchDetailNo(String outBillNo, String transferBillNo) {
+        return merchantWithdrawApplicationRecordMapper.selectByBatchDetailNo(outBillNo, transferBillNo);
+    }
+
 
 }

@@ -76,4 +76,6 @@ public interface MerchantWithdrawApplicationMapper {
     Integer batchUpdatePayConfigChangeByIdList(@Param("idList") List<Long> idList,@Param("payConfigWhetherChange") Integer payConfigWhetherChange, @Param("updateTime") long updateTime);
 
     Integer updateStateById(@Param("applicationId") Long applicationId,@Param("state") Integer state,@Param("updateTime") long updateTime);
+
+    MerchantWithdrawApplication selectByOrderNo(@Param("orderNo") String orderNo,@Param("batchNo") String batchNo);
 }

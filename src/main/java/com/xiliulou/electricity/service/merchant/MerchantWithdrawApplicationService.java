@@ -67,4 +67,8 @@ public interface MerchantWithdrawApplicationService {
     Integer batchUpdatePayConfigChangeByIdList(List<Long> idList, Integer payConfigWhetherChangeYes);
 
     Integer updateStateById(Long applicationId, Integer state);
+
+    MerchantWithdrawApplication queryByOrderNo(String orderNo, String batchNo);
+
+    Integer updateById(MerchantWithdrawApplication merchantWithdrawApplicationUpdate);
 }

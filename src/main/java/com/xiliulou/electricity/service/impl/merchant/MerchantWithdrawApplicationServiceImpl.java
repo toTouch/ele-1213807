@@ -1214,6 +1214,17 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.updateStateById(applicationId, state, System.currentTimeMillis());
     }
 
+    @Override
+    @Slave
+    public MerchantWithdrawApplication queryByOrderNo(String orderNo, String batchNo) {
+        return merchantWithdrawApplicationMapper.selectByOrderNo(orderNo, batchNo);
+    }
+
+    @Override
+    public Integer updateById(MerchantWithdrawApplication merchantWithdrawApplicationUpdate) {
+        return merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
+    }
+
 
     public void handleBatchDetailsInfo(String batchNo, Integer tenantId, WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult) {
         //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。

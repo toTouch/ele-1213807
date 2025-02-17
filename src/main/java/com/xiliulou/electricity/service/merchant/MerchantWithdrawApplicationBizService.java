@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderCallBackResource;
+
 /**
  * @author BaoYu
  * @description:
@@ -10,4 +12,6 @@ public interface MerchantWithdrawApplicationBizService {
     void handleSendMerchantWithdrawProcess(Integer tenantId);
 
     void handleQueryWithdrawResult(Integer tenantId);
+
+    void handleNotify(WechatTransferOrderCallBackResource callBackResource);
 }

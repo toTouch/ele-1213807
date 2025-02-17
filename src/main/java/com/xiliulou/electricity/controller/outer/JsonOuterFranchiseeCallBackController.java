@@ -145,4 +145,24 @@ public class JsonOuterFranchiseeCallBackController extends JsonOuterCallBackBasi
         service.process(callBackParam);
         return WechatV3CallBackResult.success();
     }
+
+    /**
+     * 微信支付通知
+     *
+     * @return
+     */
+    @PostMapping("/outer/wechat/franchisee/merchant/withdraw/notified/{tenantId}/{franchiseeId}")
+    public WechatV3CallBackResult merchantWithdrawNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
+                                              @RequestBody WechatV3OrderCallBackRequest wechatV3OrderCallBackQuery) {
+
+        if (Objects.isNull(franchiseeId)){
+            log.warn("JsonOuterFranchiseeCallBackController.merchantWithdrawNotified :franchiseeId={}",franchiseeId);
+            franchiseeId=0L;
+        }
+
+        wechatV3OrderCallBackQuery.setTenantId(tenantId);
+        wechatV3OrderCallBackQuery.setFranchiseeId(franchiseeId);
+        wechatV3PostProcessExecuteHandler.postProcessAfterMerchantWithdraw(wechatV3OrderCallBackQuery);
+        return WechatV3CallBackResult.success();
+    }
 }

@@ -614,6 +614,28 @@
         limit #{size}
     </select>
 
+    <select id="selectByOrderNo"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select id,
+               uid,
+               order_no,
+               batch_no,
+               amount,
+               remark,
+               status,
+               receipt_time,
+               tenant_id,
+               del_flag,
+               create_time,
+               update_time,
+               state,
+               type
+        from t_merchant_withdraw_application
+        where order_no = #{orderNo}
+          and batch_no = #{batchNo}
+          and del_flag = 0
+    </select>
+
     <update id="batchUpdatePayConfigChangeByIdList">
         update t_merchant_withdraw_application
         set pay_config_whether_change = #{payConfigWhetherChange},

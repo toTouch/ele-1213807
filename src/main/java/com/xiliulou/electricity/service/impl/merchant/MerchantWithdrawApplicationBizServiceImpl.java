@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl.merchant;
 import cn.hutool.core.date.DateUtil;
 import com.alipay.api.AlipayApiException;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO;
@@ -19,14 +18,15 @@ import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
+import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.enums.merchant.MerchantWithdrawApplicationStateEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantWithdrawTypeEnum;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
-import com.xiliulou.electricity.service.merchant.MerchantService;
-import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationBizService;
-import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
+import com.xiliulou.electricity.service.merchant.*;
+import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderQueryResultV2;
 import com.xiliulou.pay.weixinv3.v2.query.WechatTransferOrderRecordRequestV2;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
@@ -36,10 +36,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +47,9 @@ import java.util.stream.Collectors;
 public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdrawApplicationBizService {
     @Resource
     private MerchantWithdrawApplicationService merchantWithdrawApplicationService;
+
+    @Resource
+    private MerchantWithdrawApplicationRecordService merchantWithdrawApplicationRecordService;
 
     @Resource
     private MerchantConfig merchantConfig;
@@ -71,6 +74,9 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
 
     @Resource
     private WeChatAppTemplateService weChatAppTemplateService;
+
+    @Resource
+    private MerchantUserAmountService merchantUserAmountService;
 
     @Override
     public void handleSendMerchantWithdrawProcess(Integer tenantId) {
@@ -116,6 +122,93 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
 
         }
 
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void handleNotify(WechatTransferOrderCallBackResource callBackResource) {
+        // 审核记录是否存在
+        MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord = merchantWithdrawApplicationRecordService.queryByBatchDetailNo(callBackResource.getOutBillNo(), callBackResource.getTransferBillNo());
+        if (ObjectUtils.isEmpty(merchantWithdrawApplicationRecord)) {
+            log.error("merchant withdraw notify error! merchant withdraw application record is null, outBillNo={}, transferBillNo={}", callBackResource.getOutBillNo(), callBackResource.getTransferBillNo());
+            return;
+        }
+
+        // 提现记录是否存在
+        MerchantWithdrawApplication merchantWithdrawApplication = merchantWithdrawApplicationService.queryByOrderNo(merchantWithdrawApplicationRecord.getOrderNo(), merchantWithdrawApplicationRecord.getBatchNo());
+        if (ObjectUtils.isEmpty(merchantWithdrawApplication)) {
+            log.error("merchant withdraw notify error! merchant withdraw application is null, orderNo={}, batchNo={}", merchantWithdrawApplicationRecord.getOrderNo(), merchantWithdrawApplicationRecord.getBatchNo());
+            return;
+        }
+
+        // 校验提现记录是否已经完成
+        if (Objects.equals(merchantWithdrawApplication.getState(), MerchantWithdrawApplicationStateEnum.SUCCESS.getCode())
+                || Objects.equals(merchantWithdrawApplication.getState(), MerchantWithdrawApplicationStateEnum.FAIL.getCode()) || Objects.equals(merchantWithdrawApplication.getState(), MerchantWithdrawApplicationStateEnum.CANCELLED.getCode())) {
+            log.error("merchant withdraw notify error! merchant withdraw application state finished orderNo={}, batchNo={}", merchantWithdrawApplication.getOrderNo(), merchantWithdrawApplication.getBatchNo());
+            return;
+        }
+
+        // 校验微信返回的状态
+        if (Objects.isNull(MerchantWithdrawApplicationStateEnum.getStateByDesc(callBackResource.getState()))) {
+            log.error("merchant withdraw notify error! wechat state is null, outBillNo={}, transferBillNo={}, state={}", callBackResource.getOutBillNo(), callBackResource.getTransferBillNo(), callBackResource.getState());
+            return;
+        }
+
+        // 校验微信的状态是否为最终的状态
+        if (!(Objects.equals(callBackResource.getState(), MerchantWithdrawApplicationStateEnum.FAIL.getDesc()) ||
+                Objects.equals(callBackResource.getState(), MerchantWithdrawApplicationStateEnum.SUCCESS.getDesc()) || Objects.equals(callBackResource.getState(), MerchantWithdrawApplicationStateEnum.CANCELLED.getDesc()))) {
+            log.error("merchant withdraw notify error! wechat state is not final, outBillNo={}, transferBillNo={}, state={}", callBackResource.getOutBillNo(), callBackResource.getTransferBillNo(), callBackResource.getState());
+            return;
+        }
+
+        // 成功状态
+        if (Objects.equals(callBackResource.getState(), MerchantWithdrawApplicationStateEnum.SUCCESS.getDesc())) {
+            handleNotifySuccess(merchantWithdrawApplication, merchantWithdrawApplicationRecord, callBackResource);
+        } else {
+            handleNotifyFail(merchantWithdrawApplication, merchantWithdrawApplicationRecord, callBackResource);
+        }
+    }
+
+    private void handleNotifyFail(MerchantWithdrawApplication merchantWithdrawApplication, MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord, WechatTransferOrderCallBackResource callBackResource) {
+        // 修改申请
+        MerchantWithdrawApplication merchantWithdrawApplicationUpdate = new MerchantWithdrawApplication();
+        merchantWithdrawApplicationUpdate.setId(merchantWithdrawApplication.getId());
+        merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
+        merchantWithdrawApplicationUpdate.setState(MerchantWithdrawApplicationStateEnum.getStateByDesc(callBackResource.getState()).getCode());
+        merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
+        merchantWithdrawApplicationService.updateById(merchantWithdrawApplicationUpdate);
+
+        // 修改审核记录
+        MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecordUpdate = new MerchantWithdrawApplicationRecord();
+        merchantWithdrawApplicationRecordUpdate.setId(merchantWithdrawApplicationRecord.getId());
+        merchantWithdrawApplicationRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        merchantWithdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
+        merchantWithdrawApplicationRecordUpdate.setRemark(callBackResource.getFailReason());
+        merchantWithdrawApplicationRecordService.updateById(merchantWithdrawApplicationRecordUpdate);
+
+        //回滚商户余额表中的提现金额
+        merchantUserAmountService.rollBackWithdrawAmount(merchantWithdrawApplication.getAmount(), merchantWithdrawApplication.getUid(),
+                merchantWithdrawApplication.getTenantId().longValue());
+    }
+
+    private void handleNotifySuccess(MerchantWithdrawApplication merchantWithdrawApplication, MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord, WechatTransferOrderCallBackResource callBackResource) {
+        // 修改申请
+        MerchantWithdrawApplication merchantWithdrawApplicationUpdate = new MerchantWithdrawApplication();
+        merchantWithdrawApplicationUpdate.setId(merchantWithdrawApplication.getId());
+        merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
+        merchantWithdrawApplicationUpdate.setState(MerchantWithdrawApplicationStateEnum.SUCCESS.getCode());
+        merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+        merchantWithdrawApplicationUpdate.setReceiptTime(System.currentTimeMillis());
+
+        merchantWithdrawApplicationService.updateById(merchantWithdrawApplicationUpdate);
+
+        // 修改审核记录
+        MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecordUpdate = new MerchantWithdrawApplicationRecord();
+        merchantWithdrawApplicationRecordUpdate.setId(merchantWithdrawApplicationRecord.getId());
+        merchantWithdrawApplicationRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        merchantWithdrawApplicationRecordUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+
+        merchantWithdrawApplicationRecordService.updateById(merchantWithdrawApplicationRecordUpdate);
     }
 
     private void handleQueryByMerchant(Merchant merchant) {

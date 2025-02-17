@@ -324,7 +324,6 @@
     <update id="updateById">
         update t_merchant_withdraw_application_record 
         <set>
-
             <if test="status != null">
                 status = #{status},
             </if>
@@ -339,6 +338,9 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
             </if>
         </set>
             
@@ -364,5 +366,25 @@
         where mwar.batch_no = #{batchNo}
           and mwar.tenant_id = #{tenantId}
     </select>
-    
+
+    <select id="selectByBatchDetailNo"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
+        select mwar.id,
+               mwar.create_time,
+               mwar.update_time,
+               mwar.amount,
+               mwar.tenant_id,
+               mwar.remark,
+               mwar.uid,
+               mwar.order_no,
+               mwar.batch_no,
+               mwar.batch_detail_no,
+               mwar.transaction_batch_id,
+               mwar.status,
+               mwar.franchisee_id
+        from t_merchant_withdraw_application_record mwar
+        where mwar.batch_detail_no = #{outBillNo}
+          and mwar.transaction_detail_id = #{transferBillNo}
+    </select>
+
 </mapper>
