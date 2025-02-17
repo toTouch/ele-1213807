@@ -36,6 +36,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -59,6 +60,7 @@ import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
@@ -187,6 +189,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Resource
     private TenantFranchiseeMutualExchangeService mutualExchangeService;
     
+    @Resource
+    private ElectricityBatteryLabelService electricityBatteryLabelService;
+    
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
     /**
@@ -263,8 +268,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         // 如果绑定了加盟商 则库存状态为已出库；未绑定则为在库
         if (Objects.nonNull(franchiseeId)) {
             saveBattery.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
+            saveBattery.setLabel(BatteryLabelEnum.UNUSED.getCode());
         } else {
             saveBattery.setStockStatus(StockStatusEnum.STOCK.getCode());
+            saveBattery.setLabel(BatteryLabelEnum.INVENTORY.getCode());
         }
         
         saveBattery.setWarehouseId(batteryAddRequest.getWarehouseId());
@@ -278,6 +285,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         saveBattery.setIotCardNumber(batteryAddRequest.getIotCardNumber());
         
         electricitybatterymapper.insert(saveBattery);
+        // 同步新增电池标签表相关信息
+        electricityBatteryLabelService.insert(saveBattery);
         
         // 异步记录
         Long warehouseId = batteryAddRequest.getWarehouseId();
@@ -375,6 +384,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 
                 electricityBattery.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
                 electricityBattery.setWarehouseId(warehouseId);
+                electricityBattery.setLabel(BatteryLabelEnum.UNUSED.getCode());
                 saveList.add(electricityBattery);
             }
         
@@ -402,6 +412,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
             // 保存到本地数据库
             insertBatch(saveList);
+            // 新增电池标签表关联数据
+            electricityBatteryLabelService.batchInsert(saveList);
         
             // 异步记录
             if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {

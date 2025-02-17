@@ -932,6 +932,11 @@ public interface CacheConstant {
      * 故障告警处理结果缓存
      */
     String WARN_HANDLE_RESULT = "warn_handle_result:%s:%s";
+    
+    /**
+     * 电池标签预修改缓存
+     */
+    String PRE_MODIFY_BATTERY_LABEL = "pre_modify_battery_label:%d:%d";
 
     /**
      * 标记电池缓存

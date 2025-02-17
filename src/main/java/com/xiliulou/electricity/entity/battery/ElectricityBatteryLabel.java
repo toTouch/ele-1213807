@@ -3,8 +3,11 @@ package com.xiliulou.electricity.entity.battery;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author SJP
@@ -12,6 +15,8 @@ import lombok.Data;
  **/
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("t_electricity_battery_label")
 public class ElectricityBatteryLabel {
     
@@ -22,11 +27,6 @@ public class ElectricityBatteryLabel {
      * sn码
      */
     private String sn;
-    
-    /**
-     * 电池标签
-     */
-    private Integer label;
     
     /**
      * 备注
@@ -52,8 +52,6 @@ public class ElectricityBatteryLabel {
      * 加盟商id
      */
     private Long franchiseeId;
-    
-    private Integer delFlag;
     
     private Long createTime;
     
