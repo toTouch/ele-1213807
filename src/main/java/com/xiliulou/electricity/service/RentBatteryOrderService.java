@@ -87,7 +87,7 @@ public interface RentBatteryOrderService {
     
     List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList);
 
-    RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long scanTime, Long startTime,Integer orderType);
+    RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long scanTime, Long startTime, List<Integer> orderTypes);
 
 
     R returnBatteryCheck(Integer electricityCabinetId);

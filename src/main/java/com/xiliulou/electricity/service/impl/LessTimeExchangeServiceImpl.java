@@ -91,7 +91,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.parseLong(exchangeConfig.getScanTime());
 
         RentBatteryOrder lastRentBatteryOrder = rentBatteryOrderService.queryLatelyRentReturnOrder(userInfo.getUid(), System.currentTimeMillis() - scanTime, System.currentTimeMillis(),
-                RentBatteryOrder.TYPE_USER_RETURN);
+                CollUtil.newArrayList(RentBatteryOrder.TYPE_USER_RETURN));
         if (Objects.isNull(lastRentBatteryOrder)) {
             log.info("ReturnBattery Check Info! lastRentBatteryOrder is null, uid is {},scanTime is {}, startTime is {} , currentTime is {}", userInfo.getUid(), scanTime, System.currentTimeMillis() - scanTime,
                     System.currentTimeMillis());
@@ -237,7 +237,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         ElectricityCabinetOrder lastOrder = electricityCabinetOrderService.selectLatelyExchangeOrder(uid, System.currentTimeMillis() - scanTime, System.currentTimeMillis());
         // 上次5分钟内的租电订单
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryLatelyRentReturnOrder(uid, System.currentTimeMillis() - scanTime, System.currentTimeMillis(),
-                RentBatteryOrder.TYPE_USER_RENT);
+                CollUtil.newArrayList(RentBatteryOrder.TYPE_USER_RENT, RentBatteryOrder.TYPE_WEB_BIND));
 
         if (Objects.isNull(lastOrder) && Objects.isNull(rentBatteryOrder)) {
             log.warn("OrderV3 WARN! lessTimeExchangeTwoCountAssert.lastOrder and rentBatteryOrder is null, uid is {}, scanTime is {}, startTime is {}, currentTime is {}", scanTime, uid, System.currentTimeMillis() - scanTime,
@@ -249,6 +249,11 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         Integer lastOrderType = lastOrderType(lastOrder, rentBatteryOrder);
         if (Objects.isNull(lastOrderType)) {
             log.warn("OrderV3 WARN! lastOrderType is null, uid is {}", uid);
+            return Pair.of(false, null);
+        }
+        // 如果上次租电是用户绑定电池让走正常换电
+        if (Objects.equals(lastOrderType, LastOrderTypeEnum.LAST_RENT_ORDER.getCode()) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_WEB_BIND)) {
+            log.warn("OrderV3 WARN! lastOrderType is rentOrder and type is userBand, uid is {}", uid);
             return Pair.of(false, null);
         }
 
