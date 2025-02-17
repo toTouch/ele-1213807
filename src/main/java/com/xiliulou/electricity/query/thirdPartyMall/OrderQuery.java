@@ -32,4 +32,10 @@ public class OrderQuery {
      */
     private String orderId;
     
+    /**
+     * 订单使用状态: 0-未使用, 1-已使用
+     *
+     */
+    private Integer orderUseStatus;
+    
 }

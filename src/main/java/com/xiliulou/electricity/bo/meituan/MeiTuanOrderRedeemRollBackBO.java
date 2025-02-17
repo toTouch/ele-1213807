@@ -82,16 +82,6 @@ public class MeiTuanOrderRedeemRollBackBO {
     private ServiceFeeUserInfo rollBackServiceFeeUserInfo;
     
     /**
-     * 用户押金记录ID
-     */
-    private Long deleteEleUserOperateRecordDepositById;
-    
-    /**
-     * 用户套餐记录ID
-     */
-    private Long deleteEleUserOperateRecordMemberCardById;
-    
-    /**
      * 套餐包ID
      */
     private Long deleteUserBatteryMemberCardPackageId;

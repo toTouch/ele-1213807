@@ -114,4 +114,11 @@ public class JsonUserUserInfoController extends BaseController {
         return emergencyContactService.insertOrUpdate(emergencyContactList);
     }
     
+    /**
+     * 用户押金状态
+     */
+    @GetMapping(value = "/user/depositStatus")
+    public R queryDepositStatus() {
+        return R.ok(userInfoService.queryDepositStatus());
+    }
 }
