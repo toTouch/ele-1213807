@@ -1,10 +1,14 @@
 package com.xiliulou.electricity.task.merchant;
 
-import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
+import cn.hutool.core.util.IdUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationBizService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -14,14 +18,25 @@ import javax.annotation.Resource;
 @JobHandler(value = "merchantWithdrawQueryTask")
 public class MerchantWithdrawQueryTask extends IJobHandler {
     @Resource
-    private MerchantWithdrawApplicationService merchantWithdrawApplicationService;
+    private MerchantWithdrawApplicationBizService merchantWithdrawApplicationBizService;
 
     @Override
     public ReturnT<String> execute(String s) throws Exception {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+
         try {
+            Integer tenantId = null;
+            if (ObjectUtils.isNotEmpty(s)) {
+                tenantId = Integer.valueOf(s);
+            }
+
+            merchantWithdrawApplicationBizService.handleQueryWithdrawResult(tenantId);
         } catch (Exception e) {
-            log.error("商户提现状态更新处理失败", e);
+            log.error("merchant withdraw query result error!", e);
+        } finally {
+            MDC.clear();
         }
+
         return IJobHandler.SUCCESS;
     }
 }

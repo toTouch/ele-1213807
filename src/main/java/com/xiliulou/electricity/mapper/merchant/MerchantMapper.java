@@ -47,4 +47,6 @@ public interface MerchantMapper {
     int existsEnterpriseByEnterpriseId(@Param("enterpriseId") Long id);
     
     List<Merchant> listByEnterpriseList(@Param("enterpriseIdList") List<Long> enterpriseIdList);
+
+    List<Merchant> selectList(@Param("offset") int offset, @Param("size") int size);
 }

@@ -28,6 +28,11 @@ public interface DateFormatConstant {
      * 年月日 时分秒
      */
     String MONTH_DAY_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * 年月日 时分秒
+     */
+    String MONTH_DATE_TIME_FORMAT = "yyyy MM/dd HH:mm";
     
     /**
      * 两月前

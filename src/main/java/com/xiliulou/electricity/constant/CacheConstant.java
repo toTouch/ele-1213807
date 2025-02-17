@@ -954,5 +954,10 @@ public interface CacheConstant {
      */
     String COUPON_PACKAGE_CACHE_KEY = "coupon_package_cache:";
 
+    /**
+     * 商户提现微信回调处理
+     */
+    String  CACHE_MERCHANT_WITHDRAW_NOTIFY_LOCK = "cache_merchant_withdraw_notify_lock:%s";
+
 }
 

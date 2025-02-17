@@ -572,6 +572,7 @@
                 INNER JOIN t_merchant_withdraw_application_record r ON r.order_no = a.order_no and r.batch_no = a.batch_no
         where
             a.type = #{type}
+          and a.del_flag = 0
           and a.`status` = 3
           and a.id > #{startId}
           <if test="tenantId != null">
@@ -582,6 +583,46 @@
             limit #{size}
 
     </select>
+
+    <select id="selectListWithdrawingByMerchantId"
+            resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO">
+        SELECT
+            a.id 'applicationId',
+            r.id 'recordId',
+            a.amount 'amount',
+            r.batch_detail_no 'batchDetailNo',
+            a.batch_no 'batchNo',
+            a.uid,
+            a.franchisee_id 'franchiseeId',
+            a.tenant_id 'tenantId',
+            a.state,
+            a.`status`,
+            a.pay_config_type 'payConfigType',
+            a.wechat_merchant_id 'wechatMerchantId',
+            a.create_time 'createTime'
+        FROM
+        t_merchant_withdraw_application a
+        INNER JOIN t_merchant_withdraw_application_record r ON r.order_no = a.order_no and r.batch_no = a.batch_no
+        where
+            a.type = 1
+            and a.del_flag = 0
+            and a.`status` = 4
+            and a.uid = #{uid}
+            and a.id > #{startId}
+            and a.check_time <![CDATA[ <=  ]]> #{checkTime}
+        order by a.id
+        limit #{size}
+    </select>
+
+    <update id="batchUpdatePayConfigChangeByIdList">
+        update t_merchant_withdraw_application
+        set pay_config_whether_change = #{payConfigWhetherChange},
+            update_time = #{updateTime}
+        where id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 
     <update id="updateApplicationStatusByBatchNo">
         update t_merchant_withdraw_application
@@ -638,6 +679,13 @@
             update_time = #{updateTime}
         where batch_no = #{batchNo}
           and tenant_id = #{tenantId}
+    </update>
+
+    <update id="updateStateById">
+        update t_merchant_withdraw_application
+        set state = #{state},
+            update_time = #{updateTime}
+        where id = #{applicationId} and state &lt; #{state}
     </update>
 
 </mapper>

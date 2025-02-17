@@ -8,4 +8,6 @@ package com.xiliulou.electricity.service.merchant;
 public interface MerchantWithdrawApplicationBizService {
 
     void handleSendMerchantWithdrawProcess(Integer tenantId);
+
+    void handleQueryWithdrawResult(Integer tenantId);
 }

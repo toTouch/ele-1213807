@@ -41,5 +41,15 @@ public class MerchantWithdrawSendBO {
 
     private Long franchiseeId;
 
-    private Long tenantId;
+    private Integer tenantId;
+
+    private Integer state;
+
+    private Integer status;
+
+    private Integer payConfigType;
+
+    private String wechatMerchantId;
+
+    private Long createTime;
 }

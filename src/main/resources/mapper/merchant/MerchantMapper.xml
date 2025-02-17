@@ -258,4 +258,12 @@
             #{enterpriseId}
         </foreach>
     </select>
+
+    <select id="selectList" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        select <include refid="column"/>
+            from t_merchant
+            where del_flag = 0
+        order by id
+        limit #{offset},#{size}
+    </select>
 </mapper>

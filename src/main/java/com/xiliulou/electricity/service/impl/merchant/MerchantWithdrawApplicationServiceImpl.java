@@ -1198,6 +1198,23 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return Triple.of(true, "", result);
     }
 
+    @Override
+    @Slave
+    public List<MerchantWithdrawSendBO> listWithdrawingByMerchantId(Long uid, Long offset, Long startId, Long checkTime) {
+        return merchantWithdrawApplicationMapper.selectListWithdrawingByMerchantId(uid, offset, startId, checkTime);
+    }
+
+    @Override
+    public Integer batchUpdatePayConfigChangeByIdList(List<Long> idList, Integer payConfigWhetherChangeYes) {
+        return merchantWithdrawApplicationMapper.batchUpdatePayConfigChangeByIdList(idList, payConfigWhetherChangeYes, System.currentTimeMillis());
+    }
+
+    @Override
+    public Integer updateStateById(Long applicationId, Integer state) {
+        return merchantWithdrawApplicationMapper.updateStateById(applicationId, state, System.currentTimeMillis());
+    }
+
+
     public void handleBatchDetailsInfo(String batchNo, Integer tenantId, WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult) {
         //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
         List<MerchantWithdrawApplicationRecordBO> merchantWithdrawApplicationRecords = merchantWithdrawApplicationRecordService.selectListByBatchNo(batchNo, tenantId);

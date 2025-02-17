@@ -82,4 +82,8 @@ public class MerchantWithdrawConstant {
     public static final String WITHDRAW_TRANSFER_SCENE_REWARD = "报酬说明";
 
     public static final BigDecimal WITHDRAW_TRANSFER_DEFAULT = new BigDecimal("200");
+
+    public static final String PHRASE2 = "待确认收款";
+
+    public static final Object RECEIVE_REMARK = "提现审批已通过，请尽快确认收款";
 }
