@@ -361,7 +361,10 @@
         where uid = #{uid}
           and create_time &gt; #{startTime}
           and create_time &lt; #{currentTime}
-          and type = #{orderType}
+          and type in
+        <foreach collection="orderTypes" open="(" close=")" item="orderType" separator=",">
+            #{orderType}
+        </foreach>
         order by create_time desc limit 1
     </select>
 </mapper>
