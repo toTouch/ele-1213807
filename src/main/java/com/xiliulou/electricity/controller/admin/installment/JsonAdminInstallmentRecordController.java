@@ -7,10 +7,7 @@ import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,22 +24,32 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 @RequiredArgsConstructor
 @RequestMapping("/admin/installment/record")
 public class JsonAdminInstallmentRecordController {
-    
+
     private final InstallmentRecordService installmentRecordService;
-    
-    
+
+
     @PostMapping("/page")
     @ProcessParameter(type = PROCESS_PARAMETER_LOGIN_AND_DATA_AND_PAGE)
     public R<List<InstallmentRecordVO>> page(@RequestBody InstallmentRecordQuery installmentRecordQuery) {
         return installmentRecordService.listForPage(installmentRecordQuery);
     }
-    
-    
+
+
     @PostMapping("/count")
     @ProcessParameter(type = PROCESS_PARAMETER_DATA_PERMISSION)
     public R<Integer> count(@RequestBody InstallmentRecordQuery installmentRecordQuery) {
         return installmentRecordService.count(installmentRecordQuery);
     }
-    
-    
+
+
+    /**
+     * 执行代扣计划
+     *
+     * @param uid uid
+     * @return R
+     */
+    @GetMapping("/offlineAgree")
+    public R count(@RequestParam("uid") Long uid) {
+        return installmentRecordService.offlineAgree(uid);
+    }
 }

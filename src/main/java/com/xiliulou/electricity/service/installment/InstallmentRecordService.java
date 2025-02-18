@@ -108,4 +108,12 @@ public interface InstallmentRecordService {
      * @return 签约记录
      */
     InstallmentRecord queryLatestUsingRecordByUid(Long uid);
+
+    /**
+     * 执行线下履约
+     *
+     * @param uid uid
+     * @return R
+     */
+    R offlineAgree(Long uid);
 }

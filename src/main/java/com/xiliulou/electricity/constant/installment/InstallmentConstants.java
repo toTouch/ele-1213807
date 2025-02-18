@@ -93,7 +93,12 @@ public interface InstallmentConstants {
      * 代扣计划状态-代扣中
      */
     Integer DEDUCTION_PLAN_STATUS_DEDUCTING = 4;
-    
+
+    /**
+     * 代扣记录状态-线下履约
+     */
+    Integer DEDUCTION_PLAN_OFFLINE_AGREEMENT = 5;
+
     /**
      * 代扣记录状态-代扣中
      */
