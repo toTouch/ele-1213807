@@ -91,4 +91,21 @@ public class JsonUserMerchantWithdrawController extends BaseController {
 
         return returnTripleResult(merchantWithdrawProcess);
     }
+
+    /**
+     * 获取商户提现流程
+     *
+     * @return
+     */
+    @GetMapping("/admin/merchant/getMerchantWithdrawProcess/test")
+    public R test() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Triple<Boolean, String, Object> merchantWithdrawProcess = merchantWithdrawApplicationService.getMerchantWithdrawProcess(uid);
+
+        return returnTripleResult(merchantWithdrawProcess);
+    }
 }
