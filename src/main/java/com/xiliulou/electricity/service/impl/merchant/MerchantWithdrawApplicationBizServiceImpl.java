@@ -292,8 +292,8 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
                     }
 
                     // 检测微信的结果状态是否为终态
-                    if (!(Objects.equals(wechatTransferOrderQueryResultV2.getState(), MerchantWithdrawApplicationStateEnum.SUCCESS.getDesc()) || Objects.equals(wechatTransferOrderQueryResultV2.getState(), MerchantWithdrawApplicationStateEnum.FAIL.getDesc())
-                            || Objects.equals(wechatTransferOrderQueryResultV2.getState(), MerchantWithdrawApplicationStateEnum.CANCELLED.getDesc()))) {
+                    if (Objects.equals(wechatTransferOrderQueryResultV2.getState(), MerchantWithdrawApplicationStateEnum.SUCCESS.getDesc()) || Objects.equals(wechatTransferOrderQueryResultV2.getState(), MerchantWithdrawApplicationStateEnum.FAIL.getDesc())
+                            || Objects.equals(wechatTransferOrderQueryResultV2.getState(), MerchantWithdrawApplicationStateEnum.CANCELLED.getDesc())) {
                         log.info("query wechat transfer order v2 info, state is not success, batchDetailNo = {}, response = {}", merchantWithdrawSendBO.getBatchDetailNo(), wechatTransferOrderQueryResultV2);
                         return;
                     }

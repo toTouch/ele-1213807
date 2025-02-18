@@ -298,7 +298,8 @@
         tmwa.del_flag,
         tmwa.create_time,
         tmwa.update_time,
-        tm.franchisee_id
+        tm.franchisee_id,
+        tmwa.state
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
         left join t_merchant tm on tm.uid = tmwa.uid
