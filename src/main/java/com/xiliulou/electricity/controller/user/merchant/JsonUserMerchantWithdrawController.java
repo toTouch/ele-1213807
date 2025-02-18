@@ -104,7 +104,7 @@ public class JsonUserMerchantWithdrawController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Triple<Boolean, String, Object> merchantWithdrawProcess = merchantWithdrawApplicationService.getMerchantWithdrawProcess(uid);
+        Triple<Boolean, String, Object> merchantWithdrawProcess = merchantWithdrawApplicationService.getMerchantWithdrawProcess(3010579L);
 
         return returnTripleResult(merchantWithdrawProcess);
     }

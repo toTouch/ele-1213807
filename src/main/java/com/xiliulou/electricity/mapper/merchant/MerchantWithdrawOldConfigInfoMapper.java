@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawOldConfigInfo;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 商户提现使用旧配置信息表(TMerchantWithdrawOldConfigInfo)表数据库访问层
@@ -10,6 +11,6 @@ import com.xiliulou.electricity.entity.merchant.MerchantWithdrawOldConfigInfo;
  */
 public interface MerchantWithdrawOldConfigInfoMapper {
 
-    Integer existsMerchantOldWithdrawConfigInfo(Integer tenantId, Long franchiseeId);
+    Integer existsMerchantOldWithdrawConfigInfo(@Param("tenantId") Integer tenantId,@Param("franchiseeId") Long franchiseeId);
 }
 
