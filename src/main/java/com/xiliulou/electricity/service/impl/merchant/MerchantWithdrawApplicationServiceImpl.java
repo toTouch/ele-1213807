@@ -349,6 +349,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplicationRecord.setType(type);
 
         if (oldProcessFlag) {
+            // 执行旧流程
             return handleOldProcessTransfer(wechatPayParamsDetails, batchNo, merchantWithdrawApplication, userOauthBind, batchDetailNo, merchantWithdrawApplicationUpdate, merchantWithdrawApplicationRecord);
         }
 
