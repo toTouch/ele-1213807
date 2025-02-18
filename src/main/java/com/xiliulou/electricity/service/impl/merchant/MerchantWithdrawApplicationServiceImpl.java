@@ -131,8 +131,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Resource
     private WeChatAppTemplateService weChatAppTemplateService;
 
-    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-WITHDRAW-THREAD-POOL", 6, "merchantWithdrawThread",
-            new LinkedBlockingQueue<>(10000));
+    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-WITHDRAW-THREAD-POOL", 6, "merchantWithdrawThread");
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
@@ -444,14 +443,16 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     private void checkAndSendNotify(Integer state, MerchantWithdrawApplication merchantWithdrawApplication) {
         // 状态是否用户待确认
         if (!(Objects.equals(state, MerchantWithdrawApplicationStateEnum.WAIT_USER_CONFIRM.getCode()) || Objects.equals(state, MerchantWithdrawApplicationStateEnum.TRANSFERING.getCode()))) {
-            // 发送通知
-            MerchantWithdrawSendBO merchantWithdrawSendBO = new MerchantWithdrawSendBO();
-            merchantWithdrawSendBO.setUid(merchantWithdrawApplication.getUid());
-            merchantWithdrawSendBO.setAmount(merchantWithdrawApplication.getAmount());
-            merchantWithdrawSendBO.setCreateTime(merchantWithdrawApplication.getCreateTime());
-
-            sendNotify(merchantWithdrawSendBO, merchantWithdrawApplication.getTenantId());
+            return;
         }
+
+        // 发送通知
+        MerchantWithdrawSendBO merchantWithdrawSendBO = new MerchantWithdrawSendBO();
+        merchantWithdrawSendBO.setUid(merchantWithdrawApplication.getUid());
+        merchantWithdrawSendBO.setAmount(merchantWithdrawApplication.getAmount());
+        merchantWithdrawSendBO.setCreateTime(merchantWithdrawApplication.getCreateTime());
+
+        sendNotify(merchantWithdrawSendBO, merchantWithdrawApplication.getTenantId());
     }
 
     private List<WechatTransferSceneReportInfoQuery> getWechatTransferSceneReportInfos(String transferSceneId) {
@@ -1197,11 +1198,9 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationRecordService.updateById(merchantWithdrawApplicationRecordUpdate);
             result = merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
 
-            executorService.execute(() -> {
-                MerchantWithdrawApplication merchantWithdrawApplication = MerchantWithdrawApplication.builder().amount(merchantWithdrawSendBO.getAmount())
-                        .uid(merchantWithdrawSendBO.getUid()).tenantId(merchantWithdrawSendBO.getTenantId()).createTime(merchantWithdrawSendBO.getCreateTime()).build();
-                checkAndSendNotify(merchantWithdrawApplicationUpdate.getState(), merchantWithdrawApplication);
-            });
+            MerchantWithdrawApplication merchantWithdrawApplication = MerchantWithdrawApplication.builder().amount(merchantWithdrawSendBO.getAmount())
+                    .uid(merchantWithdrawSendBO.getUid()).tenantId(merchantWithdrawSendBO.getTenantId()).createTime(merchantWithdrawSendBO.getCreateTime()).build();
+            checkAndSendNotify(merchantWithdrawApplicationUpdate.getState(), merchantWithdrawApplication);
 
             log.info("wechat transfer for single review new end. batchDetailNo = {}", batchDetailNo);
         } catch (WechatPayException e) {
