@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_CANCEL_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UNPAID;
@@ -144,6 +145,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             
             Integer installmentNo = batteryMemberCard.getValidDays() / 30;
             installmentRecord.setInstallmentNo(installmentNo);
+            installmentRecord.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
             installmentRecord.setTenantId(batteryMemberCard.getTenantId());
             installmentRecord.setFranchiseeId(batteryMemberCard.getFranchiseeId());
             installmentRecord.setPackageId(batteryMemberCard.getId());
@@ -261,12 +263,28 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         if (Objects.equals(installmentRecordVO.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecordVO.getPackageId());
             
+            // 根据代扣计划计算签约总金额与未支付金额
+            InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
+            query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+            List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(query).getData();
+            BigDecimal rentPrice = BigDecimal.ZERO;
+            BigDecimal unpaidPrice = BigDecimal.ZERO;
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(deductionPlans)) {
+                for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+                    rentPrice = rentPrice.add(deductionPlan.getAmount());
+                    if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
+                        continue;
+                    }
+                    unpaidPrice = unpaidPrice.add(deductionPlan.getAmount());
+                }
+            }
+            
             if (Objects.nonNull(batteryMemberCard)) {
                 installmentRecordVO.setPackageName(batteryMemberCard.getName());
                 installmentRecordVO.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
                 installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
-                installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
-                installmentRecordVO.setUnpaidAmount(batteryMemberCard.getRentPrice().subtract(installmentRecord.getPaidAmount()));
+                installmentRecordVO.setRentPrice(rentPrice);
+                installmentRecordVO.setUnpaidAmount(unpaidPrice);
                 installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
             }
             

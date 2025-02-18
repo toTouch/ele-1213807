@@ -2,6 +2,7 @@ package com.xiliulou.electricity.query.installment;
 
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,8 @@ import java.util.List;
  * @Author: SongJP
  * @Date: 2024/9/5 23:20
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class InstallmentDeductionPlanQuery extends InstallmentDeductionPlan {
     
     private List<Long> franchiseeIds;
