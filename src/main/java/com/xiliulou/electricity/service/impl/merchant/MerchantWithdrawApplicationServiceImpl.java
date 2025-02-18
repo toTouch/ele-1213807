@@ -68,6 +68,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -130,8 +131,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     @Resource
     private WeChatAppTemplateService weChatAppTemplateService;
 
-    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-WITHDRAW-THREAD-POOL", 3, "merchantWithdrawThread:");
-
+    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-WITHDRAW-THREAD-POOL", 6, "merchantWithdrawThread",
+            new LinkedBlockingQueue<>(10000));
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
