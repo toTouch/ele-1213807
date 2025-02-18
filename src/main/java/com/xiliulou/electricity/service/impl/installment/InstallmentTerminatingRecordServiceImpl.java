@@ -23,6 +23,7 @@ import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -87,11 +88,14 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             
             // 设置电或者车的套餐名称，设置总金额和未支付金额
             if (Objects.equals(installmentTerminatingRecord.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
+                // 根据代扣计划计算签约总金额与未支付金额
+                Pair<BigDecimal, BigDecimal> pair = queryRentPriceAndUnpaidAmount(installmentTerminatingRecord.getExternalAgreementNo());
+                
                 BatteryMemberCard memberCard = batteryMemberCardService.queryByIdFromCache(installmentTerminatingRecord.getPackageId());
                 if (Objects.nonNull(memberCard)) {
                     vo.setPackageName(memberCard.getName());
-                    vo.setAmount(memberCard.getRentPrice());
-                    vo.setUnpaidAmount(vo.getAmount().subtract(vo.getPaidAmount()));
+                    vo.setAmount(pair.getLeft());
+                    vo.setUnpaidAmount(pair.getRight());
                 }
             } else {
                 CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentTerminatingRecord.getPackageId());
@@ -174,6 +178,26 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     @Override
     public List<InstallmentTerminatingRecord> listForUserWithStatus(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordMapper.selectListForUserWithStatus(query);
+    }
+    
+    @Override
+    public Pair<BigDecimal, BigDecimal> queryRentPriceAndUnpaidAmount(String externalAgreementNo) {
+        InstallmentDeductionPlanQuery planQuery = new InstallmentDeductionPlanQuery();
+        planQuery.setExternalAgreementNo(externalAgreementNo);
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(planQuery).getData();
+        BigDecimal rentPrice = BigDecimal.ZERO;
+        BigDecimal unpaidPrice = BigDecimal.ZERO;
+        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(deductionPlans)) {
+            for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+                rentPrice = rentPrice.add(deductionPlan.getAmount());
+                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
+                    continue;
+                }
+                unpaidPrice = unpaidPrice.add(deductionPlan.getAmount());
+            }
+        }
+        
+        return Pair.of(rentPrice, unpaidPrice);
     }
     
 }

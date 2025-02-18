@@ -30,6 +30,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -264,26 +265,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecordVO.getPackageId());
             
             // 根据代扣计划计算签约总金额与未支付金额
-            InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
-            query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-            List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(query).getData();
-            BigDecimal rentPrice = BigDecimal.ZERO;
-            BigDecimal unpaidPrice = BigDecimal.ZERO;
-            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(deductionPlans)) {
-                for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
-                    rentPrice = rentPrice.add(deductionPlan.getAmount());
-                    if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
-                        continue;
-                    }
-                    unpaidPrice = unpaidPrice.add(deductionPlan.getAmount());
-                }
-            }
+            Pair<BigDecimal, BigDecimal> pair = installmentTerminatingRecordService.queryRentPriceAndUnpaidAmount(installmentRecord.getExternalAgreementNo());
             
             if (Objects.nonNull(batteryMemberCard)) {
                 installmentRecordVO.setPackageName(batteryMemberCard.getName());
                 installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
-                installmentRecordVO.setRentPrice(rentPrice);
-                installmentRecordVO.setUnpaidAmount(unpaidPrice);
+                installmentRecordVO.setRentPrice(pair.getLeft());
+                installmentRecordVO.setUnpaidAmount(pair.getRight());
                 installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
             }
             
