@@ -22,6 +22,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.entity.NotExistSn;
 import com.xiliulou.electricity.entity.VoltageCurrentChange;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.queue.MessageDelayQueueService;
@@ -292,6 +293,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
         battery.setModel(batteryModel);
     
+        // 设置电池标签为在仓
+        battery.setLabel(BatteryLabelEnum.IN_THE_CABIN.getCode());
+        
         return battery;
     }
 
