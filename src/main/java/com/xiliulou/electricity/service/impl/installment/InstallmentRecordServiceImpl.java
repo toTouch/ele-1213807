@@ -281,7 +281,6 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             
             if (Objects.nonNull(batteryMemberCard)) {
                 installmentRecordVO.setPackageName(batteryMemberCard.getName());
-                installmentRecordVO.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
                 installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
                 installmentRecordVO.setRentPrice(rentPrice);
                 installmentRecordVO.setUnpaidAmount(unpaidPrice);
