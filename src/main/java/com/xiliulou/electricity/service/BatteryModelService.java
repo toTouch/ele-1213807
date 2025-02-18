@@ -11,6 +11,7 @@ import com.xiliulou.electricity.vo.asset.BrandNameAndBatteryVShortVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 电池型号(BatteryModel)表服务接口
@@ -128,4 +129,6 @@ public interface BatteryModelService {
     List<BatteryModel> listBatteryModelByBatteryTypeList(List<String> batteryTypeList, Integer tenantId);
     
     List<BatteryModelDTO> listShortBatteryTypeByMemberIds(List<Long> memberIds, Integer tenantId);
+    
+    List<String> transformBatteryTypes(List<String> batteryTypeList, Integer tenantId);
 }

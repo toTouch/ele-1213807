@@ -18,4 +18,6 @@ public interface MemberCardBatteryTypeMapper extends BaseMapper<MemberCardBatter
     Integer batchInsert(List<MemberCardBatteryType> memberCardBatteryTypeList);
 
     List<String> selectBatteryTypeByMid(@Param("mid") Long mid);
+    
+    List<MemberCardBatteryType> selectListByMemberCardIds(@Param("tenantId") Integer tenantId, @Param("memberCardIds") List<Long> memberCardIds);
 }

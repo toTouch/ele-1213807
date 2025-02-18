@@ -2,16 +2,20 @@ package com.xiliulou.electricity.controller.user.thirdPartyMall;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.thirdPartyMall.OrderQuery;
 import com.xiliulou.electricity.request.thirdPartyMall.CreateMemberCardOrderRequest;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.thirdPartyMall.OrderVO;
+import com.xiliulou.electricity.vo.thirdPartyMall.MtOrderVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +43,9 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
     
     @Resource
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
+    
+    @Resource
+    private BatteryMemberCardService batteryMemberCardService;
     
     /**
      * 点击“美团商城”后，获取用户美团订单信息
@@ -63,14 +71,46 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
             return R.ok(Collections.emptyList());
         }
         
-        List<OrderVO> voList = riderMallOrders.stream().map(order -> {
-            OrderVO vo = new OrderVO();
+        List<MtOrderVO> voList = riderMallOrders.stream().map(order -> {
+            MtOrderVO vo = new MtOrderVO();
             BeanUtils.copyProperties(order, vo);
+            
+            Long packageId = order.getPackageId();
+            if (Objects.nonNull(packageId)) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+                if (Objects.nonNull(batteryMemberCard)) {
+                    vo.setPackageDeposit(batteryMemberCard.getDeposit());
+                    vo.setFreeDeposit(batteryMemberCard.getFreeDeposite());
+                    vo.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+                }
+            }
             
             return vo;
         }).collect(Collectors.toList());
         
         return R.ok(voList);
+    }
+    
+    /**
+     * 根据美团订单号获取套餐信息
+     */
+    @GetMapping("/user/meiTuanRiderMall/batteryPackageInfo")
+    public R queryBatteryPackageInfo(@RequestParam(value = "orderId") String orderId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+    
+        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).orderId(orderId).build();
+        MtBatteryPackageBO mtBatteryPackageBO = meiTuanRiderMallOrderService.queryBatteryPackageInfo(query);
+        if (Objects.isNull(mtBatteryPackageBO)) {
+            return R.fail("120131", "未能查询到该美团订单号码，请稍后再试");
+        }
+    
+        MtOrderVO vo = new MtOrderVO();
+        BeanUtils.copyProperties(mtBatteryPackageBO, vo);
+    
+        return R.ok(vo);
     }
     
     /**
@@ -85,5 +125,18 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
         
         OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderRequest.getOrderId()).build();
         return returnTripleResult(meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query));
+    }
+    
+    /**
+     * 获取用户电池押金信息
+     */
+    @GetMapping("/user/meiTuanRiderMall/queryBatteryDeposit")
+    public R queryDeposit() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+        
+        return meiTuanRiderMallOrderService.queryBatteryDeposit(user.getUid());
     }
 }
