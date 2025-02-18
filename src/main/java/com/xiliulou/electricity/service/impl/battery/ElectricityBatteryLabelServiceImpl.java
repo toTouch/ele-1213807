@@ -2,12 +2,12 @@ package com.xiliulou.electricity.service.impl.battery;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.dto.battery.ElectricityBatteryLabelDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
  * @author SJP
  * @date 2025-02-14 15:43
  **/
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLabelService {
@@ -57,8 +58,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     }
     
     @Override
-    public void setPreLabel(Integer eId, Integer cellNo, String sn, Integer preLabel) {
-        ElectricityBatteryLabelDTO labelDTO = new ElectricityBatteryLabelDTO(sn, preLabel);
-        redisService.saveWithString(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, eId, cellNo), labelDTO, 30L, TimeUnit.MINUTES);
+    public void setPreLabel(Integer eId, String cellNo, String sn, Integer preLabel) {
+        try {
+            redisService.saveWithString(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, eId, cellNo, sn), preLabel, 30L, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("BATTERY LABEL SET PRE LABEL ERROR! sn={}", sn, e);
+        }
     }
 }

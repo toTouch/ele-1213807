@@ -292,9 +292,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //获取电池型号
         String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
         battery.setModel(batteryModel);
-    
-        // 设置电池标签为在仓
-        battery.setLabel(BatteryLabelEnum.IN_THE_CABIN.getCode());
         
         return battery;
     }

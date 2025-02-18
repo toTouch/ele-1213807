@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import lombok.Data;
 
 @Data
@@ -125,6 +126,12 @@ public class ElectricityBatteryDataVO {
      * 过期时间
      */
     private Long memberCardExpireTime;
+    
+    /**
+     * 电池标签
+     * @see BatteryLabelEnum
+     */
+    private Integer label;
 
 
     /**

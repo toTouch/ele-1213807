@@ -24,7 +24,7 @@ public interface ElectricityBatteryLabelService {
      * @param sn 电池sn
      * @param preLabel 预修改标签，枚举值参照com.xiliulou.electricity.enums.battery.BatteryLabelEnum
      */
-    void setPreLabel(Integer eId, Integer cellNo, String sn, Integer preLabel);
+    void setPreLabel(Integer eId, String cellNo, String sn, Integer preLabel);
     
     
 }

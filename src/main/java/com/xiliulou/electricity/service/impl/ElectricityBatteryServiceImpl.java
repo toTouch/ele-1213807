@@ -1974,6 +1974,57 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return userBatteryMap;
     }
     
+    @Override
+    public void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelEnum labelEnum) {
+        try {
+            Integer newLabel = labelEnum.getCode();
+            Integer oldLabel = battery.getLabel();
+            // 1.新旧标签相同不用修改
+            if (Objects.equals(oldLabel, newLabel)) {
+                return;
+            }
+            
+            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).label(newLabel).build();
+            
+            // 2.新标签是在仓，不用判断了，直接修改
+            if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                electricitybatterymapper.update(batteryUpdate);
+                return;
+            }
+        
+            // 3.旧标签是在仓，在修改时需要从缓存中拿预修改标签
+            if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                String preLabel = redisService.get(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), battery.getSn()));
+                // 没有获取到预修改标签的时候直接结束
+                if (StringUtils.isEmpty(preLabel) || StringUtils.isBlank(preLabel)) {
+                    log.warn("BATTERY LABEL MODIFY LABEL WARN! preLabel is null, sn={}", battery.getSn());
+                    return;
+                }
+                
+                // 使用缓存的标签更新数据库
+                batteryUpdate.setLabel(Integer.parseInt(preLabel));
+                electricitybatterymapper.update(batteryUpdate);
+                return;
+            }
+            
+            // 4.旧标签是租借，在修改时需要校验电池已和用户解绑
+            if (Objects.equals(oldLabel, BatteryLabelEnum.RENT_NORMAL.getCode()) || Objects.equals(oldLabel, BatteryLabelEnum.RENT_OVERDUE.getCode()) || Objects.equals(oldLabel,
+                    BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode())) {
+                if (Objects.nonNull(battery.getUid())) {
+                    log.warn("BATTERY LABEL MODIFY LABEL WARN! battery did not release, sn={}", battery.getSn());
+                    return;
+                }
+                electricitybatterymapper.update(batteryUpdate);
+                return;
+            }
+            
+            // 5.其他的不涉及优先级的标签修改
+            electricitybatterymapper.update(batteryUpdate);
+        } catch (Exception e) {
+            log.error("BATTERY LABEL MODIFY LABEL ERROR! sn={}", battery.getSn(), e);
+        }
+    }
+    
     private Map<String, Long> handleExchangeOrder(Set<String> exchangeOrderSet) {
         if (CollectionUtils.isEmpty(exchangeOrderSet)) {
             return null;

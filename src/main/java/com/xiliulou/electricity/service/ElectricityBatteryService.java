@@ -5,6 +5,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
@@ -181,4 +183,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer existsByBatteryType(String batteryType, Integer tenantId);
     
     Map<Long, ElectricityBattery> listUserBatteryByUidList(List<Long> uidList, Integer tenantId);
+    
+    /**
+     * 修改电池标签
+     */
+    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelEnum labelEnum);
 }

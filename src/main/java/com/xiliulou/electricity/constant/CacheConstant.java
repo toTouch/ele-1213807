@@ -936,7 +936,7 @@ public interface CacheConstant {
     /**
      * 电池标签预修改缓存
      */
-    String PRE_MODIFY_BATTERY_LABEL = "pre_modify_battery_label:%d:%d";
+    String PRE_MODIFY_BATTERY_LABEL = "pre_modify_battery_label:%d:%s:%s";
 
     /**
      * 标记电池缓存
