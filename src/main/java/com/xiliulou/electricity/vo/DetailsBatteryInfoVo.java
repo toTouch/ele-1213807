@@ -120,4 +120,12 @@ public class DetailsBatteryInfoVo {
      */
     private List<String> batteryModels;
 
+
+    /**
+     * 是否展示线下履约，0否，1是
+     */
+    private Integer isViewOffLineAgree = 0;
+
+    public static Integer IS_VIEW_OFF_LINE_AGREE = 1;
+    public static Integer NOT_IS_VIEW_OFF_LINE_AGREE = 0;
 }
