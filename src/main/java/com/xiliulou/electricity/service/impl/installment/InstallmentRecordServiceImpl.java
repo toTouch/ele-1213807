@@ -329,9 +329,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             return R.fail("402045", "用户不存在代扣计划");
         }
 
-        Optional<InstallmentDeductionPlan> optional = deductionPlans.stream().sorted(Comparator.comparing(InstallmentDeductionPlan::getId)).filter(e -> {
-            return Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL);
-        }).findFirst();
+        Optional<InstallmentDeductionPlan> optional = deductionPlans.stream().sorted(Comparator.comparing(InstallmentDeductionPlan::getId)).filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL)).findFirst();
 
         if (optional.isPresent()) {
             InstallmentDeductionPlan updatePlan = new InstallmentDeductionPlan();
