@@ -22,8 +22,10 @@ import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
@@ -43,6 +45,7 @@ import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.ThirdPartyMallRetrofitService;
@@ -149,6 +152,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     @Resource
     private BatteryModelService batteryModelService;
     
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
     @Slave
     @Override
     public MeiTuanRiderMallOrder queryByMtOrderId(String orderId, String phone, Long uid, Integer tenantId) {
@@ -187,6 +193,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             if (!preCheckUser.getLeft()) {
                 return Triple.of(false, preCheckUser.getMiddle(), preCheckUser.getRight());
             }
+    
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+            if (Objects.isNull(userInfoExtra)) {
+                log.warn("MeiTuan order redeem fail! not found user extra,uid={}", uid);
+                return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+            }
             
             UserInfo userInfo = (UserInfo) preCheckUser.getRight();
             String phone = userInfo.getPhone();
@@ -217,7 +229,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
             
             // 分组判断
-            Triple<Boolean, String, Object> preCheckGroup = this.preCheckGroup(userInfo, batteryMemberCard, uid, memberCardId);
+            Triple<Boolean, String, Object> preCheckGroup = this.preCheckGroup(userInfo, batteryMemberCard, uid, memberCardId, userInfoExtra);
             if (!preCheckGroup.getLeft()) {
                 return Triple.of(false, preCheckGroup.getMiddle(), preCheckGroup.getRight());
             }
@@ -398,7 +410,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return Triple.of(true, null, batteryMemberCard);
     }
     
-    private Triple<Boolean, String, Object> preCheckGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard, Long uid, Long memberCardId) {
+    private Triple<Boolean, String, Object> preCheckGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard, Long uid, Long memberCardId, UserInfoExtra userInfoExtra) {
         // 判断套餐用户分组和用户的用户分组是否匹配
         List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(batteryMemberCard.getFranchiseeId()).build());
@@ -421,7 +433,13 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
     
             Boolean oldUser = userInfoService.isOldUser(userInfo);
-            if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+            if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户不允许购买续租类型的套餐
+                if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
+                    log.warn("MeiTuan order redeem fail. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", uid, memberCardId);
+                    return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                }
+            } else if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                 log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
                 return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
             }
