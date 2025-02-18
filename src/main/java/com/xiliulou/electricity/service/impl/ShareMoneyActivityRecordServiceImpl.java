@@ -309,7 +309,11 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 			shareMoneyActivityRecord.setCode(code);
 			shareMoneyActivityRecord.setCreateTime(System.currentTimeMillis());
 			shareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-			shareMoneyActivityRecord.setStatus(ShareMoneyActivityRecord.STATUS_INIT);
+			shareMoneyActivityRecord.setStatus(ShareMoneyActivityRecord.STATUS_SUCCESS);
+            Integer franchiseeId = getFranchiseeId(activityId);
+            if (Objects.nonNull(franchiseeId)) {
+                shareMoneyActivityRecord.setFranchiseeId(franchiseeId.longValue());
+            }
 			shareMoneyActivityRecordMapper.insert(shareMoneyActivityRecord);
 		}
 		

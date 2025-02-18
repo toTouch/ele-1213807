@@ -337,7 +337,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         int update = shareMoneyActivityMapper.updateById(shareMoneyActivity);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
-            redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + oldShareMoneyActivity.getId());
+            redisService.delete(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE + oldShareMoneyActivity.getId());
             
             //如果是下架活动，则将参与记录中为已参与的状态修改为已下架
             if (Objects.equals(shareMoneyActivityAddAndUpdateQuery.getStatus(), ShareMoneyActivity.STATUS_OFF)) {

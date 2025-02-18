@@ -4,7 +4,7 @@
     
     <select id="search" resultType="com.xiliulou.electricity.vo.SearchVo">
         select
-        id, name from t_coupon
+        id, name ,enabled_state from t_coupon
         <where>
             del_flag=0
             <choose>
@@ -42,7 +42,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.Coupon">
         select
         id, name, status, apply_type, discount_type, amount, discount, count, days, description, superposition,
-        uid, user_name, create_time, update_time, del_flag,tenant_id , franchisee_id, type, specific_packages,use_scope
+        uid, user_name, create_time, update_time, del_flag,tenant_id , franchisee_id, type, specific_packages,use_scope,enabled_state
         from t_coupon
         <where>
             del_flag=0
@@ -78,6 +78,9 @@
             </if>
             <if test="query.superposition != null">
                 and superposition = #{query.superposition}
+            </if>
+            <if test="query.enabledState != null">
+                and enabled_state = #{query.enabledState}
             </if>
         </where>
         order by create_time desc
@@ -117,6 +120,9 @@
             </if>
             <if test="query.superposition != null">
                 and superposition = #{query.superposition}
+            </if>
+            <if test="query.enabledState != null">
+                and enabled_state = #{query.enabledState}
             </if>
         </where>
     </select>

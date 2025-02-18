@@ -3508,7 +3508,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 查询用户的电池列表
         List<String> userBatteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
+
         
         // 获取电池型号
         List<BatteryModel> modelList = batteryModelService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -3519,20 +3519,31 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         Map<String, Integer> finalModelCapacityMap = modelCapacityMap;
-        electricityCabinetBoxList.forEach(item -> {
+
+        // 提前查询electricityBattery
+        List<String> snList = electricityCabinetBoxList.stream().map(ElectricityCabinetBox::getSn).collect(Collectors.toList());
+        List<ElectricityBattery> batteryList = electricityBatteryService.listBatteryBySnList(snList);
+        Map<String, ElectricityBattery> batteryMap = new HashMap<>();
+        if (CollUtil.isNotEmpty(batteryList)) {
+            batteryMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, item -> item, (k1, k2) -> k1));
+        }
+
+        Map<String, ElectricityBattery> finalBatteryMap = batteryMap;
+
+        List<ElectricityCabinetBoxVO> resultList = electricityCabinetBoxList.stream().map(item -> {
             ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
             BeanUtils.copyProperties(item, electricityCabinetBoxVO);
             if (StringUtils.isNotBlank(item.getSn()) && !StringUtils.startsWithIgnoreCase(item.getSn(), "UNKNOW")) {
                 // 是否可换电
                 electricityCabinetBoxVO.setExchange(isExchangeStatus(electricityCabinet, userBatteryTypeList, userInfo, electricityCabinetBoxVO, franchisee));
             }
-            
+
             // 设置充电状态
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(item.getSn());
+            ElectricityBattery electricityBattery = finalBatteryMap.get(item.getSn());
             if (Objects.nonNull(electricityBattery)) {
                 electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
             }
-            
+
             if (Objects.nonNull(item.getBatteryType())) {
                 String batteryType = item.getBatteryType();
                 if (StringUtils.equals(StringUtils.EMPTY, item.getBatteryType())) {
@@ -3540,16 +3551,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 } else {
                     electricityCabinetBoxVO.setBatteryModelShortType(subStringButteryType(batteryType));
                     String batteryV = batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
-                    
+
                     StringBuilder voltageAndCapacity = new StringBuilder();
                     voltageAndCapacity.append(batteryV);
-                    
+
                     // 优先取电池型号列表的容量
                     Integer capacity = finalModelCapacityMap.get(batteryType);
                     if ((Objects.isNull(capacity) || Objects.equals(NumberConstant.ZERO, capacity)) && Objects.nonNull(electricityBattery)) {
                         capacity = electricityBattery.getCapacity();
                     }
-                    
                     // 设置电池电压 容量
                     if (Objects.nonNull(capacity) && !Objects.equals(NumberConstant.ZERO, capacity)) {
                         voltageAndCapacity.append(StringConstant.FORWARD_SLASH).append(capacity).append(BatteryConstant.CAPACITY_UNIT);
@@ -3557,17 +3567,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setBatteryVoltageAndCapacity(voltageAndCapacity.toString());
                 }
             }
-            electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
-        });
-        
-        List<ElectricityCabinetBoxVO> resultList = Lists.newArrayList();
-        
-        // 排序
-        if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
-            resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
-        }
+            return electricityCabinetBoxVO;
+        }).filter(t -> StrUtil.isNotEmpty(t.getCellNo())).sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
+
         return Triple.of(true, null, resultList);
-        
     }
     
     private String subStringButteryType(String batteryType) {

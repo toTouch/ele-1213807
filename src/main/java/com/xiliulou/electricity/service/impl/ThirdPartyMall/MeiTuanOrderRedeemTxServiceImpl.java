@@ -5,10 +5,8 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.electricity.bo.meituan.MeiTuanOrderRedeemRollBackBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -21,7 +19,6 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleUserOperateRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
@@ -32,9 +29,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanOrderRedeemTxService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,10 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -88,9 +81,6 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
     private ServiceFeeUserInfoService serviceFeeUserInfoService;
     
     @Resource
-    private EleUserOperateRecordService eleUserOperateRecordService;
-    
-    @Resource
     private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
     @Resource
@@ -113,16 +103,12 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         UserBatteryMemberCard rollBackUserBatteryMemberCard = null;
         ServiceFeeUserInfo serviceFeeUserInfo = null;
         ServiceFeeUserInfo rollBackServiceFeeUserInfo = null;
-        EleUserOperateRecord eleUserDepositOperateRecord = null;
-        EleUserOperateRecord eleUserMemberCardOperateRecord = null;
         MeiTuanOrderRedeemRollBackBO rollBackBO = null;
         Long eleDepositOrderById = null;
         Long electricityMemberCardOrderById = null;
         Long userBatteryDepositById = null;
         Long userBatteryMemberCardUpdateById = null;
         Long serviceFeeUserInfoById = null;
-        Long eleUserDepositOperateRecordById = null;
-        Long eleUserMemberCardOperateRecordById = null;
         
         try {
             BigDecimal deposit = batteryMemberCard.getDeposit();
@@ -280,64 +266,13 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                 }
             }
             
-            eleUserDepositOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.DEPOSIT_MODEL).operateContent(EleUserOperateRecord.DEPOSIT_MODEL)
-                    .operateUid(SecurityUtils.getUid()).uid(eleDepositOrder.getUid()).name(Objects.isNull(userInfo.getName()) ? "" : userInfo.getName()).oldBatteryDeposit(null)
-                    .newBatteryDeposit(eleDepositOrder.getPayAmount()).tenantId(TenantContextHolder.getTenantId()).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY)
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            eleUserOperateRecordService.insert(eleUserDepositOperateRecord);
-            
-            // 封装eleUserDepositOperateRecord回滚数据
-            if (Objects.nonNull(eleUserDepositOperateRecord) && Objects.nonNull(eleUserDepositOperateRecord.getId())) {
-                eleUserDepositOperateRecordById = eleUserDepositOperateRecord.getId().longValue();
-            }
-            
-            double oldValidDays = 0.0;
-            double newValidDays = 0.0;
-            Long oldMaxUseCount = null;
-            Long newMaxUseCount = null;
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                    // oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-                    oldValidDays = Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
-                }
-                
-                // 设置限次 不限次
-                if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                    oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
-                } else {
-                    oldMaxUseCount = UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER;
-                }
-            }
-            
-            // newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-            newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
-            
-            // 设置限次 不限次
-            if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
-            } else {
-                newMaxUseCount = UserOperateRecordConstant.UN_LIMIT_COUNT_REMAINING_NUMBER;
-            }
-            
-            eleUserMemberCardOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
-                    .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(SecurityUtils.getUid())
-                    .uid(electricityMemberCardOrder.getUid()).name(Objects.isNull(userInfo.getName()) ? "" : userInfo.getName()).oldValidDays((int) oldValidDays)
-                    .newValidDays((int) newValidDays).oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId())
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            eleUserOperateRecordService.insert(eleUserMemberCardOperateRecord);
-            
-            // 封装eleUserMemberCardOperateRecord回滚数据
-            if (Objects.nonNull(eleUserMemberCardOperateRecord) && Objects.nonNull(eleUserDepositOperateRecord.getId())) {
-                eleUserMemberCardOperateRecordById = eleUserMemberCardOperateRecord.getId().longValue();
-            }
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveUserInfoAndOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
             throw new CustomBusinessException(e.getMessage());
         }
         
-            rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
-                rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo,
-                eleUserDepositOperateRecordById, eleUserMemberCardOperateRecordById, null, null);
+        rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
+                rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, null);
         
         return Pair.of(electricityMemberCardOrder, rollBackBO);
     }
@@ -352,12 +287,10 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         ServiceFeeUserInfo serviceFeeUserInfo = null;
         ServiceFeeUserInfo rollBackServiceFeeUserInfo = null;
         UserInfo rollBackUserInfo = null;
-        EleUserOperateRecord eleUserMemberCardOperateRecord = null;
         MeiTuanOrderRedeemRollBackBO rollBackBO = null;
         Long electricityMemberCardOrderById = null;
         Long userBatteryMemberCardUpdateById = null;
         Long serviceFeeUserInfoById = null;
-        Long eleUserMemberCardOperateRecordId = null;
         
         try {
             memberCardOrder = new ElectricityMemberCardOrder();
@@ -411,18 +344,10 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             if (Objects.nonNull(userBatteryMemberCardUpdate.getId())) {
                 userBatteryMemberCardUpdateById = userBatteryMemberCardUpdate.getId();
             }
-            
+    
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                List<String> userBatteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
-                if (CollectionUtils.isNotEmpty(userBatteryTypeList)) {
-                    batteryTypeList = batteryTypeList.stream().filter(t -> !userBatteryTypeList.contains(t)).collect(Collectors.toList());
-                }
-                
-                if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                    userBatteryTypes = userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo);
-                    userBatteryTypeService.batchInsert(userBatteryTypes);
-                }
+                userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
             }
             
             serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
@@ -462,27 +387,12 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             //封装UserInfo回滚
             rollBackUserInfo = UserInfo.builder().uid(userInfo.getUid()).payCount(userInfo.getPayCount()).updateTime(userInfo.getUpdateTime()).tenantId(userInfo.getTenantId())
                     .build();
-            
-            double newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
-            
-            eleUserMemberCardOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
-                    .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(SecurityUtils.getUid())
-                    .uid(userInfo.getUid()).name(Objects.isNull(userInfo.getName()) ? "" : userInfo.getName()).oldValidDays(0).newValidDays((int) newValidDays).oldMaxUseCount(0L)
-                    .newMaxUseCount(userBatteryMemberCardUpdate.getRemainingNumber()).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).build();
-            eleUserOperateRecordService.insert(eleUserMemberCardOperateRecord);
-            
-            // 封装eleUserMemberCardOperateRecord回滚数据
-            if (Objects.nonNull(eleUserMemberCardOperateRecord) && Objects.nonNull(eleUserMemberCardOperateRecord.getId())) {
-                eleUserMemberCardOperateRecordId = eleUserMemberCardOperateRecord.getId().longValue();
-            }
-            
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! bindUserMemberCard uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
             throw new CustomBusinessException(e.getMessage());
         }
         rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, null, null, userBatteryMemberCardUpdateById, null,
-                serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordId, null, null);
+                serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, null);
         
         return Pair.of(memberCardOrder, rollBackBO);
     }
@@ -491,7 +401,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
     @Override
     public Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> saveRenewalUserBatteryMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindBatteryMemberCard, MeiTuanRiderMallOrder meiTuanRiderMallOrder,
-            List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes) {
+            List<String> userBindBatteryTypes) {
         ElectricityMemberCardOrder memberCardOrder = null;
         UserBatteryMemberCard rollBackUserBatteryMemberCard = new UserBatteryMemberCard();
         ElectricityMemberCardOrder rollBackElectricityMemberCardOrder = null;
@@ -500,11 +410,9 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = null;
         ServiceFeeUserInfo rollBackServiceFeeUserInfo = null;
         UserInfo rollBackUserInfo = null;
-        EleUserOperateRecord eleUserMembercardOperateRecord = null;
         MeiTuanOrderRedeemRollBackBO rollBackBO = null;
         Long electricityMemberCardOrderById = null;
         Long serviceFeeUserInfoById = null;
-        Long eleUserMemberCardOperateRecordById = null;
         Long userBatteryMemberCardPackageId = null;
         
         try {
@@ -606,22 +514,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                 }
                 
                 // 更新用户电池型号
-                Set<String> totalBatteryTypes = new HashSet<>();
-                if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
-                    totalBatteryTypes.addAll(userBindBatteryTypes);
-                }
-                if (CollectionUtils.isNotEmpty(memberCardBatteryTypes)) {
-                    totalBatteryTypes.addAll(memberCardBatteryTypes);
-                }
-                if (CollectionUtils.isNotEmpty(totalBatteryTypes)) {
-                    // 封装UserBatteryType回滚数据
-                    insertUserBatteryTypeListForRollBack = userBatteryTypeService.listByUid(memberCardOrder.getUid());
-                    
-                    userBatteryTypeService.deleteByUid(memberCardOrder.getUid());
-                    
-                    userBatteryTypes = userBatteryTypeService.buildUserBatteryType(new ArrayList<>(totalBatteryTypes), userInfo);
-                    userBatteryTypeService.batchInsert(userBatteryTypes);
-                }
+                userBatteryTypeService.updateUserBatteryType(memberCardOrder, userInfo);
             } else {
                 UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
                 userBatteryMemberCardPackage.setUid(userInfo.getUid());
@@ -700,41 +593,13 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             if (Objects.nonNull(memberCardOrder.getId())) {
                 electricityMemberCardOrderById = memberCardOrder.getId();
             }
-            
-            double oldValidDays = 0.0;
-            double newValidDays = 0.0;
-            Long oldMaxUseCount = 0L;
-            Long newMaxUseCount = 0L;
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
-                    // oldValidDays = Math.toIntExact(((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-                    // newValidDays = Math.toIntExact(((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 24 / 60 / 60 / 1000));
-                    oldValidDays = Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
-                    newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
-                }
-                oldMaxUseCount = userBatteryMemberCard.getRemainingNumber();
-                newMaxUseCount = userBatteryMemberCardUpdate.getRemainingNumber();
-            }
-            
-            eleUserMembercardOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
-                    .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(SecurityUtils.getUid())
-                    .uid(userInfo.getUid()).name(Objects.isNull(userInfo.getName()) ? "" : userInfo.getName()).oldValidDays((int) oldValidDays).newValidDays((int) newValidDays)
-                    .oldMaxUseCount(oldMaxUseCount).newMaxUseCount(newMaxUseCount).tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).build();
-            eleUserOperateRecordService.insert(eleUserMembercardOperateRecord);
-            
-            // 封装eleUserMembercardOperateRecord回滚数据
-            if (Objects.nonNull(eleUserMembercardOperateRecord) && Objects.nonNull(eleUserMembercardOperateRecord.getId())) {
-                eleUserMemberCardOperateRecordById = eleUserMembercardOperateRecord.getId().longValue();
-            }
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveRenewalUserBatteryMemberCardOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(),
                     e);
             throw new CustomBusinessException(e.getMessage());
         }
         rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, rollBackElectricityMemberCardOrder, rollBackUserInfo, userBatteryTypes, null, null, null,
-                rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordById, insertUserBatteryTypeListForRollBack,
-                userBatteryMemberCardPackageId);
+                rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo, insertUserBatteryTypeListForRollBack, userBatteryMemberCardPackageId);
         
         return Pair.of(memberCardOrder, rollBackBO);
     }
@@ -776,16 +641,6 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         Long serviceFeeUserInfoId = rollBackBO.getDeleteServiceFeeUserInfoById();
         if (Objects.nonNull(serviceFeeUserInfoId)) {
             serviceFeeUserInfoService.deleteById(serviceFeeUserInfoId);
-        }
-        
-        Long eleUserOperateRecordDepositId = rollBackBO.getDeleteEleUserOperateRecordDepositById();
-        if (Objects.nonNull(eleUserOperateRecordDepositId)) {
-            eleUserOperateRecordService.deleteById(eleUserOperateRecordDepositId);
-        }
-        
-        Long eleUserOperateRecordMemberCardId = rollBackBO.getDeleteEleUserOperateRecordMemberCardById();
-        if (Objects.nonNull(eleUserOperateRecordMemberCardId)) {
-            eleUserOperateRecordService.deleteById(eleUserOperateRecordMemberCardId);
         }
         
         List<UserBatteryType> insertUserBatteryTypeList = rollBackBO.getInsertUserBatteryTypeList();
@@ -835,8 +690,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
     private MeiTuanOrderRedeemRollBackBO buildRollBackData(Long eleDepositOrderById, Long electricityMemberCardOrderById,
             ElectricityMemberCardOrder rollBackElectricityMemberCardOrder, UserInfo rollBackUserInfo, List<UserBatteryType> userBatteryTypes, Long userBatteryDepositById,
             UserBatteryDeposit rollBackUserBatteryDeposit, Long userBatteryMemberCardUpdateById, UserBatteryMemberCard rollBackUserBatteryMemberCard, Long serviceFeeUserInfoById,
-            ServiceFeeUserInfo rollBackServiceFeeUserInfo, Long eleUserDepositOperateRecordById, Long eleUserMemberCardOperateRecordById,
-            List<UserBatteryType> insertUserBatteryTypeList, Long userBatteryMemberCardPackageId) {
+            ServiceFeeUserInfo rollBackServiceFeeUserInfo, List<UserBatteryType> insertUserBatteryTypeList, Long userBatteryMemberCardPackageId) {
         // 封装用户电池型号回滚
         List<UserBatteryType> deleteUserBatteryTypeList = null;
         if (CollectionUtils.isNotEmpty(userBatteryTypes)) {
@@ -884,12 +738,6 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         }
         if (Objects.nonNull(rollBackServiceFeeUserInfo)) {
             rollBackBO.setRollBackServiceFeeUserInfo(rollBackServiceFeeUserInfo);
-        }
-        if (Objects.nonNull(eleUserDepositOperateRecordById)) {
-            rollBackBO.setDeleteEleUserOperateRecordDepositById(eleUserDepositOperateRecordById);
-        }
-        if (Objects.nonNull(eleUserMemberCardOperateRecordById)) {
-            rollBackBO.setDeleteEleUserOperateRecordMemberCardById(eleUserMemberCardOperateRecordById);
         }
         if (CollectionUtils.isNotEmpty(insertUserBatteryTypeList)) {
             rollBackBO.setInsertUserBatteryTypeList(insertUserBatteryTypeList);
