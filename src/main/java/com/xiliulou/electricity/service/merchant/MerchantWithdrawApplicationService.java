@@ -62,7 +62,7 @@ public interface MerchantWithdrawApplicationService {
 
     Triple<Boolean, String, Object> sendTransfer(MerchantWithdrawSendBO merchantWithdrawSendBO, String userThird, WechatPayParamsDetails finalWechatPayParamsDetails, Integer payConfigType);
 
-    List<MerchantWithdrawSendBO> listWithdrawingByMerchantId(Long uid, Long offset, Long startId, Long checkTime);
+    List<MerchantWithdrawSendBO> listWithdrawingByMerchantId(Long uid, Long size, Long startId, Long checkTime);
 
     Integer batchUpdatePayConfigChangeByIdList(List<Long> idList, Integer payConfigWhetherChangeYes);
 

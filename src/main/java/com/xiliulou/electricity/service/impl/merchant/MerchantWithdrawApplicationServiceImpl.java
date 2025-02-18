@@ -438,19 +438,19 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
     private List<WechatTransferSceneReportInfoQuery> getWechatTransferSceneReportInfos(String transferSceneId) {
         List<WechatTransferSceneReportInfoQuery> list = new ArrayList<>();
-       if (Objects.equals(transferSceneId, MerchantWithdrawSceneEnum.DISTRIBUTION_REBATE.getCode().toString())) {
-           WechatTransferSceneReportInfoQuery wechatTransferSceneReportInfoQueryJob = new WechatTransferSceneReportInfoQuery();
-           wechatTransferSceneReportInfoQueryJob.setInfoType(MerchantWithdrawConstant.WITHDRAW_TRANSFER_SCENE_JOB);
-           wechatTransferSceneReportInfoQueryJob.setInfoContent(MerchantWithdrawConstant.WITHDRAW_TRANSFER_SCENE_JOB_CONTENT);
+        if (Objects.equals(transferSceneId, MerchantWithdrawSceneEnum.DISTRIBUTION_REBATE.getCode().toString())) {
+            WechatTransferSceneReportInfoQuery wechatTransferSceneReportInfoQueryJob = new WechatTransferSceneReportInfoQuery();
+            wechatTransferSceneReportInfoQueryJob.setInfoType(MerchantWithdrawConstant.WITHDRAW_TRANSFER_SCENE_JOB);
+            wechatTransferSceneReportInfoQueryJob.setInfoContent(MerchantWithdrawConstant.WITHDRAW_TRANSFER_SCENE_JOB_CONTENT);
 
-           WechatTransferSceneReportInfoQuery wechatTransferSceneReportInfoQueryReward = new WechatTransferSceneReportInfoQuery();
-           wechatTransferSceneReportInfoQueryReward.setInfoType(MerchantWithdrawConstant.WITHDRAW_TRANSFER_SCENE_REWARD);
-           wechatTransferSceneReportInfoQueryReward.setInfoContent(MerchantWithdrawConstant.WITHDRAW_TRANSFER_REMARK);
-           list.add(wechatTransferSceneReportInfoQueryReward);
-           list.add(wechatTransferSceneReportInfoQueryJob);
-       }
+            WechatTransferSceneReportInfoQuery wechatTransferSceneReportInfoQueryReward = new WechatTransferSceneReportInfoQuery();
+            wechatTransferSceneReportInfoQueryReward.setInfoType(MerchantWithdrawConstant.WITHDRAW_TRANSFER_SCENE_REWARD);
+            wechatTransferSceneReportInfoQueryReward.setInfoContent(MerchantWithdrawConstant.WITHDRAW_TRANSFER_REMARK);
+            list.add(wechatTransferSceneReportInfoQueryReward);
+            list.add(wechatTransferSceneReportInfoQueryJob);
+        }
 
-       return list;
+        return list;
     }
 
     private Triple<Boolean, String, Object> handleOldProcessTransfer(WechatPayParamsDetails wechatPayParamsDetails, String batchNo, MerchantWithdrawApplication merchantWithdrawApplication, UserOauthBind userOauthBind, String batchDetailNo, MerchantWithdrawApplication merchantWithdrawApplicationUpdate, MerchantWithdrawApplicationRecord merchantWithdrawApplicationRecord) {
@@ -664,7 +664,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     merchantUserAmountService.rollBackWithdrawAmount(merchantWithdrawApplication.getAmount(), merchantWithdrawApplication.getUid(),
                             merchantWithdrawApplication.getTenantId().longValue());
                 }
-                
+
             });
             
             return Triple.of(true, "", result);
@@ -1201,8 +1201,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
     @Override
     @Slave
-    public List<MerchantWithdrawSendBO> listWithdrawingByMerchantId(Long uid, Long offset, Long startId, Long checkTime) {
-        return merchantWithdrawApplicationMapper.selectListWithdrawingByMerchantId(uid, offset, startId, checkTime);
+    public List<MerchantWithdrawSendBO> listWithdrawingByMerchantId(Long uid, Long size, Long startId, Long checkTime) {
+        return merchantWithdrawApplicationMapper.selectListWithdrawingByMerchantId(uid, size, startId, checkTime);
     }
 
     @Override

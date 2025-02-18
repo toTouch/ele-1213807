@@ -213,11 +213,11 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
 
     private void handleQueryByMerchant(Merchant merchant) {
         Long checkTime = System.currentTimeMillis() - 30 * 60 * 1000L;
-        Long offset = 0L;
+        Long size = 200L;
         Long startId = 0L;
 
         while (true) {
-            List<MerchantWithdrawSendBO> merchantWithdrawSendBOList = merchantWithdrawApplicationService.listWithdrawingByMerchantId(merchant.getUid(), offset, startId, checkTime);
+            List<MerchantWithdrawSendBO> merchantWithdrawSendBOList = merchantWithdrawApplicationService.listWithdrawingByMerchantId(merchant.getUid(), size, startId, checkTime);
             if (ObjectUtils.isEmpty(merchantWithdrawSendBOList)) {
                 break;
             }
