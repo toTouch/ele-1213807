@@ -13,6 +13,7 @@ import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.userinfo.UserAccountInfoVO;
+import com.xiliulou.electricity.vo.userinfo.UserDepositStatusVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -209,6 +210,8 @@ public interface UserInfoService extends IService<UserInfo> {
     Integer updatePayCountByUid(UserInfo userInfo);
 
     UserInfo queryByUidFromDB(Long uid);
+    
+    UserDepositStatusVO queryDepositStatus();
     
     R deleteAccountPreCheck();
     

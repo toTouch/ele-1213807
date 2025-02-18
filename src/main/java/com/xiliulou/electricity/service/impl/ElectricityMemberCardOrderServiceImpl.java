@@ -776,12 +776,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100281", "电池套餐订单不存在");
         }
         
-        // 美团订单不允许冻结
-        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
-            log.warn("DISABLE MEMBER CARD WARN! meiTuan order not allowed to be frozen,uid={},orderNo={}", user.getUid(), orderId);
-            return R.fail("120137", "美团订单，不允许冻结");
-        }
-        
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             log.warn("DISABLE MEMBER CARD WARN! memberCard is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
@@ -1233,12 +1227,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("admin saveUserMemberCard  WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderId);
             return R.fail("100281", "电池套餐订单不存在");
-        }
-        
-        // 美团订单不允许冻结
-        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
-            log.warn("admin saveUserMemberCard  WARN! meiTuan order not allowed to be frozen,uid={},orderNo={}", user.getUid(), orderId);
-            return R.fail("120137", "美团订单，不允许冻结");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());

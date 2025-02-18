@@ -2,6 +2,7 @@ package com.xiliulou.electricity.vo.userinfo;
 
 import lombok.Builder;
 import lombok.Data;
+
 /**
  * @author HeYafeng
  * @description 账号管理用户信息
