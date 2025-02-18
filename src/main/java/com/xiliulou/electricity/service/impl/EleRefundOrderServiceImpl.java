@@ -1354,7 +1354,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R batteryOffLineRefund(String errMsg, BigDecimal refundAmount, Long uid, Integer refundType, Integer offlineRefund) {
         
         TokenUser user = SecurityUtils.getUserInfo();

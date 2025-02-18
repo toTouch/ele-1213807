@@ -115,6 +115,13 @@ public class JsonUserUserInfoController extends BaseController {
     }
     
     /**
+     * 用户押金状态
+     */
+    @GetMapping(value = "/user/depositStatus")
+    public R queryDepositStatus() {
+        return R.ok(userInfoService.queryDepositStatus());
+    }
+    /**
      * 注销账号前置校验
      */
     @GetMapping("/user/account/del/preCheck")

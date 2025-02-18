@@ -1945,8 +1945,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Override
     @Slave
-    public RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long startTime, Long currentTime, Integer orderType) {
-        return rentBatteryOrderMapper.selectLatelyRentReturnOrder(uid, startTime, currentTime, orderType);
+    public RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long startTime, Long currentTime, List<Integer> orderTypes) {
+        return rentBatteryOrderMapper.selectLatelyRentReturnOrder(uid, startTime, currentTime, orderTypes);
     }
 
 

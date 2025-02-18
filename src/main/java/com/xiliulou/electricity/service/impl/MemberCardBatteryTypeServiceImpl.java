@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -145,5 +146,11 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
                 return CollectionUtils.containsAll(memberCardBatteryTypes, userBatteryTypes);
             }
         }
+    }
+    
+    @Slave
+    @Override
+    public List<MemberCardBatteryType> listByMemberCardIds(Integer tenantId, List<Long> memberCardIds) {
+        return memberCardBatteryTypeMapper.selectListByMemberCardIds(tenantId, memberCardIds);
     }
 }

@@ -153,6 +153,7 @@ import com.xiliulou.electricity.vo.userinfo.UserBasicInfoEleProVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageProVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
+import com.xiliulou.electricity.vo.userinfo.UserDepositStatusVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoProVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
@@ -4152,7 +4153,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public UserInfo queryByUidFromDB(Long uid) {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
-
+    
+    @Override
+    public UserDepositStatusVO queryDepositStatus() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            log.warn("queryDepositStatus warn! tokenUser is null");
+            return null;
+        }
+        
+        UserInfo userInfo = this.queryByUidFromCache(tokenUser.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("selectAccountInfo warn! userInfo is null");
+            return null;
+        }
+        
+        return UserDepositStatusVO.builder().uid(userInfo.getUid()).batteryDepositStatus(userInfo.getBatteryDepositStatus()).carDepositStatus(userInfo.getCarDepositStatus())
+                .carBatteryDepositStatus(userInfo.getCarBatteryDepositStatus()).build();
+    }
+    
     @Override
     public Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo,
                                                                 BatteryMemberCard batteryMemberCard, UserInfoExtra userInfoExtra) {
