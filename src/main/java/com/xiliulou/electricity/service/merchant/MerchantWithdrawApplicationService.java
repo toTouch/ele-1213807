@@ -71,4 +71,6 @@ public interface MerchantWithdrawApplicationService {
     MerchantWithdrawApplication queryByOrderNo(String orderNo, String batchNo);
 
     Integer updateById(MerchantWithdrawApplication merchantWithdrawApplicationUpdate);
+
+    void sendNotify(MerchantWithdrawSendBO merchantWithdrawSendBO, Integer tenantId);
 }

@@ -73,9 +73,6 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
     private RedisService redisService;
 
     @Resource
-    private WeChatAppTemplateService weChatAppTemplateService;
-
-    @Resource
     private MerchantUserAmountService merchantUserAmountService;
 
     @Override
@@ -327,32 +324,8 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
                 && (Objects.equals(merchantWithdrawSendBO.getState(), MerchantWithdrawApplicationStateEnum.ACCEPTED.getCode())
                 || Objects.equals(merchantWithdrawSendBO.getState(), MerchantWithdrawApplicationStateEnum.PROCESSING.getCode()))) {
 
-            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(merchantWithdrawSendBO.getUid(), tenantId, UserOauthBind.SOURCE_WX_PRO);
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("query wechat transfer order v2 warn, not found user auth bind info for merchant user. uid = {}", merchantWithdrawSendBO.getUid());
-                return;
-            }
-
-            AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
-            appTemplateQuery.setAppId(merchantConfig.getMerchantAppletId());
-            appTemplateQuery.setSecret(merchantConfig.getMerchantAppletSecret());
-            appTemplateQuery.setTouser(userOauthBind.getThirdId());
-            appTemplateQuery.setTemplateId(merchantConfig.getTemplateId());
-            appTemplateQuery.setPage(merchantConfig.getPage());
-            appTemplateQuery.setMiniProgramState(merchantConfig.getMiniProgramState());
-            appTemplateQuery.setData(this.getData(merchantWithdrawSendBO));
-
-            weChatAppTemplateService.sendMsg(appTemplateQuery);
+            merchantWithdrawApplicationService.sendNotify(merchantWithdrawSendBO, tenantId);
         }
-    }
-
-    private Map<String, Object> getData(MerchantWithdrawSendBO merchantWithdrawSendBO) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("amount1", merchantWithdrawSendBO.getAmount());
-        data.put("phrase2", MerchantWithdrawConstant.PHRASE2);
-        data.put("time3", DateUtil.format(new Date(merchantWithdrawSendBO.getCreateTime()), DateFormatConstant.MONTH_DATE_TIME_FORMAT));
-        data.put("thing4", MerchantWithdrawConstant.RECEIVE_REMARK);
-        return data;
     }
 
     private void handleSendByTenantId(Integer tenantId) {

@@ -568,7 +568,8 @@
                 a.batch_no 'batchNo',
                 a.uid,
                 a.franchisee_id 'franchiseeId',
-                a.tenant_id 'tenantId'
+                a.tenant_id 'tenantId',
+                a.create_time 'createTime'
         FROM
             t_merchant_withdraw_application a
                 INNER JOIN t_merchant_withdraw_application_record r ON r.order_no = a.order_no and r.batch_no = a.batch_no

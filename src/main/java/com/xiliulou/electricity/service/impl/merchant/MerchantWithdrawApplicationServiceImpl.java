@@ -1,8 +1,14 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import com.alipay.api.AlipayApiException;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.wp.entity.AppTemplateQuery;
+import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO;
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO;
@@ -10,10 +16,7 @@ import com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.config.merchant.MerchantConfig;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
@@ -64,15 +67,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -131,8 +126,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
-    
-    
+
+    @Resource
+    private WeChatAppTemplateService weChatAppTemplateService;
+
+    XllThreadPoolExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-WITHDRAW-THREAD-POOL", 3, "merchantWithdrawThread:");
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Triple<Boolean, String, Object> saveMerchantWithdrawApplication(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
@@ -387,7 +386,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         try {
             log.info("wechat transfer for single review start new. request = {}", wechatTransferOrderQuery);
             WechatTransferOrderResultV2 wechatTransferOrderResult = wechatV3TransferInvokeService.transferV2(wechatTransferOrderQuery);
-            log.info("wechat response data for single review new, result  = {}", wechatTransferOrderQuery);
+            log.info("wechat response data for single review new, result  = {}", wechatTransferOrderResult);
             if (Objects.nonNull(wechatTransferOrderResult)) {
                 merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_IN_PROGRESS);
                 merchantWithdrawApplicationUpdate.setTransactionBatchId(wechatTransferOrderResult.getTransferBillNo());
@@ -416,6 +415,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationRecordService.insertOne(merchantWithdrawApplicationRecord);
             result = merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
 
+            // 检测并且发送通知
+            executorService.execute(() -> {
+                checkAndSendNotify(merchantWithdrawApplicationUpdate.getState(), merchantWithdrawApplication);
+            });
+
             log.info("wechat transfer for single review new end. batch no = {}", batchNo);
         } catch (WechatPayException e) {
             //throw new RuntimeException(e);
@@ -434,6 +438,19 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         }
 
         return Triple.of(true, "", result);
+    }
+
+    private void checkAndSendNotify(Integer state, MerchantWithdrawApplication merchantWithdrawApplication) {
+        // 状态是否用户待确认
+        if (!(Objects.equals(state, MerchantWithdrawApplicationStateEnum.WAIT_USER_CONFIRM.getCode()) || Objects.equals(state, MerchantWithdrawApplicationStateEnum.TRANSFERING.getCode()))) {
+            // 发送通知
+            MerchantWithdrawSendBO merchantWithdrawSendBO = new MerchantWithdrawSendBO();
+            merchantWithdrawSendBO.setUid(merchantWithdrawApplication.getUid());
+            merchantWithdrawSendBO.setAmount(merchantWithdrawApplication.getAmount());
+            merchantWithdrawSendBO.setCreateTime(merchantWithdrawApplication.getCreateTime());
+
+            sendNotify(merchantWithdrawSendBO, merchantWithdrawApplication.getTenantId());
+        }
     }
 
     private List<WechatTransferSceneReportInfoQuery> getWechatTransferSceneReportInfos(String transferSceneId) {
@@ -1179,6 +1196,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationRecordService.updateById(merchantWithdrawApplicationRecordUpdate);
             result = merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
 
+            executorService.execute(() -> {
+                MerchantWithdrawApplication merchantWithdrawApplication = MerchantWithdrawApplication.builder().amount(merchantWithdrawSendBO.getAmount())
+                        .uid(merchantWithdrawSendBO.getUid()).tenantId(merchantWithdrawSendBO.getTenantId()).createTime(merchantWithdrawSendBO.getCreateTime()).build();
+                checkAndSendNotify(merchantWithdrawApplicationUpdate.getState(), merchantWithdrawApplication);
+            });
+
             log.info("wechat transfer for single review new end. batchDetailNo = {}", batchDetailNo);
         } catch (WechatPayException e) {
             //throw new RuntimeException(e);
@@ -1226,6 +1249,38 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
     }
 
+    @Override
+    public void sendNotify(MerchantWithdrawSendBO merchantWithdrawSendBO, Integer tenantId) {
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(merchantWithdrawSendBO.getUid(), tenantId, UserOauthBind.SOURCE_WX_PRO);
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.warn("send notify for merchant withdraw warn, not found user auth bind info for merchant user. uid = {}, batchDetailNo={}", merchantWithdrawSendBO.getUid(), merchantWithdrawSendBO.getBatchDetailNo());
+            return;
+        }
+
+        AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+        appTemplateQuery.setAppId(merchantConfig.getMerchantAppletId());
+        appTemplateQuery.setSecret(merchantConfig.getMerchantAppletSecret());
+        appTemplateQuery.setTouser(userOauthBind.getThirdId());
+        appTemplateQuery.setTemplateId(merchantConfig.getTemplateId());
+        appTemplateQuery.setPage(merchantConfig.getPage());
+        appTemplateQuery.setMiniProgramState(merchantConfig.getMiniProgramState());
+        appTemplateQuery.setData(this.getData(merchantWithdrawSendBO));
+
+        try {
+            weChatAppTemplateService.sendMsg(appTemplateQuery);
+        } catch (AlipayApiException e) {
+            log.error("send notify for merchant withdraw error! batchDetailNo={}", merchantWithdrawSendBO.getBatchDetailNo(), e);
+        }
+    }
+
+    private Map<String, Object> getData(MerchantWithdrawSendBO merchantWithdrawSendBO) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("amount1", merchantWithdrawSendBO.getAmount());
+        data.put("phrase2", MerchantWithdrawConstant.PHRASE2);
+        data.put("time3", DateUtil.format(new Date(merchantWithdrawSendBO.getCreateTime()), DateFormatConstant.MONTH_DATE_TIME_FORMAT));
+        data.put("thing4", MerchantWithdrawConstant.RECEIVE_REMARK);
+        return data;
+    }
 
     public void handleBatchDetailsInfo(String batchNo, Integer tenantId, WechatTransferBatchOrderQueryResult wechatTransferBatchOrderQueryResult) {
         //查询当前批次的明细记录，并查询每条明细的处理结果是否为成功状态，若失败，则记录失败原因。
