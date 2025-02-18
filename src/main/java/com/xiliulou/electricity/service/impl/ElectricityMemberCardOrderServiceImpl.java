@@ -3006,7 +3006,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 传递代扣记录则为续费分期套餐子订单
             memberCardOrder = applicationContext.getBean(ElectricityMemberCardOrderServiceImpl.class)
                     .generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, null, installmentRecord, deductionPlans).getRight();
-            memberCardOrder.setValidDays(InstallmentUtil.calculateSuborderRentTime(installmentRecord.getPaidInstallment() + 1, installmentRecord, batteryMemberCard));
             memberCardOrder.setSource(source);
         }
         
