@@ -216,6 +216,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
+        if (Objects.isNull(userInfo)) {
+            return R.fail("100001", "用户不存在");
+        }
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             return R.fail("301017", "未退还电池");
         }
@@ -278,6 +281,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
+        if (Objects.isNull(userInfo)) {
+            return R.fail("100001", "用户不存在");
+        }
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             return R.fail("301017", "未退还电池");
         }
