@@ -78,7 +78,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -109,6 +108,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_CANCEL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_EXPIRED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_RELEASE;
@@ -267,6 +267,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("301005", "签约记录不存在");
         }
         
+        Integer recordStatus = installmentRecord.getStatus();
+        if (Objects.equals(recordStatus, INSTALLMENT_RECORD_STATUS_TERMINATE)) {
+            return R.fail("301035", "签约记录解约中");
+        }
+        
         FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
         if (Objects.isNull(config)) {
             return R.fail("301024", "解约功能未配置相关信息！请联系客服处理");
@@ -288,9 +293,16 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
         terminatingRecordUpdate.setId(query.getId());
+        terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        if (Objects.equals(recordStatus, INSTALLMENT_RECORD_STATUS_COMPLETED) || Objects.equals(recordStatus, INSTALLMENT_RECORD_STATUS_CANCELLED)) {
+            terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_EXPIRED);
+            installmentTerminatingRecordService.update(terminatingRecordUpdate);
+            return R.fail("301036", "签约记录已解约");
+        }
+        
         terminatingRecordUpdate.setOpinion(query.getOpinion());
         terminatingRecordUpdate.setAuditorId(SecurityUtils.getUid());
-        terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
         
         if (Objects.equals(query.getStatus(), TERMINATING_RECORD_STATUS_REFUSE)) {
             terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_REFUSE);
