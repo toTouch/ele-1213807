@@ -1142,7 +1142,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         WechatTransferOrderRequestV2 wechatTransferOrderQuery = new WechatTransferOrderRequestV2();
         WechatV3CommonRequest wechatV3CommonRequest = ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails);
         wechatTransferOrderQuery.setCommonRequest(wechatV3CommonRequest);
-        wechatTransferOrderQuery.setAppid(wechatPayParamsDetails.getMerchantAppletId());
+        wechatTransferOrderQuery.setAppid(merchantConfig.getMerchantAppletId());
         //转账批次号
         wechatTransferOrderQuery.setOutBillNo(batchDetailNo);
         wechatTransferOrderQuery.setTransferSceneId(MerchantWithdrawSceneEnum.DISTRIBUTION_REBATE.getCode().toString());
@@ -1201,6 +1201,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
             MerchantWithdrawApplication merchantWithdrawApplication = MerchantWithdrawApplication.builder().amount(merchantWithdrawSendBO.getAmount())
                     .uid(merchantWithdrawSendBO.getUid()).tenantId(merchantWithdrawSendBO.getTenantId()).createTime(merchantWithdrawSendBO.getCreateTime()).build();
+
             checkAndSendNotify(merchantWithdrawApplicationUpdate.getState(), merchantWithdrawApplication);
 
             log.info("wechat transfer for single review new end. batchDetailNo = {}", batchDetailNo);
