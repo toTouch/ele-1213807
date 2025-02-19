@@ -23,7 +23,9 @@
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-       
+        <result property="packageInfo" column="package_info" jdbcType="VARCHAR"/>
+        <result property="wechatMerchantId" column="wechat_merchant_id" jdbcType="VARCHAR"/>
+
     </resultMap>
     
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
@@ -384,7 +386,9 @@
                tmwa.del_flag,
                tmwa.create_time,
                tmwa.update_time,
-               tmwa.franchisee_id
+               tmwa.franchisee_id,
+               tmwa.package_info,
+               tmwa.wechat_merchant_id
         from t_merchant_withdraw_application tmwa
         where tmwa.id = #{id}
         and tmwa.del_flag = 0

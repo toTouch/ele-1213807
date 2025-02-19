@@ -91,4 +91,14 @@ public class JsonUserMerchantWithdrawController extends BaseController {
 
         return returnTripleResult(merchantWithdrawProcess);
     }
+
+    @GetMapping("/merchant/withdraw/getConfirmReceiptInfo")
+    public R getConfirmReceiptInfo(@RequestParam("id") Long id) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("120013", "未找到用户");
+        }
+
+        return returnTripleResult(merchantWithdrawApplicationService.getConfirmReceiptInfo(user.getUid(), id));
+    }
 }

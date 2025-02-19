@@ -84,6 +84,11 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
             return;
         }
 
+        if (Objects.nonNull(tenantId)) {
+            handleSendByTenantId(tenantId);
+            return;
+        }
+
         Integer size = 200;
         Integer startId = 0;
 
@@ -378,7 +383,7 @@ public class MerchantWithdrawApplicationBizServiceImpl implements MerchantWithdr
                 v.stream().forEach(item -> {
                     Triple<Boolean, String, Object> triple = merchantWithdrawApplicationService.sendTransfer(item, finalUidBindMap.get(item.getUid()), finalWechatPayParamsDetails, payConfigType);
                     if (!triple.getLeft()) {
-                        log.error("merchant withdraw send task error! ");
+                        log.error("merchant withdraw send task error! send fail,msg={}", triple.getRight());
                     }
                 });
             });

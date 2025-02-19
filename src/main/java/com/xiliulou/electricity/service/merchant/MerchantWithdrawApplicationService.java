@@ -73,4 +73,6 @@ public interface MerchantWithdrawApplicationService {
     Integer updateById(MerchantWithdrawApplication merchantWithdrawApplicationUpdate);
 
     void sendNotify(MerchantWithdrawSendBO merchantWithdrawSendBO, Integer tenantId);
+
+    Triple<Boolean, String, Object> getConfirmReceiptInfo(Long uid, Long id);
 }

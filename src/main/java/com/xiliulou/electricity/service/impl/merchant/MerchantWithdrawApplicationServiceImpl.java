@@ -47,6 +47,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawConfirmReceiptVO;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawProcessVO;
 import com.xiliulou.pay.weixinv3.dto.*;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -1271,6 +1272,32 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         } catch (AlipayApiException e) {
             log.error("send notify for merchant withdraw error! batchDetailNo={}", merchantWithdrawSendBO.getBatchDetailNo(), e);
         }
+    }
+
+    @Override
+    @Slave
+    public Triple<Boolean, String, Object> getConfirmReceiptInfo(Long uid, Long id) {
+        //检查商户是否存在
+        Merchant queryMerchant = merchantService.queryByUid(uid);
+        if (Objects.isNull(queryMerchant)) {
+            log.warn("merchant user not found, uid = {}", uid);
+            return Triple.of(false, "商户不存在", null);
+        }
+
+        MerchantWithdrawApplication merchantWithdrawApplication = merchantWithdrawApplicationMapper.selectById(id);
+        if (Objects.isNull(merchantWithdrawApplication)) {
+            return Triple.of(false, "120015", "提现申请不存在");
+        }
+
+        if (!Objects.equals(queryMerchant.getUid(), uid)) {
+            return Triple.of(false, "120016", "提现申请不存在");
+        }
+
+        MerchantWithdrawConfirmReceiptVO receiptVO = MerchantWithdrawConfirmReceiptVO.builder().
+                packageInfo(merchantWithdrawApplication.getPackageInfo()).mchId(merchantWithdrawApplication.getWechatMerchantId())
+                .appId(merchantConfig.getMerchantAppletId()).build();
+
+        return Triple.of(true, "", receiptVO);
     }
 
     private Map<String, Object> getData(MerchantWithdrawSendBO merchantWithdrawSendBO) {
