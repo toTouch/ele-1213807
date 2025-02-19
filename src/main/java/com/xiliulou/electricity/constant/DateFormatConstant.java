@@ -30,9 +30,9 @@ public interface DateFormatConstant {
     String MONTH_DAY_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     /**
-     * 年月日 时分秒
+     * 年月日 时分
      */
-    String MONTH_DATE_TIME_FORMAT = "yyyy MM/dd HH:mm";
+    String MONTH_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
     
     /**
      * 两月前
