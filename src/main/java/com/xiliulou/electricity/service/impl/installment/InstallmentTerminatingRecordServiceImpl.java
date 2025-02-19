@@ -200,4 +200,10 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return Pair.of(rentPrice, unpaidPrice);
     }
     
+    @Slave
+    @Override
+    public List<InstallmentTerminatingRecord> listByExternalAgreementNo(InstallmentTerminatingRecordQuery query) {
+        return installmentTerminatingRecordMapper.selectListByExternalAgreementNo(query);
+    }
+    
 }

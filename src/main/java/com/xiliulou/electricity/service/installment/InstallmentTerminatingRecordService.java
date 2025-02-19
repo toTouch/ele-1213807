@@ -96,4 +96,7 @@ public interface InstallmentTerminatingRecordService {
      * @return left-rentPrice, right-unpaidPrice
      */
     Pair<BigDecimal, BigDecimal> queryRentPriceAndUnpaidAmount(String externalAgreementNo);
+    
+    
+    List<InstallmentTerminatingRecord> listByExternalAgreementNo(InstallmentTerminatingRecordQuery query);
 }

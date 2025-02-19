@@ -591,13 +591,24 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentRecordService.update(installmentRecordUpdate);
         
-        // 更新解约记录
-        InstallmentTerminatingRecord terminatingRecord = installmentTerminatingRecordService.queryLatestByExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
-        terminatingRecordUpdate.setId(terminatingRecord.getId());
-        terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_RELEASE);
-        terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
-        installmentTerminatingRecordService.update(terminatingRecordUpdate);
+        // 更新解约记录，查询的时候已经按id倒排了，处理的时候最新的记录更新成通过，其他的更新成已失效
+        // 这里存在一个问题，无法区分回调对应着哪一个解约记录，极端情况下会出现自动解约但是却自动将用户申请解约的解约记录更新为了通过
+        InstallmentTerminatingRecordQuery terminatingRecordQuery = new InstallmentTerminatingRecordQuery();
+        terminatingRecordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        terminatingRecordQuery.setStatuses(List.of(TERMINATING_RECORD_STATUS_INIT));
+        List<InstallmentTerminatingRecord> terminatingRecords = installmentTerminatingRecordService.listByExternalAgreementNo(terminatingRecordQuery);
+        
+        if (!CollectionUtils.isEmpty(terminatingRecords)) {
+            for (int i = 0; i < terminatingRecords.size(); i++) {
+                InstallmentTerminatingRecord terminatingRecord = terminatingRecords.get(i);
+                
+                InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
+                terminatingRecordUpdate.setId(terminatingRecord.getId());
+                terminatingRecordUpdate.setStatus(i == 0 ? TERMINATING_RECORD_STATUS_RELEASE : TERMINATING_RECORD_STATUS_EXPIRED);
+                terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                installmentTerminatingRecordService.update(terminatingRecordUpdate);
+            }
+        }
         
         List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.listOrderByExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
