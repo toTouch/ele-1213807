@@ -1982,49 +1982,39 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, BatteryLabelEnum labelEnum) {
         try {
+            if (Objects.isNull(battery) || Objects.isNull(box) || Objects.isNull(labelEnum)) {
+                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or box is null, battery={}, box={}, labelEnum={}", battery, box, labelEnum);
+                return;
+            }
+            
             Integer oldLabel = battery.getLabel();
-            Long updateTime = System.currentTimeMillis();
-            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).updateTime(updateTime).build();
-            
-            // 1.旧标签是在仓，在修改时需要从缓存中拿预修改标签
-            if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
-                String labelModifyDtoStr = redisService.get(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), battery.getSn()));
-                // 没有获取到预修改标签的时候直接结束
-                if (StringUtils.isEmpty(labelModifyDtoStr) || StringUtils.isBlank(labelModifyDtoStr)) {
-                    log.warn("BATTERY LABEL MODIFY LABEL WARN! labelModifyDtoStr is null, sn={}", battery.getSn());
-                    return;
-                }
-                
-                // 使用缓存的标签更新数据库
-                BatteryLabelModifyDto labelModifyDto = JsonUtil.fromJson(labelModifyDtoStr, BatteryLabelModifyDto.class);
-                if (Objects.isNull(labelModifyDto)) {
-                    log.warn("BATTERY LABEL MODIFY LABEL WARN! labelModifyDto is null, sn={}", battery.getSn());
-                    return;
-                }
-                
-                if (Objects.isNull(labelModifyDto.getPreLabel())) {
-                    log.warn("BATTERY LABEL MODIFY LABEL WARN! preLabel is null, sn={}", battery.getSn());
-                    return;
-                }
-                batteryUpdate.setLabel(labelModifyDto.getPreLabel());
-                electricitybatterymapper.update(batteryUpdate);
-                batteryLabelRecordService.sendRecord(battery, labelModifyDto.getOperatorUid(), labelEnum.getCode(), updateTime);
-                return;
-            }
-            
-            // 2.以下逻辑中，调用修改方法必须传递电池标签
-            if (Objects.isNull(labelEnum)) {
-                log.warn("BATTERY LABEL MODIFY LABEL WARN! labelEnum is null, sn={}", battery.getSn());
-                return;
-            }
             Integer newLabel = labelEnum.getCode();
             
-            // 3.新旧标签相同不用修改
+            // 1.新旧标签相同不用修改
             if (Objects.equals(oldLabel, newLabel)) {
                 return;
             }
             
-            batteryUpdate.setLabel(newLabel);
+            // 2.旧标签是在仓，缓存预修改标签在离仓逻辑中处理修改
+            if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                BatteryLabelModifyDto dto = new BatteryLabelModifyDto();
+                dto.setPreLabel(newLabel);
+                dto.setOperatorUid(uid);
+                
+                electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), battery.getSn(), dto);
+                return;
+            }
+            
+            Long updateTime = System.currentTimeMillis();
+            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).updateTime(updateTime).label(newLabel).build();
+            
+            // 3.新标签是在仓的，直接修改就完事
+            if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                electricitybatterymapper.update(batteryUpdate);
+                // 发送修改记录到mq，在batch项目中批量保存
+                batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
+                return;
+            }
             
             // 4.旧标签是租借，在修改时需要校验电池已和用户解绑
             if (Objects.equals(oldLabel, BatteryLabelEnum.RENT_NORMAL.getCode()) || Objects.equals(oldLabel, BatteryLabelEnum.RENT_OVERDUE.getCode()) || Objects.equals(oldLabel,
@@ -2034,15 +2024,53 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                     return;
                 }
                 electricitybatterymapper.update(batteryUpdate);
+                // 发送修改记录到mq，在batch项目中批量保存
                 batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
                 return;
             }
             
             // 5.其他的不涉及优先级的标签修改
             electricitybatterymapper.update(batteryUpdate);
+            // 发送修改记录到mq，在batch项目中批量保存
             batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
         } catch (Exception e) {
-            log.error("BATTERY LABEL MODIFY LABEL ERROR! sn={}", battery.getSn(), e);
+            log.error("BATTERY LABEL MODIFY ERROR! sn={}", battery.getSn(), e);
+        }
+    }
+    
+    @Override
+    public void modifyLabelWhenBatteryExitCabin(ElectricityBattery battery, ElectricityCabinetBox box) {
+        try {
+            if (Objects.isNull(battery) || Objects.isNull(box)) {
+                log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! battery or box is null, battery={}, box={}", battery, box);
+                return;
+            }
+            
+            String labelModifyDtoStr = redisService.get(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), battery.getSn()));
+            // 没有获取到预修改标签的时候直接结束
+            if (StringUtils.isEmpty(labelModifyDtoStr) || StringUtils.isBlank(labelModifyDtoStr)) {
+                log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! labelModifyDtoStr is null, sn={}", battery.getSn());
+                return;
+            }
+            
+            // 使用缓存的标签更新数据库
+            BatteryLabelModifyDto labelModifyDto = JsonUtil.fromJson(labelModifyDtoStr, BatteryLabelModifyDto.class);
+            if (Objects.isNull(labelModifyDto)) {
+                log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! labelModifyDto is null, sn={}", battery.getSn());
+                return;
+            }
+            
+            Integer preLabel = labelModifyDto.getPreLabel();
+            if (Objects.isNull(preLabel)) {
+                log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! preLabel is null, sn={}", battery.getSn());
+                return;
+            }
+            Long updateTime = System.currentTimeMillis();
+            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).label(preLabel).updateTime(updateTime).build();
+            electricitybatterymapper.update(batteryUpdate);
+            batteryLabelRecordService.sendRecord(battery, labelModifyDto.getOperatorUid(), preLabel, updateTime);
+        } catch (Exception e) {
+            log.error("MODIFY LABEL WHEN BATTERY EXIT CABIN ERROR! sn={}", battery.getSn(), e);
         }
     }
     

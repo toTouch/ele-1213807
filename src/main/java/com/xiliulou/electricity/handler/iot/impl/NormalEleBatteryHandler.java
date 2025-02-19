@@ -275,8 +275,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             Integer tenantId = eleBox.getTenantId();
             // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
             ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, tenantId);
-            electricityBatteryService.modifyLabel(oldBattery, eleBox, null, null);
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
 
+            
             electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN);
         }
     }
