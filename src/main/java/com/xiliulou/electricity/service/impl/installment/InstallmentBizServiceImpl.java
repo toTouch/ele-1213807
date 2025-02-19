@@ -164,7 +164,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     private InheritableThreadLocal<String> inheritableThreadLocal;
 
-    private LostUserActivityDealPublish lostUserActivityDealPublish;
+    private final LostUserActivityDealPublish lostUserActivityDealPublish;
     
     @PostConstruct
     public void init() {
