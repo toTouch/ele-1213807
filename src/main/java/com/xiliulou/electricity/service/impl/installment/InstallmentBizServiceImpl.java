@@ -609,7 +609,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         } else {
             installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCELLED);
         }
-        installmentRecordUpdate.setPaidAmount(paidAmount);
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentRecordService.update(installmentRecordUpdate);
         
@@ -627,6 +626,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
                 terminatingRecordUpdate.setId(terminatingRecord.getId());
                 terminatingRecordUpdate.setStatus(i == 0 ? TERMINATING_RECORD_STATUS_RELEASE : TERMINATING_RECORD_STATUS_EXPIRED);
+                terminatingRecordUpdate.setPaidAmount(paidAmount);
                 terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
                 installmentTerminatingRecordService.update(terminatingRecordUpdate);
             }
