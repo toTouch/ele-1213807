@@ -54,7 +54,7 @@ public class JsonAdminElectricityConfigController {
             BeanUtils.copyProperties(electricityConfig, electricityConfigVO);
         }
         if (Objects.nonNull(electricityConfigExtra)) {
-            BeanUtils.copyProperties(electricityConfigExtra, electricityConfigVO);
+            electricityConfigVO.setAccountDelSwitch(electricityConfigExtra.getAccountDelSwitch());
         }
     
         return R.ok(electricityConfigVO);
