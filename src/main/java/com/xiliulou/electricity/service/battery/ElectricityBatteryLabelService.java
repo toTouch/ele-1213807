@@ -27,5 +27,5 @@ public interface ElectricityBatteryLabelService {
      */
     void setPreLabel(Integer eId, String cellNo, String sn, BatteryLabelModifyDto labelModifyDto);
     
-    
+    List<ElectricityBatteryLabel> listBySns(List<String> sns);
 }

@@ -2,6 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper">
     
+    <sql id="columnsWithoutId">
+        sn,remark,administrator_id,merchant_id,tenant_id,franchisee_id,create_time,update_time
+    </sql>
+    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_battery_label (sn,tenant_id,franchisee_id,create_time,update_time)
         values (#{sn}, #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime})
@@ -44,4 +48,11 @@
         </set>
         where id = #{id}
     </update>
+    
+    <select id="selectListBySns" resultType="com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel">
+        select id,<include refid="columnsWithoutId"/> from t_electricity_battery_label where sn in
+        <foreach collection="list" open="(" separator="," close=")" item="sn">
+            #{sn}
+        </foreach>
+    </select>
 </mapper>

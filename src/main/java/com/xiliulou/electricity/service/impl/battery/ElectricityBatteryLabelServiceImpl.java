@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.battery;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -94,5 +95,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
         } catch (Exception e) {
             log.error("BATTERY LABEL SET PRE LABEL ERROR! sn={}", sn, e);
         }
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityBatteryLabel> listBySns(List<String> sns) {
+        return electricityBatteryLabelMapper.selectListBySns(sns);
     }
 }

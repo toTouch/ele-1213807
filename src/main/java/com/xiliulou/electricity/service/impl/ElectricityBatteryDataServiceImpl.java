@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.service.BatteryModelService;
@@ -25,6 +26,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -34,6 +36,7 @@ import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -81,6 +84,9 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Autowired
     private RedisService redisService;
     
+    @Autowired
+    private ElectricityBatteryLabelService electricityBatteryLabelService;
+    
     @Override
     @Slave
     public R selectAllBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
@@ -103,6 +109,15 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 otherPropertiesMap = otherPropertiesList.stream()
                         .collect(Collectors.toMap(BatteryOtherProperties::getBatteryName, BatteryOtherProperties::getBatteryV, (value1, value2) -> value1));
             }
+        }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabel> batteryLabels = electricityBatteryLabelService.listBySns(snList);
+        Map<String, String> snAndRemark;
+        if (CollectionUtils.isNotEmpty(batteryLabels)) {
+            snAndRemark = batteryLabels.stream().collect(Collectors.toMap(ElectricityBatteryLabel::getSn, ElectricityBatteryLabel::getRemark, (value1, value2) -> value1));
+        } else {
+            snAndRemark = null;
         }
         
         Map<String, Double> finalOtherPropertiesMap = otherPropertiesMap;
@@ -165,6 +180,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 if (Objects.nonNull(batteryModel) && Objects.nonNull(batteryModel.getCapacity())) {
                     item.setDbCapacity(batteryModel.getCapacity());
                 }
+            }
+            
+            if (MapUtils.isNotEmpty(snAndRemark) && snAndRemark.containsKey(item.getSn())) {
+                item.setRemark(snAndRemark.get(item.getSn()));
             }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));

@@ -1982,8 +1982,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, BatteryLabelEnum labelEnum) {
         try {
-            if (Objects.isNull(battery) || Objects.isNull(box) || Objects.isNull(labelEnum)) {
-                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or box is null, battery={}, box={}, labelEnum={}", battery, box, labelEnum);
+            if (Objects.isNull(battery) || Objects.isNull(labelEnum)) {
+                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or labelEnum is null, battery={}, labelEnum={}", battery, labelEnum);
                 return;
             }
             
@@ -1996,12 +1996,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
             
             // 2.旧标签是在仓，缓存预修改标签在离仓逻辑中处理修改
+            String sn = battery.getSn();
             if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                if (Objects.isNull(box)) {
+                    log.warn("BATTERY LABEL MODIFY LABEL WARN! box is null, sn={}", sn);
+                    return;
+                }
+                
                 BatteryLabelModifyDto dto = new BatteryLabelModifyDto();
                 dto.setPreLabel(newLabel);
                 dto.setOperatorUid(uid);
                 
-                electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), battery.getSn(), dto);
+                electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), sn, dto);
                 return;
             }
             
@@ -2020,7 +2026,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (Objects.equals(oldLabel, BatteryLabelEnum.RENT_NORMAL.getCode()) || Objects.equals(oldLabel, BatteryLabelEnum.RENT_OVERDUE.getCode()) || Objects.equals(oldLabel,
                     BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode())) {
                 if (Objects.nonNull(battery.getUid())) {
-                    log.warn("BATTERY LABEL MODIFY LABEL WARN! battery did not release, sn={}", battery.getSn());
+                    log.warn("BATTERY LABEL MODIFY LABEL WARN! battery did not release, sn={}", sn);
                     return;
                 }
                 electricitybatterymapper.update(batteryUpdate);

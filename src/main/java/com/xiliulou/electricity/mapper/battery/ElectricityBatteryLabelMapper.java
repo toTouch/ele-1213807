@@ -20,5 +20,5 @@ public interface ElectricityBatteryLabelMapper {
     
     int updateById(ElectricityBatteryLabel batteryLabel);
     
-    
+    List<ElectricityBatteryLabel> selectListBySns(@Param("list") List<String> sns);
 }

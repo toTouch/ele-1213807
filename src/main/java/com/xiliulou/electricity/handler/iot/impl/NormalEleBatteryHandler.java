@@ -233,6 +233,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
+            
+            // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
+            ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, electricityCabinet.getTenantId());
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
         }
     }
 

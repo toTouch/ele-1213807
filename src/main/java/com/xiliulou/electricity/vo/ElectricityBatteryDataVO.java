@@ -132,6 +132,11 @@ public class ElectricityBatteryDataVO {
      * @see BatteryLabelEnum
      */
     private Integer label;
+    
+    /**
+     * 电池标签表备注
+     */
+    private String remark;
 
 
     /**
