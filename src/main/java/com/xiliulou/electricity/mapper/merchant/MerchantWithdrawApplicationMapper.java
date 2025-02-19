@@ -69,7 +69,7 @@ public interface MerchantWithdrawApplicationMapper {
     
     Integer updatePayConfigWhetherChangeByBatchNo(MerchantWithdrawApplication updateWithdrawApplicationUpdate);
 
-    List<MerchantWithdrawSendBO> selectListAuditSuccess(@Param("tenantId") Integer tenantId,@Param("size") Long size,@Param("startId") Long startId,@Param("code") Integer code);
+    List<MerchantWithdrawSendBO> selectListAuditSuccess(@Param("tenantId") Integer tenantId,@Param("size") Long size,@Param("startId") Long startId,@Param("type") Integer type);
 
     List<MerchantWithdrawSendBO> selectListWithdrawingByMerchantId(@Param("uid") Long uid,@Param("size") Long size,@Param("startId") Long startId,@Param("checkTime") Long checkTime);
 
