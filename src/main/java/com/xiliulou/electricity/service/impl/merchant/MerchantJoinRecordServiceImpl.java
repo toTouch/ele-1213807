@@ -178,12 +178,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 if (!canJoinActivity.isSuccess()) {
                     return canJoinActivity;
                 }
-            }
     
-            // 是否被删除过的老用户
-            if (userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), tenant.getId())) {
-                log.warn("MERCHANT JOIN WARN! The user ever deleted, joinUid={}, phone={}", joinUid, userInfo.getPhone());
-                return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
+                // 是否被删除过的老用户
+                if (userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), tenant.getId())) {
+                    log.warn("MERCHANT JOIN WARN! The user ever deleted, joinUid={}, phone={}", joinUid, userInfo.getPhone());
+                    return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
+                }
             }
             
             // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
