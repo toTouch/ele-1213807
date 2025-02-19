@@ -78,9 +78,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -566,17 +569,35 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         // 更新代扣计划
         InstallmentDeductionPlanQuery deductionPlanQuery = new InstallmentDeductionPlanQuery();
         deductionPlanQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        deductionPlanQuery.setStatuses(Arrays.asList(DEDUCTION_PLAN_STATUS_INIT, DEDUCTION_PLAN_STATUS_FAIL));
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(deductionPlanQuery).getData();
+        BigDecimal paidAmount = BigDecimal.ZERO;
+        Set<Integer> statusSet = Set.of(DEDUCTION_PLAN_STATUS_INIT, DEDUCTION_PLAN_STATUS_FAIL);
+        List<InstallmentDeductionPlan> plansNeedCancel = new ArrayList<>();
         
         if (!CollectionUtils.isEmpty(deductionPlans)) {
-            deductionPlans.parallelStream().forEach(deductionPlan -> {
-                InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
-                deductionPlanUpdate.setId(deductionPlan.getId());
-                deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_CANCEL);
-                deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
-                installmentDeductionPlanService.update(deductionPlanUpdate);
-            });
+            // 找出需要取消的代扣计划，同时统计已支付金额
+            for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+                if (statusSet.contains(deductionPlan.getStatus())) {
+                    plansNeedCancel.add(deductionPlan);
+                }
+                
+                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
+                    paidAmount = paidAmount.add(deductionPlan.getAmount());
+                }
+            }
+            
+            // 取消代扣计划
+            if (!CollectionUtils.isEmpty(plansNeedCancel)) {
+                plansNeedCancel.parallelStream().forEach(deductionPlan -> {
+                    if (statusSet.contains(deductionPlan.getStatus())) {
+                        InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+                        deductionPlanUpdate.setId(deductionPlan.getId());
+                        deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_CANCEL);
+                        deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+                        installmentDeductionPlanService.update(deductionPlanUpdate);
+                    }
+                });
+            }
         }
         
         InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
@@ -588,6 +609,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         } else {
             installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCELLED);
         }
+        installmentRecordUpdate.setPaidAmount(paidAmount);
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentRecordService.update(installmentRecordUpdate);
         
