@@ -20,7 +20,8 @@
     <sql id="selectUserEsignRecord">
         select id, uid, tenant_id, sign_flow_id, sign_finish_status, file_id, file_name, sign_result, del_flag, create_time, update_time from t_user_esign_record
     </sql>
-
+    
+    
     <!--根据用户ID和租户ID查询最新记录-->
     <select id="selectLatestEsignRecordByUser" resultType="com.xiliulou.electricity.entity.EleUserEsignRecord">
         <include refid="selectUserEsignRecord"/>
@@ -96,7 +97,14 @@
         </set>
         where id = #{id} and uid = #{uid} and tenant_id = #{tenantId}
     </update>
-
+    
+    <!-- 取消签署流程 逻辑删除    -->
+    <update id="delById">
+        update t_user_esign_record
+        set del_flag = 1
+        where id = #{id}
+    </update>
+    
     <select id="selectByPage" resultType="com.xiliulou.electricity.vo.EleUserEsignRecordVO">
         select tuer.id  as id,
             tuer.uid    as uid,
