@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.battery;
 
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 
@@ -22,9 +23,9 @@ public interface ElectricityBatteryLabelService {
      * @param eId 柜机id
      * @param cellNo 仓门号
      * @param sn 电池sn
-     * @param preLabel 预修改标签，枚举值参照com.xiliulou.electricity.enums.battery.BatteryLabelEnum
+     * @param labelModifyDto 预修改标签及操作人uid
      */
-    void setPreLabel(Integer eId, String cellNo, String sn, Integer preLabel);
+    void setPreLabel(Integer eId, String cellNo, String sn, BatteryLabelModifyDto labelModifyDto);
     
     
 }

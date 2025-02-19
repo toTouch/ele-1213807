@@ -6,6 +6,8 @@ import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -187,5 +189,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     /**
      * 修改电池标签
      */
-    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelEnum labelEnum);
+    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, BatteryLabelEnum labelEnum);
 }

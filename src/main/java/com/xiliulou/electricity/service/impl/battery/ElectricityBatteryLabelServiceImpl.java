@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.battery;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
@@ -58,9 +59,9 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     }
     
     @Override
-    public void setPreLabel(Integer eId, String cellNo, String sn, Integer preLabel) {
+    public void setPreLabel(Integer eId, String cellNo, String sn, BatteryLabelModifyDto labelModifyDto) {
         try {
-            redisService.saveWithString(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, eId, cellNo, sn), preLabel, 30L, TimeUnit.MINUTES);
+            redisService.saveWithString(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, eId, cellNo, sn), labelModifyDto, 30L, TimeUnit.MINUTES);
         } catch (Exception e) {
             log.error("BATTERY LABEL SET PRE LABEL ERROR! sn={}", sn, e);
         }

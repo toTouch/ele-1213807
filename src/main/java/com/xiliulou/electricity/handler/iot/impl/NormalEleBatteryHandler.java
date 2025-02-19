@@ -188,7 +188,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             return;
         }
 
-        handleBatteryTrackRecordWhenNameIsNotNull(batteryName, eleBox, electricityCabinet, eleBatteryVO);
+        handleBatteryTrackRecordWhenNameIsNotNull(batteryName, eleBox, electricityCabinet, eleBatteryVO, electricityBattery);
 
         //保存电池电压电流&充电器电压电流
         this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
@@ -238,7 +238,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
 
     private void handleBatteryTrackRecordWhenNameIsNotNull(String nowBatteryName, ElectricityCabinetBox eleBox,
-                                                           ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO) {
+                                                           ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, ElectricityBattery battery) {
         String boxBatteryName = eleBox.getSn();
         if (StringUtils.isNotEmpty(eleBox.getSn())) {
             if (boxBatteryName.contains("UNKNOW")) {
@@ -253,6 +253,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(nowBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_IN)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
+            
+            // 修改电池标签为在仓
+            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN);
         }
 
         //电池名称改变
@@ -267,6 +270,14 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
+            
+            // 修改电池标签，旧电池触发出库逻辑，新电池修改为在仓
+            Integer tenantId = eleBox.getTenantId();
+            // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
+            ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, tenantId);
+            electricityBatteryService.modifyLabel(oldBattery, eleBox, null, null);
+
+            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN);
         }
     }
 

@@ -24,9 +24,9 @@ public class BatteryLabelRecord {
     private Integer newLabel;
     
     /**
-     * 操作人id
+     * 操作人uid
      */
-    private Long operatorId;
+    private Long operatorUid;
     
     /**
      * 操作人名称
@@ -46,7 +46,7 @@ public class BatteryLabelRecord {
     /**
      * 加盟商名称
      */
-    private Long franchiseeName;
+    private String franchiseeName;
     
     /**
      * 修改时间

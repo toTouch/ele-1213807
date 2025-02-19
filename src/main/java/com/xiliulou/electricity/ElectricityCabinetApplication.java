@@ -18,6 +18,7 @@ import com.xiliulou.pay.EnableFengYun;
 import com.xiliulou.pay.EnableFreeDeposit;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.pay.ProfitSharingAutoConfiguration;
+import com.xiliulou.rocketmq5.EnableRocketMq5;
 import com.xiliulou.storage.EnableStorage;
 import com.xiliulou.thirdmall.EnableThirdMall;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableThirdMall
 @Slf4j
 @ProfitSharingAutoConfiguration
+@EnableRocketMq5
 public class ElectricityCabinetApplication implements CommandLineRunner {
     
     public static void main(String[] args) {
