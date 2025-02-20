@@ -9,7 +9,10 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -17,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -34,6 +39,10 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     private final RedisService redisService;
     
     private final ElectricityBatteryLabelMapper electricityBatteryLabelMapper;
+    
+    private final UserService userService;
+    
+    private final MerchantService merchantService;
     
     
     @Override
@@ -101,5 +110,30 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     @Override
     public List<ElectricityBatteryLabel> listBySns(List<String> sns) {
         return electricityBatteryLabelMapper.selectListBySns(sns);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns) {
+        List<ElectricityBatteryLabel> batteryLabels = electricityBatteryLabelMapper.selectListBySns(sns);
+        if (CollectionUtils.isEmpty(batteryLabels)) {
+            return Collections.emptyList();
+        }
+        
+        List<Long> administratorIds = new ArrayList<>();
+        List<Long> merchantIds = new ArrayList<>();
+        
+        for (ElectricityBatteryLabel batteryLabel : batteryLabels) {
+            if (Objects.nonNull(batteryLabel.getAdministratorId())) {
+                administratorIds.add(batteryLabel.getAdministratorId());
+            }
+            
+            if (Objects.nonNull(batteryLabel.getMerchantId())) {
+                merchantIds.add(batteryLabel.getMerchantId());
+            }
+        }
+        
+        
+        return List.of();
     }
 }

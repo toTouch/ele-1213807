@@ -35,6 +35,7 @@ import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -804,6 +805,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (CollectionUtils.isNotEmpty(assetWarehouseNameVOS)) {
             warehouseNameVOMap = assetWarehouseNameVOS.stream().collect(Collectors.toMap(AssetWarehouseNameVO::getId, AssetWarehouseNameVO::getName, (item1, item2) -> item2));
         }
+        
+        // 查询电池标签相关的备注信息
+        List<String> snList = electricityBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
+        List<ElectricityBatteryLabel> batteryLabels = electricityBatteryLabelService.listBySns(snList);
+        batteryLabels.stream().collect(Collectors.toMap(ElectricityBatteryLabel::getSn, ElectricityBatteryLabel::getRemark, (item1, item2) -> item2));
         
         Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
