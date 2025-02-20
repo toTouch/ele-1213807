@@ -78,6 +78,11 @@ public class InstallmentRecord {
      */
     private Integer paidInstallment;
     
+    /**
+     * 分期套餐服务费
+     */
+    private BigDecimal installmentServiceFee;
+    
     private Integer tenantId;
     
     private Long franchiseeId;
