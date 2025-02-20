@@ -190,7 +190,7 @@ public interface MqProducerConstant {
     String INSTALLMENT_DEDUCT_NOTIFY_TAG = "installment_deduct_notify_tag";
     
     /**
-     * 带你吃标签修改记录topic
+     * 电池标签修改记录topic
      */
     String BATTERY_LABEL_RECORD_TOPIC = "battery_label_record_topic";
 
