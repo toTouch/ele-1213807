@@ -99,7 +99,6 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
-import com.xiliulou.electricity.service.exchange.AbstractOrderHandler;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
@@ -1730,6 +1729,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        
+        // 处理锁仓和启用时的电池标签、锁仓电池sn
+        if (Objects.equals(eleOuterCommandQuery.getCommand(), ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)) {
+            electricityCabinetBoxService.updateLockSnAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid());
+        }
+        
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
         map.put("operateType", 1);
         map.put("deviceName", StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());

@@ -1996,9 +1996,20 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return;
             }
             
+            Long updateTime = System.currentTimeMillis();
+            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).updateTime(updateTime).label(newLabel).build();
+            
             // 2.旧标签是在仓，缓存预修改标签在离仓逻辑中处理修改
             String sn = battery.getSn();
             if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                // 在仓修改为锁定在仓时，直接修改
+                if (Objects.equals(newLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                    electricitybatterymapper.update(batteryUpdate);
+                    // 发送修改记录到mq，在batch项目中批量保存
+                    batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
+                    return;
+                }
+                
                 if (Objects.isNull(box)) {
                     log.warn("BATTERY LABEL MODIFY LABEL WARN! box is null, sn={}", sn);
                     return;
@@ -2012,8 +2023,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return;
             }
             
-            Long updateTime = System.currentTimeMillis();
-            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).updateTime(updateTime).label(newLabel).build();
             
             // 3.新标签是在仓的，直接修改就完事
             if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {

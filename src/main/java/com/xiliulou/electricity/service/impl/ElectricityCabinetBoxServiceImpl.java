@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
@@ -397,11 +398,56 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
     
     @Override
-    public void updateLockSn(EleOuterCommandQuery eleOuterCommandQuery) {
-        if (Objects.isNull(eleOuterCommandQuery)) {
-            log.warn("UPDATE LOCK SN WARN! eleOuterCommandQuery is null");
+    public void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId) {
+        try {
+            if (Objects.isNull(eleOuterCommandQuery)) {
+                log.warn("UPDATE LOCK SN WARN! eleOuterCommandQuery is null");
+                return;
+            }
+            
+            // 禁用启用key
+            String isForbidden = "isForbidden";
+            // 禁用启用仓门号key
+            String cellNoKey = "cell_list";
+            Map<String, Object> data = eleOuterCommandQuery.getData();
+            
+            if (!data.containsKey(isForbidden) || !data.containsKey(cellNoKey)) {
+                return;
+            }
+            
+            // 获取cellNo
+            Integer cellNo = null;
+            Object value = data.get(cellNoKey);
+            if (!(value instanceof List)) {
+                log.warn("UPDATE LOCK SN WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
+                return;
+            }
+            // 值是 List 类型，继续转换
+            List<?> list = (List<?>) value;
+            if (CollectionUtils.isEmpty(list) || !(list.get(0) instanceof Integer)) {
+                // 列表中的元素是 Integer 类型，安全转换
+                log.warn("UPDATE LOCK SN WARN! can not get cellNo, eleOuterCommandQuery={}, list={}", eleOuterCommandQuery, list);
+                return;
+            }
+            cellNo = (Integer) list.get(0);
+            
+            String lockSn = eleOuterCommandQuery.getLockSn();
+            Integer eId = electricityCabinet.getId();
+            ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(lockSn, electricityCabinet.getTenantId());
+            
+            // 禁用格挡保存lockSn，修改电池标签
+            if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), true) && StringUtils.isNotEmpty(lockSn) && StringUtils.isNotBlank(lockSn)) {
+                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.LOCKED_IN_THE_CABIN);
+                electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
+            }
+            
+            // 启用格挡清除lockSn，修改电池标签
+            if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
+                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.UNUSED);
+                electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, null);
+            }
+        } catch (Exception e) {
+            log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
         }
-        
-        Map<String, Object> data = eleOuterCommandQuery.getData();
     }
 }

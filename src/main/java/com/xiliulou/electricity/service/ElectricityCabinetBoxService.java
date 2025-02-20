@@ -91,5 +91,5 @@ public interface ElectricityCabinetBoxService {
     /**
      * 保存或者清除柜机格挡表内的锁定在仓sn
      */
-    void updateLockSn(EleOuterCommandQuery eleOuterCommandQuery);
+    void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId);
 }
