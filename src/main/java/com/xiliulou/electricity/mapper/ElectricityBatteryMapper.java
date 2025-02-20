@@ -14,6 +14,7 @@ import com.xiliulou.electricity.query.asset.ElectricityBatteryBatchUpdateFranchi
 import com.xiliulou.electricity.query.asset.ElectricityBatteryEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.battery.BatterySnVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -209,5 +210,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     List<ElectricityBattery> selectLUserBatteryByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
     
-    List<String> selectListAllBatterySn(@Param("query") ElectricityBatteryQuery batteryQuery);
+    List<BatterySnVO> selectListAllBatterySn(@Param("query") ElectricityBatteryQuery batteryQuery);
 }
