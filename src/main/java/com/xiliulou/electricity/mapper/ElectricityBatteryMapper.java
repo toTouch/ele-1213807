@@ -208,4 +208,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     Integer existsByBatteryType(@Param("batteryType") String batteryType, @Param("tenantId") Integer tenantId);
     
     List<ElectricityBattery> selectLUserBatteryByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
+    
+    List<String> selectListAllBatterySn(ElectricityBatteryDataQuery electricityBatteryQuery);
 }

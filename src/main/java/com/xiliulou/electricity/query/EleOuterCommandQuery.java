@@ -35,4 +35,9 @@ public class EleOuterCommandQuery {
 	 * 格子信息
 	 */
 	private Map<String, Object> data;
+	
+	/**
+	 * 禁用格挡时选择的锁定在仓的sn
+	 */
+	private String lockSn;
 }
