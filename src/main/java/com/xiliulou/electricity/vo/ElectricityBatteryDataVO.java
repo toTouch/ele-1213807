@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.Data;
 
 @Data
@@ -134,9 +135,9 @@ public class ElectricityBatteryDataVO {
     private Integer label;
     
     /**
-     * 电池标签表备注
+     * 电池标签关联数据
      */
-    private String remark;
+    private ElectricityBatteryLabelVO labelVO;
 
 
     /**

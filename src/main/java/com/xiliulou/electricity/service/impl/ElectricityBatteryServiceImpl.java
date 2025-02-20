@@ -35,7 +35,6 @@ import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -44,7 +43,6 @@ import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
-import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
@@ -86,6 +84,7 @@ import com.xiliulou.electricity.web.query.battery.BatteryModifyQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -297,7 +296,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         electricitybatterymapper.insert(saveBattery);
         // 同步新增电池标签表相关信息
-        electricityBatteryLabelService.insert(saveBattery);
+        electricityBatteryLabelService.insertWithBattery(saveBattery);
         
         // 异步记录
         Long warehouseId = batteryAddRequest.getWarehouseId();
@@ -810,8 +809,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         // 查询电池标签相关的备注信息
         List<String> snList = electricityBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
         List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOBySns(snList);
-        Map<String, ElectricityBatteryLabelVO> labelVOMap = batteryLabelVOs.stream()
-                .collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
         
         Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
@@ -888,8 +891,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
             }
             
-            // 设置电池标签的其他关联数据
-            electricityBatteryVO.setLabelVO(labelVOMap.get(electricityBatteryVO.getSn()));
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(electricityBatteryVO.getSn())) {
+                // 设置电池标签的其他关联数据
+                electricityBatteryVO.setLabelVO(labelVOMap.get(electricityBatteryVO.getSn()));
+            }
             
             return electricityBatteryVO;
         }).collect(Collectors.toList());

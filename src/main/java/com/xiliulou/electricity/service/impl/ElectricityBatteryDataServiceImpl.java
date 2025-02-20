@@ -33,6 +33,7 @@ import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -112,12 +113,12 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         }
         
         // 获取电池标签表的备注
-        List<ElectricityBatteryLabel> batteryLabels = electricityBatteryLabelService.listBySns(snList);
-        Map<String, String> snAndRemark;
-        if (CollectionUtils.isNotEmpty(batteryLabels)) {
-            snAndRemark = batteryLabels.stream().collect(Collectors.toMap(ElectricityBatteryLabel::getSn, ElectricityBatteryLabel::getRemark, (value1, value2) -> value1));
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOBySns(snList);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
         } else {
-            snAndRemark = null;
+            labelVOMap = null;
         }
         
         Map<String, Double> finalOtherPropertiesMap = otherPropertiesMap;
@@ -182,8 +183,9 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
             
-            if (MapUtils.isNotEmpty(snAndRemark) && snAndRemark.containsKey(item.getSn())) {
-                item.setRemark(snAndRemark.get(item.getSn()));
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
             }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));

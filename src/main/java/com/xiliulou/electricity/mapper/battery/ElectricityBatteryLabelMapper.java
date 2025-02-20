@@ -18,7 +18,11 @@ public interface ElectricityBatteryLabelMapper {
     
     void batchInsert(@Param("list") List<ElectricityBatteryLabel> batteryLabels);
     
+    ElectricityBatteryLabel queryBySnAndTenantId(@Param("sn") String sn, @Param("tenantId") Integer tenantId);
+    
     int updateById(ElectricityBatteryLabel batteryLabel);
     
     List<ElectricityBatteryLabel> selectListBySns(@Param("list") List<String> sns);
+    
+    
 }

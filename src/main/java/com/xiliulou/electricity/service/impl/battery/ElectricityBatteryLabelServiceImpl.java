@@ -11,16 +11,20 @@ import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
+import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,7 +53,12 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     
     
     @Override
-    public void insert(ElectricityBattery battery) {
+    public void insert(ElectricityBatteryLabel batteryLabel) {
+        electricityBatteryLabelMapper.insert(batteryLabel);
+    }
+    
+    @Override
+    public void insertWithBattery(ElectricityBattery battery) {
         Long now = System.currentTimeMillis();
         ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().sn(battery.getSn()).tenantId(battery.getTenantId()).franchiseeId(battery.getFranchiseeId())
                 .createTime(now).updateTime(now).build();
@@ -70,6 +79,12 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                             .build());
         }
         electricityBatteryLabelMapper.batchInsert(batteryLabels);
+    }
+    
+    @Slave
+    @Override
+    public ElectricityBatteryLabel queryBySnAndTenantId(String sn, Integer tenantId) {
+        return electricityBatteryLabelMapper.queryBySnAndTenantId(sn, tenantId);
     }
     
     @Override

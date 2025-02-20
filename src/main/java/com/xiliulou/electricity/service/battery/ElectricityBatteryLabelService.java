@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.battery;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
+import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 
 import java.util.List;
@@ -13,9 +14,13 @@ import java.util.List;
  **/
 public interface ElectricityBatteryLabelService {
     
-    void insert(ElectricityBattery battery);
+    void insert(ElectricityBatteryLabel batteryLabel);
+    
+    void insertWithBattery(ElectricityBattery battery);
     
     void batchInsert(List<ElectricityBattery> batteries);
+    
+    ElectricityBatteryLabel queryBySnAndTenantId(String sn, Integer tenantId);
     
     int updateById(ElectricityBatteryLabel batteryLabel);
     

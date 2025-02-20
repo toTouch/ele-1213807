@@ -55,4 +55,10 @@
             #{sn}
         </foreach>
     </select>
+    
+    <select id="queryBySnAndTenantId"
+            resultType="com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel">
+        select id,<include refid="columnsWithoutId"/> from t_electricity_battery_label
+        where sn = #{sn} and tenant_id = #{tenantId}
+    </select>
 </mapper>
