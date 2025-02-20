@@ -365,14 +365,8 @@ public class JsonAdminUserInfoV2Controller {
             userInfoVo.setId(userInfo.getId());
             userInfoVo.setUid(userInfo.getUid());
             userInfoVo.setName(userInfo.getName());
-            if (Objects.equals(phoneHideFlag, YesNoEnum.YES.getCode())) {
-                // 手机号脱敏
-                userInfoVo.setPhone(PhoneUtils.mobileEncrypt(userInfo.getPhone()));
-            } else {
-                userInfoVo.setPhone(userInfo.getPhone());
-            }
+            userInfoVo.setPhone(userInfo.getPhone());
 
-            
             // 赋值复合字段
             StringBuilder builderNameAndPhone = new StringBuilder();
             if (StringUtils.isNotBlank(userInfo.getName())) {
@@ -381,8 +375,15 @@ public class JsonAdminUserInfoV2Controller {
             if (StringUtils.isNotBlank(builderNameAndPhone.toString())) {
                 builderNameAndPhone.append("/");
             }
+
+            String phone = userInfo.getPhone();
+            if (Objects.equals(phoneHideFlag, YesNoEnum.YES.getCode())) {
+                // 手机号脱敏
+                phone = PhoneUtils.mobileEncrypt(userInfo.getPhone());
+            }
+
             if (StringUtils.isNotBlank(userInfo.getPhone())) {
-                builderNameAndPhone.append(userInfo.getPhone());
+                builderNameAndPhone.append(phone);
             }
             userInfoVo.setNameAndPhone(builderNameAndPhone.toString());
             
