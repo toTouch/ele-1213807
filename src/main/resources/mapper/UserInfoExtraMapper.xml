@@ -22,13 +22,14 @@
         <result property="lostUserStatus" column="lost_user_status" jdbcType="INTEGER"/>
         <result property="lostUserTime" column="lost_user_time" jdbcType="BIGINT"/>
         <result property="lostUserFirstRebateTime" column="lost_user_first_rebate_time" jdbcType="BIGINT"/>
+        <result property="lostUserRecentlyFirstOrderId" column="lost_user_recently_first_order_id" jdbcType="INTEGER"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserInfoExtraMap">
         select
           uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid,
-          latest_activity_source, ele_limit, min_time_of_month, package_freeze_count,remark,lost_user_status, lost_user_time, lost_user_first_rebate_time
+          latest_activity_source, ele_limit, min_time_of_month, package_freeze_count,remark,lost_user_status, lost_user_time, lost_user_first_rebate_time, lost_user_recently_first_order_id
         from t_user_info_extra
         where uid = #{uid}
     </select>
@@ -100,7 +101,10 @@
             <if test="lostUserFirstRebateTime">
                 lost_user_first_rebate_time = #{lostUserFirstRebateTime},
             </if>
-        </set>
+            <if test="lostUserRecentlyFirstOrderId">
+                lost_user_recently_first_order_id = #{lostUserRecentlyFirstOrderId},
+            </if>
+            </set>
         where uid = #{uid}
     </update>
 

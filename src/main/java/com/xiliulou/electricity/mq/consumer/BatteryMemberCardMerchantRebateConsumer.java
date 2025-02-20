@@ -310,6 +310,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
         userInfoExtraUpdate.setUid(batteryMemberCardMerchantRebate.getUid());
         userInfoExtraUpdate.setLostUserFirstRebateTime(System.currentTimeMillis());
+        userInfoExtraUpdate.setLostUserRecentlyFirstOrderId(electricityMemberCardOrder.getId());
         userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
         userInfoExtraService.updateByUid(userInfoExtraUpdate);
 

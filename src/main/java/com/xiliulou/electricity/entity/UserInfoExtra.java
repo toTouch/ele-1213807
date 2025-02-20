@@ -109,4 +109,9 @@ public class UserInfoExtra {
      * 备注
      */
     private String remark;
+    
+    /**
+     * 最近一次成为流失用户后首次订单主键ID
+     */
+    private Long lostUserRecentlyFirstOrderId;
 }
