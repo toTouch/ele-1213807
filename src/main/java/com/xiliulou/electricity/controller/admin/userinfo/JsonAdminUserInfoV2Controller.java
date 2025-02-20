@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.userinfo;
 
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.User;
@@ -380,6 +381,84 @@ public class JsonAdminUserInfoV2Controller {
             return userInfoVo;
         }).collect(Collectors.toList());
         
+        return R.ok(userInfoVoList);
+    }
+
+    /**
+     * 根据关键字查询用户集
+     *
+     * @param userInfoQryReq 查询模型
+     * @return 用户集
+     */
+    @PostMapping("/queryByKeywordsV2")
+    public R<List<UserInfoVO>> queryByKeywordsV2(@RequestBody UserInfoQryReq userInfoQryReq) {
+        if (ObjectUtils.isEmpty(userInfoQryReq)) {
+            userInfoQryReq = new UserInfoQryReq();
+        }
+
+        // 赋值租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        //处理查询关键自重带有/时，无法进行搜索的问题
+        String keyWords = userInfoQryReq.getKeywords();
+        if (StringUtils.isNotBlank(keyWords) && keyWords.contains(StringConstant.FORWARD_SLASH)) {
+            keyWords = StringUtils.substringBefore(keyWords, StringConstant.FORWARD_SLASH);
+            userInfoQryReq.setKeywords(keyWords);
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().tenantId(tenantId).keywords(userInfoQryReq.getKeywords()).authStatus(userInfoQryReq.getAuthStatus())
+                .offset(Long.valueOf(userInfoQryReq.getOffset())).size(Long.valueOf(userInfoQryReq.getSize())).franchiseeIds(franchiseeIds).storeIds(storeIds).build();
+
+        List<UserInfo> userInfos = userInfoService.page(userInfoQuery);
+        if (CollectionUtils.isEmpty(userInfos)) {
+            return R.ok();
+        }
+
+        List<UserInfoVO> userInfoVoList = userInfos.stream().map(userInfo -> {
+            // 拼装返回字段
+            UserInfoVO userInfoVo = new UserInfoVO();
+            userInfoVo.setId(userInfo.getId());
+            userInfoVo.setUid(userInfo.getUid());
+            userInfoVo.setName(userInfo.getName());
+            userInfoVo.setPhone(PhoneUtils.mobileEncrypt(userInfo.getPhone()));
+
+            // 赋值复合字段
+            StringBuilder builderNameAndPhone = new StringBuilder();
+            if (StringUtils.isNotBlank(userInfo.getName())) {
+                builderNameAndPhone.append(userInfo.getName());
+            }
+            if (StringUtils.isNotBlank(builderNameAndPhone.toString())) {
+                builderNameAndPhone.append("/");
+            }
+            if (StringUtils.isNotBlank(userInfo.getPhone())) {
+                builderNameAndPhone.append(userInfo.getPhone());
+            }
+            userInfoVo.setNameAndPhone(builderNameAndPhone.toString());
+
+            return userInfoVo;
+        }).collect(Collectors.toList());
+
         return R.ok(userInfoVoList);
     }
 }
