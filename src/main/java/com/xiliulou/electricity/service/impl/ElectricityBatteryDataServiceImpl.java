@@ -543,11 +543,6 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         return R.ok(electricitybatterymapper.queryStockBatteryCount(electricityBatteryQuery));
     }
     
-    @Override
-    public R listAllBatterySn(ElectricityBatteryDataQuery electricityBatteryQuery) {
-        return R.ok(electricitybatterymapper.selectListAllBatterySn(electricityBatteryQuery));
-    }
-    
     
     // 组装EleBatteryDataVO
     private List<EleBatteryDataVO> buildEleBatteryDataVOList(List<ElectricityBatteryDataVO> electricityBatteries, Tenant tenant) {

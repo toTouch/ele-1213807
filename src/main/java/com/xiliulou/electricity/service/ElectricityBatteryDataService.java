@@ -46,6 +46,4 @@ public interface ElectricityBatteryDataService extends IService<ElectricityBatte
     R queryStockBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery);
     
     R queryStockBatteryPageDataCount(ElectricityBatteryDataQuery electricityBatteryQuery);
-    
-    R listAllBatterySn(ElectricityBatteryDataQuery electricityBatteryQuery);
 }

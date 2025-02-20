@@ -729,47 +729,4 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
                 .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.queryStockBatteryPageDataCount(electricityBatteryQuery);
     }
-    
-    @PostMapping(value = "/admin/batteryData/allSn/page")
-    public R getAllBatterySnPage(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
-        if (electricityBatteryRequest.getSize() < 0 || electricityBatteryRequest.getSize() > 50) {
-            electricityBatteryRequest.setSize(10L);
-        }
-        
-        if (electricityBatteryRequest.getOffset() < 0) {
-            electricityBatteryRequest.setOffset(0L);
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
-            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
-            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
-        }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId)
-                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
-                .franchiseeIds(franchiseeIds).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset()).build();
-        return electricityBatteryDataService.listAllBatterySn(electricityBatteryQuery);
-    }
 }

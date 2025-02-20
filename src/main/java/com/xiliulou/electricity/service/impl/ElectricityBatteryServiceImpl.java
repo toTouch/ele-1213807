@@ -43,6 +43,7 @@ import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
@@ -2078,6 +2079,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         } catch (Exception e) {
             log.error("MODIFY LABEL WHEN BATTERY EXIT CABIN ERROR! sn={}", battery.getSn(), e);
         }
+    }
+    
+    @Override
+    public R listAllBatterySn(ElectricityBatteryQuery batteryQuery) {
+        return R.ok(electricitybatterymapper.selectListAllBatterySn(batteryQuery));
     }
     
     private Map<String, Long> handleExchangeOrder(Set<String> exchangeOrderSet) {

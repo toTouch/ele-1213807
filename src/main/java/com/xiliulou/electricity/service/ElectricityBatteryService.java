@@ -10,6 +10,7 @@ import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
@@ -193,4 +194,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
      * 电池标签修改特殊逻辑-处理电池离仓场景
      */
     void modifyLabelWhenBatteryExitCabin(ElectricityBattery battery, ElectricityCabinetBox box);
+    
+    R listAllBatterySn(ElectricityBatteryQuery batteryQuery);
 }

@@ -6,11 +6,13 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.service.*;
@@ -677,5 +679,39 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @PostMapping("/admin/battery/del")
     public R deleteBatteryByExcel(@RequestBody DelBatteryReq delBatteryReq) {
         return electricityBatteryService.deleteBatteryByExcel(delBatteryReq);
+    }
+    
+    @PostMapping(value = "/admin/battery/allSn/page")
+    public R getAllBatterySnPage(@RequestBody ElectricityBatteryQuery batteryQuery) {
+        if (batteryQuery.getSize() < 0 || batteryQuery.getSize() > 50) {
+            batteryQuery.setSize(10L);
+        }
+        
+        if (batteryQuery.getOffset() < 0) {
+            batteryQuery.setOffset(0L);
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
+        batteryQuery.setTenantId(TenantContextHolder.getTenantId());
+        batteryQuery.setFranchiseeIds(franchiseeIds);
+        
+        return electricityBatteryService.listAllBatterySn(batteryQuery);
     }
 }
