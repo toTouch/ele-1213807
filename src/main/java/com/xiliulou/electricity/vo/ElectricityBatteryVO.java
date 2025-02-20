@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -185,4 +186,9 @@ public class ElectricityBatteryVO {
      * @see BatteryLabelEnum
      */
     private Integer label;
+    
+    /**
+     * 电池标签关联数据
+     */
+    private ElectricityBatteryLabelVO labelVO;
 }

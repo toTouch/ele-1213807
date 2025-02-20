@@ -78,6 +78,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.battery.BindBatteryFailReasonVO;
 import com.xiliulou.electricity.vo.battery.BindBatteryResultVO;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import com.xiliulou.electricity.web.query.battery.BatteryLocationTrackQuery;
@@ -808,8 +809,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         // 查询电池标签相关的备注信息
         List<String> snList = electricityBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-        List<ElectricityBatteryLabel> batteryLabels = electricityBatteryLabelService.listBySns(snList);
-        batteryLabels.stream().collect(Collectors.toMap(ElectricityBatteryLabel::getSn, ElectricityBatteryLabel::getRemark, (item1, item2) -> item2));
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOBySns(snList);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap = batteryLabelVOs.stream()
+                .collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
         
         Map<Long, String> finalWarehouseNameVOMap = warehouseNameVOMap;
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.stream().map(item -> {
@@ -885,6 +887,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (finalWarehouseNameVOMap.containsKey(item.getWarehouseId())) {
                 electricityBatteryVO.setWarehouseName(finalWarehouseNameVOMap.get(item.getWarehouseId()));
             }
+            
+            // 设置电池标签的其他关联数据
+            electricityBatteryVO.setLabelVO(labelVOMap.get(electricityBatteryVO.getSn()));
             
             return electricityBatteryVO;
         }).collect(Collectors.toList());

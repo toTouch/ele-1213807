@@ -6,7 +6,9 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
 import com.xiliulou.electricity.service.UserService;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author SJP
@@ -120,20 +123,18 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             return Collections.emptyList();
         }
         
-        List<Long> administratorIds = new ArrayList<>();
-        List<Long> merchantIds = new ArrayList<>();
-        
-        for (ElectricityBatteryLabel batteryLabel : batteryLabels) {
-            if (Objects.nonNull(batteryLabel.getAdministratorId())) {
-                administratorIds.add(batteryLabel.getAdministratorId());
-            }
+        return batteryLabels.stream().map(batteryLabel -> {
+            ElectricityBatteryLabelVO vo = new ElectricityBatteryLabelVO();
+            vo.setSn(batteryLabel.getSn());
+            vo.setRemark(batteryLabel.getRemark());
             
-            if (Objects.nonNull(batteryLabel.getMerchantId())) {
-                merchantIds.add(batteryLabel.getMerchantId());
-            }
-        }
-        
-        
-        return List.of();
+            User user = userService.queryByUidFromCache(batteryLabel.getAdministratorId());
+            vo.setAdministratorName(Objects.isNull(user) ? null : user.getName());
+            
+            Merchant merchant = merchantService.queryByIdFromCache(batteryLabel.getMerchantId());
+            vo.setMerchantName(Objects.isNull(merchant) ? null : merchant.getName());
+            
+            return vo;
+        }).collect(Collectors.toList());
     }
 }

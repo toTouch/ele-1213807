@@ -26,5 +26,5 @@ public class ElectricityBatteryLabelVO {
     /**
      * 领用商户名称
      */
-    private Long merchantName;
+    private String merchantName;
 }
