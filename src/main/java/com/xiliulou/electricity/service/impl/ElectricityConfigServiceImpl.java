@@ -234,6 +234,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setPackageFreezeDaysWithAssets(electricityConfigAddAndUpdateQuery.getPackageFreezeDaysWithAssets());
             electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
             electricityConfig.setIsBindBattery(electricityConfigAddAndUpdateQuery.getIsBindBattery());
+            electricityConfig.setNotExchangeProtectionTime(electricityConfigAddAndUpdateQuery.getNotExchangeProtectionTime());
 
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -283,6 +284,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setPackageFreezeDaysWithAssets(electricityConfigAddAndUpdateQuery.getPackageFreezeDaysWithAssets());
         electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
         electricityConfig.setIsBindBattery(electricityConfigAddAndUpdateQuery.getIsBindBattery());
+        electricityConfig.setNotExchangeProtectionTime(electricityConfigAddAndUpdateQuery.getNotExchangeProtectionTime());
         
         electricityConfigMapper.update(electricityConfig);
         
