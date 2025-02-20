@@ -1122,7 +1122,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 // 生成一期子套餐订单
                 Triple<Boolean, String, ElectricityMemberCardOrder> memberCardOrderTriple = electricityMemberCardOrderService.generateInstallmentMemberCardOrder(userInfo,
-                        batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight());
+                        batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight(), null);
                 if (Objects.isNull(memberCardOrderTriple) || Boolean.FALSE.equals(memberCardOrderTriple.getLeft()) || Objects.isNull(memberCardOrderTriple.getRight())) {
                     log.info("INSTALLMENT PAY INFO! generate memberCardOrder fail, uid={}", uid);
                     return R.fail("301001", "购买分期套餐失败，请联系管理员");

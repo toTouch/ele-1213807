@@ -32,4 +32,6 @@ public interface InstallmentTerminatingRecordMapper {
     InstallmentTerminatingRecord selectLatestByExternalAgreementNo(String externalAgreementNo);
     
     List<InstallmentTerminatingRecord> selectListForUserWithStatus(InstallmentTerminatingRecordQuery query);
+    
+    List<InstallmentTerminatingRecord> selectListByExternalAgreementNo(InstallmentTerminatingRecordQuery query);
 }
