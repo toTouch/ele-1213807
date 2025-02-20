@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.battery;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 
 /**
  * @author: SJP
@@ -10,5 +11,6 @@ import com.xiliulou.core.web.R;
 public interface ElectricityBatteryLabelBizService {
     
     R updateRemark(String sn, String remark);
-
+    
+    R batchUpdate(BatteryLabelBatchUpdateRequest request);
 }

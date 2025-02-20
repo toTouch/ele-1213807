@@ -24,13 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin/battery/label")
 public class JsonAdminElectricityBatteryLabelController {
     
-    private final ElectricityBatteryLabelService electricityBatteryLabelService;
-    
     private final ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
-    
     
     @GetMapping("/updateRemark")
     public R updateRemark(@RequestParam String sn, @RequestParam String remark) {
         return R.ok(electricityBatteryLabelBizService.updateRemark(sn, remark));
+    }
+
+    @PostMapping("/batchUpdate")
+    public R batchUpdate(@RequestBody @Validated BatteryLabelBatchUpdateRequest request) {
+        return R.ok(electricityBatteryLabelBizService.batchUpdate(request));
     }
 }

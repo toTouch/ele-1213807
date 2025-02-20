@@ -188,7 +188,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     /**
      * 修改电池标签
      */
-    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, BatteryLabelEnum labelEnum);
+    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, Integer newLabel);
     
     /**
      * 电池标签修改特殊逻辑-处理电池离仓场景

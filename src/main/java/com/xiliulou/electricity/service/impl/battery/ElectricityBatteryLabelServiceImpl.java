@@ -4,33 +4,27 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.merchant.Merchant;
-import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
-import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -113,8 +107,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             }
             
             // 旧预修改标签是租借时，如果新预修改标签也属于租借则更新缓存，否则直接返回，租借的优先级更高
-            Set<Integer> rentLabels = Set.of(BatteryLabelEnum.RENT_NORMAL.getCode(), BatteryLabelEnum.RENT_OVERDUE.getCode(), BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode());
-            if (rentLabels.contains(oldPreLabel) && !rentLabels.contains(newPreLabel)) {
+            if (BatteryLabelConstant.RENT_LABEL_SET.contains(oldPreLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newPreLabel)) {
                 return;
             }
             
@@ -151,5 +144,10 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             
             return vo;
         }).collect(Collectors.toList());
+    }
+    
+    @Override
+    public int deleteReceivedData(String sn) {
+        return electricityBatteryLabelMapper.updateReceivedData(sn, System.currentTimeMillis());
     }
 }

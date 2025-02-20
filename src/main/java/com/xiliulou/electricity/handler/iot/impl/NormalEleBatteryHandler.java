@@ -259,7 +259,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
             
             // 修改电池标签为在仓
-            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN);
+            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN.getCode());
         }
 
         //电池名称改变
@@ -282,7 +282,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
 
             
-            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN);
+            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN.getCode());
         }
     }
 

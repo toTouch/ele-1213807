@@ -1997,15 +1997,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    public void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, BatteryLabelEnum labelEnum) {
+    public void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, Integer newLabel) {
         try {
-            if (Objects.isNull(battery) || Objects.isNull(labelEnum)) {
-                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or labelEnum is null, battery={}, labelEnum={}", battery, labelEnum);
+            if (Objects.isNull(battery) || Objects.isNull(newLabel)) {
+                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or labelEnum is null, battery={}, labelEnum={}", battery, newLabel);
                 return;
             }
             
             Integer oldLabel = battery.getLabel();
-            Integer newLabel = labelEnum.getCode();
             
             // 1.新旧标签相同不用修改
             if (Objects.equals(oldLabel, newLabel)) {
@@ -2022,7 +2021,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 if (Objects.equals(newLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
                     electricitybatterymapper.update(batteryUpdate);
                     // 发送修改记录到mq，在batch项目中批量保存
-                    batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
+                    batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
                     return;
                 }
                 
@@ -2044,7 +2043,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
                 electricitybatterymapper.update(batteryUpdate);
                 // 发送修改记录到mq，在batch项目中批量保存
-                batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
+                batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
                 return;
             }
             
@@ -2057,14 +2056,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 electricitybatterymapper.update(batteryUpdate);
                 // 发送修改记录到mq，在batch项目中批量保存
-                batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
+                batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
                 return;
             }
             
             // 5.其他的不涉及优先级的标签修改
             electricitybatterymapper.update(batteryUpdate);
             // 发送修改记录到mq，在batch项目中批量保存
-            batteryLabelRecordService.sendRecord(battery, uid, labelEnum.getCode(), updateTime);
+            batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
         } catch (Exception e) {
             log.error("BATTERY LABEL MODIFY ERROR! sn={}", battery.getSn(), e);
         }

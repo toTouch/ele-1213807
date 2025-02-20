@@ -437,13 +437,13 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             
             // 禁用格挡保存lockSn，修改电池标签
             if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), true) && StringUtils.isNotEmpty(lockSn) && StringUtils.isNotBlank(lockSn)) {
-                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.LOCKED_IN_THE_CABIN);
+                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode());
                 electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
             }
             
             // 启用格挡清除lockSn，修改电池标签
             if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
-                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.UNUSED);
+                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.UNUSED.getCode());
                 electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, null);
             }
         } catch (Exception e) {

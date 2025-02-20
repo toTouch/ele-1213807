@@ -7,8 +7,34 @@
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_electricity_battery_label (sn,tenant_id,franchisee_id,create_time,update_time)
-        values (#{sn}, #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime})
+        insert into t_electricity_battery_label (sn,tenant_id,create_time,update_time
+            <if test="remark != null and remark != ''">
+                ,remark
+            </if>
+            <if test="administratorId != null">
+                ,administrator_id
+            </if>
+            <if test="merchantId != null">
+                ,merchant_id
+            </if>
+            <if test="franchiseeId != null">
+                ,franchisee_id
+            </if>
+        )
+        values (#{sn}, #{tenantId}, #{createTime}, #{updateTime}
+            <if test="remark != null and remark != ''">
+                ,#{remark}
+            </if>
+            <if test="administratorId != null">
+                ,#{administratorId}
+            </if>
+            <if test="merchantId != null">
+                ,#{merchantId}
+            </if>
+            <if test="franchiseeId != null">
+                ,#{franchiseeId}
+            </if>
+        )
     </insert>
     
     <insert id="batchInsert">
@@ -18,6 +44,7 @@
         </foreach>
     </insert>
     
+    <!-- 领用时，清除掉另一种领用的数据，表结构没设计好，没时间优化了 -->
     <update id="updateById">
         update t_electricity_battery_label
         <set>
@@ -29,9 +56,11 @@
             </if>
             <if test="administratorId != null">
                 administrator_id = #{administratorId},
+                merchant_id = null,
             </if>
             <if test="merchantId != null">
                 merchant_id = #{merchantId},
+                administrator_id = null,
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
@@ -47,6 +76,11 @@
             </if>
         </set>
         where id = #{id}
+    </update>
+    
+    <update id="updateReceivedData">
+        update t_electricity_battery_label set administrator_id = null, merchant_id = null, update_time = #{updateTime}
+        where sn = #{sn}
     </update>
     
     <select id="selectListBySns" resultType="com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel">

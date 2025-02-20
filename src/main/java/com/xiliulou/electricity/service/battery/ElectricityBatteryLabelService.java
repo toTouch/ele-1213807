@@ -36,4 +36,9 @@ public interface ElectricityBatteryLabelService {
     List<ElectricityBatteryLabel> listBySns(List<String> sns);
     
     List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns);
+    
+    /**
+     * 清除领用数据
+     */
+    int deleteReceivedData(String sn);
 }
