@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
 import com.xiliulou.electricity.service.*;
@@ -393,5 +394,14 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Slave
     public List<ElectricityCabinetBox> listNotUsableBySn(String sn, Integer cabinetId, String cellNo) {
         return electricityCabinetBoxMapper.selectListNotUsableBySn(sn, cabinetId, cellNo);
+    }
+    
+    @Override
+    public void updateLockSn(EleOuterCommandQuery eleOuterCommandQuery) {
+        if (Objects.isNull(eleOuterCommandQuery)) {
+            log.warn("UPDATE LOCK SN WARN! eleOuterCommandQuery is null");
+        }
+        
+        Map<String, Object> data = eleOuterCommandQuery.getData();
     }
 }
