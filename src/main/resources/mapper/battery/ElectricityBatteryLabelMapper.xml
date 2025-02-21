@@ -83,4 +83,8 @@
         select id,<include refid="columnsWithoutId"/> from t_electricity_battery_label
         where sn = #{sn} and tenant_id = #{tenantId}
     </select>
+    
+    <select id="countReceived" resultType="java.lang.Integer">
+        select count(1) from t_electricity_battery_label where receiver_id = #{receiverId}
+    </select>
 </mapper>

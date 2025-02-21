@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.PhoneUtils;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -38,6 +39,7 @@ import com.xiliulou.electricity.query.merchant.*;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
@@ -176,6 +178,9 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
+    
+    @Resource
+    private ElectricityBatteryLabelService electricityBatteryLabelService;
     
     /**
      * 商户保存
@@ -1703,7 +1708,18 @@ public class MerchantServiceImpl implements MerchantService {
 
         return merchantJoinUserVOS;
     }
-
+    
+    @Override
+    public R<Integer> countReceived(Long uid) {
+        Merchant merchant = queryByUid(uid);
+        if (Objects.isNull(merchant)) {
+            log.warn("MERCHANT COUNT RECEIVED WARN! merchant is null");
+            return R.fail("120212", "商户不存在");
+        }
+        
+        return R.ok(electricityBatteryLabelService.countReceived(merchant.getId()));
+    }
+    
     @Slave
     @Override
     public List<Merchant> queryListByUidList(Set<Long> uidList, Integer tenantId) {

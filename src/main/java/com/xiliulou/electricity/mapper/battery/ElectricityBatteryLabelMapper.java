@@ -25,4 +25,6 @@ public interface ElectricityBatteryLabelMapper {
     List<ElectricityBatteryLabel> selectListBySns(@Param("list") List<String> sns);
     
     int updateReceivedData(@Param("sn") String sn, @Param("updateTime") Long updateTime);
+    
+    Integer countReceived(@Param("receiverId") Long receiverId);
 }

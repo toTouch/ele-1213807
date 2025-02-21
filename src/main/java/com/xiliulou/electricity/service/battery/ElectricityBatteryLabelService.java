@@ -41,4 +41,6 @@ public interface ElectricityBatteryLabelService {
     int deleteReceivedData(String sn);
     
     List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns, Map<String, Integer> snAndLabel);
+    
+    Integer countReceived(Long uid);
 }

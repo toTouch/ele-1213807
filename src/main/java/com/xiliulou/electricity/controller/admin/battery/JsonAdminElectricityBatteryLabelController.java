@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,8 @@ public class JsonAdminElectricityBatteryLabelController {
     
     private final ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
     
+    private final ElectricityBatteryLabelService electricityBatteryLabelService;
+    
     @GetMapping("/updateRemark")
     public R updateRemark(@RequestParam String sn, @RequestParam String remark) {
         return R.ok(electricityBatteryLabelBizService.updateRemark(sn, remark));
@@ -34,5 +37,10 @@ public class JsonAdminElectricityBatteryLabelController {
     @PostMapping("/batchUpdate")
     public R batchUpdate(@RequestBody @Validated BatteryLabelBatchUpdateRequest request) {
         return electricityBatteryLabelBizService.batchUpdate(request);
+    }
+    
+    @GetMapping("/countReceived")
+    public R<Integer> countReceived() {
+        return R.ok(electricityBatteryLabelService.countReceived(SecurityUtils.getUid()));
     }
 }

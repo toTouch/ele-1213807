@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
@@ -71,4 +72,6 @@ public interface MerchantService {
     Integer countOverdueUserTotal(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
 
     List<MerchantJoinUserVO> listOverdueUserByPage(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
+    
+    R<Integer> countReceived(Long uid);
 }

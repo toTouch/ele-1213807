@@ -168,4 +168,10 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             return vo;
         }).collect(Collectors.toList());
     }
+    
+    @Slave
+    @Override
+    public Integer countReceived(Long receiverId) {
+        return electricityBatteryLabelMapper.countReceived(receiverId);
+    }
 }
