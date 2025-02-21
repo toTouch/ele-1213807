@@ -202,12 +202,15 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 // TODO 修改电池标签，此处可能存在并发问题，在本接口执行时，电池不是在仓、租借、锁定在仓，当修改时是这三种状态了，此时会出现错乱，若要避免需要在modifyLabel方法中加锁，并实时查询数据
                 electricityBatteryService.modifyLabel(battery, null, user.getUid(), newLabel);
             });
+            
+            return R.ok(BatteryLabelBatchUpdateVO.builder().successCount(snList.size() - failureCount).failureCount(failureCount).failReasons(failReasons).build());
+        }catch (Exception e) {
+            log.error("BATCH UPDATE LABEL ERROR! request={}", request, e);
+            return R.fail("100227", "操作失败");
         } finally {
             inheritableThreadLocal.remove();
             MDC.clear();
         }
-        
-        return R.ok();
     }
     
     /**
