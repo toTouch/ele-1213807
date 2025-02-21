@@ -4,6 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
+import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
+
+import java.util.List;
 
 /**
  * @author: SJP
@@ -21,4 +25,9 @@ public interface ElectricityBatteryLabelBizService {
     void updateOrInsertBatteryLabel(ElectricityBattery battery, ElectricityBatteryLabel batteryLabel);
     
     R batchUpdate(BatteryLabelBatchUpdateRequest request);
+    
+    List<ElectricityBatteryLabelVO> listLabelVOByBatteries(List<String> sns, List<ElectricityBattery> electricityBatteryList);
+    
+    List<ElectricityBatteryLabelVO> listLabelVOByDataVOs(List<String> sns, List<ElectricityBatteryDataVO> electricityBatteries);
+    
 }

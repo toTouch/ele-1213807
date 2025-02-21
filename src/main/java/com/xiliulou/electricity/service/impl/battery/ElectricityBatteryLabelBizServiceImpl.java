@@ -17,7 +17,9 @@ import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizServic
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.BatteryLabelBatchUpdateVO;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -258,5 +260,18 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         
         // 不是加盟商或门店的，校验租户即可
         return Objects.equals(user.getTenantId(), battery.getTenantId());
+    }
+    
+    @Override
+    public List<ElectricityBatteryLabelVO> listLabelVOByBatteries(List<String> sns, List<ElectricityBattery> electricityBatteryList) {
+        Map<String, Integer> snAndLabel = electricityBatteryList.parallelStream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getLabel, (a, b) -> b));
+        return electricityBatteryLabelService.listLabelVOBySns(sns, snAndLabel);
+    }
+    
+    @Override
+    public List<ElectricityBatteryLabelVO> listLabelVOByDataVOs(List<String> sns, List<ElectricityBatteryDataVO> electricityBatteries) {
+        Map<String, Integer> snAndLabel = electricityBatteries.parallelStream()
+                .collect(Collectors.toMap(ElectricityBatteryDataVO::getSn, ElectricityBatteryDataVO::getLabel, (a, b) -> b));
+        return electricityBatteryLabelService.listLabelVOBySns(sns, snAndLabel);
     }
 }

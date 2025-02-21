@@ -16,7 +16,6 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.service.BatteryModelService;
@@ -26,7 +25,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -86,7 +85,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     private RedisService redisService;
     
     @Autowired
-    private ElectricityBatteryLabelService electricityBatteryLabelService;
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
     
     @Override
     @Slave
@@ -113,7 +112,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         }
         
         // 获取电池标签表的备注
-        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOByDataVOs(snList, electricityBatteries);
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(snList, electricityBatteries);
         Map<String, ElectricityBatteryLabelVO> labelVOMap;
         if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
             labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));

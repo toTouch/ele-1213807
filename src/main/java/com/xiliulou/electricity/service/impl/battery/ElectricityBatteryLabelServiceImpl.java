@@ -15,14 +15,12 @@ import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
-import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -45,8 +43,6 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     private final RedisService redisService;
     
     private final ElectricityBatteryLabelMapper electricityBatteryLabelMapper;
-    
-    private final ApplicationContext applicationContext;
     
     private final UserService userService;
     
@@ -131,20 +127,12 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     }
     
     @Override
-    public List<ElectricityBatteryLabelVO> listLabelVOByBatteries(List<String> sns, List<ElectricityBattery> electricityBatteryList) {
-        Map<String, Integer> snAndLabel = electricityBatteryList.parallelStream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getLabel, (a, b) -> b));
-        return applicationContext.getBean(ElectricityBatteryLabelServiceImpl.class).listLabelVOBySns(sns, snAndLabel);
-    }
-    
-    @Override
-    public List<ElectricityBatteryLabelVO> listLabelVOByDataVOs(List<String> sns, List<ElectricityBatteryDataVO> electricityBatteries) {
-        Map<String, Integer> snAndLabel = electricityBatteries.parallelStream()
-                .collect(Collectors.toMap(ElectricityBatteryDataVO::getSn, ElectricityBatteryDataVO::getLabel, (a, b) -> b));
-        return applicationContext.getBean(ElectricityBatteryLabelServiceImpl.class).listLabelVOBySns(sns, snAndLabel);
+    public int deleteReceivedData(String sn) {
+        return electricityBatteryLabelMapper.updateReceivedData(sn, System.currentTimeMillis());
     }
     
     @Slave
-    private List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns, Map<String, Integer> snAndLabel) {
+    public List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns, Map<String, Integer> snAndLabel) {
         List<ElectricityBatteryLabel> batteryLabels = electricityBatteryLabelMapper.selectListBySns(sns);
         if (CollectionUtils.isEmpty(batteryLabels)) {
             return Collections.emptyList();
@@ -179,10 +167,5 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             
             return vo;
         }).collect(Collectors.toList());
-    }
-    
-    @Override
-    public int deleteReceivedData(String sn) {
-        return electricityBatteryLabelMapper.updateReceivedData(sn, System.currentTimeMillis());
     }
 }

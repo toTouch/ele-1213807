@@ -91,9 +91,9 @@ import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
-import com.xiliulou.electricity.service.impl.battery.ElectricityBatteryLabelBizServiceImpl;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -248,7 +248,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     private BatteryLabelRecordService batteryLabelRecordService;
     
     @Resource
-    private ElectricityBatteryLabelBizServiceImpl electricityBatteryLabelBizServiceImpl;
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
     
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
@@ -861,7 +861,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         // 查询电池标签相关的备注信息
         List<String> snList = electricityBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOByBatteries(snList, electricityBatteryList);
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByBatteries(snList, electricityBatteryList);
         Map<String, ElectricityBatteryLabelVO> labelVOMap;
         if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
             labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
@@ -2155,7 +2155,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             // 领用的还要修改标签关联表的数据
             if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
                 ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().receiverId(labelModifyDto.getReceiverId()).build();
-                electricityBatteryLabelBizServiceImpl.updateOrInsertBatteryLabel(battery, batteryLabel);
+                electricityBatteryLabelBizService.updateOrInsertBatteryLabel(battery, batteryLabel);
             }
             batteryLabelRecordService.sendRecord(battery, labelModifyDto.getOperatorUid(), newLabel, updateTime);
         } catch (Exception e) {
