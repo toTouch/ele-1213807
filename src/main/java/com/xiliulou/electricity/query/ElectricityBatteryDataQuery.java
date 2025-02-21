@@ -100,4 +100,9 @@ public class ElectricityBatteryDataQuery {
      *  默认为0降序，1为升序
      */
     private Integer sort ;
+    
+    /**
+     * 电池标签
+     */
+    private List<Integer> labels;
 }

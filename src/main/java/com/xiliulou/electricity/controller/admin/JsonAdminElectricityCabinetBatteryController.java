@@ -123,7 +123,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
-            @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+            @RequestParam(value = "warehouseId", required = false) List<Integer> labels) {
         
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -165,6 +166,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         electricityBatteryQuery.setStockStatus(stockStatus);
         electricityBatteryQuery.setWarehouseId(warehouseId);
+        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(labels) ? null : labels);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
@@ -206,7 +208,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
-            @RequestParam(value = "warehouseId", required = false) Long warehouseId) {
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+            @RequestParam(value = "warehouseId", required = false) List<Integer> labels) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -240,6 +243,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         electricityBatteryQuery.setStockStatus(stockStatus);
         electricityBatteryQuery.setWarehouseId(warehouseId);
+        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(labels) ? null : labels);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if (Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)) {
@@ -264,7 +268,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
-            @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "warehouseId", required = false) List<Integer> labels) {
         
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -296,6 +301,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setWarehouseId(warehouseId);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setBindStatus(bindStatus);
+        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(labels) ? null : labels);
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
     
@@ -314,7 +320,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
-            @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "warehouseId", required = false) List<Integer> labels) {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -349,6 +356,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setWarehouseId(warehouseId);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setBindStatus(bindStatus);
+        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(labels) ? null : labels);
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
     

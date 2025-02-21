@@ -176,7 +176,12 @@
         <if test="query.bindStatus != null and query.bindStatus == 1">
             and franchisee_id is not null and franchisee_id != 0
         </if>
-        
+        <if test="query.labels != null">
+            and label in
+            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
         order by create_time desc
         limit #{offset}, #{size}
     </select>
@@ -330,7 +335,12 @@
         <if test="query.bindStatus != null and query.bindStatus == 1">
             and franchisee_id is not null and franchisee_id != 0
         </if>
-    
+        <if test="query.labels != null">
+            and label in
+            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
     </select>
     
     <select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
@@ -874,6 +884,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.labels != null">
+            and teb.label in
+            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -927,6 +943,12 @@
             and teb.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
+            </foreach>
+        </if>
+        <if test="query.labels != null">
+            and teb.label in
+            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
             </foreach>
         </if>
     </select>
