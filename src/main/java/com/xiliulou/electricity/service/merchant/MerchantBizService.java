@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 
 /**
@@ -13,4 +14,6 @@ public interface MerchantBizService {
     R<Integer> countReceived(Long uid);
     
     R receiveBattery(BatteryLabelBatchUpdateRequest request);
+    
+    R listReceivedBatteriesDetail(ElectricityBatteryDataQuery request);
 }

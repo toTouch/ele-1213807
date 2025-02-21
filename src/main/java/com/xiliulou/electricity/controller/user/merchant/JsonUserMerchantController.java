@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.merchant.MerchantBizService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
@@ -96,5 +97,10 @@ public class JsonUserMerchantController extends BaseController {
     @PostMapping("/merchant/receiveBattery")
     public R receiveBattery(@RequestBody @Validated BatteryLabelBatchUpdateRequest request) {
         return merchantBizService.receiveBattery(request);
+    }
+    
+    @PostMapping("/merchant/receivedBatteries/detail")
+    public R receivedBatteriesDetail(@RequestBody ElectricityBatteryDataQuery request) {
+        return merchantBizService.listReceivedBatteriesDetail(request);
     }
 }
