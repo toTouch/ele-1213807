@@ -415,7 +415,7 @@ public class CouponServiceImpl implements CouponService {
             //更新缓存
             redisService.delete(CacheConstant.COUPON_CACHE + oldCoupon.getId());
 
-            return R.ok(incrementDays);
+            return R.ok();
         }
 
         return R.fail("ELECTRICITY.0086", "操作失败");
