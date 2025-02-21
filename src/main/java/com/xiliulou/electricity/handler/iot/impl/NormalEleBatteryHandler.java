@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.dto.VoltageCurrentChangeDTO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -259,7 +260,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
             
             // 修改电池标签为在仓
-            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN.getCode());
+            BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
+            electricityBatteryService.modifyLabel(battery, eleBox, dto);
         }
 
         //电池名称改变
@@ -280,9 +282,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
             ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, tenantId);
             electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
-
             
-            electricityBatteryService.modifyLabel(battery, eleBox, null, BatteryLabelEnum.IN_THE_CABIN.getCode());
+            BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
+            electricityBatteryService.modifyLabel(battery, eleBox, dto);
         }
     }
 

@@ -8,6 +8,7 @@ import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -21,7 +22,14 @@ import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
+import com.xiliulou.electricity.service.BoxOtherPropertiesService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
@@ -92,7 +100,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         if (Objects.nonNull(id)) {
             for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
@@ -110,7 +118,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
     @Override
     public void batchInsertBoxByModelIdV2(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         List<ElectricityCabinetBox> boxList = Lists.newArrayList();
         if (Objects.nonNull(id)) {
@@ -212,8 +220,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                     }
                 }
             }
-
-            //设置电池短型号
+            
+            // 设置电池短型号
             if (Objects.nonNull(electricityBatteryVO) && Objects.nonNull(electricityBatteryVO.getModel())) {
                 if (finalBatteryModelMap.containsKey(electricityBatteryVO.getModel())) {
                     item.setBatteryShortType(finalBatteryModelMap.getOrDefault(electricityBatteryVO.getModel(), ""));
@@ -251,7 +259,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> listByElectricityCabinetIdS(List<Integer> electricityCabinetIdS, Integer tenantId) {
         return electricityCabinetBoxMapper.selectListByElectricityCabinetIdS(electricityCabinetIdS, tenantId);
     }
-
+    
     @Slave
     @Override
     public List<ElectricityCabinetBox> listCabineBoxByEids(List<Integer> electricityCabinetIdList) {
@@ -277,7 +285,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType, Double fullCharged) {
         List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.queryElectricityBatteryBox(electricityCabinet.getId(), cellNo, batteryType, fullCharged);
-        if (CollUtil.isEmpty(boxes)){
+        if (CollUtil.isEmpty(boxes)) {
             return new ArrayList<>();
         }
         return boxes;
@@ -359,13 +367,13 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             return Triple.of(true, "", "");
         }
         
-        //获取所有启用的格挡
+        // 获取所有启用的格挡
         List<ElectricityCabinetBox> electricityCabinetBoxes = this.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return Triple.of(true, "", "");
         }
         
-        //获取空格挡
+        // 获取空格挡
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(haveBatteryBoxs) || haveBatteryBoxs.size() <= 1) {
             log.warn("ELE WARN! emptyCellNumber less than 1,electricityCabinetId={}", electricityCabinetId);
@@ -379,7 +387,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public List<ElectricityCabinetBox> selectHaveBatteryCellId(Integer id) {
         List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.selectHaveBatteryCellId(id);
-        if (CollUtil.isEmpty(boxes)){
+        if (CollUtil.isEmpty(boxes)) {
             return new ArrayList<>();
         }
         return boxes;
@@ -437,13 +445,15 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             
             // 禁用格挡保存lockSn，修改电池标签
             if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), true) && StringUtils.isNotEmpty(lockSn) && StringUtils.isNotBlank(lockSn)) {
-                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode());
+                BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()).operatorUid(operatorId).build();
+                electricityBatteryService.modifyLabel(battery, null, dto);
                 electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
             }
             
             // 启用格挡清除lockSn，修改电池标签
             if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
-                electricityBatteryService.modifyLabel(battery, null, operatorId, BatteryLabelEnum.UNUSED.getCode());
+                BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
+                electricityBatteryService.modifyLabel(battery, null, dto);
                 electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, null);
             }
         } catch (Exception e) {
