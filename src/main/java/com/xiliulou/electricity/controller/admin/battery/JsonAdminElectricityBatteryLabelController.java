@@ -33,6 +33,6 @@ public class JsonAdminElectricityBatteryLabelController {
 
     @PostMapping("/batchUpdate")
     public R batchUpdate(@RequestBody @Validated BatteryLabelBatchUpdateRequest request) {
-        return R.ok(electricityBatteryLabelBizService.batchUpdate(request));
+        return electricityBatteryLabelBizService.batchUpdate(request);
     }
 }

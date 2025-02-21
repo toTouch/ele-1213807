@@ -1,18 +1,18 @@
-package com.xiliulou.electricity.service.battery;
+package com.xiliulou.electricity.mapper.battery;
 
-import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.BatteryLabelRecord;
 import com.xiliulou.electricity.request.battery.BatteryLabelRecordRequest;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 /**
  * @author: SJP
- * @create: 2025-02-14 15:41
+ * @Desc:
+ * @create: 2025-02-21 15:00
  **/
-public interface BatteryLabelRecordService {
-
-    void sendRecord(ElectricityBattery battery, Long uid, Integer newLabel, Long updateTime);
+@Mapper
+public interface BatteryLabelRecordMapper {
     
     List<BatteryLabelRecord> listPage(BatteryLabelRecordRequest request);
     
