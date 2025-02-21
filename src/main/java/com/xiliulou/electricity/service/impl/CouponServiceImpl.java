@@ -365,6 +365,8 @@ public class CouponServiceImpl implements CouponService {
             }
         }
 
+        couponQuery.setTenantId(TenantContextHolder.getTenantId());
+
         // 可叠加时不能指定套餐
         if (!Objects.equals(oldCoupon.getDiscountType(), Coupon.DAY_VOUCHER)) {
             //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
