@@ -12,6 +12,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,19 +38,17 @@ public class JsonAdminElectricityBatteryLabelRecordController {
     
     
     @PostMapping("/page")
-    public R<List<BatteryLabelRecord>> page(@RequestBody BatteryLabelRecordRequest request) {
+    public R<List<BatteryLabelRecord>> page(@RequestBody @Validated BatteryLabelRecordRequest request) {
         if (Objects.isNull(request)) {
             log.warn("BATTERY LABEL RECORD PAGE WARN! request is null");
             return R.fail("300150", "数据不合规，请联系管理员");
         }
         
-        Long size = request.getSize();
-        if (Objects.isNull(size) || size < 0 || size > 50) {
+        if (request.getSize() < 0 || request.getSize() > 50) {
             request.setSize(10L);
         }
         
-        Long offset = request.getOffset();
-        if (Objects.isNull(offset) || offset < 0) {
+        if (request.getOffset() < 0) {
             request.setOffset(0L);
         }
         
@@ -71,6 +70,7 @@ public class JsonAdminElectricityBatteryLabelRecordController {
         }
         
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setFranchiseeIds(franchiseeIds);
         return R.ok(batteryLabelRecordService.listPage(request));
     }
     

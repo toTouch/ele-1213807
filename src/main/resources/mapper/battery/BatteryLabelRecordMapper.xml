@@ -14,8 +14,8 @@
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size() > 0">
             and franchisee_id in
-            <foreach collection="franchiseeIds" open="(" separator="," close=")">
-                #{franchiseeId}
+            <foreach collection="franchiseeIds" item="franchiseeIdFromList" open="(" separator="," close=")">
+                #{franchiseeIdFromList}
             </foreach>
         </if>
         <if test="startTimeStr != null and startTimeStr != ''">

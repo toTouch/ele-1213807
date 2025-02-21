@@ -337,6 +337,22 @@
 		select uid, name from t_user where tenant_id = #{tenantId} and del_flag = 0 and user_type = 1 and data_type=1
 	</select>
 	
+	<select id="selectListAdministrator" resultType="com.xiliulou.electricity.vo.UserSearchVO">
+		select tu.uid,tu.name from t_user tu
+		left join t_user_data_scope uds on tu.uid = uds.uid
+		where uds.data_id in
+		<foreach collection="allDataIds" item="dataId" open="(" separator="," close=")">
+			#{dataId}
+		</foreach>
+		<if test="uid != null">
+			and tu.uid like concat('%', #{uid}, '%')
+		</if>
+		<if test="name != null and name != ''">
+			and tu.name like concat('%', #{name}, '%')
+		</if>
+		limit #{offset}, #{size}
+	</select>
+	
 	<update id="updatePhoneByUid">
 		update t_user set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
 	</update>

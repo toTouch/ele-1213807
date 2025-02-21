@@ -18,8 +18,10 @@ import java.util.List;
 @Builder
 public class BatteryLabelRecordRequest {
     
+    @NotNull(message = "分页参数不能为空")
     private Long size;
     
+    @NotNull(message = "分页参数不能为空")
     private Long offset;
     
     private Integer tenantId;
