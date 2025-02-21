@@ -119,4 +119,6 @@ public interface UserCouponService {
     Integer queryTheVoucherHasBeenCollected( Integer activityId, Long activityRuleId, Long uid,List<Long> idList);
 
     void batchInsert(List<UserCoupon> userCouponList);
+
+    void asyncBatchUpdateIncreaseDeadline(Integer couponId, Integer days, Integer tenantId);
 }
