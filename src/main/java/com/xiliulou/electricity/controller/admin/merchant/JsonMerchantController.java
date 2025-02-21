@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
+import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.request.merchant.*;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
@@ -476,8 +477,5 @@ public class JsonMerchantController extends BaseController {
         return R.ok(merchantService.queryList(merchantPageRequest));
     }
     
-    @GetMapping("/admin/merchant/countReceived")
-    public R<Integer> countReceived() {
-        return merchantService.countReceived(SecurityUtils.getUid());
-    }
+    
 }

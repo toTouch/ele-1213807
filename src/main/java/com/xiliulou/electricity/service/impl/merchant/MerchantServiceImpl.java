@@ -28,6 +28,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.entity.merchant.MerchantUserAmount;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanOrderMapper;
@@ -36,6 +37,7 @@ import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.query.merchant.*;
+import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.*;
@@ -179,8 +181,6 @@ public class MerchantServiceImpl implements MerchantService {
     @Autowired
     OperateRecordUtil operateRecordUtil;
     
-    @Resource
-    private ElectricityBatteryLabelService electricityBatteryLabelService;
     
     /**
      * 商户保存
@@ -1707,17 +1707,6 @@ public class MerchantServiceImpl implements MerchantService {
         });
 
         return merchantJoinUserVOS;
-    }
-    
-    @Override
-    public R<Integer> countReceived(Long uid) {
-        Merchant merchant = queryByUid(uid);
-        if (Objects.isNull(merchant)) {
-            log.warn("MERCHANT COUNT RECEIVED WARN! merchant is null");
-            return R.fail("120212", "商户不存在");
-        }
-        
-        return R.ok(electricityBatteryLabelService.countReceived(merchant.getId()));
     }
     
     @Slave
