@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper">
     
     <sql id="columnsWithoutId">
-        sn,remark,administrator_id,merchant_id,tenant_id,franchisee_id,create_time,update_time
+        sn,remark,receiver_id,tenant_id,franchisee_id,create_time,update_time
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
@@ -11,11 +11,8 @@
             <if test="remark != null and remark != ''">
                 ,remark
             </if>
-            <if test="administratorId != null">
-                ,administrator_id
-            </if>
-            <if test="merchantId != null">
-                ,merchant_id
+            <if test="receiverId != null">
+                ,receiver_id
             </if>
             <if test="franchiseeId != null">
                 ,franchisee_id
@@ -25,11 +22,8 @@
             <if test="remark != null and remark != ''">
                 ,#{remark}
             </if>
-            <if test="administratorId != null">
-                ,#{administratorId}
-            </if>
-            <if test="merchantId != null">
-                ,#{merchantId}
+            <if test="receiverId != null">
+                ,#{receiverId}
             </if>
             <if test="franchiseeId != null">
                 ,#{franchiseeId}
@@ -44,7 +38,6 @@
         </foreach>
     </insert>
     
-    <!-- 领用时，清除掉另一种领用的数据，表结构没设计好，没时间优化了 -->
     <update id="updateById">
         update t_electricity_battery_label
         <set>
@@ -54,13 +47,8 @@
             <if test="remark != null and remark != ''">
                 remark = #{remark},
             </if>
-            <if test="administratorId != null">
-                administrator_id = #{administratorId},
-                merchant_id = null,
-            </if>
-            <if test="merchantId != null">
-                merchant_id = #{merchantId},
-                administrator_id = null,
+            <if test="receiverId != null">
+                receiver_id = #{receiverId},
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
@@ -79,7 +67,7 @@
     </update>
     
     <update id="updateReceivedData">
-        update t_electricity_battery_label set administrator_id = null, merchant_id = null, update_time = #{updateTime}
+        update t_electricity_battery_label set receiver_id = null, update_time = #{updateTime}
         where sn = #{sn}
     </update>
     

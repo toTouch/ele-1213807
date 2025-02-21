@@ -29,12 +29,25 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.constant.battery.BindBatteryConstants;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryChangeInfo;
+import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -57,7 +70,22 @@ import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryEnableAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryGeoService;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WechatTemplateAdminNotificationService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
@@ -65,6 +93,7 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.impl.battery.ElectricityBatteryLabelBizServiceImpl;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -72,7 +101,14 @@ import com.xiliulou.electricity.tx.AdminSupperTxService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.BatteryChangeInfoVO;
+import com.xiliulou.electricity.vo.BigEleBatteryVo;
+import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
+import com.xiliulou.electricity.vo.DeleteBatteryListVo;
+import com.xiliulou.electricity.vo.ElectricityBatteryExcelVO;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.battery.BindBatteryFailReasonVO;
 import com.xiliulou.electricity.vo.battery.BindBatteryResultVO;
@@ -99,7 +135,16 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -201,6 +246,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Resource
     private BatteryLabelRecordService batteryLabelRecordService;
+    
+    @Resource
+    private ElectricityBatteryLabelBizServiceImpl electricityBatteryLabelBizServiceImpl;
     
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
@@ -753,6 +801,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             //            }catch (Throwable e){
             //                log.warn("Recording user operation records failed because:{}",e.getMessage());
             //            }
+            
+            // 修改电池标签
+            BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).receiverId(eleQuery.getReceiverId()).build();
+            modifyLabel(electricityBatteryDb, null, dto);
+            
             return R.ok();
         } else {
             return R.fail("修改失败!");
@@ -808,7 +861,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         // 查询电池标签相关的备注信息
         List<String> snList = electricityBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOBySns(snList);
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOByBatteries(snList, electricityBatteryList);
         Map<String, ElectricityBatteryLabelVO> labelVOMap;
         if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
             labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
@@ -1997,14 +2050,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    public void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, Integer newLabel) {
+    public void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelModifyDto dto) {
         try {
-            if (Objects.isNull(battery) || Objects.isNull(newLabel)) {
-                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or labelEnum is null, battery={}, labelEnum={}", battery, newLabel);
+            
+            if (Objects.isNull(battery) || Objects.isNull(dto)) {
+                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or labelEnum is null, battery={}, dto={}", battery, dto);
                 return;
             }
             
             Integer oldLabel = battery.getLabel();
+            Integer newLabel = dto.getNewLabel();
+            Long operatorUid = dto.getOperatorUid();
             
             // 1.新旧标签相同不用修改
             if (Objects.equals(oldLabel, newLabel)) {
@@ -2021,7 +2077,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 if (Objects.equals(newLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
                     electricitybatterymapper.update(batteryUpdate);
                     // 发送修改记录到mq，在batch项目中批量保存
-                    batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
+                    batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime);
                     return;
                 }
                 
@@ -2029,10 +2085,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                     log.warn("BATTERY LABEL MODIFY LABEL WARN! box is null, sn={}", sn);
                     return;
                 }
-                
-                BatteryLabelModifyDto dto = new BatteryLabelModifyDto();
-                dto.setPreLabel(newLabel);
-                dto.setOperatorUid(uid);
                 
                 electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), sn, dto);
                 return;
@@ -2043,7 +2095,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
                 electricitybatterymapper.update(batteryUpdate);
                 // 发送修改记录到mq，在batch项目中批量保存
-                batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
+                batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime);
                 return;
             }
             
@@ -2056,14 +2108,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 electricitybatterymapper.update(batteryUpdate);
                 // 发送修改记录到mq，在batch项目中批量保存
-                batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
+                batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime);
                 return;
             }
             
             // 5.其他的不涉及优先级的标签修改
             electricitybatterymapper.update(batteryUpdate);
             // 发送修改记录到mq，在batch项目中批量保存
-            batteryLabelRecordService.sendRecord(battery, uid, newLabel, updateTime);
+            batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime);
         } catch (Exception e) {
             log.error("BATTERY LABEL MODIFY ERROR! sn={}", battery.getSn(), e);
         }
@@ -2091,15 +2143,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return;
             }
             
-            Integer preLabel = labelModifyDto.getPreLabel();
-            if (Objects.isNull(preLabel)) {
-                log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! preLabel is null, sn={}", battery.getSn());
+            Integer newLabel = labelModifyDto.getNewLabel();
+            if (Objects.isNull(newLabel)) {
+                log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! newLabel is null, sn={}", battery.getSn());
                 return;
             }
             Long updateTime = System.currentTimeMillis();
-            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).label(preLabel).updateTime(updateTime).build();
+            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).label(newLabel).updateTime(updateTime).build();
             electricitybatterymapper.update(batteryUpdate);
-            batteryLabelRecordService.sendRecord(battery, labelModifyDto.getOperatorUid(), preLabel, updateTime);
+            
+            // 领用的还要修改标签关联表的数据
+            if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().receiverId(labelModifyDto.getReceiverId()).build();
+                electricityBatteryLabelBizServiceImpl.updateOrInsertBatteryLabel(battery, batteryLabel);
+            }
+            batteryLabelRecordService.sendRecord(battery, labelModifyDto.getOperatorUid(), newLabel, updateTime);
         } catch (Exception e) {
             log.error("MODIFY LABEL WHEN BATTERY EXIT CABIN ERROR! sn={}", battery.getSn(), e);
         }

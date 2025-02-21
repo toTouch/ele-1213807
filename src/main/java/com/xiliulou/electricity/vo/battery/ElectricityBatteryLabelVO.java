@@ -19,12 +19,12 @@ public class ElectricityBatteryLabelVO {
     private String remark;
     
     /**
-     * 领用管理员名称
+     * 领用人，管理员uid或者商户id
      */
-    private String administratorName;
+    private Long receiverId;
     
     /**
-     * 领用商户名称
+     * 领用人名称
      */
-    private String merchantName;
+    private String receiverName;
 }

@@ -113,7 +113,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         }
         
         // 获取电池标签表的备注
-        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOBySns(snList);
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelService.listLabelVOByDataVOs(snList, electricityBatteries);
         Map<String, ElectricityBatteryLabelVO> labelVOMap;
         if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
             labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));

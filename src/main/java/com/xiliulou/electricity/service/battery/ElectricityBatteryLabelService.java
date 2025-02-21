@@ -4,6 +4,7 @@ import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
+import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 
 import java.util.List;
@@ -35,7 +36,9 @@ public interface ElectricityBatteryLabelService {
     
     List<ElectricityBatteryLabel> listBySns(List<String> sns);
     
-    List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns);
+    List<ElectricityBatteryLabelVO> listLabelVOByBatteries(List<String> sns, List<ElectricityBattery> electricityBatteryList);
+    
+    List<ElectricityBatteryLabelVO> listLabelVOByDataVOs(List<String> sns, List<ElectricityBatteryDataVO> electricityBatteries);
     
     /**
      * 清除领用数据

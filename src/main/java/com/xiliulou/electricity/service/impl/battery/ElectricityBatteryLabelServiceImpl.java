@@ -10,20 +10,25 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -40,6 +45,8 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     private final RedisService redisService;
     
     private final ElectricityBatteryLabelMapper electricityBatteryLabelMapper;
+    
+    private final ApplicationContext applicationContext;
     
     private final UserService userService;
     
@@ -98,8 +105,8 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             }
             
             BatteryLabelModifyDto dto = JsonUtil.fromJson(dtoStr, BatteryLabelModifyDto.class);
-            Integer oldPreLabel = dto.getPreLabel();
-            Integer newPreLabel = labelModifyDto.getPreLabel();
+            Integer oldPreLabel = dto.getNewLabel();
+            Integer newPreLabel = labelModifyDto.getNewLabel();
             // 新旧一样,刷新下时间
             if (Objects.equals(oldPreLabel, newPreLabel)) {
                 redisService.expire(key, 30 * 60 * 1000L, false);
@@ -107,7 +114,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             }
             
             // 旧预修改标签是租借时，如果新预修改标签也属于租借则更新缓存，否则直接返回，租借的优先级更高
-            if (BatteryLabelConstant.RENT_LABEL_SET.contains(oldPreLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newPreLabel)) {
+            if (Objects.nonNull(oldPreLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldPreLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newPreLabel)) {
                 return;
             }
             
@@ -123,24 +130,52 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
         return electricityBatteryLabelMapper.selectListBySns(sns);
     }
     
-    @Slave
     @Override
-    public List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns) {
+    public List<ElectricityBatteryLabelVO> listLabelVOByBatteries(List<String> sns, List<ElectricityBattery> electricityBatteryList) {
+        Map<String, Integer> snAndLabel = electricityBatteryList.parallelStream().collect(Collectors.toMap(ElectricityBattery::getSn, ElectricityBattery::getLabel, (a, b) -> b));
+        return applicationContext.getBean(ElectricityBatteryLabelServiceImpl.class).listLabelVOBySns(sns, snAndLabel);
+    }
+    
+    @Override
+    public List<ElectricityBatteryLabelVO> listLabelVOByDataVOs(List<String> sns, List<ElectricityBatteryDataVO> electricityBatteries) {
+        Map<String, Integer> snAndLabel = electricityBatteries.parallelStream()
+                .collect(Collectors.toMap(ElectricityBatteryDataVO::getSn, ElectricityBatteryDataVO::getLabel, (a, b) -> b));
+        return applicationContext.getBean(ElectricityBatteryLabelServiceImpl.class).listLabelVOBySns(sns, snAndLabel);
+    }
+    
+    @Slave
+    private List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns, Map<String, Integer> snAndLabel) {
         List<ElectricityBatteryLabel> batteryLabels = electricityBatteryLabelMapper.selectListBySns(sns);
         if (CollectionUtils.isEmpty(batteryLabels)) {
             return Collections.emptyList();
         }
         
-        return batteryLabels.stream().map(batteryLabel -> {
+        return batteryLabels.parallelStream().map(batteryLabel -> {
+            String sn = batteryLabel.getSn();
+            
             ElectricityBatteryLabelVO vo = new ElectricityBatteryLabelVO();
-            vo.setSn(batteryLabel.getSn());
+            vo.setSn(sn);
             vo.setRemark(batteryLabel.getRemark());
+            vo.setReceiverId(batteryLabel.getReceiverId());
             
-            User user = userService.queryByUidFromCache(batteryLabel.getAdministratorId());
-            vo.setAdministratorName(Objects.isNull(user) ? null : user.getName());
+            if (MapUtils.isEmpty(snAndLabel) || !snAndLabel.containsKey(sn)) {
+                return vo;
+            }
             
-            Merchant merchant = merchantService.queryByIdFromCache(batteryLabel.getMerchantId());
-            vo.setMerchantName(Objects.isNull(merchant) ? null : merchant.getName());
+            Integer label = snAndLabel.get(sn);
+            if (Objects.equals(label, BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode())) {
+                User user = userService.queryByUidFromCache(batteryLabel.getReceiverId());
+                if (Objects.nonNull(user)) {
+                    vo.setReceiverName(user.getName());
+                }
+            }
+            
+            if (Objects.equals(label, BatteryLabelEnum.RECEIVED_MERCHANT.getCode())) {
+                Merchant merchant = merchantService.queryByIdFromCache(batteryLabel.getReceiverId());
+                if (Objects.nonNull(merchant)) {
+                    vo.setReceiverName(merchant.getName());
+                }
+            }
             
             return vo;
         }).collect(Collectors.toList());

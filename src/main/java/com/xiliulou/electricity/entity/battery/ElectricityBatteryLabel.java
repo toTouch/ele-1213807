@@ -34,14 +34,9 @@ public class ElectricityBatteryLabel {
     private String remark;
     
     /**
-     * 领用管理员id
+     * 领用人，管理员uid或者商户id
      */
-    private Long administratorId;
-    
-    /**
-     * 领用商户id
-     */
-    private Long merchantId;
+    private Long receiverId;
     
     /**
      * 租户id

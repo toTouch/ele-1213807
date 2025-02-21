@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -188,7 +189,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     /**
      * 修改电池标签
      */
-    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, Long uid, Integer newLabel);
+    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelModifyDto dto);
     
     /**
      * 电池标签修改特殊逻辑-处理电池离仓场景

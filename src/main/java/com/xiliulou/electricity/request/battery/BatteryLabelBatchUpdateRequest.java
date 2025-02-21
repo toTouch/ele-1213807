@@ -22,14 +22,9 @@ public class BatteryLabelBatchUpdateRequest {
     private Integer label;
     
     /**
-     * 领用管理员id
+     * 领用人，管理员uid或者商户id
      */
-    private Long administratorId;
-    
-    /**
-     * 领用商户id
-     */
-    private Long merchantId;
+    private Long receiverId;
     
     /**
      * 电池sn集合
