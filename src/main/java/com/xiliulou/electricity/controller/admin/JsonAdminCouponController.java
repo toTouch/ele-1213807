@@ -145,13 +145,7 @@ public class JsonAdminCouponController extends BaseController {
             }
         }
 
-        R r = couponService.update(couponQuery);
-        if (r.isSuccess() && Objects.nonNull(r.getData()) && ((Integer) r.getData()) > 0) {
-            Integer days = (Integer) r.getData();
-            userCouponService.asyncBatchUpdateIncreaseDeadline(couponQuery.getId(), days, TenantContextHolder.getTenantId());
-        }
-
-        return r;
+        return couponService.update(couponQuery);
     }
     
     /**

@@ -407,8 +407,14 @@ public class CouponServiceImpl implements CouponService {
                 }
             }
 
+            if (incrementDays > 0) {
+                // 更新优惠券的时限
+                userCouponService.asyncBatchUpdateIncreaseDeadline(couponQuery.getId(), incrementDays, TenantContextHolder.getTenantId());
+            }
+
             //更新缓存
-            redisService.saveWithHash(CacheConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
+            redisService.delete(CacheConstant.COUPON_CACHE + oldCoupon.getId());
+
             return R.ok(incrementDays);
         }
 
@@ -476,9 +482,9 @@ public class CouponServiceImpl implements CouponService {
                 couponActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 couponActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             } else {
-                couponActivityVO.setBatteryPackages(getAllBatteryPackages());
-                couponActivityVO.setCarRentalPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
-                couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+//                couponActivityVO.setBatteryPackages(getAllBatteryPackages());
+//                couponActivityVO.setCarRentalPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+//                couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
         }
         
