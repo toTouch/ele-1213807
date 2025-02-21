@@ -298,7 +298,7 @@ public class JsonAdminUserController extends BaseController {
     /**
      * 修改租户登录密码
      */
-    @GetMapping(value = "/user/listAdministrator")
+    @PostMapping(value = "/user/listAdministrator")
     public R listAdministrator(@RequestBody UserRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
