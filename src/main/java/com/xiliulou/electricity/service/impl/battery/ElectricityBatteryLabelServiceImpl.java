@@ -77,7 +77,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     }
     
     @Override
-    public void batchInsert(List<ElectricityBattery> batteries) {
+    public void batchInsert(List<ElectricityBattery> batteries, Long operatorUid) {
         if (CollectionUtils.isEmpty(batteries)) {
             return;
         }
@@ -88,7 +88,12 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             batteryLabels.add(
                     ElectricityBatteryLabel.builder().sn(battery.getSn()).tenantId(battery.getTenantId()).franchiseeId(battery.getFranchiseeId()).createTime(now).updateTime(now)
                             .build());
+            
+            Integer newLabel = battery.getLabel();
+            battery.setLabel(null);
+            batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, now);
         }
+        
         electricityBatteryLabelMapper.batchInsert(batteryLabels);
     }
     

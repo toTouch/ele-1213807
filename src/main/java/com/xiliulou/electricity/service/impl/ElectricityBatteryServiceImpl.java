@@ -475,7 +475,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             // 保存到本地数据库
             insertBatch(saveList);
             // 新增电池标签表关联数据
-            electricityBatteryLabelService.batchInsert(saveList);
+            electricityBatteryLabelService.batchInsert(saveList, SecurityUtils.getUid());
         
             // 异步记录
             if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {

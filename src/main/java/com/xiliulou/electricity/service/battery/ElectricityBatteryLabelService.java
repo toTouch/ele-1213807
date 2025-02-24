@@ -18,7 +18,7 @@ public interface ElectricityBatteryLabelService {
     
     void insertWithBattery(ElectricityBattery battery);
     
-    void batchInsert(List<ElectricityBattery> batteries);
+    void batchInsert(List<ElectricityBattery> batteries, Long operatorUid);
     
     ElectricityBatteryLabel queryBySnAndTenantId(String sn, Integer tenantId);
     
