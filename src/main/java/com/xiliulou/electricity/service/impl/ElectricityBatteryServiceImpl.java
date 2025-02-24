@@ -2155,6 +2155,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 
                 // 5.其他的不涉及优先级的标签修改
                 electricitybatterymapper.update(batteryUpdate);
+                
+                // 6.处理领用人的逻辑
+                if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                    ElectricityBatteryLabel batteryLabel = new ElectricityBatteryLabel();
+                    batteryLabel.setReceiverId(dto.getReceiverId());
+                    electricityBatteryLabelBizService.updateOrInsertBatteryLabel(battery, batteryLabel);
+                }
+                
+                if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                    electricityBatteryLabelService.deleteReceivedData(battery.getSn());
+                }
+                
                 // 发送修改记录到mq，在batch项目中批量保存
                 batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime);
             });

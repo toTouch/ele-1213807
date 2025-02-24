@@ -225,22 +225,6 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 
                 // TODO 修改电池标签，此处可能存在并发问题，在本接口执行时，电池不是在仓、租借、锁定在仓，当修改时是这三种状态了，此时会出现错乱，若要避免需要在modifyLabel方法中加锁，并实时查询数据
                 electricityBatteryService.modifyLabel(battery, null, modifyDto);
-                
-                if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
-                    if (labelMap.containsKey(battery.getSn())) {
-                        ElectricityBatteryLabel batteryLabel = labelMap.get(battery.getSn());
-                        ElectricityBatteryLabel labelUpdate = new ElectricityBatteryLabel();
-                        labelUpdate.setId(batteryLabel.getId());
-                        labelUpdate.setReceiverId(request.getReceiverId());
-                        labelUpdate.setUpdateTime(System.currentTimeMillis());
-                        electricityBatteryLabelService.updateById(labelUpdate);
-                    }
-                }
-                
-                Integer oldLabel = battery.getLabel();
-                if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
-                    electricityBatteryLabelService.deleteReceivedData(battery.getSn());
-                }
             });
             
             return R.ok(BatteryLabelBatchUpdateVO.builder().successCount(snList.size() - failureCount).failureCount(failureCount).failReasons(failReasons).build());

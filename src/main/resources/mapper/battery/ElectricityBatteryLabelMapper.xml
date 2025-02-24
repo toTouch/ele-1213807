@@ -44,9 +44,6 @@
             <if test="sn != null and sn != ''">
                 sn = #{sn},
             </if>
-            <if test="remark != null and remark != ''">
-                remark = #{remark},
-            </if>
             <if test="receiverId != null">
                 receiver_id = #{receiverId},
             </if>
@@ -62,6 +59,7 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            remark = #{remark}
         </set>
         where id = #{id}
     </update>
