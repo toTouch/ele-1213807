@@ -28,13 +28,13 @@ import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.BatteryLabelBatchUpdateVO;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import com.xiliulou.security.bean.TokenUser;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,20 +50,25 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBatteryLabelBizService {
     
-    private final ElectricityBatteryLabelService electricityBatteryLabelService;
+    @Resource
+    private ElectricityBatteryLabelService electricityBatteryLabelService;
     
-    private final ElectricityBatteryService electricityBatteryService;
+    @Resource
+    private ElectricityBatteryService electricityBatteryService;
     
-    private final UserDataScopeService userDataScopeService;
+    @Resource
+    private UserDataScopeService userDataScopeService;
     
-    private final StoreService service;
+    @Resource
+    private StoreService service;
     
-    private final ElectricityCabinetOrderService electricityCabinetOrderService;
+    @Resource
+    private ElectricityCabinetOrderService electricityCabinetOrderService;
     
-    private final ElectricityConfigService electricityConfigService;
+    @Resource
+    private ElectricityConfigService electricityConfigService;
     
     private final static ExecutorService savePsnAuthResultExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 2, "CHECK_RENT_STATUS_FOR_LABEL");
     

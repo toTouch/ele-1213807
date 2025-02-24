@@ -34,7 +34,6 @@ public interface ElectricityBatteryLabelBizService {
     /**
      * 校验电池租赁状态与套餐到期时间，获取当前对应的租借标签
      * 根据UserBatteryMemberCard与CarRentalPackageMemberTermPo判断是电套餐还是车电一体，传递参数需注意
-     * @return 电池当前对应的标签，为null则获取失败
      */
     void checkRentStatusForLabel(UserBatteryMemberCard userBatteryMemberCard, CarRentalPackageMemberTermPo memberTermPo);
 }
