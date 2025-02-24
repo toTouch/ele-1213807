@@ -30,6 +30,7 @@ import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleAuthEntry;
@@ -71,6 +72,7 @@ import com.xiliulou.electricity.enums.SignStatusEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageStatusVOEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
@@ -422,9 +424,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Resource
     private EmergencyContactService emergencyContactService;
-    
-    @Resource
-    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
     
 
     /**
@@ -1874,7 +1873,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         
         // 修改电池标签为闲置
-        electricityBatteryService.modifyLabel();
+        electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
         
         try {
             Map<String, Object> map = new HashMap<>();
