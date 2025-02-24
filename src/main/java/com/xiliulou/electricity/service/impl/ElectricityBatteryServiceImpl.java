@@ -2116,9 +2116,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 Integer newLabel = dto.getNewLabel();
                 Long operatorUid = dto.getOperatorUid();
                 
-                // 1.新旧标签相同不用修改
+                // 1.新旧标签相同
                 if (Objects.equals(oldLabel, newLabel)) {
-                    return;
+                    // 不是领用的不用修改
+                    if (Objects.nonNull(newLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                        return;
+                    }
+                    
+                    // 领用的，校验其领用人是否相同
+                    ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.queryBySnAndTenantId(battery.getSn(), battery.getTenantId());
+                    if (Objects.nonNull(batteryLabel) && Objects.equals(batteryLabel.getReceiverId(), dto.getReceiverId())) {
+                        return;
+                    }
                 }
                 
                 Long updateTime = System.currentTimeMillis();
