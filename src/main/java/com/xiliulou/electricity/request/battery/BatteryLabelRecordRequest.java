@@ -30,7 +30,7 @@ public class BatteryLabelRecordRequest {
     
     private Integer tenantId;
     
-    private Long sn;
+    private String sn;
     
     private Long franchiseeId;
     
