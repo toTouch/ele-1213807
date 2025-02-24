@@ -1023,7 +1023,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setPhone(item.getPhone());
             vo.setUsableStatus(item.getUsableStatus());
             vo.setCarDepositStatus(item.getCarDepositStatus());
-            vo.setCarBatteryDepositStatus(item.getCarBatteryDepositStatus());
+            
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(item.getPackageType())) {
+                vo.setCarBatteryDepositStatus(convertCarBatteryDepositStatus(item.getCarBatteryDepositStatus()));
+            }
+            
             vo.setBatteryRentStatus(item.getBatteryRentStatus());
             vo.setPackageId(packageId);
             vo.setPackageType(item.getPackageType());
