@@ -1126,6 +1126,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (raws > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
             operateRecordUtil.record(null, MapUtil.of("batterySN", electricityBattery.getSn()));
+            
+            // 删除电池标签关联数据
+            electricityBatteryLabelService.deleteBySnAndTenantId(electricityBattery.getSn(), TenantContextHolder.getTenantId());
+            
             return R.ok();
         } else {
             return R.fail("100227", "删除失败!");

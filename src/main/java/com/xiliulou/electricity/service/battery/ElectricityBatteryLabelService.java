@@ -24,6 +24,8 @@ public interface ElectricityBatteryLabelService {
     
     int updateById(ElectricityBatteryLabel batteryLabel);
     
+    void deleteBySnAndTenantId(String sn, Integer tenantId);
+    
     /**
      * 设置预修改标签到缓存中，供后续更新标签时取用
      * @param eId 柜机id

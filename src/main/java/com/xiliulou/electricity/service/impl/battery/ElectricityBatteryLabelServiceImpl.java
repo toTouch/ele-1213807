@@ -104,6 +104,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     }
     
     @Override
+    public void deleteBySnAndTenantId(String sn, Integer tenantId) {
+        electricityBatteryLabelMapper.deleteBySnAndTenantId(sn, tenantId);
+    }
+    
+    @Override
     public void setPreLabel(Integer eId, String cellNo, String sn, BatteryLabelModifyDto labelModifyDto) {
         try {
             String key = String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, eId, cellNo, sn);
