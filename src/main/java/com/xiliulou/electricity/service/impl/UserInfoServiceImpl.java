@@ -655,11 +655,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
     
         List<Long> uids = userCarRentalPackageDOList.stream().map(UserCarRentalPackageDO::getUid).collect(Collectors.toList());
+        
+        // 查询车辆信息
         List<ElectricityCar> carList = electricityCarService.listByUidList(uids, CommonConstant.DEL_N);
         Map<Long, ElectricityCar> carMap = null;
         if (CollectionUtils.isNotEmpty(carList)) {
             carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
         }
+        
         // 查询已删除/已注销
         Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uids,
                 List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
@@ -670,6 +673,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .collect(Collectors.toList());
         // t_car_rental_package_deposit_pay
         Map<String, Integer> orderMapPayType = carRentalPackageDepositPayService.selectPayTypeByOrders(ordersOn);
+        
         // 处理租车/车店一体押金状态 和 当前套餐冻结状态
         List<UserCarRentalPackageVO> userCarRentalPackageVOList = Lists.newArrayList();
         for (UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList) {
