@@ -440,6 +440,7 @@
                update_time,
                bind_time,
                electricity_cabinet_id,
+               tenant_id,
                franchisee_id,
                uid
         FROM t_electricity_battery as teb
