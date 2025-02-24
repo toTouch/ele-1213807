@@ -1303,7 +1303,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
     private Map<String, Object> getData(MerchantWithdrawSendBO merchantWithdrawSendBO) {
         Map<String, Object> data = new HashMap<>();
-        data.put("amount1", merchantWithdrawSendBO.getAmount());
+        data.put("amount1", Objects.nonNull(merchantWithdrawSendBO.getAmount()) ? merchantWithdrawSendBO.getAmount().toString() : "");
         data.put("phrase2", MerchantWithdrawConstant.PHRASE2);
         data.put("time3", DateUtil.format(new Date(merchantWithdrawSendBO.getCreateTime()), DateFormatConstant.MONTH_DATE_TIME_FORMAT));
         data.put("thing4", MerchantWithdrawConstant.RECEIVE_REMARK);
