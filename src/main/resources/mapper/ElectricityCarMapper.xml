@@ -952,5 +952,23 @@
             #{uid}
         </foreach>
     </select>
+    
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.ElectricityCar">
+        select tec.id, tec.sn, tec.model, tec.longitude, tec.latitude, tec.status, tec.uid, tec.phone, tec.user_info_id, tec.user_name, tec.store_id, tec.model_id, tec.battery_sn,
+        tec.create_time, tec.update_time, tec.del_flag,
+        tec.tenant_id,tec.lock_type, tec.warehouse_id
+        from t_electricity_car tec
+        left join t_user_info tui on tec.uid = tui.uid
+        where tec.del_flag=0
+        <if test="userInfoDelFlag != null">
+            and tui.del_flag = #{userInfoDelFlag}
+        </if>
+        <if test="uidList != null">
+            and tec.uid in
+            <foreach collection="uidList" item="uid" open="(" close=")" separator=",">
+                #{uid}
+            </foreach>
+        </if>
+    </select>
 
 </mapper>

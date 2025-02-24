@@ -653,18 +653,28 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Slave
     @Override
     public R queryCarRentalList(UserInfoQuery userInfoQuery) {
-        
         List<UserCarRentalPackageDO> userCarRentalPackageDOList = carRentalPackageMemberTermService.queryUserCarRentalPackageList(
                 userInfoQuery);
         if (ObjectUtil.isEmpty(userCarRentalPackageDOList)) {
             return R.ok(Collections.emptyList());
         }
+        
+        List<Long> uids = userCarRentalPackageDOList.stream().map(UserCarRentalPackageDO::getUid).collect(Collectors.toList());
+    
+        // 查询车辆信息
+        List<ElectricityCar> carList = electricityCarService.listByUidList(uids, CommonConstant.DEL_N);
+        Map<Long, ElectricityCar> carMap = null;
+        if (CollectionUtils.isNotEmpty(carList)) {
+            carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
+        }
+        
         List<String> ordersOn = userCarRentalPackageDOList.stream()
                 .filter(f -> f.getCarDepositStatus() == 1 || f.getCarBatteryDepositStatus() == 0)
                 .map(UserCarRentalPackageDO::getDepositOrderNo).filter(StrUtil::isNotBlank)
                 .collect(Collectors.toList());
         // t_car_rental_package_deposit_pay
         Map<String, Integer> orderMapPayType = carRentalPackageDepositPayService.selectPayTypeByOrders(ordersOn);
+    
         // 处理租车/车店一体押金状态 和 当前套餐冻结状态
         List<UserCarRentalPackageVO> userCarRentalPackageVOList = Lists.newArrayList();
         for (UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList) {
@@ -688,6 +698,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userCarRentalPackageVO.setPackageFreezeStatus(0);
             } else {
                 userCarRentalPackageVO.setPackageFreezeStatus(1);
+            }
+    
+            if (MapUtil.isNotEmpty(carMap) && carMap.containsKey(userCarRentalPackageDO.getUid())) {
+                ElectricityCar car = carMap.get(userCarRentalPackageDO.getUid());
+                if (Objects.nonNull(car)) {
+                    userCarRentalPackageVO.setCarSn(car.getSn());
+                    userCarRentalPackageVO.setCarModel(car.getModel());
+                }
             }
             
             userCarRentalPackageVOList.add(userCarRentalPackageVO);
@@ -846,6 +864,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             UserOauthBindListQuery query = UserOauthBindListQuery.builder().phone(userCarRentalPackageDO.getPhone()).uid(uid).build();
             userOauthBindListQueryList.add(query);
         }
+    
+        // 查询车辆信息
+        List<ElectricityCar> carList = electricityCarService.listByUidList(uidList, CommonConstant.DEL_N);
+        Map<Long, ElectricityCar> carMap = null;
+        if (CollectionUtils.isNotEmpty(carList)) {
+            carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
+        }
 
         // 查询认证信息
         Map<Long, List<UserOauthBind>> userOauthMap = null;
@@ -860,6 +885,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<Long, ElectricityBattery> userBatteryMap = electricityBatteryService.listUserBatteryByUidList(uidList, tenantId);
 
         Map<Long, List<UserOauthBind>> finalUserOauthMap = userOauthMap;
+        Map<Long, ElectricityCar> finalCarMap = carMap;
         CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> userCarRentalPackageVOList.forEach(item -> {
             Long uid = item.getUid();
 
@@ -909,6 +935,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
 
             item.setBasicInfo(basicInfo);
+    
+            if (MapUtil.isNotEmpty(finalCarMap) && finalCarMap.containsKey(uid)) {
+                ElectricityCar car = finalCarMap.get(uid);
+                if (Objects.nonNull(car)) {
+                    item.setCarSn(car.getSn());
+                    item.setCarModel(car.getModel());
+                }
+            }
         }), threadPoolPro).exceptionally(e -> {
             log.error("Query user battery info error for car rental pro.", e);
             return null;
@@ -1001,16 +1035,31 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<Long, BigDecimal> userLateFeeMap = carRenalPackageSlippageBizService.listCarPackageUnpaidAmountByUidList(tenantId, uidList);
         // 查询用户押金信息
         Map<Long, CarRentalPackageDepositPayPo> userDepositMap = null;
-        List<CarRentalPackageDepositPayPo> depositList = carRentalPackageDepositPayService.listByOrders(tenantId, depositOrderNoList);
-        if (CollectionUtils.isNotEmpty(depositList)) {
-            userDepositMap = depositList.stream().collect(Collectors.toMap(CarRentalPackageDepositPayPo::getUid, Function.identity(), (k1, k2) -> k1));
+        Map<String, Integer> orderMapPayType = null;
+        if (CollectionUtils.isNotEmpty(depositOrderNoList)) {
+            List<CarRentalPackageDepositPayPo> depositList = carRentalPackageDepositPayService.listByOrders(tenantId, depositOrderNoList);
+            if (CollectionUtils.isNotEmpty(depositList)) {
+                userDepositMap = depositList.stream().collect(Collectors.toMap(CarRentalPackageDepositPayPo::getUid, Function.identity(), (k1, k2) -> k1));
+            
+                // 押金订单支付类型
+                orderMapPayType = depositList.stream()
+                        .collect(Collectors.toMap(CarRentalPackageDepositPayPo::getOrderNo, CarRentalPackageDepositPayPo::getPayType, (k1, k2) -> k1));
+            }
+        }
+        // 查询车辆
+        List<ElectricityCar> carList = electricityCarService.listByUidList(uidList, CommonConstant.DEL_N);
+        Map<Long, ElectricityCar> carMap = null;
+        if (CollectionUtils.isNotEmpty(carList)) {
+            carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
         }
         
         Map<Long, CarRentalPackagePo> finalPackageMap = packageMap;
         Map<Long, Franchisee> finalFranchiseeMap = franchiseeMap;
         Map<Long, Store> finalStoreMap = storeMap;
         Map<Long, CarRentalPackageDepositPayPo> finalUserDepositMap = userDepositMap;
-        
+    
+        Map<String, Integer> finalOrderMapPayType = orderMapPayType;
+        Map<Long, ElectricityCar> finalCarMap = carMap;
         List<UserCarRentalPackageProV2VO> resultList = userCarRentalPackageDOList.stream().map(item -> {
             Long uid = item.getUid();
             Long packageId = item.getPackageId();
@@ -1022,19 +1071,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setName(item.getName());
             vo.setPhone(item.getPhone());
             vo.setUsableStatus(item.getUsableStatus());
-            vo.setCarDepositStatus(item.getCarDepositStatus());
-            
-            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(item.getPackageType())) {
-                vo.setCarBatteryDepositStatus(convertCarBatteryDepositStatus(item.getCarBatteryDepositStatus()));
-            }
-            
             vo.setBatteryRentStatus(item.getBatteryRentStatus());
             vo.setPackageId(packageId);
             vo.setPackageType(item.getPackageType());
             vo.setDueTimeTotal(item.getPackageExpiredTime());
             vo.setDueTime(item.getDueTime());
             vo.setResidue(item.getResidue());
-            vo.setCarSn(item.getCarSn());
             vo.setFranchiseeId(franchiseeId);
             vo.setStoreId(storeId);
             
@@ -1054,8 +1096,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 vo.setDeposit(finalUserDepositMap.get(uid).getDeposit());
                 vo.setDepositPayType(finalUserDepositMap.get(uid).getPayType());
             }
+            // 如果用户尚未购买任何套餐则显示未缴纳
+            vo.setDepositStatus(UNPAID);
+            if (Objects.equals(item.getPackageType(), RentalPackageTypeEnum.CAR.getCode())) {
+                vo.setDepositStatus(item.getCarDepositStatus());
+            } else if (Objects.equals(item.getPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode())) {
+                vo.setDepositStatus(convertCarBatteryDepositStatus(item.getCarBatteryDepositStatus()));
+            }
+            if (MapUtils.isNotEmpty(finalOrderMapPayType) && finalOrderMapPayType.containsKey(item.getDepositOrderNo())
+                    && finalOrderMapPayType.get(item.getDepositOrderNo()) == 3) {
+                vo.setDepositStatus(FREE_OF_CHARGE);
+            }
             if (MapUtils.isNotEmpty(userLateFeeMap) && userLateFeeMap.containsKey(uid) && Objects.nonNull(userLateFeeMap.get(uid))) {
                 vo.setLateFeeAmount(userLateFeeMap.get(uid));
+            }
+            if (MapUtil.isNotEmpty(finalCarMap) && finalCarMap.containsKey(uid)) {
+                ElectricityCar car = finalCarMap.get(uid);
+                if (Objects.nonNull(car)) {
+                    vo.setCarSn(car.getSn());
+                }
             }
             
             return vo;

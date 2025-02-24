@@ -33,14 +33,9 @@ public class UserCarRentalPackageProV2VO {
     private Integer usableStatus;
     
     /**
-     * 租车押金状态 0-未缴纳 1-已缴纳
+     * 押金状态 0-未缴纳 1-已缴纳(实缴) -- 2 已缴纳(免押)
      */
-    private Integer carDepositStatus;
-    
-    /**
-     * 车电一体押金缴纳状态 0-已缴纳 1-未缴纳
-     */
-    private Integer carBatteryDepositStatus;
+    private Integer depositStatus;
     
     /**
      * 电池租赁状态，0：未租电池，1：已租电池
