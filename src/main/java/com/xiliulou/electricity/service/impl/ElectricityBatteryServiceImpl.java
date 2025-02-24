@@ -791,6 +791,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         updateBattery.setModel(StringUtils.isBlank(model) ? StringUtils.EMPTY : model);
         updateBattery.setUpdateTime(System.currentTimeMillis());
         updateBattery.setTenantId(TenantContextHolder.getTenantId());
+        // 不可在此处直接更新电池标签，必须走通用方法
+        updateBattery.setLabel(null);
         Integer rows = electricitybatterymapper.update(updateBattery);
         if (rows > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBatteryDb.getSn());

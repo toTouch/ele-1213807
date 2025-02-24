@@ -30,6 +30,7 @@
         select <include refid="columns"/> from t_battery_label_record
         where tenant_id = #{tenantId}
         <include refid="queryCondition"/>
+        order by exchange_time desc
         limit #{offset}, #{size}
     </select>
     
