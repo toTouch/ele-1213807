@@ -203,7 +203,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     continue;
                 }
                 
-                if (permissionVerification(electricityBattery, user, newLabel)) {
+                if (!permissionVerification(electricityBattery, user, newLabel)) {
                     failReason.put("reason", "无操作权限");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
