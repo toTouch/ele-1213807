@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BatteryLabelModifyDto {
+public class BatteryLabelModifyDTO {
     
     /**
      * 预修改电池标签
@@ -30,12 +30,12 @@ public class BatteryLabelModifyDto {
      */
     private Long receiverId;
     
-    public BatteryLabelModifyDto(Integer newLabel, Long operatorUid) {
+    public BatteryLabelModifyDTO(Integer newLabel, Long operatorUid) {
         this.newLabel = newLabel;
         this.operatorUid = operatorUid;
     }
     
-    public BatteryLabelModifyDto(Integer newLabel) {
+    public BatteryLabelModifyDTO(Integer newLabel) {
         this.newLabel = newLabel;
     }
 }

@@ -32,7 +32,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.constant.battery.BindBatteryConstants;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
@@ -253,7 +253,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
-    private final static ExecutorService modifyBatteryLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("modifyBatteryLabel", 1, "MODIFY_BATTERY_LABEL_THREAD");
+    private final ExecutorService modifyBatteryLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("modifyBatteryLabel", 1, "MODIFY_BATTERY_LABEL_THREAD");
     
     
     /**
@@ -825,7 +825,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             //            }
             
             // 修改电池标签
-            BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).receiverId(eleQuery.getReceiverId()).build();
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).receiverId(eleQuery.getReceiverId()).build();
             modifyLabel(electricityBatteryDb, null, dto);
             
             return R.ok();
@@ -1461,7 +1461,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer newLabel = isBind ? BatteryLabelEnum.UNUSED.getCode() : BatteryLabelEnum.INVENTORY.getCode();
         electricityBatteries.parallelStream().forEach(battery -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            modifyLabel(battery, null, new BatteryLabelModifyDto(newLabel, operatorUid));
+            modifyLabel(battery, null, new BatteryLabelModifyDTO(newLabel, operatorUid));
         });
         return R.ok(count);
     }
@@ -1546,7 +1546,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Long operatorUid = SecurityUtils.getUid();
         electricityBatteries.parallelStream().forEach(battery -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode(), operatorUid));
+            modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), operatorUid));
         });
         
         return R.ok(
@@ -2098,7 +2098,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    public void modifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDto dto) {
+    public void modifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto) {
         try {
             String traceId = MDC.get(CommonConstant.TRACE_ID);
             modifyBatteryLabelExecutor.execute(() -> {
@@ -2207,7 +2207,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
             
             // 使用缓存的标签更新数据库
-            BatteryLabelModifyDto labelModifyDto = JsonUtil.fromJson(labelModifyDtoStr, BatteryLabelModifyDto.class);
+            BatteryLabelModifyDTO labelModifyDto = JsonUtil.fromJson(labelModifyDtoStr, BatteryLabelModifyDTO.class);
             if (Objects.isNull(labelModifyDto)) {
                 log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! labelModifyDto is null, sn={}", battery.getSn());
                 return;

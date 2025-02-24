@@ -16,8 +16,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -27,9 +26,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
@@ -230,12 +227,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             ElectricityBattery.ElectricityBatteryBuilder batteryBuilder = ElectricityBattery.builder().tenantId(electricityCabinetOrder.getTenantId());
             // 修改旧电池，即使电池已经还进去了，这次处理也不会出问题，标签会被保存到预修改标签的缓存内，下次如果有人换电取出，会把还没修改落库的闲置覆盖掉
             electricityBatteryService.modifyLabel(batteryBuilder.sn(exchangeOrderRsp.getPlaceBatteryName()).build(), null,
-                    new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode()));
+                    new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
             // 修改新电池
             ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .cellNo(electricityCabinetOrder.getNewCellNo().toString()).build();
             electricityBatteryService.modifyLabel(batteryBuilder.sn(exchangeOrderRsp.getTakeBatteryName()).build(), box,
-                    new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode()));
+                    new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
         } catch (Exception e) {
             log.error("ELE EXCHANGE HANDLER ERROR!", e);
         } finally {

@@ -5,7 +5,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
@@ -18,7 +18,6 @@ import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -114,7 +113,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     }
     
     @Override
-    public void setPreLabel(Integer eId, String cellNo, String sn, BatteryLabelModifyDto labelModifyDto) {
+    public void setPreLabel(Integer eId, String cellNo, String sn, BatteryLabelModifyDTO labelModifyDto) {
         try {
             String key = String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, eId, cellNo, sn);
             String dtoStr = redisService.get(key);
@@ -124,7 +123,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                 return;
             }
             
-            BatteryLabelModifyDto dto = JsonUtil.fromJson(dtoStr, BatteryLabelModifyDto.class);
+            BatteryLabelModifyDTO dto = JsonUtil.fromJson(dtoStr, BatteryLabelModifyDTO.class);
             Integer oldPreLabel = dto.getNewLabel();
             Integer newPreLabel = labelModifyDto.getNewLabel();
             // 新旧一样,刷新下时间

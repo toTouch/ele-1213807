@@ -17,7 +17,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.EleOpenDTO;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -1105,12 +1105,12 @@ public class EleOperateQueueHandler {
         // 处理租电成功的
         if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
             ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(rentBatteryOrder.getElectricityCabinetId()).cellNo(rentBatteryOrder.getCellNo().toString()).build();
-            electricityBatteryService.modifyLabel(battery, box, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode()));
+            electricityBatteryService.modifyLabel(battery, box, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
         }
         
         // 处理租电成功的
         if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
-            electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode()));
+            electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
         }
     }
 }

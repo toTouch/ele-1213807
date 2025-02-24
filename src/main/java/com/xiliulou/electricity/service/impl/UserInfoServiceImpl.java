@@ -30,7 +30,7 @@ import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleAuthEntry;
@@ -131,7 +131,6 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserMoveHistoryService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -185,7 +184,6 @@ import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserDepositStatusVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoProVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
-import com.xiliulou.electricity.vo.userinfo.UserMemberInfoVo;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupIdAndNameVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
@@ -1594,7 +1592,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrderService.insert(rentBatteryOrder);
                     
                     // 修改原绑定电池标签为闲置
-                    electricityBatteryService.modifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
+                    electricityBatteryService.modifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
                 }
             }
             
@@ -1664,7 +1662,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
                 // 修改新绑定电池标签为租借正常
-                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode(), user.getUid()));
+                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode(), user.getUid()));
                 
                 try {
                     // 发送操作记录
@@ -1879,7 +1877,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         
         // 修改电池标签为闲置
-        electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
+        electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
         
         try {
             Map<String, Object> map = new HashMap<>();
@@ -4001,7 +3999,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
                 // 修改电池标签
-                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode()));
+                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
                 
                 return null;
             });

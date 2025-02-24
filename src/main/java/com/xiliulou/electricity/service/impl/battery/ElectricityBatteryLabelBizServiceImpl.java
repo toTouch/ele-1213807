@@ -4,7 +4,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -218,7 +218,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 return R.ok(BatteryLabelBatchUpdateVO.builder().successCount(0).failureCount(failureCount).failReasons(failReasons).build());
             }
             
-            BatteryLabelModifyDto modifyDto = BatteryLabelModifyDto.builder().newLabel(newLabel).operatorUid(user.getUid()).receiverId(request.getReceiverId()).build();
+            BatteryLabelModifyDTO modifyDto = BatteryLabelModifyDTO.builder().newLabel(newLabel).operatorUid(user.getUid()).receiverId(request.getReceiverId()).build();
             String traceId = MDC.get(CommonConstant.TRACE_ID);
             batteriesNeedUpdate.parallelStream().forEach(battery -> {
                 MDC.put(CommonConstant.TRACE_ID, traceId);
@@ -311,7 +311,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     // 判断租借逾期状态
                     Long dueTimeTotal = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getMemberCardExpireTime() : memberTermPo.getDueTimeTotal();
                     if (Objects.nonNull(dueTimeTotal) && dueTimeTotal < System.currentTimeMillis()) {
-                        electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_OVERDUE.getCode()));
+                        electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_OVERDUE.getCode()));
                         return;
                     }
                     
@@ -327,7 +327,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                         }
                         
                         if (System.currentTimeMillis() - latestOrderBySn.getSwitchEndTime() > protectTime) {
-                            electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()));
+                            electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()));
                         }
                     }
                     
@@ -335,7 +335,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     if (Objects.equals(battery.getLabel(), BatteryLabelEnum.RENT_NORMAL.getCode())) {
                         return;
                     }
-                    electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode()));
+                    electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
                 }
                 
             });

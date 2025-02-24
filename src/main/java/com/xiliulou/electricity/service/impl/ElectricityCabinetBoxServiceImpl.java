@@ -8,7 +8,7 @@ import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -445,14 +445,14 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             
             // 禁用格挡保存lockSn，修改电池标签
             if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), true) && StringUtils.isNotEmpty(lockSn) && StringUtils.isNotBlank(lockSn)) {
-                BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()).operatorUid(operatorId).build();
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()).operatorUid(operatorId).build();
                 electricityBatteryService.modifyLabel(battery, null, dto);
                 electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
             }
             
             // 启用格挡清除lockSn，修改电池标签
             if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
-                BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
                 electricityBatteryService.modifyLabel(battery, null, dto);
                 electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, null);
             }

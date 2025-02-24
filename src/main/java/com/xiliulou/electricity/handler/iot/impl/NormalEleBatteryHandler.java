@@ -13,7 +13,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.dto.VoltageCurrentChangeDTO;
-import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -21,8 +21,6 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
-import com.xiliulou.electricity.entity.NotExistSn;
-import com.xiliulou.electricity.entity.VoltageCurrentChange;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
@@ -41,7 +39,6 @@ import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +52,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -262,7 +258,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
             
             // 修改电池标签为在仓
-            BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
             electricityBatteryService.modifyLabel(battery, eleBox, dto);
         }
 
@@ -285,7 +281,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, tenantId);
             electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
             
-            BatteryLabelModifyDto dto = BatteryLabelModifyDto.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
             electricityBatteryService.modifyLabel(battery, eleBox, dto);
         }
     }
