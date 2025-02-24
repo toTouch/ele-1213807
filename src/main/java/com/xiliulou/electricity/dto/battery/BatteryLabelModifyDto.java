@@ -29,4 +29,8 @@ public class BatteryLabelModifyDto {
      * 领用人，管理员uid或者商户id
      */
     private Long receiverId;
+    
+    public BatteryLabelModifyDto(Integer newLabel) {
+        this.newLabel = newLabel;
+    }
 }

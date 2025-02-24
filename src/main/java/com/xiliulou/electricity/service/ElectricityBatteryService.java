@@ -7,11 +7,9 @@ import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
-import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
@@ -174,6 +172,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBattery> listBatteryByEid(List<Integer> electricityCabinetIdList);
     
     List<ElectricityBattery> listBySnList(List<String> item, Integer tenantId, List<Long> bindFranchiseeIdList);
+    
+    List<ElectricityBattery> listByUid(Long uid, Integer tenantId);
     
     R deleteBatteryByExcel(DelBatteryReq delBatteryReq);
 

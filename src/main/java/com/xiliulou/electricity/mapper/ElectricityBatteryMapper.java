@@ -48,6 +48,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
      */
     List<ElectricityBattery> selectListBySnList(@Param("tenantId") Integer tenantId, @Param("batterySns") List<String> batterySns,@Param("franchiseeIdList") List<Long> bindFranchiseeIdList);
     
+    List<ElectricityBattery> selectListByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+    
     List<ElectricityBattery> queryList(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
             @Param("offset") Long offset, @Param("size") Long size);
     

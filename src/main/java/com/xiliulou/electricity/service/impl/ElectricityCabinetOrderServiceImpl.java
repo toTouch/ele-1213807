@@ -2363,6 +2363,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     @Override
+    public ElectricityCabinetOrder selectLatestBySn(String sn) {
+        return electricityCabinetOrderMapper.selectLatestBySn(sn);
+    }
+    
+    @Override
     public Triple<Boolean, String, Object> bluetoothExchangeCheck(String productKey, String deviceName) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {

@@ -93,6 +93,8 @@ public interface ElectricityCabinetOrderService {
     ElectricityCabinetOrder selectLatestByUidV2(Long uid);
 
     ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId);
+    
+    ElectricityCabinetOrder selectLatestBySn(String sn);
 
     List<ElectricityCabinetOrder> selectTodayExchangeOrder(Integer id, long todayStartTimeStamp, long todayEndTimeStamp, Integer tenantId);
 

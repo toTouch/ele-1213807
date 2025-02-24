@@ -1845,6 +1845,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
+    public List<ElectricityBattery> listByUid(Long uid, Integer tenantId) {
+        return electricitybatterymapper.selectListByUid(uid, tenantId);
+    }
+    
+    @Override
     public R deleteBatteryByExcel(DelBatteryReq req) {
         Integer tenantId = TenantContextHolder.getTenantId();
         

@@ -1,16 +1,23 @@
 package com.xiliulou.electricity.service.impl.battery;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
@@ -33,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,7 +61,12 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     private final StoreService service;
     
-    private final InheritableThreadLocal<String> inheritableThreadLocal = new InheritableThreadLocal<>();
+    private final ElectricityCabinetOrderService electricityCabinetOrderService;
+    
+    private final ElectricityConfigService electricityConfigService;
+    
+    private final static ExecutorService savePsnAuthResultExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 2, "CHECK_RENT_STATUS_FOR_LABEL");
+    
     
     @Override
     public R updateRemark(String sn, String remark) {
@@ -200,9 +213,9 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             }
             
             BatteryLabelModifyDto modifyDto = BatteryLabelModifyDto.builder().newLabel(newLabel).operatorUid(user.getUid()).receiverId(request.getReceiverId()).build();
-            inheritableThreadLocal.set(MDC.get("traceId"));
+            String traceId = MDC.get("traceId");
             batteriesNeedUpdate.parallelStream().forEach(battery -> {
-                MDC.put("traceId", inheritableThreadLocal.get());
+                MDC.put("traceId", traceId);
                 
                 // TODO 修改电池标签，此处可能存在并发问题，在本接口执行时，电池不是在仓、租借、锁定在仓，当修改时是这三种状态了，此时会出现错乱，若要避免需要在modifyLabel方法中加锁，并实时查询数据
                 electricityBatteryService.modifyLabel(battery, null, modifyDto);
@@ -229,7 +242,6 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             log.error("BATCH UPDATE LABEL ERROR! request={}", request, e);
             return R.fail("100227", "操作失败");
         } finally {
-            inheritableThreadLocal.remove();
             MDC.clear();
         }
     }
@@ -273,5 +285,73 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         Map<String, Integer> snAndLabel = electricityBatteries.parallelStream()
                 .collect(Collectors.toMap(ElectricityBatteryDataVO::getSn, ElectricityBatteryDataVO::getLabel, (a, b) -> b));
         return electricityBatteryLabelService.listLabelVOBySns(sns, snAndLabel);
+    }
+    
+    @Override
+    public void checkRentStatusForLabel(UserBatteryMemberCard userBatteryMemberCard, CarRentalPackageMemberTermPo memberTermPo) {
+        try {
+            if (Objects.isNull(userBatteryMemberCard) && Objects.isNull(memberTermPo)) {
+                log.warn("CHECK RENT STATUS FOR LABEL WARN! userBatteryMemberCard and memberTermPo is null");
+                return;
+            }
+            
+            String traceId = MDC.get("traceId");
+            Integer tenantId = TenantContextHolder.getTenantId();
+            savePsnAuthResultExecutor.execute(() -> {
+                MDC.put("traceId", traceId);
+                Long uid = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getUid() : memberTermPo.getUid();
+                if (Objects.isNull(uid)) {
+                    log.warn("CHECK RENT STATUS FOR LABEL WARN! uid is null");
+                    return;
+                }
+                
+                List<ElectricityBattery> batteries = electricityBatteryService.listByUid(uid, tenantId);
+                
+                if (CollectionUtils.isEmpty(batteries)) {
+                    log.warn("CHECK RENT STATUS FOR LABEL WARN! batteries is null");
+                    return;
+                }
+                
+                for (ElectricityBattery battery : batteries) {
+                    // 没有标签或者当前标签是在仓的，不处理
+                    if (Objects.isNull(battery.getLabel()) || Objects.equals(battery.getLabel(), BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                        return;
+                    }
+                    
+                    // 判断租借逾期状态
+                    Long dueTimeTotal = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getMemberCardExpireTime() : memberTermPo.getDueTimeTotal();
+                    if (Objects.nonNull(dueTimeTotal) && dueTimeTotal < System.currentTimeMillis()) {
+                        electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_OVERDUE.getCode()));
+                        return;
+                    }
+                    
+                    // 处理长时间未换电
+                    ElectricityConfig config = electricityConfigService.queryFromCacheByTenantId(tenantId);
+                    if (Objects.nonNull(config) && Objects.nonNull(config.getNotExchangeProtectionTime())) {
+                        // 长时间未换电保护时间
+                        long protectTime = config.getNotExchangeProtectionTime() * 24 * 60 * 60 * 1000;
+                        ElectricityCabinetOrder latestOrderBySn = electricityCabinetOrderService.selectLatestBySn(battery.getSn());
+                        if (Objects.isNull(latestOrderBySn)) {
+                            log.warn("CHECK RENT STATUS FOR LABEL WARN! latestOrderBySn is null, sn={}", battery.getSn());
+                            return;
+                        }
+                        
+                        if (System.currentTimeMillis() - latestOrderBySn.getSwitchEndTime() > protectTime) {
+                            electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()));
+                        }
+                    }
+                    
+                    // 已经是租借正常的不处理，不是的，改为租借正常
+                    if (Objects.equals(battery.getLabel(), BatteryLabelEnum.RENT_NORMAL.getCode())) {
+                        return;
+                    }
+                    electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode()));
+                }
+                
+            });
+            
+        } catch (Exception e) {
+            log.error("CHECK RENT STATUS FOR LABEL error! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
+        }
     }
 }
