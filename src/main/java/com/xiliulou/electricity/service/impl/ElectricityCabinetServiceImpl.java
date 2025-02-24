@@ -96,6 +96,7 @@ import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
@@ -420,6 +421,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Resource
     private ElectricityCabinetBoxLockService electricityCabinetBoxLockService;
+    
+    @Resource
+    private ElectricityBatteryLabelService electricityBatteryLabelService;
 
 
     /**
@@ -1719,6 +1723,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             dataMap.put("cell_list", cellList);
             
+            // 处理开仓门，修改电池标签
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), null);
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
@@ -1733,6 +1739,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         // 处理锁仓和启用时的电池标签、锁仓电池sn
         if (Objects.equals(eleOuterCommandQuery.getCommand(), ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)) {
             electricityCabinetBoxService.updateLockSnAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid());
+        }
+        
+        // 处理开仓门，修改电池标签
+        if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), null);
         }
         
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);

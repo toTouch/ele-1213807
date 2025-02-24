@@ -2,7 +2,10 @@ package com.xiliulou.electricity.service.battery;
 
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 
 import java.util.List;
@@ -14,7 +17,7 @@ import java.util.Map;
  **/
 public interface ElectricityBatteryLabelService {
     
-    void insert(ElectricityBatteryLabel batteryLabel);
+    void insert (ElectricityBatteryLabel batteryLabel);
     
     void insertWithBattery(ElectricityBattery battery);
     
@@ -45,4 +48,6 @@ public interface ElectricityBatteryLabelService {
     List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns, Map<String, Integer> snAndLabel);
     
     Integer countReceived(Long uid);
+    
+    void updateOpenCellAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId, List<ElectricityCabinetBox> electricityCabinetBoxList);
 }
