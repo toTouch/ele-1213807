@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 
 import java.util.Collection;
@@ -133,4 +134,6 @@ public interface CarRentalPackageDepositPayService {
     Map<String, Integer> selectPayTypeByOrders(Collection<String> ordersOn);
     
     List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList);
+    
+    Boolean isCarDepositRefund(CarRentalPackageMemberTermPo carRentalPackageMemberTermPo);
 }

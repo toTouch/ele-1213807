@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 
@@ -235,4 +236,6 @@ public interface CarRentalPackageOrderService {
     List<CarRentalPackageOrderPo> queryListByOrderNo(Integer tenantId,List<String> orderNos);
     
     List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus);
+    
+    Boolean isCarRentalPackageOrderRefund(Long uid, Integer tenantId, CarRentalPackageMemberTermPo carRentalPackageMemberTermPo);
 }

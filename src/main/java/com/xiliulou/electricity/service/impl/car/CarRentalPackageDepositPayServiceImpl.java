@@ -5,14 +5,18 @@ import cn.hutool.core.map.MapUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.domain.car.UserDepositPayTypeDO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositPayMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -23,6 +27,7 @@ import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +41,9 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     
     @Resource
     private CarRentalPackageDepositPayMapper carRentalPackageDepositPayMapper;
+    
+    @Resource
+    private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
     
     /**
      * 查询用户最后一次的免押订单生成信息
@@ -252,5 +260,36 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     @Override
     public List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList) {
         return carRentalPackageDepositPayMapper.selectListByOrders(tenantId, orderNoList);
+    }
+    
+    @Override
+    public Boolean isCarDepositRefund(CarRentalPackageMemberTermPo carRentalPackageMemberTermPo) {
+        boolean depositRefundFlag = true;
+    
+        if (Objects.isNull(carRentalPackageMemberTermPo)) {
+            depositRefundFlag = false;
+        } else {
+            String depositPayOrderNo = carRentalPackageMemberTermPo.getDepositPayOrderNo();
+            CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = this.selectByOrderNo(depositPayOrderNo);
+            if (Objects.isNull(carRentalPackageDepositPayPo)) {
+                depositRefundFlag = false;
+            } else {
+                if (!Objects.equals(carRentalPackageDepositPayPo.getPayState(), PayStateEnum.SUCCESS.getCode())) {
+                    depositRefundFlag = false;
+                } else {
+                    // 查询当前订单是否存在退押的状态
+                    CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
+                    if (Objects.nonNull(depositRefundEntity)) {
+                        // 正在退押或已退押->不可退
+                        if (Objects.equals(depositRefundEntity.getRefundState(), RefundStateEnum.REFUNDING.getCode()) || Objects.equals(depositRefundEntity.getRefundState(),
+                                RefundStateEnum.SUCCESS.getCode())) {
+                            depositRefundFlag = false;
+                        }
+                    }
+                }
+            }
+        }
+    
+        return depositRefundFlag;
     }
 }

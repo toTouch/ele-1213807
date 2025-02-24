@@ -316,10 +316,13 @@
         tcrpme.deposit_pay_order_no as depositOrderNo,
         tcrpme.due_time_total as packageExpiredTime,
         tcrpme.pay_count as payCount,
+        tcrpme.due_time as dueTime,
+        tcrpme.residue as residue,
         tec.sn as carSn,
         tec.model as carModel,
         tui.tenant_id as tenantId,
         tui.franchisee_id as franchiseeId,
+        tui.store_id as storeId,
         tui.create_time as userAuthTime
         from t_user_info tui
         left join t_car_rental_package_member_term tcrpme on tcrpme.uid = tui.uid and tcrpme.del_flag = 0
