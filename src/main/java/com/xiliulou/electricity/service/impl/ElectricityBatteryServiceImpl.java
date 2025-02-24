@@ -777,6 +777,22 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
         }
         
+        // 编辑标签时需要校验旧标签
+        if (Objects.nonNull(eleQuery.getLabel())) {
+            Integer oldLabel = electricityBatteryDb.getLabel();
+            if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                return R.fail("300155", "不支持此操作，当前标签为在仓");
+            }
+            
+            if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldLabel)) {
+                return R.fail("300156", "不支持此操作，当前标签为租借");
+            }
+            
+            if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                return R.fail("300157", "不支持此操作，当前标签为锁定在仓");
+            }
+        }
+        
         ElectricityBattery updateBattery = new ElectricityBattery();
         BeanUtil.copyProperties(eleQuery, updateBattery);
         
