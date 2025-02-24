@@ -13,8 +13,10 @@ import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,9 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     @Resource
     private MerchantService merchantService;
     
+    @Resource
+    private BatteryLabelRecordService batteryLabelRecordService;
+    
     
     @Override
     public void insert(ElectricityBatteryLabel batteryLabel) {
@@ -64,6 +69,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
         ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().sn(battery.getSn()).tenantId(battery.getTenantId()).franchiseeId(battery.getFranchiseeId())
                 .createTime(now).updateTime(now).build();
         electricityBatteryLabelMapper.insert(batteryLabel);
+        
+        // 旧标签会从电池中取，所以把要把电池中的清除掉
+        Integer newLabel = battery.getLabel();
+        battery.setLabel(null);
+        batteryLabelRecordService.sendRecord(battery, SecurityUtils.getUid(), newLabel, now);
     }
     
     @Override
