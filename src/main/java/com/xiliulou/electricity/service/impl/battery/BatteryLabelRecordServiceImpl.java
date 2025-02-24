@@ -8,7 +8,7 @@ import com.xiliulou.electricity.entity.battery.BatteryLabelRecord;
 import com.xiliulou.electricity.mapper.battery.BatteryLabelRecordMapper;
 import com.xiliulou.electricity.request.battery.BatteryLabelRecordRequest;
 import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
-import com.xiliulou.rocketmq5.service.RocketMq5ProducerService;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ import static com.xiliulou.electricity.mq.constant.MqProducerConstant.BATTERY_LA
 @RequiredArgsConstructor
 public class BatteryLabelRecordServiceImpl implements BatteryLabelRecordService {
 
-    private final RocketMq5ProducerService rocketMq5ProducerService;
+    private final RocketMqService rocketMqService;
     
     private final BatteryLabelRecordMapper batteryLabelRecordMapper;
     
@@ -48,7 +48,7 @@ public class BatteryLabelRecordServiceImpl implements BatteryLabelRecordService 
         record.setFranchiseeId(battery.getFranchiseeId());
         record.setExchangeTime(TimeUtils.convertToStandardFormatTime(updateTime));
         
-        rocketMq5ProducerService.sendAsyncMessage(BATTERY_LABEL_RECORD_TOPIC, JsonUtil.toJson(record));
+        rocketMqService.sendAsyncMsg(BATTERY_LABEL_RECORD_TOPIC, JsonUtil.toJson(record));
     }
     
     @Override
