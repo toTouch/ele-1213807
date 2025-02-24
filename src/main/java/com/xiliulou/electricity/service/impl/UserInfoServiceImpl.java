@@ -1592,6 +1592,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
                     rentBatteryOrder.setOrderType(orderType);
                     rentBatteryOrderService.insert(rentBatteryOrder);
+                    
+                    // 修改原绑定电池标签为闲置
+                    electricityBatteryService.modifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
                 }
             }
             
@@ -1659,6 +1662,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 // 保存电池被取走对应的订单，供后台租借状态电池展示
                 OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(),
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
+                
+                // 修改新绑定电池标签为租借正常
+                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode(), user.getUid()));
                 
                 try {
                     // 发送操作记录

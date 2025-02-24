@@ -23,6 +23,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,16 +38,19 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLabelService {
     
-    private final RedisService redisService;
+    @Resource
+    private RedisService redisService;
     
-    private final ElectricityBatteryLabelMapper electricityBatteryLabelMapper;
+    @Resource
+    private ElectricityBatteryLabelMapper electricityBatteryLabelMapper;
     
-    private final UserService userService;
+    @Resource
+    private UserService userService;
     
-    private final MerchantService merchantService;
+    @Resource
+    private MerchantService merchantService;
     
     
     @Override
