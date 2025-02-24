@@ -1112,6 +1112,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return electricityCarMapper.selectListNoDelByUidList(tenantId, uidList);
     }
     
+    @Slave
     @Override
     public List<ElectricityCar> listByUidList(List<Long> uidList, Integer userInfoDelFlag) {
         return electricityCarMapper.selectListByUidList(uidList, userInfoDelFlag);
