@@ -4000,6 +4000,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(),
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
+                // 修改电池标签
+                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDto(BatteryLabelEnum.RENT_NORMAL.getCode()));
+                
                 return null;
             });
             return R.ok();

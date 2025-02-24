@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.battery;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -70,7 +71,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     @Resource
     private ElectricityConfigService electricityConfigService;
     
-    private final static ExecutorService savePsnAuthResultExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 2, "CHECK_RENT_STATUS_FOR_LABEL");
+    private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 1, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
     
     
     @Override
@@ -218,9 +219,9 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             }
             
             BatteryLabelModifyDto modifyDto = BatteryLabelModifyDto.builder().newLabel(newLabel).operatorUid(user.getUid()).receiverId(request.getReceiverId()).build();
-            String traceId = MDC.get("traceId");
+            String traceId = MDC.get(CommonConstant.TRACE_ID);
             batteriesNeedUpdate.parallelStream().forEach(battery -> {
-                MDC.put("traceId", traceId);
+                MDC.put(CommonConstant.TRACE_ID, traceId);
                 
                 // TODO 修改电池标签，此处可能存在并发问题，在本接口执行时，电池不是在仓、租借、锁定在仓，当修改时是这三种状态了，此时会出现错乱，若要避免需要在modifyLabel方法中加锁，并实时查询数据
                 electricityBatteryService.modifyLabel(battery, null, modifyDto);
@@ -300,10 +301,10 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 return;
             }
             
-            String traceId = MDC.get("traceId");
+            String traceId = MDC.get(CommonConstant.TRACE_ID);
             Integer tenantId = TenantContextHolder.getTenantId();
-            savePsnAuthResultExecutor.execute(() -> {
-                MDC.put("traceId", traceId);
+            checkRentStatusForLabelExecutor.execute(() -> {
+                MDC.put(CommonConstant.TRACE_ID, traceId);
                 Long uid = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getUid() : memberTermPo.getUid();
                 if (Objects.isNull(uid)) {
                     log.warn("CHECK RENT STATUS FOR LABEL WARN! uid is null");
