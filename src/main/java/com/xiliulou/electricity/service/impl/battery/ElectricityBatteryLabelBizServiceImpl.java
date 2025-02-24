@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl.battery;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -33,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.MDC;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -99,7 +99,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         if (Objects.isNull(batteryLabelFromDb)) {
             ElectricityBatteryLabel newBatteryLabel = ElectricityBatteryLabel.builder().sn(sn).tenantId(tenantId).franchiseeId(battery.getFranchiseeId()).createTime(now)
                     .updateTime(now).build();
-            BeanUtil.copyProperties(batteryLabel, newBatteryLabel);
+            BeanUtils.copyProperties(batteryLabel, newBatteryLabel);
             
             electricityBatteryLabelService.insert(newBatteryLabel);
         } else {
@@ -109,9 +109,9 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             batteryLabel.setCreateTime(null);
             
             ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
+            BeanUtils.copyProperties(batteryLabel, batteryLabelUpdate);
             batteryLabelUpdate.setId(batteryLabelFromDb.getId());
             batteryLabelUpdate.setUpdateTime(now);
-            BeanUtil.copyProperties(batteryLabel, batteryLabelUpdate);
             electricityBatteryLabelService.updateById(batteryLabelUpdate);
         }
     }
