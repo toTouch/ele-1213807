@@ -643,7 +643,7 @@
     <select id="selectByBatteryIds" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         select id, sn,power, voltage, capacity, physics_status , business_status, create_time, update_time, del_flag,
         tenant_id, electricity_cabinet_id,
-        model, charge_status, iot_card_number, franchisee_id, warehouse_id
+        model, charge_status, iot_card_number, franchisee_id, warehouse_id, label
         from t_electricity_battery
         where del_flag = 0
         and id in

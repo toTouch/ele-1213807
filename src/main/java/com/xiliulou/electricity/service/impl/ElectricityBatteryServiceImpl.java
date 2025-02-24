@@ -1432,6 +1432,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
         }
+        
+        // 修改电池标签
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        Long operatorUid = SecurityUtils.getUid();
+        Integer newLabel = isBind ? BatteryLabelEnum.UNUSED.getCode() : BatteryLabelEnum.INVENTORY.getCode();
+        electricityBatteries.parallelStream().forEach(battery -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            modifyLabel(battery, null, new BatteryLabelModifyDto(newLabel, operatorUid));
+        });
         return R.ok(count);
     }
     
@@ -1509,6 +1518,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
             }
         }
+        
+        // 修改电池标签
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        Long operatorUid = SecurityUtils.getUid();
+        electricityBatteries.parallelStream().forEach(battery -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            modifyLabel(battery, null, new BatteryLabelModifyDto(BatteryLabelEnum.UNUSED.getCode(), operatorUid));
+        });
         
         return R.ok(
                 BindBatteryResultVO.builder().successCount(count).failureCount(CollectionUtils.isEmpty(reasonVOList) ? 0 : reasonVOList.size()).failReason(reasonVOList).build());

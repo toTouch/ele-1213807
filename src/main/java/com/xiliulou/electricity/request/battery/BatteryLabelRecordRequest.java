@@ -2,8 +2,10 @@ package com.xiliulou.electricity.request.battery;
 
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -16,6 +18,8 @@ import java.util.List;
  **/
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BatteryLabelRecordRequest {
     
     @NotNull(message = "分页参数不能为空")
