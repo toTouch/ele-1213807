@@ -2962,7 +2962,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source) {
         
