@@ -1848,6 +1848,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             dataMap.put("cell_list", cellList);
             eleOuterCommandQuery.setData(dataMap);
+            
+            // 处理开仓门，修改电池标签
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), null);
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
