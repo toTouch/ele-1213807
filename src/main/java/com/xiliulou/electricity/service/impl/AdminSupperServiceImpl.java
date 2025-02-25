@@ -9,6 +9,7 @@ import com.xiliulou.electricity.async.AsyncTransaction;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.GrantRolePermission;
 import com.xiliulou.electricity.entity.PermissionResource;
@@ -265,8 +266,8 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                 //批量插入数据构建
                 List<Long> finalCurRolePermissionIds = curRolePermissionIds;
                 // 过滤掉权限对应的父节点在当前角色没有选中的数据
-                List<GrantRolePermission> batchInsert = copySourceIds.stream().filter(id -> sourcePermissionMap.containsKey(id)
-                        && finalCurRolePermissionIds.contains(sourcePermissionMap.get(id))).map(id -> {
+                List<GrantRolePermission> batchInsert = copySourceIds.stream().filter(id -> (Objects.equals(sourcePermissionMap.get(id), NumberConstant.ZERO_L)|| sourcePermissionMap.containsKey(id)
+                        && finalCurRolePermissionIds.contains(sourcePermissionMap.get(id)))).map(id -> {
                     GrantRolePermission rolePermission = new GrantRolePermission();
                     rolePermission.setRoleId(checkRoleId);
                     rolePermission.setPId(id);
