@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.userinfo;
 
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.User;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.CheckFreezeDaysSourceEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -355,7 +357,8 @@ public class JsonAdminUserInfoV2Controller {
         if (CollectionUtils.isEmpty(userInfos)) {
             return R.ok();
         }
-        
+
+        Integer phoneHideFlag = userInfoQryReq.getPhoneHideFlag();
         List<UserInfoVO> userInfoVoList = userInfos.stream().map(userInfo -> {
             // 拼装返回字段
             UserInfoVO userInfoVo = new UserInfoVO();
@@ -363,7 +366,7 @@ public class JsonAdminUserInfoV2Controller {
             userInfoVo.setUid(userInfo.getUid());
             userInfoVo.setName(userInfo.getName());
             userInfoVo.setPhone(userInfo.getPhone());
-            
+
             // 赋值复合字段
             StringBuilder builderNameAndPhone = new StringBuilder();
             if (StringUtils.isNotBlank(userInfo.getName())) {
@@ -372,8 +375,15 @@ public class JsonAdminUserInfoV2Controller {
             if (StringUtils.isNotBlank(builderNameAndPhone.toString())) {
                 builderNameAndPhone.append("/");
             }
+
+            String phone = userInfo.getPhone();
+            if (Objects.equals(phoneHideFlag, YesNoEnum.YES.getCode())) {
+                // 手机号脱敏
+                phone = PhoneUtils.mobileEncrypt(userInfo.getPhone());
+            }
+
             if (StringUtils.isNotBlank(userInfo.getPhone())) {
-                builderNameAndPhone.append(userInfo.getPhone());
+                builderNameAndPhone.append(phone);
             }
             userInfoVo.setNameAndPhone(builderNameAndPhone.toString());
             

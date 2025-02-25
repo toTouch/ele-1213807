@@ -5,6 +5,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
+import com.xiliulou.security.bean.TokenUser;
 
 import java.util.List;
 
@@ -124,5 +125,5 @@ public interface CarRentalPackageService {
     
     Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     
-    List<CarRentalPackagePo> listCarRentalPackageForSort();
+    List<CarRentalPackagePo> listCarRentalPackageForSort(TokenUser tokenUser);
 }
