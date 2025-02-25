@@ -31,6 +31,7 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
@@ -39,10 +40,13 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
+import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
@@ -79,6 +83,7 @@ import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
@@ -87,6 +92,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -257,8 +263,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     private EnterpriseChannelUserExitMapper channelUserExitMapper;
     
     @Resource
+    private LostUserActivityDealPublish lostUserActivityDealPublish;
+    
+    @Resource
     private FreeDepositService freeDepositService;
     
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Deprecated
     @Override
@@ -1400,9 +1411,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             // 查询用户保险信息
             InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
-            
+    
+            // 流失用户活动处理
+            lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
         } catch (BizException e) {
-            log.error("renewal package by enterprise user error, uid = {}, ex = {}", uid, e);
+            log.error("renewal package by enterprise user error, uid = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_LOCK_KEY + uid);
@@ -1466,6 +1479,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("purchase package with deposit by enterprise user warn, user not auth,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+    
+            // 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                log.warn("purchase package with deposit by enterprise user warn, userAccount is cancelling, uid={}", uid);
+                return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
             }
             
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -1696,8 +1716,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
             
+            // 流失用户活动处理
+            lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
         } catch (BizException e) {
-            log.error("purchase package with deposit by enterprise user error, uid = {},ex = {}", uid, e);
+            log.error("purchase package with deposit by enterprise user error, uid = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
             
         } finally {
@@ -1758,6 +1780,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("purchase Package with free deposit error, user not auth,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+    
+            // 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                log.warn("purchase Package with free deposit warn, userAccount is cancelling, uid={}", uid);
+                return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
             }
     
            /* ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
@@ -1993,9 +2022,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
             }*/
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
-            
+    
+            // 流失用户活动处理
+            lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
         } catch (BizException e) {
-            log.error("purchase package without deposit by enterprise user error, uid = {}, ex = {}", uid, e);
+            log.error("purchase package without deposit by enterprise user error, uid = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
             
         } finally {

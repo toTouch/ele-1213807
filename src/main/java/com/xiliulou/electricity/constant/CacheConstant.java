@@ -738,6 +738,8 @@ public interface CacheConstant {
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
     
+    String CACHE_LOST_USER_CHECK_LOCK = "cache_lost_user_check_lock:";
+    
     String FREE_DEPOSIT_PAY_LOCK = "free_deposit_pay_lock:";
     
     String CACHE_FY_CONFIG = "cache_fy_config:";
@@ -940,6 +942,17 @@ public interface CacheConstant {
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
 
     String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
+
+    /**
+     * 返利消费
+     */
+    String REBATE_CONSUMER_LOCK_KEY = "REBATE_CONSUMER_LOCK_KEY:%s";
+
+    /**
+     * 返利修改消费
+     */
+    String REBATE_CONSUMER_MODIFY_LOCK_KEY = "REBATE_CONSUMER_MODIFY_LOCK_KEY:%s";
+
 
 
     String LOCK_CELL_ENABLE_KEY = "lock_cell_enable:";

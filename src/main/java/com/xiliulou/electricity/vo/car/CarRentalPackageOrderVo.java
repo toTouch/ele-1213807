@@ -276,4 +276,9 @@ public class CarRentalPackageOrderVo implements Serializable {
      * @see ChannelEnum
      */
     private String paymentChannel;
+    
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
@@ -10,12 +11,14 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarCouponVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
@@ -55,6 +58,9 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
     
     @Autowired
     private CouponService couponService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     /**
      * 条件查询列表
@@ -113,14 +119,20 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         
         // 优惠券信息
         //        Map<Long, Coupon> couponMap = getCouponForMapByIds(couponIds);
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(new ArrayList<>(uids),
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
         
         // 模型转换，封装返回
         List<CarRentalPackageOrderVo> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
             
             CarRentalPackageOrderVo carRentalPackageOrderVO = new CarRentalPackageOrderVo();
             BeanUtils.copyProperties(carRentalPackageOrder, carRentalPackageOrderVO, "couponIds");
+    
+            Long uid = carRentalPackageOrder.getUid();
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(carRentalPackageOrder.getUid(), new UserInfo());
+                UserInfo userInfo = userInfoMap.getOrDefault(uid, new UserInfo());
                 carRentalPackageOrderVO.setUserRelName(userInfo.getName());
                 carRentalPackageOrderVO.setUserPhone(userInfo.getPhone());
             }
@@ -149,7 +161,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             
             // 对使用中的订单，进行二次处理
             // 查询会员信息
-            CarRentalPackageMemberTermPo memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, carRentalPackageOrder.getUid());
+            CarRentalPackageMemberTermPo memberTerm = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             if (ObjectUtils.isNotEmpty(memberTerm) && UseStateEnum.IN_USE.getCode().equals(carRentalPackageOrder.getUseState()) && ObjectUtils.isNotEmpty(memberTerm.getDueTime())
                     && memberTerm.getDueTime() <= System.currentTimeMillis()) {
                 carRentalPackageOrderVO.setUseState(UseStateEnum.EXPIRED.getCode());
@@ -163,6 +175,9 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
                 carRentalPackageOrderVO.setRentRefundStatus(rentRefundPo.getRefundState());
                 carRentalPackageOrderVO.setRejectReason(rentRefundPo.getRemark());
             }
+    
+            // 查询已删除/已注销
+            carRentalPackageOrderVO.setUserStatus(userDelRecordService.getUserStatus(uid, userStatusMap));
             
             return carRentalPackageOrderVO;
         }).collect(Collectors.toList());

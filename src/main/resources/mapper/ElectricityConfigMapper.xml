@@ -83,6 +83,9 @@
                package_freeze_days_with_assets,
                expired_protection_time,
                is_bind_battery
+               lost_user_first,
+               lost_user_days,
+               allow_original_inviter
         from t_electricity_config
     </sql>
     
@@ -95,7 +98,8 @@
         allow_rent_ele,allow_return_ele,allow_freeze_with_assets,is_selection_exchange,low_charge_rate,
         full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,alipay_customer,is_comfort_exchange,priority_exchange_norm,
         is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count,is_enable_flexible_renewal,is_enable_separate_deposit,is_swap_exchange,
-        freeze_auto_review_days,package_freeze_count,package_freeze_days,package_freeze_days_with_assets,expired_protection_time,is_bind_battery
+        freeze_auto_review_days,package_freeze_count,package_freeze_days,package_freeze_days_with_assets,expired_protection_time,is_bind_battery,lost_user_first,
+       	lost_user_days,allow_original_inviter
     </sql>
     <!--通过主键修改数据-->
     <update id="update">
@@ -184,6 +188,15 @@
             </if>
             <if test="chargeRateType != null">
                 charge_rate_type = #{chargeRateType},
+            </if>
+            <if test="lostUserFirst != null">
+                lost_user_first  = #{lostUserFirst},
+            </if>
+            <if test="lostUserDays != null">
+                lost_user_days = #{lostUserDays},
+            </if>
+            <if test="allowOriginalInviter != null">
+                allow_original_inviter = #{allowOriginalInviter},
             </if>
             <if test="alipayCustomer != null">
                 alipay_customer = #{alipayCustomer},

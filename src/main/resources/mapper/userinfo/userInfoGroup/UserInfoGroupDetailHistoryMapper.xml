@@ -49,7 +49,16 @@
             </if>
         </where>
     </select>
-
+    
+    <select id="selectListFranchiseeLatestHistory" resultType="com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory">
+        SELECT uid, franchisee_id, new_group_Ids
+        FROM t_user_info_group_detail_history
+        WHERE del_flag = 0
+          AND tenant_id = #{tenantId}
+          AND uid = #{uid}
+          AND type != 1
+	      AND id IN (SELECT MAX( id ) FROM t_user_info_group_detail_history WHERE del_flag = 0 AND tenant_id = #{tenantId} AND uid = #{uid} AND type != 1 GROUP BY franchisee_id)
+    </select>
 </mapper>
 
 

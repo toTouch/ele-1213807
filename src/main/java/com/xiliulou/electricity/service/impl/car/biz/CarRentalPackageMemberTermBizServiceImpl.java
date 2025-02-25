@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -56,6 +58,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -156,6 +159,9 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     
     @Resource
     private EleUserOperateRecordService eleUserOperateRecordService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     /**
      * 校验会员状态，是否能够正常租换电<br />
@@ -320,6 +326,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            throw new BizException("120163", "账号处于注销缓冲期内，无法操作");
         }
         
         // 查询滞纳金信息

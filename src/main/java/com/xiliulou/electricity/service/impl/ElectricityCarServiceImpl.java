@@ -1111,4 +1111,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     public List<ElectricityCar> listNoDelByUidList(Integer tenantId, List<Long> uidList) {
         return electricityCarMapper.selectListNoDelByUidList(tenantId, uidList);
     }
+    
+    @Slave
+    @Override
+    public List<ElectricityCar> listByUidList(List<Long> uidList, Integer userInfoDelFlag) {
+        return electricityCarMapper.selectListByUidList(uidList, userInfoDelFlag);
+    }
 }

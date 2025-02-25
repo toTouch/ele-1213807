@@ -981,6 +981,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         merchantRebate.setUid(uid);
         merchantRebate.setOrderId(orderId);
         merchantRebate.setType(MerchantConstant.TYPE_REFUND);
+        merchantRebate.setMessageId(IdUtil.fastSimpleUUID());
+
         // 续费成功  发送返利退费MQ
         rocketMqService.sendAsyncMsg(MqProducerConstant.BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC, JsonUtil.toJson(merchantRebate));
     }
