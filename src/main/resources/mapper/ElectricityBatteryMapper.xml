@@ -188,9 +188,9 @@
         <if test="query.bindStatus != null and query.bindStatus == 1">
             and teb.franchisee_id is not null and teb.franchisee_id != 0
         </if>
-        <if test="query.labels != null">
+        <if test="query.label != null">
             and teb.label in
-            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
                 #{label}
             </foreach>
         </if>
@@ -353,9 +353,9 @@
         <if test="query.bindStatus != null and query.bindStatus == 1">
             and teb.franchisee_id is not null and teb.franchisee_id != 0
         </if>
-        <if test="query.labels != null">
+        <if test="query.label != null">
             and teb.label in
-            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
                 #{label}
             </foreach>
         </if>
