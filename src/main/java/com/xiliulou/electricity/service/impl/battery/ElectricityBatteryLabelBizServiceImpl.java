@@ -167,7 +167,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 failReason.put("sn", sn);
                 
                 if (MapUtils.isEmpty(batteryMap) || !batteryMap.containsKey(sn)) {
-                    failReason.put("reason", "电池不存在");
+                    failReason.put("reason", "电池编码不存在");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
                     continue;
@@ -176,28 +176,40 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 ElectricityBattery electricityBattery = batteryMap.get(sn);
                 Integer oldLabel = electricityBattery.getLabel();
                 if (Objects.equals(oldLabel, newLabel)) {
-                    failReason.put("reason", "新旧标签相同");
-                    failReasons.add(failReason);
-                    failureCount = failureCount + 1;
-                    continue;
+                    // 不是领用的不用修改
+                    if (!BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                        failReason.put("reason", "新旧标签相同");
+                        failReasons.add(failReason);
+                        failureCount = failureCount + 1;
+                        continue;
+                    }
+                    
+                    // 领用的，校验其领用人是否相同
+                    ElectricityBatteryLabel batteryLabel = labelMap.get(sn);
+                    if (Objects.nonNull(batteryLabel) && Objects.equals(batteryLabel.getReceiverId(), request.getReceiverId())) {
+                        failReason.put("reason", "新旧标签相同");
+                        failReasons.add(failReason);
+                        failureCount = failureCount + 1;
+                        continue;
+                    }
                 }
                 
                 if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
-                    failReason.put("reason", "不支持此操作，当前标签为在仓");
+                    failReason.put("reason", "电池在仓不支持此操作");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
                     continue;
                 }
                 
                 if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldLabel)) {
-                    failReason.put("reason", "不支持此操作，当前标签为租借");
+                    failReason.put("reason", "电池租借中不支持此操作");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
                     continue;
                 }
                 
                 if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
-                    failReason.put("reason", "不支持此操作，当前标签为锁定在仓");
+                    failReason.put("reason", "电池锁定在仓不支持此操作");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
                     continue;

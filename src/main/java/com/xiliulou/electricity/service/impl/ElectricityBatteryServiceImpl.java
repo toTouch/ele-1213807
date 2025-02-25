@@ -781,15 +781,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (Objects.nonNull(eleQuery.getLabel())) {
             Integer oldLabel = electricityBatteryDb.getLabel();
             if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
-                return R.fail("300155", "不支持此操作，当前标签为在仓");
+                return R.fail("300155", "电池在仓不支持此操作");
             }
             
             if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldLabel)) {
-                return R.fail("300156", "不支持此操作，当前标签为租借");
+                return R.fail("300156", "电池租借中不支持此操作");
             }
             
             if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
-                return R.fail("300157", "不支持此操作，当前标签为锁定在仓");
+                return R.fail("300157", "电池锁定在仓不支持此操作");
             }
         }
         
