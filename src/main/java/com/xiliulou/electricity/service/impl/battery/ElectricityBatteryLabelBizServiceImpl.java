@@ -310,7 +310,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     
                     // 判断租借逾期状态
                     Long dueTimeTotal = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getMemberCardExpireTime() : memberTermPo.getDueTimeTotal();
-                    if (Objects.nonNull(dueTimeTotal) && dueTimeTotal < System.currentTimeMillis()) {
+                    if (Objects.nonNull(dueTimeTotal) && dueTimeTotal <= System.currentTimeMillis()) {
                         electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_OVERDUE.getCode()));
                         return;
                     }
@@ -326,7 +326,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                             return;
                         }
                         
-                        if (System.currentTimeMillis() - latestOrderBySn.getSwitchEndTime() > protectTime) {
+                        if (System.currentTimeMillis() - latestOrderBySn.getSwitchEndTime() >= protectTime) {
                             electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()));
                         }
                     }
