@@ -1858,6 +1858,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        
+        // 处理锁仓和启用时的电池标签、锁仓电池sn
+        if (Objects.equals(eleOuterCommandQuery.getCommand(), ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)) {
+            electricityBatteryLabelService.updateLockSnAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid());
+        }
+        
+        // 处理开仓门，修改电池标签
+        if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), null);
+        }
+        
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
         map.put("operateType", 1);
         map.put("deviceName", StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());
