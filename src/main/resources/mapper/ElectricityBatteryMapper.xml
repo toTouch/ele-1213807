@@ -531,7 +531,8 @@
         franchisee_id,
         business_status,
         physics_status,
-        stock_status
+        stock_status,
+        label
         from t_electricity_battery
         where del_flag = 0 and sn in
         <foreach collection="snList" item="sn" open="(" close=")" separator=",">
