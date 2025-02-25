@@ -87,6 +87,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @DeleteMapping(value = "/admin/battery/{id}")
     @Log(title = "删除电池")
     public R delete(@PathVariable("id") Long id, @RequestParam(value = "isNeedSync", required = false) Integer isNeedSync) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
         return electricityBatteryService.deleteElectricityBattery(id, isNeedSync);
     }
     
@@ -831,6 +840,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/del")
     public R deleteBatteryByExcel(@RequestBody DelBatteryReq delBatteryReq) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
         return electricityBatteryService.deleteBatteryByExcel(delBatteryReq);
     }
     
