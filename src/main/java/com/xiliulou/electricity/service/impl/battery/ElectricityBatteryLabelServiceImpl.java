@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service.impl.battery;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -15,6 +17,7 @@ import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
@@ -26,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -62,6 +67,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     
     @Resource
     private ElectricityCabinetBoxService electricityCabinetBoxService;
+    
+    @Resource
+    private ElectricityBatteryService electricityBatteryService;
+    
+    private final ExecutorService dealBatteryLabelWhenSendCommandExecutor = XllThreadPoolExecutors.newFixedThreadPool("dealBatteryLabelWhenSendCommand", 3, "DEAL_BATTERY_LABEL_WHEN_SEND_COMMAND_THREAD");
     
     
     @Override
@@ -205,50 +215,118 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
         return electricityBatteryLabelMapper.countReceived(receiverId);
     }
     
+    @Override
+    public void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId) {
+        try {
+            String traceId = MDC.get(CommonConstant.TRACE_ID);
+            dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
+                MDC.put(CommonConstant.TRACE_ID, traceId);
+            
+                if (Objects.isNull(eleOuterCommandQuery)) {
+                    log.warn("UPDATE LOCK SN WARN! eleOuterCommandQuery is null");
+                    return;
+                }
+                
+                // 禁用启用key
+                String isForbidden = "isForbidden";
+                // 禁用启用仓门号key
+                String cellNoKey = "cell_list";
+                Map<String, Object> data = eleOuterCommandQuery.getData();
+                
+                if (!data.containsKey(isForbidden) || !data.containsKey(cellNoKey)) {
+                    return;
+                }
+                
+                // 获取cellNo
+                Integer cellNo = null;
+                Object value = data.get(cellNoKey);
+                if (!(value instanceof List)) {
+                    log.warn("UPDATE LOCK SN WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
+                    return;
+                }
+                // 值是 List 类型，继续转换
+                List<?> list = (List<?>) value;
+                if (CollectionUtils.isEmpty(list) || !(list.get(0) instanceof Integer)) {
+                    // 列表中的元素是 Integer 类型，安全转换
+                    log.warn("UPDATE LOCK SN WARN! can not get cellNo, eleOuterCommandQuery={}, list={}", eleOuterCommandQuery, list);
+                    return;
+                }
+                cellNo = (Integer) list.get(0);
+                
+                String lockSn = eleOuterCommandQuery.getLockSn();
+                Integer eId = electricityCabinet.getId();
+                ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(lockSn, electricityCabinet.getTenantId());
+                
+                // 禁用格挡保存lockSn，修改电池标签
+                if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), true) && StringUtils.isNotEmpty(lockSn) && StringUtils.isNotBlank(lockSn)) {
+                    BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()).operatorUid(operatorId).build();
+                    electricityBatteryService.modifyLabel(battery, null, dto);
+                    electricityCabinetBoxService.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
+                }
+                
+                // 启用格挡清除lockSn，修改电池标签
+                if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
+                    BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
+                    electricityBatteryService.modifyLabel(battery, null, dto);
+                    electricityCabinetBoxService.updateLockSnByEidAndCellNo(eId, cellNo, null);
+                }
+            });
+        } catch (Exception e) {
+            log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
+        }
+    }
     
     @Override
     public void updateOpenCellAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId, List<ElectricityCabinetBox> electricityCabinetBoxList) {
-        
-        if (CollectionUtils.isNotEmpty(electricityCabinetBoxList)) {
-            // 开全部仓门的，数据都有了，直接保存预修改标签即可
-            for (ElectricityCabinetBox box : electricityCabinetBoxList) {
-                if (Objects.isNull(box.getSn())) {
-                    continue;
-                }
+        try {
+            String traceId = MDC.get(CommonConstant.TRACE_ID);
+            dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
+                MDC.put(CommonConstant.TRACE_ID, traceId);
                 
-                BatteryLabelModifyDTO modifyDTO = new BatteryLabelModifyDTO(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode(), operatorId, operatorId);
-                setPreLabel(electricityCabinet.getId(), box.getCellNo(), box.getSn(), modifyDTO);
-            }
-        } else {
-            // 指定仓门开启的，需要查询出sn
-            Map<String, Object> data = eleOuterCommandQuery.getData();
-            String cellNoKey = "cell_list";
-            
-            // 获取cellNo
-            Integer cellNo = null;
-            Object value = data.get(cellNoKey);
-            if (!(value instanceof List)) {
-                log.warn("UPDATE OPEN CELL WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
-                return;
-            }
-            // 值是 List 类型，继续转换
-            List<?> list = (List<?>) value;
-            if (CollectionUtils.isEmpty(list) || !(list.get(0) instanceof Integer)) {
-                // 列表中的元素是 Integer 类型，安全转换
-                log.warn("UPDATE OPEN CELL WARN! can not get cellNo, eleOuterCommandQuery={}, list={}", eleOuterCommandQuery, list);
-                return;
-            }
-            
-            for (Object o : list) {
-                cellNo = (Integer) o;
-                ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo.toString());
-                if (Objects.isNull(box) || Objects.isNull(box.getSn())) {
-                    continue;
+                if (CollectionUtils.isNotEmpty(electricityCabinetBoxList)) {
+                    // 开全部仓门的，数据都有了，直接保存预修改标签即可
+                    for (ElectricityCabinetBox box : electricityCabinetBoxList) {
+                        if (Objects.isNull(box.getSn())) {
+                            continue;
+                        }
+                        
+                        BatteryLabelModifyDTO modifyDTO = new BatteryLabelModifyDTO(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode(), operatorId, operatorId);
+                        setPreLabel(electricityCabinet.getId(), box.getCellNo(), box.getSn(), modifyDTO);
+                    }
+                } else {
+                    // 指定仓门开启的，需要查询出sn
+                    Map<String, Object> data = eleOuterCommandQuery.getData();
+                    String cellNoKey = "cell_list";
+                    
+                    // 获取cellNo
+                    Integer cellNo = null;
+                    Object value = data.get(cellNoKey);
+                    if (!(value instanceof List)) {
+                        log.warn("UPDATE OPEN CELL WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
+                        return;
+                    }
+                    // 值是 List 类型，继续转换
+                    List<?> list = (List<?>) value;
+                    if (CollectionUtils.isEmpty(list) || !(list.get(0) instanceof Integer)) {
+                        // 列表中的元素是 Integer 类型，安全转换
+                        log.warn("UPDATE OPEN CELL WARN! can not get cellNo, eleOuterCommandQuery={}, list={}", eleOuterCommandQuery, list);
+                        return;
+                    }
+                    
+                    for (Object o : list) {
+                        cellNo = (Integer) o;
+                        ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo.toString());
+                        if (Objects.isNull(box) || Objects.isNull(box.getSn())) {
+                            continue;
+                        }
+                        
+                        BatteryLabelModifyDTO modifyDTO = new BatteryLabelModifyDTO(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode(), operatorId, operatorId);
+                        setPreLabel(electricityCabinet.getId(), box.getCellNo(), box.getSn(), modifyDTO);
+                    }
                 }
-                
-                BatteryLabelModifyDTO modifyDTO = new BatteryLabelModifyDTO(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode(), operatorId, operatorId);
-                setPreLabel(electricityCabinet.getId(), box.getCellNo(), box.getSn(), modifyDTO);
-            }
+            });
+        } catch (Exception e) {
+            log.error("UPDATE OPEN CELL ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
         }
     }
 }

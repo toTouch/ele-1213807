@@ -49,5 +49,10 @@ public interface ElectricityBatteryLabelService {
     
     Integer countReceived(Long uid);
     
+    /**
+     * 保存或者清除柜机格挡表内的锁定在仓sn
+     */
+    void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId);
+    
     void updateOpenCellAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId, List<ElectricityCabinetBox> electricityCabinetBoxList);
 }

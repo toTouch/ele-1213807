@@ -406,58 +406,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
     
     @Override
-    public void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId) {
-        try {
-            if (Objects.isNull(eleOuterCommandQuery)) {
-                log.warn("UPDATE LOCK SN WARN! eleOuterCommandQuery is null");
-                return;
-            }
-            
-            // 禁用启用key
-            String isForbidden = "isForbidden";
-            // 禁用启用仓门号key
-            String cellNoKey = "cell_list";
-            Map<String, Object> data = eleOuterCommandQuery.getData();
-            
-            if (!data.containsKey(isForbidden) || !data.containsKey(cellNoKey)) {
-                return;
-            }
-            
-            // 获取cellNo
-            Integer cellNo = null;
-            Object value = data.get(cellNoKey);
-            if (!(value instanceof List)) {
-                log.warn("UPDATE LOCK SN WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
-                return;
-            }
-            // 值是 List 类型，继续转换
-            List<?> list = (List<?>) value;
-            if (CollectionUtils.isEmpty(list) || !(list.get(0) instanceof Integer)) {
-                // 列表中的元素是 Integer 类型，安全转换
-                log.warn("UPDATE LOCK SN WARN! can not get cellNo, eleOuterCommandQuery={}, list={}", eleOuterCommandQuery, list);
-                return;
-            }
-            cellNo = (Integer) list.get(0);
-            
-            String lockSn = eleOuterCommandQuery.getLockSn();
-            Integer eId = electricityCabinet.getId();
-            ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(lockSn, electricityCabinet.getTenantId());
-            
-            // 禁用格挡保存lockSn，修改电池标签
-            if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), true) && StringUtils.isNotEmpty(lockSn) && StringUtils.isNotBlank(lockSn)) {
-                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()).operatorUid(operatorId).build();
-                electricityBatteryService.modifyLabel(battery, null, dto);
-                electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
-            }
-            
-            // 启用格挡清除lockSn，修改电池标签
-            if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
-                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
-                electricityBatteryService.modifyLabel(battery, null, dto);
-                electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, null);
-            }
-        } catch (Exception e) {
-            log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
-        }
+    public int updateLockSnByEidAndCellNo(Integer eId, Integer cellNo, String lockSn) {
+        return electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
     }
 }

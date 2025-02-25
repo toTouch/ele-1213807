@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -88,8 +89,5 @@ public interface ElectricityCabinetBoxService {
     
     List<ElectricityCabinetBox> listNotUsableBySn(String sn, Integer cabinetId, String cellNo);
     
-    /**
-     * 保存或者清除柜机格挡表内的锁定在仓sn
-     */
-    void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId);
+    int updateLockSnByEidAndCellNo(Integer eId, Integer cellNo, String lockSn);
 }

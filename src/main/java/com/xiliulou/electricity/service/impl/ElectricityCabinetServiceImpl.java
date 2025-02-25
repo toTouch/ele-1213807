@@ -1738,7 +1738,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 处理锁仓和启用时的电池标签、锁仓电池sn
         if (Objects.equals(eleOuterCommandQuery.getCommand(), ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)) {
-            electricityCabinetBoxService.updateLockSnAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid());
+            electricityBatteryLabelService.updateLockSnAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid());
         }
         
         // 处理开仓门，修改电池标签
