@@ -8,6 +8,7 @@ import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
@@ -70,6 +72,9 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     @Resource
     private ElectricityConfigService electricityConfigService;
+    
+    @Resource
+    private RentBatteryOrderService rentBatteryOrderService;
     
     private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 1, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
     
@@ -332,12 +337,23 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                         // 长时间未换电保护时间
                         long protectTime = config.getNotExchangeProtectionTime() * 24 * 60 * 60 * 1000;
                         ElectricityCabinetOrder latestOrderBySn = electricityCabinetOrderService.selectLatestBySn(battery.getSn());
-                        if (Objects.isNull(latestOrderBySn)) {
-                            log.warn("CHECK RENT STATUS FOR LABEL WARN! latestOrderBySn is null, sn={}", battery.getSn());
+                        RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.selectLatestBySn(tenantId, battery.getSn());
+                        Long lastExchangeTime = null;
+                        if (Objects.nonNull(latestOrderBySn)) {
+                            lastExchangeTime = latestOrderBySn.getSwitchEndTime();
+                        }
+                        
+                        // 换电订单中没获取到，直接从租电订单中取，换电订单中获取到了比较获取最大的
+                        if (Objects.nonNull(rentBatteryOrder) && Objects.nonNull(rentBatteryOrder.getCreateTime())) {
+                            lastExchangeTime = Objects.isNull(lastExchangeTime) ? rentBatteryOrder.getCreateTime() : Math.max(lastExchangeTime, rentBatteryOrder.getCreateTime());
+                        }
+                        
+                        if (Objects.isNull(lastExchangeTime)) {
+                            log.warn("CHECK RENT STATUS FOR LABEL WARN! lastExchangeTime is null, sn={}", battery.getSn());
                             return;
                         }
                         
-                        if (System.currentTimeMillis() - latestOrderBySn.getSwitchEndTime() >= protectTime) {
+                        if (System.currentTimeMillis() - lastExchangeTime >= protectTime) {
                             electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()));
                         }
                     }
