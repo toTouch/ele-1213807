@@ -2104,7 +2104,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             modifyBatteryLabelExecutor.execute(() -> {
                 MDC.put(CommonConstant.TRACE_ID, traceId);
                 
-                if (Objects.isNull(electricityBattery) || Objects.isNull(dto)) {
+                if (Objects.isNull(electricityBattery) || Objects.isNull(dto) || Objects.isNull(dto.getNewLabel())) {
                     log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or labelEnum is null, battery={}, dto={}", electricityBattery, dto);
                     return;
                 }
@@ -2166,8 +2166,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 
                 // 4.旧标签是租借，在修改时需要校验电池已和用户解绑
-                if (Objects.equals(oldLabel, BatteryLabelEnum.RENT_NORMAL.getCode()) || Objects.equals(oldLabel, BatteryLabelEnum.RENT_OVERDUE.getCode()) || Objects.equals(oldLabel,
-                        BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode())) {
+                if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newLabel)) {
                     if (Objects.nonNull(battery.getUid())) {
                         log.warn("BATTERY LABEL MODIFY LABEL WARN! battery did not release, sn={}", sn);
                         return;
