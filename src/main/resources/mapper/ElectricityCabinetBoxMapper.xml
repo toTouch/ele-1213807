@@ -351,4 +351,15 @@
             and usable_status = 1
         </where>
     </select>
+    
+    <select id="selectListBySnAndEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        <include refid="column"/>
+        from t_electricity_cabinet_box
+        <where>
+            sn = #{sn}
+            and electricity_cabinet_id = #{cabinetId}
+            and del_flag = 0
+        </where>
+    </select>
 </mapper>

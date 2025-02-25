@@ -73,6 +73,7 @@ import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -250,6 +251,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Resource
     private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
+    
+    @Resource
+    private ElectricityCabinetBoxService electricityCabinetBoxService;
     
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
@@ -2146,13 +2150,24 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                         return;
                     }
                     
-                    // 剩下的情况需要保存预修改标签，无柜机id与仓门号则无法处理
-                    if (Objects.isNull(box)) {
-                        log.warn("BATTERY LABEL MODIFY LABEL WARN! box is null, sn={}", sn);
+                    // 优先获取从外部传入的，减少IO
+                    if (Objects.nonNull(box) && Objects.nonNull(box.getElectricityCabinetId()) && Objects.nonNull(box.getCellNo())) {
+                        electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), sn, dto);
                         return;
                     }
                     
-                    electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), sn, dto);
+                    // 若外部传入的数据不全，需要查询格挡
+                    List<ElectricityCabinetBox> searchBoxes = electricityCabinetBoxService.listBySnAndEid(sn, battery.getElectricityCabinetId());
+                    // 查询不到格挡，无柜机id与仓门号则无法处理
+                    if (CollectionUtils.isEmpty(searchBoxes)) {
+                        log.warn("BATTERY LABEL MODIFY LABEL WARN! searchBoxes is null, sn={}", sn);
+                        return;
+                    }
+                    
+                    // 从查询的格挡中获取参数
+                    for (ElectricityCabinetBox searchBox : searchBoxes) {
+                        electricityBatteryLabelService.setPreLabel(searchBox.getElectricityCabinetId(), searchBox.getCellNo(), sn, dto);
+                    }
                     return;
                 }
                 

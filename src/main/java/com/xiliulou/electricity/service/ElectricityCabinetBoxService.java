@@ -90,4 +90,6 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> listNotUsableBySn(String sn, Integer cabinetId, String cellNo);
     
     int updateLockSnByEidAndCellNo(Integer eId, Integer cellNo, String lockSn);
+    
+    List<ElectricityCabinetBox> listBySnAndEid(String sn, Integer eid);
 }
