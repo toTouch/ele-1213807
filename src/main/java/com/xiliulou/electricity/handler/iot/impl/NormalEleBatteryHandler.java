@@ -215,6 +215,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //检查柜机电池是否满仓
         this.checkElectricityCabinetBatteryFull(electricityCabinet);
+        
+        // 修改电池标签为在仓
+        BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
+        electricityBatteryService.modifyLabel(electricityBattery, eleBox, dto);
     }
 
     private void handleBatteryTrackRecordWhenNameIsNull(String nowBatteryName, ElectricityCabinetBox eleBox,
@@ -256,10 +260,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(nowBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_IN)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
-            
-            // 修改电池标签为在仓
-            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
-            electricityBatteryService.modifyLabel(battery, eleBox, dto);
         }
 
         //电池名称改变
@@ -280,9 +280,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
             ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, tenantId);
             electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
-            
-            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
-            electricityBatteryService.modifyLabel(battery, eleBox, dto);
         }
     }
 
