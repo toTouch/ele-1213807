@@ -358,7 +358,7 @@
         from t_electricity_cabinet_box
         <where>
             sn = #{sn}
-            and electricity_cabinet_id = #{cabinetId}
+            and electricity_cabinet_id = #{eid}
             and del_flag = 0
         </where>
     </select>
