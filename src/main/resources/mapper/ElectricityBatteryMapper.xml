@@ -61,7 +61,7 @@
     </select>
     
     <select id="selectListByUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        SELECT `id`, `sn`, `uid`, `tenant_id`, `franchisee_id` FROM `t_electricity_battery`
+        SELECT `id`, `sn`, `uid`, `tenant_id`, `franchisee_id`, `label` FROM `t_electricity_battery`
         <where>
             del_flag = 0
             <if test=" uid != null "> AND `uid` = #{uid} </if>

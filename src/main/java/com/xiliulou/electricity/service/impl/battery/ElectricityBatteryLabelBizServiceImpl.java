@@ -317,6 +317,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 for (ElectricityBattery battery : batteries) {
                     // 没有标签或者当前标签是在仓的，不处理
                     if (Objects.isNull(battery.getLabel()) || Objects.equals(battery.getLabel(), BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                        log.info("CHECK RENT STATUS FOR LABEL INFO! sn={}, label={}", battery.getSn(), battery.getLabel());
                         return;
                     }
                     
