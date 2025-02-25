@@ -12,33 +12,14 @@ import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.ChannelActivity;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.FreeDepositData;
-import com.xiliulou.electricity.entity.PermissionTemplate;
-import com.xiliulou.electricity.entity.Role;
-import com.xiliulou.electricity.entity.RolePermission;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.TenantNote;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.request.InitTenantSubscriptRequest;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.ChannelActivityService;
-import com.xiliulou.electricity.service.EleAuthEntryService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.FreeDepositDataService;
-import com.xiliulou.electricity.service.PermissionTemplateService;
-import com.xiliulou.electricity.service.RolePermissionService;
-import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.TenantNoteService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserRoleService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
@@ -132,6 +113,9 @@ public class TenantServiceImpl implements TenantService {
     
     @Resource
     private MsgCenterRetrofitService msgCenterRetrofitService;
+
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
     
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
@@ -262,7 +246,11 @@ public class TenantServiceImpl implements TenantService {
                 .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK).disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD).isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
                 .lowChargeRate(NumberConstant.TWENTY_FIVE_DB).fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
-        
+
+        // 给租户添加默认的系统配置扩展
+        electricityConfigExtraService.insert(
+                ElectricityConfigExtra.builder().tenantId(tenant.getId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
+
         //新增租户给租户增加渠道活动（产品提的需求）
         final ChannelActivity channelActivity = new ChannelActivity();
         channelActivity.setName("渠道活动");

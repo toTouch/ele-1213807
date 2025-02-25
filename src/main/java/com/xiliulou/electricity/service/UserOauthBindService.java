@@ -170,4 +170,6 @@ public interface UserOauthBindService {
     boolean checkExistBind(Long uid, Integer tenantId);
     
     List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList, Integer tenantId);
+
+    List<UserOauthBind> listByUidAndTenantAndSource(List<Long> uidList, Integer tenantId, Integer sourceWxPro);
 }

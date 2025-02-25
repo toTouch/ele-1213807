@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
@@ -53,5 +55,24 @@ public interface MerchantWithdrawApplicationService {
     List<MerchantWithdrawApplicationVO> selectRecordList(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
     
     Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest);
-    
+
+    Triple<Boolean, String, Object> getMerchantWithdrawProcess(Long uid);
+
+    List<MerchantWithdrawSendBO> listAuditSuccess(Integer tenantId, Long size, Long startId, Integer type);
+
+    Triple<Boolean, String, Object> sendTransfer(MerchantWithdrawSendBO merchantWithdrawSendBO, String userThird, WechatPayParamsDetails finalWechatPayParamsDetails, Integer payConfigType);
+
+    List<MerchantWithdrawSendBO> listWithdrawingByMerchantId(Long uid, Long size, Long startId, Long checkTime);
+
+    Integer batchUpdatePayConfigChangeByIdList(List<Long> idList, Integer payConfigWhetherChangeYes);
+
+    Integer updateStateById(Long applicationId, Integer state);
+
+    MerchantWithdrawApplication queryByOrderNo(String orderNo, String batchNo);
+
+    Integer updateById(MerchantWithdrawApplication merchantWithdrawApplicationUpdate);
+
+    void sendNotify(MerchantWithdrawSendBO merchantWithdrawSendBO, Integer tenantId);
+
+    Triple<Boolean, String, Object> getConfirmReceiptInfo(Long uid, Long id);
 }

@@ -17,7 +17,10 @@
             create_time,
             update_time,
             pay_config_type,
-            franchisee_id
+            franchisee_id,
+            type,
+            transaction_batch_id,
+            transaction_detail_id
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -32,7 +35,10 @@
             #{createTime},
             #{updateTime},
             #{payConfigType},
-            #{franchiseeId}
+            #{franchiseeId},
+            #{type},
+            #{transactionBatchId},
+            #{transactionBatchDetailId}
         </trim>
     </insert>
     
@@ -51,7 +57,8 @@
             create_time,
             update_time,
             pay_config_type,
-            franchisee_id
+            franchisee_id,
+            type
         </trim>
         values
         <foreach collection="list" item="item" index="index" separator=",">
@@ -68,7 +75,8 @@
             #{item.createTime},
             #{item.updateTime},
             #{item.payConfigType},
-            #{item.franchiseeId}
+            #{item.franchiseeId},
+            #{item.type}
             )
         </foreach>
     
@@ -312,7 +320,33 @@
 
         </where>
     </update>
-    
+
+    <update id="updateById">
+        update t_merchant_withdraw_application_record 
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="transactionBatchDetailId != null and transactionBatchDetailId != ''">
+                transaction_detail_id = #{transactionBatchDetailId},
+            </if>
+            <if test="transactionBatchId != null and transactionBatchId != ''">
+                transaction_batch_id = #{transactionBatchId},
+            </if>
+            <if test="payConfigType != null">
+                pay_config_type = #{payConfigType},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+            
+        where id = #{id}
+    </update>
+
     <select id="selectListByBatchNo" resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO">
         select mwar.id,
                mwar.create_time,
@@ -332,5 +366,25 @@
         where mwar.batch_no = #{batchNo}
           and mwar.tenant_id = #{tenantId}
     </select>
-    
+
+    <select id="selectByBatchDetailNo"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord">
+        select mwar.id,
+               mwar.create_time,
+               mwar.update_time,
+               mwar.amount,
+               mwar.tenant_id,
+               mwar.remark,
+               mwar.uid,
+               mwar.order_no,
+               mwar.batch_no,
+               mwar.batch_detail_no,
+               mwar.transaction_batch_id,
+               mwar.status,
+               mwar.franchisee_id
+        from t_merchant_withdraw_application_record mwar
+        where mwar.batch_detail_no = #{outBillNo}
+          and mwar.transaction_detail_id = #{transferBillNo}
+    </select>
+
 </mapper>
