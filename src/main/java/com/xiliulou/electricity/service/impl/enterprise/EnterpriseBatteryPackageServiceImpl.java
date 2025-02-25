@@ -5,6 +5,7 @@ import cn.hutool.crypto.SecureUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -47,6 +48,7 @@ import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseFreeDepositQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
@@ -423,11 +425,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(true, "", Collections.emptyList());
         }
         
+        // 查询用户的企业套餐购买记录判断是新租还是续费
+        MemberCardOrderQuery orderQuery = MemberCardOrderQuery.builder().uid(enterpriseUserId).franchiseeId(enterpriseInfo.getFranchiseeId()).payType(ElectricityMemberCardOrder.ENTERPRISE_PAYMENT).build();
+        Integer enterpriseMemberCardPayCount = (Integer) electricityMemberCardOrderService.queryCount(orderQuery).getData();
+        
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(query.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(enterpriseMemberCardPayCount) || enterpriseMemberCardPayCount <= 0) {
             // 新租
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
@@ -1255,7 +1261,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             // 是否开启购买保险（是进入）
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            // 没有购买保险时，才需要校验保险状态及强制购买保险要求
+            if (Objects.isNull(query.getInsuranceId()) && Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
                 // 保险是否强制购买（是进入）
                 FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), batteryType, userInfo.getTenantId());
                 long now = System.currentTimeMillis();

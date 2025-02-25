@@ -169,11 +169,11 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
     }
     
     private void retry(InstallmentMqCommonDTO commonDTO) {
-        if (Objects.nonNull(commonDTO) && commonDTO.getRetryCount() >= fengYunConfig.getRetryCount()) {
+        Integer retryCount = commonDTO.getRetryCount();
+        if (Objects.nonNull(retryCount) && retryCount >= fengYunConfig.getRetryCount()) {
             return;
         }
         
-        Integer retryCount = commonDTO.getRetryCount();
         commonDTO.setRetryCount(Objects.isNull(retryCount) ? 1 : retryCount + 1);
         
         // 延迟5s重试
