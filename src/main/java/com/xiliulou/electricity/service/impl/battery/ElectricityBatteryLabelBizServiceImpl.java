@@ -243,8 +243,6 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         } catch (Exception e) {
             log.error("BATCH UPDATE LABEL ERROR! request={}", request, e);
             return R.fail("100227", "操作失败");
-        } finally {
-            MDC.clear();
         }
     }
     
