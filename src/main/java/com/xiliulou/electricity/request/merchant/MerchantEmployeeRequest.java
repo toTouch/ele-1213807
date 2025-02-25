@@ -60,6 +60,16 @@ public class MerchantEmployeeRequest {
      * 商户UID
      */
     private Long merchantUid;
+
+    /**
+     * 邀请权限：0-开启，1-关闭
+     */
+    private Integer inviteAuth;
+
+    /**
+     * 站点代付权限：0-开启，1-关闭
+     */
+    private Integer enterprisePackageAuth;
     
     /**
      * 场地ID

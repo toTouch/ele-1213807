@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
@@ -141,6 +143,8 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         merchantEmployee.setDelFlag(CommonConstant.DEL_N);
         merchantEmployee.setCreateTime(System.currentTimeMillis());
         merchantEmployee.setUpdateTime(System.currentTimeMillis());
+        merchantEmployee.setInviteAuth(Objects.nonNull(merchantEmployeeRequest.getInviteAuth()) ? merchantEmployeeRequest.getInviteAuth() : YesNoEnum.NO.getCode());
+        merchantEmployee.setEnterprisePackageAuth(Objects.nonNull(merchantEmployeeRequest.getEnterprisePackageAuth()) ? merchantEmployeeRequest.getEnterprisePackageAuth() : YesNoEnum.NO.getCode());
         
         Integer result = merchantEmployeeMapper.insertOne(merchantEmployee);
         
@@ -190,7 +194,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
                 throw new BizException("120002", "当前手机号已注册");
             }
         }
-        
+
         String oldPhone = user.getPhone();
         User updateUser = new User();
         
@@ -422,5 +426,17 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().tenantId(tenantId).uid(merchantUid).build();
         return merchantEmployeeMapper.selectListByMerchantUid(queryModel);
     }
-    
+
+    @Override
+    @Slave
+    public List<MerchantEmployeeBO> listMerchantAndEmployeeInfoByUidList(List<Long> merchantEmployeesUidList) {
+        return merchantEmployeeMapper.selectListMerchantAndEmployeeInfoByUidList(merchantEmployeesUidList);
+    }
+
+    @Override
+    @Slave
+    public MerchantEmployeeBO queryMerchantAndEmployeeInfoByUid(Long uid) {
+        return merchantEmployeeMapper.selectMerchantAndEmployeeInfoByUid(uid);
+    }
+
 }

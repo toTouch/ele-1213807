@@ -4,8 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
 import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -1437,7 +1437,7 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(user)) {
             return null;
         }
-        
+
         MerchantUserVO merchantUserVO = new MerchantUserVO();
         BeanUtils.copyProperties(user, merchantUserVO);
         
@@ -1456,6 +1456,21 @@ public class MerchantServiceImpl implements MerchantService {
             MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
             merchantUserVO.setMerchantLevelName(Objects.nonNull(merchantLevel) ? merchantLevel.getName() : "");
             merchantUserVO.setMerchantLevel(Objects.nonNull(merchantLevel) ? merchantLevel.getLevel() : "");
+            return merchantUserVO;
+        } else if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT_EMPLOYEE)) {
+            Long uid = SecurityUtils.getUid();
+            // 判断员工是否存在
+            MerchantEmployeeBO merchantEmployeeBO = merchantEmployeeService.queryMerchantAndEmployeeInfoByUid(uid);
+            if (Objects.isNull(merchantEmployeeBO)) {
+                return merchantUserVO;
+            }
+
+            merchantUserVO.setMerchantId(merchantEmployeeBO.getMerchantId());
+            merchantUserVO.setMerchantUid(uid);
+            merchantUserVO.setType(MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE);
+            String code = merchantEmployeeBO.getMerchantId() + ":" + uid + ":" + MerchantConstant.MERCHANT_EMPLOYEE_QR_CODE_TYPE;
+            merchantUserVO.setCode(QrCodeUtils.codeEnCoder(code));
+
             return merchantUserVO;
         }
         

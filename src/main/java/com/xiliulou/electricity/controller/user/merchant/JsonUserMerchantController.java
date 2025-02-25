@@ -2,7 +2,11 @@ package com.xiliulou.electricity.controller.user.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -22,9 +27,14 @@ import java.util.Objects;
 @Slf4j
 @RestController
 public class JsonUserMerchantController extends BaseController {
-    
     @Autowired
     private MerchantService merchantService;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
     
     /**
      * 获取商户/渠道员详情
@@ -68,15 +78,33 @@ public class JsonUserMerchantController extends BaseController {
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        Merchant merchant = merchantService.queryByUid(uid);
-        if (Objects.isNull(merchant)) {
-            log.error("merchant get merchant qr code merchant is null, uid={}", uid);
+
+        User user = userService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(user)) {
+            return null;
+        }
+
+        if (!Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT_EMPLOYEE)) {
+            Merchant merchant = merchantService.queryByUid(uid);
+            if (Objects.isNull(merchant)) {
+                log.error("merchant get merchant qr code merchant is null, uid={}", uid);
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+
+            MerchantVO merchantVO = MerchantVO.builder().enterprisePackageAuth(merchant.getEnterprisePackageAuth()).inviteAuth(merchant.getInviteAuth()).build();
+
+            return R.ok(merchantVO);
+        }
+
+        // 商户员工
+        MerchantEmployeeBO merchantEmployeeBO = merchantEmployeeService.queryMerchantAndEmployeeInfoByUid(uid);
+        if (Objects.isNull(merchantEmployeeBO)) {
+            log.error("merchant get merchant qr code merchant employee is null, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        MerchantVO merchantVO = MerchantVO.builder().enterprisePackageAuth(merchant.getEnterprisePackageAuth()).inviteAuth(merchant.getInviteAuth()).build();
-        
+
+        MerchantVO merchantVO = MerchantVO.builder().enterprisePackageAuth(merchantEmployeeBO.getEnterprisePackageAuth()).inviteAuth(merchantEmployeeBO.getInviteAuth()).build();
+
         return R.ok(merchantVO);
     }
     
