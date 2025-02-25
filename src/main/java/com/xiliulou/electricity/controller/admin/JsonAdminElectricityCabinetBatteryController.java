@@ -124,7 +124,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
-            @RequestParam(value = "warehouseId", required = false) List<Integer> labels) {
+            @RequestParam(value = "label", required = false) List<Integer> label) {
         
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -166,7 +166,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         electricityBatteryQuery.setStockStatus(stockStatus);
         electricityBatteryQuery.setWarehouseId(warehouseId);
-        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(labels) ? null : labels);
+        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(label) ? null : label);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
@@ -209,7 +209,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
-            @RequestParam(value = "warehouseId", required = false) List<Integer> labels) {
+            @RequestParam(value = "label", required = false) List<Integer> label) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -243,7 +243,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         electricityBatteryQuery.setStockStatus(stockStatus);
         electricityBatteryQuery.setWarehouseId(warehouseId);
-        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(labels) ? null : labels);
+        electricityBatteryQuery.setLabels(CollectionUtils.isEmpty(label) ? null : label);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
         if (Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)) {
