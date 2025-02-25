@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FreeDepositExpireRecordMapper">
+
+
+    <sql id="baseSql">
+        id
+        , uid, real_name, phone, deposit_type, trans_amt, tenant_id, franchisee_id, store_id,
+          deposit_time, remark, status, create_time, update_time
+    </sql>
+
+    <update id="updateStatus">
+        update t_free_deposit_expire_record
+        set status = 3
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.FreeDepositExpireRecord">
+        select
+        <include refid="baseSql"/>
+        from t_free_deposit_expire_record
+        where tenant_id = #{tenantId}
+        and status = #{status}
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        order by create_time desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="selectByCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_free_deposit_expire_record
+        where tenant_id = #{tenantId}
+        and status = #{status}
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+    </select>
+    <select id="selectByIds" resultType="integer">
+        select
+        count(1)
+        from t_free_deposit_expire_record
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+</mapper>
