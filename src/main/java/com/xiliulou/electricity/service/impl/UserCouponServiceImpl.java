@@ -18,6 +18,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -1064,5 +1065,16 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     public void batchInsert(List<UserCoupon> userCouponList) {
         userCouponMapper.batchInsert(userCouponList);
+    }
+
+    @Override
+    public void asyncBatchUpdateIncreaseDeadline(Integer couponId, Integer days, Integer tenantId) {
+        executorService.execute(() -> {
+            // 批量修改优惠券与用户的时间
+            Long increaseTime = TimeConstant.DAY_MILLISECOND * days;
+            int count = userCouponMapper.increaseDeadlineByCouponId(couponId, increaseTime, tenantId);
+
+            log.info("update dead line success! couponId = {}, days = {}, count = {}", couponId, days, count);
+        });
     }
 }

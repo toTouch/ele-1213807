@@ -31,8 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
@@ -147,7 +145,6 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
     
     
     @Override
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void postProcessAfterWechatRefund(WechatV3RefundOrderCallBackRequest wechatV3RefundOrderCallBackQuery) {
         WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
         if (Objects.isNull(resource)) {

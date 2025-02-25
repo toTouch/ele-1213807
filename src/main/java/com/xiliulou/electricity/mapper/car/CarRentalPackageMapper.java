@@ -120,5 +120,5 @@ public interface CarRentalPackageMapper {
     
     Integer batchUpdateSortParam(@Param("sortParamQueries") List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     
-    List<CarRentalPackagePo> listCarRentalPackageForSort(@Param("tenantId") Integer tenantId);
+    List<CarRentalPackagePo> listCarRentalPackageForSort(@Param("query") CarRentalPackageQryModel qryModel);
 }
