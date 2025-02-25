@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityConfigExtraMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, tenant_id, create_time, update_time, account_del_switch
+        id, tenant_id, create_time, update_time, account_del_switch, withdraw_amount_limit
     </sql>
     
     <insert id="insert">

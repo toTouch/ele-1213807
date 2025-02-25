@@ -267,7 +267,6 @@ public interface CacheConstant {
      */
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
-    
     String CACHE_ELE_SET_CONFIG_EXTRA = "ele_set_config_extra:";
     String CACHE_ELE_APP_SET_CONFIG = "ele_app_set_config:";
     
@@ -967,6 +966,11 @@ public interface CacheConstant {
      * 优惠券包缓存key
      */
     String COUPON_PACKAGE_CACHE_KEY = "coupon_package_cache:";
+
+    /**
+     * 商户提现微信回调处理
+     */
+    String  CACHE_MERCHANT_WITHDRAW_NOTIFY_LOCK = "cache_merchant_withdraw_notify_lock:%s";
 
 }
 

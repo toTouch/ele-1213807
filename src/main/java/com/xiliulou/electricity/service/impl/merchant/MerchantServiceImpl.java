@@ -1704,6 +1704,12 @@ public class MerchantServiceImpl implements MerchantService {
         return merchantJoinUserVOS;
     }
 
+    @Override
+    @Slave
+    public List<Merchant> list(int offset, int size) {
+        return merchantMapper.selectList(offset, size);
+    }
+
     @Slave
     @Override
     public List<Merchant> queryListByUidList(Set<Long> uidList, Integer tenantId) {

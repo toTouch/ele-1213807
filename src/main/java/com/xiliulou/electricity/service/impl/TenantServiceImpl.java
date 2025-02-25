@@ -12,6 +12,7 @@ import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityConfigExtra;
@@ -28,6 +29,7 @@ import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.request.InitTenantSubscriptRequest;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
@@ -125,6 +127,9 @@ public class TenantServiceImpl implements TenantService {
     
     @Resource
     private MsgCenterRetrofitService msgCenterRetrofitService;
+
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
     
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
@@ -258,11 +263,11 @@ public class TenantServiceImpl implements TenantService {
                 .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK).disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD).isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
                 .lowChargeRate(NumberConstant.TWENTY_FIVE_DB).fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
-        
+
         // 给租户添加默认的系统配置扩展
         electricityConfigExtraService.insert(
                 ElectricityConfigExtra.builder().tenantId(tenant.getId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
-        
+
         //新增租户给租户增加渠道活动（产品提的需求）
         final ChannelActivity channelActivity = new ChannelActivity();
         channelActivity.setName("渠道活动");

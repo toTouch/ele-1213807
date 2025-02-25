@@ -25,5 +25,20 @@ public class MerchantConfig {
      * 商户端小程序 appSecret
      */
     private String merchantAppletSecret;
+
+    /**
+     * #跳转下程序类型：developer为开发版;trial为体验版;formal为正式版;默认人为正式版
+     */
+    private String miniProgramState;
+
+    /**
+     * 模板id
+     */
+    private String templateId;
+
+    /**
+     * 跳转页面
+     */
+    private String page;
     
 }

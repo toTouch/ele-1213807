@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @author HeYafeng
  * @description 系统设置扩展表
@@ -42,4 +44,9 @@ public class ElectricityConfigExtra {
      * @see ElectricityConfigExtraEnum
      */
     private Integer accountDelSwitch;
+
+    /**
+     * 商户提现额度
+     */
+    private BigDecimal withdrawAmountLimit;
 }

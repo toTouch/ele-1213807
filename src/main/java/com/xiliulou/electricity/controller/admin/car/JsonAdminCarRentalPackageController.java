@@ -535,18 +535,12 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      */
     @GetMapping("/listCarRentalPackageForSort")
     public R listCarRentalPackageForSort() {
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        // 查询数据较多，限制仅超级管理员和运营商可使用
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
-        return R.ok(carRentalPackageService.listCarRentalPackageForSort());
+        return R.ok(carRentalPackageService.listCarRentalPackageForSort(tokenUser));
     }
     
     /**
