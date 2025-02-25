@@ -897,9 +897,9 @@
                 #{id}
             </foreach>
         </if>
-        <if test="query.labels != null">
+        <if test="query.label != null">
             and teb.label in
-            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
                 #{label}
             </foreach>
         </if>
@@ -961,9 +961,9 @@
                 #{id}
             </foreach>
         </if>
-        <if test="query.labels != null">
+        <if test="query.label != null">
             and teb.label in
-            <foreach collection="query.labels" item="label" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
                 #{label}
             </foreach>
         </if>

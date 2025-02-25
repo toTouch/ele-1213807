@@ -14,7 +14,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -76,7 +75,7 @@ public class MerchantBizServiceImpl implements MerchantBizService {
         
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
                 .sn(request.getSn()).sns(request.getSns()).franchiseeId(request.getFranchiseeId())
-                .labels(List.of(BatteryLabelEnum.RECEIVED_MERCHANT.getCode())).receiverId(merchant.getId()).build();
+                .label(List.of(BatteryLabelEnum.RECEIVED_MERCHANT.getCode())).receiverId(merchant.getId()).build();
         return electricityBatteryDataService.selectAllBatteryPageData(electricityBatteryQuery);
     }
 }

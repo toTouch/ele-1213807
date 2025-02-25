@@ -99,7 +99,7 @@ public class ElectricityBatteryDataQuery {
     /**
      * 电池标签
      */
-    private List<Integer> labels;
+    private List<Integer> label;
     
     /**
      * 领用人，管理员uid或者商户id
