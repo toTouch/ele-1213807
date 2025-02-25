@@ -355,6 +355,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                         
                         if (System.currentTimeMillis() - lastExchangeTime >= protectTime) {
                             electricityBatteryService.modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()));
+                            return;
                         }
                     }
                     
