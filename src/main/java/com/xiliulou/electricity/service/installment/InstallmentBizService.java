@@ -112,9 +112,9 @@ public interface InstallmentBizService {
      * 处理代扣成功
      *
      * @param installmentRecord 签约记录
-     * @param deductionPlan     代扣计划
+     * @param deductionPlans    代扣计划
      */
-    void handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, InstallmentDeductionRecord installmentDeductionRecord);
+    void handleDeductZero(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, InstallmentDeductionRecord installmentDeductionRecord);
     
     /**
      * 退押时解约签约记录
@@ -127,10 +127,10 @@ public interface InstallmentBizService {
      * 代扣成功后绑定套餐
      *
      * @param installmentRecord 分期签约记录
-     * @param deductionPlan     代扣计划
+     * @param deductionPlans     代扣计划
      * @param uid               用户uid
      */
-    Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, Long uid);
+    Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, Long uid);
     
     /**
      * 解除签约处理
