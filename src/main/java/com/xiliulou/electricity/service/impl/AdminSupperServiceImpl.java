@@ -266,7 +266,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
                 //批量插入数据构建
                 List<Long> finalCurRolePermissionIds = curRolePermissionIds;
                 // 过滤掉权限对应的父节点在当前角色没有选中的数据
-                List<GrantRolePermission> batchInsert = copySourceIds.stream().filter(id -> (Objects.equals(sourcePermissionMap.get(id), NumberConstant.ZERO_L)|| sourcePermissionMap.containsKey(id)
+                List<GrantRolePermission> batchInsert = copySourceIds.stream().filter(id -> Objects.equals(sourcePermissionMap.get(id), NumberConstant.ZERO_L)|| (sourcePermissionMap.containsKey(id)
                         && finalCurRolePermissionIds.contains(sourcePermissionMap.get(id)))).map(id -> {
                     GrantRolePermission rolePermission = new GrantRolePermission();
                     rolePermission.setRoleId(checkRoleId);
