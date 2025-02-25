@@ -19,7 +19,6 @@ import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.query.WechatCallBackResouceData;
-import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
 import com.xiliulou.pay.weixinv3.util.AesUtil;
 import com.xiliulou.pay.weixinv3.v2.handler.WechatV3PostProcessExecuteHandler;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderCallBackRequest;
@@ -30,8 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -142,7 +139,6 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
     
     
     @Override
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void postProcessAfterWechatRefund(WechatV3RefundOrderCallBackRequest wechatV3RefundOrderCallBackQuery) {
         WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
         if (Objects.isNull(resource)) {
