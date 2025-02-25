@@ -357,7 +357,7 @@ public class CouponServiceImpl implements CouponService {
         if (Objects.equals(oldCoupon.getDiscountType(), Coupon.FULL_REDUCTION) || Objects.equals(oldCoupon.getDiscountType(), Coupon.DAY_VOUCHER)) {
             if (days < oldCoupon.getDays()) {
                 // 检测有效期
-                return R.fail("120127", "有效期限只能增大不可减小");
+                return R.fail("120164", "有效期限只能增大不可减小");
             }
 
             if (days > oldCoupon.getDays()) {
