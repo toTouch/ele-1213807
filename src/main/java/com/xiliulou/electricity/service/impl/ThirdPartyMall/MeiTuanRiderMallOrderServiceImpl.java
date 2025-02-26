@@ -441,20 +441,19 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
             }
     
-            Boolean oldUser = userInfoService.isOldUser(userInfo);
+            Boolean everDel = userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
             if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
                 // 流失用户不允许购买续租类型的套餐
                 if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
                     log.warn("MeiTuan order redeem fail. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", uid, memberCardId);
                     return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
                 }
-            } else if (oldUser && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+            } else if ((userInfo.getPayCount() > 0 || everDel) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                 log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
                 return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
             }
     
             // 新用户且未被打过删除标记，无法购买续费套餐
-            Boolean everDel = userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
             if (Objects.equals(userInfo.getPayCount(), 0) && !everDel && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
                 log.warn("MeiTuan order redeem fail! New use cannot purchase old rentType memberCard, uid={}, mid={}", uid, memberCardId);
                 return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
