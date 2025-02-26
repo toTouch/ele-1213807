@@ -254,7 +254,68 @@
         from t_electricity_config
         where tenant_id = #{tenantId} limit 1;
     </select>
-    
+
+    <sql id="column" >
+         `id` ,
+       `name` ,
+       `create_time` ,
+       `update_time` ,
+       `order_time` ,
+       `is_manual_review` ',
+       `tenant_id` ,
+       `is_withdraw` ',
+        `is_open_door_lock` ,
+       `is_battery_review` ,
+       `disable_member_card` ,
+       `is_low_battery_exchange` ,
+       `low_battery_exchange_model` ,
+       `is_enable_self_open` ,
+       `is_enable_return_box_check` ,
+       `is_open_insurance` ,
+       `franchisee_move_info` ,
+       `is_move_franchisee` ,
+       `free_deposit_type` ,
+       `is_open_car_battery_bind` ,
+       `is_open_car_control` ,
+       `is_zero_deposit_audit_enabled` ,
+       `is_enable_esign` ,
+       `allow_rent_ele` ,
+       `allow_return_ele` ,
+       `allow_freeze_with_assets` ,
+       `is_selection_exchange` ,
+       `low_charge_rate` ,
+       `full_charge_rate` ,
+       `wx_customer` ,
+       `enable_offline_power_lock` ,
+       `charge_rate_type` ,
+       `channel_time_limit` ,
+       `is_comfort_exchange` ,
+       `priority_exchange_norm`,
+       `is_enable_mei_tuan_rider_mall` ,
+       `alipay_customer` ,
+       `is_enable_flexible_renewal` ,
+       `is_enable_separate_deposit` ,
+       `ele_limit` ,
+       `ele_limit_count` ,
+       `freeze_auto_review_days` ,
+       `package_freeze_count` ,
+       `package_freeze_days` ,
+       `package_freeze_days_with_assets` ,
+       `expired_protection_time` ,
+       `is_swap_exchange` ,
+       `is_bind_battery` ,
+       `lost_user_first` ,
+       `lost_user_days` ,
+       `allow_original_inviter`
+    </sql>
+
+    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.ElectricityConfig">
+        select
+            <include refid="column"/>
+        from t_electricity_config
+        where tenant_id = #{tenantId} limit 1;
+    </select>
+
     <update id="updateWxCuStatusByTenantId">
         update t_electricity_config
         <set>

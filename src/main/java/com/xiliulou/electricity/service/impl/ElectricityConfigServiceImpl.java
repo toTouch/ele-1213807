@@ -466,6 +466,12 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     }
 
     @Override
+    @Slave
+    public ElectricityConfig queryByTenantId(Integer tenantId) {
+        return electricityConfigMapper.selectByTenantId(tenantId);
+    }
+
+    @Override
     public Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery) {
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
