@@ -2173,8 +2173,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 
                 
-                // 3.新标签是在仓的，直接修改就完事
+                // 3.新标签是在仓的
                 if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                    // 判断旧标签是锁定在仓的就不修改了
+                    if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                        return;
+                    }
+                    
+                    // 其他的直接修改就完事
                     electricitybatterymapper.update(batteryUpdate);
                     // 发送修改记录到mq，在batch项目中批量保存
                     batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime);
