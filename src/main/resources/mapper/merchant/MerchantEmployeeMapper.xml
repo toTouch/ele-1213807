@@ -15,6 +15,8 @@
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="inviteAuth" column="invite_auth" jdbcType="INTEGER"/>
+        <result property="enterprisePackageAuth" column="enterprise_package_auth" jdbcType="INTEGER"/>
     </resultMap>
     
     <select id="selectById" resultMap="MerchantEmployeeMap">
@@ -49,7 +51,9 @@
             tme.del_flag,
             tme.remark,
             tme.create_time,
-            tme.update_time
+            tme.update_time,
+            tme.invite_auth,
+            tme.enterprise_package_auth
         from t_merchant_employee tme
         left join t_user tu on tu.uid = tme.uid
         where tme.uid = #{uid}
@@ -253,7 +257,9 @@
             tme.del_flag,
             tme.remark,
             tme.create_time,
-            tme.update_time
+            tme.update_time,
+            tme.invite_auth,
+            tme.enterprise_package_auth
         from t_merchant_employee tme
         left join t_user tu on tu.uid = tme.uid
         where tme.merchant_uid = #{merchantUid}

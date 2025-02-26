@@ -216,7 +216,10 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantEmployee merchantEmployeeUpdate = new MerchantEmployee();
         BeanUtils.copyProperties(merchantEmployeeRequest, merchantEmployeeUpdate);
         merchantEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
-        
+
+        merchantEmployeeUpdate.setInviteAuth(Objects.nonNull(merchantEmployeeRequest.getInviteAuth()) ? merchantEmployeeRequest.getInviteAuth() : YesNoEnum.NO.getCode());
+        merchantEmployeeUpdate.setEnterprisePackageAuth(Objects.nonNull(merchantEmployeeRequest.getEnterprisePackageAuth()) ? merchantEmployeeRequest.getEnterprisePackageAuth() : YesNoEnum.NO.getCode());
+
         Integer result = merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
         
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
