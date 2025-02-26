@@ -126,6 +126,14 @@ public class DetailsBatteryInfoVo {
      */
     private Integer isViewOffLineAgree = 0;
 
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
+
+
+    private Integer validDays;
+
     public static Integer IS_VIEW_OFF_LINE_AGREE = 1;
     public static Integer NOT_IS_VIEW_OFF_LINE_AGREE = 0;
 }
