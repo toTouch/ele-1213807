@@ -124,8 +124,31 @@
     <select id="countDisabledRecordThisMonth" resultType="java.lang.Integer">
         select count(1) from t_ele_disable_member_card_record where uid = #{uid} and create_time > #{beginTime} and source = 1 and status = 1
     </select>
-    
+
+
     <update id="updatePhoneByUid">
         update t_ele_disable_member_card_record set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
+
+
+    <select id="selectDisableListByUid"
+            resultType="com.xiliulou.electricity.vo.BatteryDisableMemberCardRecordVO">
+        select td.uid,
+               td.disable_member_card_no as 'disableMemberCardNo',
+               td.update_time as 'disableTime',
+               td.card_days as 'cardDays',
+               td.choose_days as 'chooseDays',
+               case when te.id is null then null
+                   else te.disable_days
+                   end as 'disableDays',
+              case when te.id is null then null
+                    else te.enable_time
+                    end as 'enableTime'
+        from t_ele_disable_member_card_record td
+                 left join t_enable_member_card_record te on td.disable_member_card_no = te.disable_member_card_no
+        where td.uid = #{query.uid} td.tenant_id = #{query.tenantId}
+          and td.status = 1
+        order by td.create_time desc
+            limit #{query.offset}, #{query.size}
+    </select>
 </mapper>

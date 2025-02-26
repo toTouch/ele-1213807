@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
+import com.xiliulou.electricity.vo.BatteryDisableMemberCardRecordVO;
 import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -29,4 +31,6 @@ public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableM
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
     Integer countDisabledRecordThisMonth(@Param("uid") Long uid, @Param("beginTime") Long beginTime);
+
+    List<BatteryDisableMemberCardRecordVO> selectDisableListByUid(@Param("query") UserDisableMemberQuery query);
 }

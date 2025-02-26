@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.json.JsonUtil;
@@ -27,6 +28,7 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
@@ -46,6 +48,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryDisableMemberCardRecordVO;
 import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -454,5 +457,16 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         } catch (Throwable e) {
             log.error("Recording user operation records failed because:", e);
         }
+    }
+
+    @Override
+    public R queryMemberDisableList(UserDisableMemberQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("ENABLE MEMBER CARD warn! not found user,uid={} ", query.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        query.setTenantId(userInfo.getTenantId());
+        return R.ok(eleDisableMemberCardRecordMapper.selectDisableListByUid(query));
     }
 }
