@@ -441,7 +441,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
             }
     
-            Boolean everDel = userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
+            Boolean everDel =userDelRecordService .existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
             if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
                 // 流失用户不允许购买续租类型的套餐
                 if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
