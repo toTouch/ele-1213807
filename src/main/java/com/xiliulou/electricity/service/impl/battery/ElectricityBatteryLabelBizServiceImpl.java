@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -22,8 +23,10 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
@@ -76,6 +79,12 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     @Resource
     private RentBatteryOrderService rentBatteryOrderService;
     
+    @Resource
+    private UserService userService;
+    
+    @Resource
+    private MerchantService merchantService;
+    
     private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 1, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
     
     
@@ -124,7 +133,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     @Override
     public R batchUpdate(BatteryLabelBatchUpdateRequest request) {
         try {
-            TokenUser user = SecurityUtils.getUserInfo();
+            User user = userService.queryByUidFromCache(SecurityUtils.getUid());
             if (Objects.isNull(user)) {
                 log.error("ELECTRICITY  ERROR! not found user ");
                 return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -220,8 +229,17 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     continue;
                 }
                 
-                if (!permissionVerification(electricityBattery, user, newLabel)) {
+                // 校验操作人权限
+                if (!permissionVerificationForUser(electricityBattery, user, newLabel)) {
                     failReason.put("reason", "无操作权限");
+                    failReasons.add(failReason);
+                    failureCount = failureCount + 1;
+                    continue;
+                }
+                
+                // 校验领用人权限
+                if (!permissionVerificationForReceiver(electricityBattery, request.getReceiverId(), newLabel)) {
+                    failReason.put("reason", "领用人无权领用");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
                     continue;
@@ -252,11 +270,11 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     }
     
     /**
-     * 权限校验
+     * 操作人权限校验
      *
      * @return true-有操作权限；false-无权限
      */
-    private boolean permissionVerification(ElectricityBattery battery, TokenUser user, Integer label) {
+    private boolean permissionVerificationForUser(ElectricityBattery battery, User user, Integer label) {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             return !CollectionUtils.isEmpty(franchiseeIds) && franchiseeIds.contains(battery.getFranchiseeId());
@@ -277,6 +295,35 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         
         // 不是加盟商或门店的，校验租户即可
         return Objects.equals(user.getTenantId(), battery.getTenantId());
+    }
+    
+    /**
+     * 领用人权限校验
+     *
+     * @return true-有操作权限；false-无权限
+     */
+    private boolean permissionVerificationForReceiver(ElectricityBattery battery, Long receiverId, Integer label) {
+        if (Objects.equals(label, BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode())) {
+            User user = userService.queryByUidFromCache(receiverId);
+            if (Objects.isNull(user)) {
+                log.warn("PERMISSION VERIFICATION FOR RECEIVER WARN! user is null, receiverId={}", receiverId);
+                return false;
+            }
+            
+            return permissionVerificationForUser(battery, user, label);
+        }
+        
+        if (Objects.equals(label, BatteryLabelEnum.RECEIVED_MERCHANT.getCode())) {
+            Merchant merchant = merchantService.queryByIdFromCache(receiverId);
+            if (Objects.isNull(merchant)) {
+                log.warn("PERMISSION VERIFICATION FOR RECEIVER WARN! merchant is null, receiverId={}", receiverId);
+                return false;
+            }
+            
+            return Objects.equals(merchant.getFranchiseeId(), battery.getFranchiseeId());
+        }
+        
+        return true;
     }
     
     @Override
