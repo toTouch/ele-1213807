@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.json.JsonUtil;
@@ -48,7 +47,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.BatteryDisableMemberCardRecordVO;
 import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -460,10 +458,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    @Slave
     public R queryMemberDisableList(UserDisableMemberQuery query) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo)) {
-            log.warn("ENABLE MEMBER CARD warn! not found user,uid={} ", query.getUid());
+            log.warn("QueryMemberDisableList Warn! not found user,uid is {} ", query.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         query.setTenantId(userInfo.getTenantId());
