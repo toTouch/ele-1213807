@@ -2362,6 +2362,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityCabinetOrderMapper.selectLatestByUid(uid, tenantId);
     }
     
+    @Slave
     @Override
     public ElectricityCabinetOrder selectLatestBySn(String sn) {
         return electricityCabinetOrderMapper.selectLatestBySn(sn);

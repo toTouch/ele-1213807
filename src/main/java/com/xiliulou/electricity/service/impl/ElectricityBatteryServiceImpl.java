@@ -1891,6 +1891,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.selectListBySnList(tenantId, item, bindFranchiseeIdList);
     }
     
+    @Slave
     @Override
     public List<ElectricityBattery> listByUid(Long uid, Integer tenantId) {
         return electricitybatterymapper.selectListByUid(uid, tenantId);
