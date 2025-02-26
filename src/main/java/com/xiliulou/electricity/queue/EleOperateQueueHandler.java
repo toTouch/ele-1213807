@@ -1100,7 +1100,12 @@ public class EleOperateQueueHandler {
     }
     
     private void handleBatteryLabel(EleOpenDTO finalOpenDTO, RentBatteryOrder rentBatteryOrder) {
-        ElectricityBattery battery = ElectricityBattery.builder().tenantId(rentBatteryOrder.getTenantId()).sn(finalOpenDTO.getBatterySn()).build();
+        String sn = Objects.nonNull(finalOpenDTO.getBatterySn()) ? finalOpenDTO.getBatterySn() : rentBatteryOrder.getElectricityBatterySn();
+        if (Objects.isNull(sn)) {
+            log.error("HANDLE BATTERY LABEL ERROR! can not find battery sn, rentOrderRsp={}", finalOpenDTO);
+            return;
+        }
+        ElectricityBattery battery = ElectricityBattery.builder().tenantId(rentBatteryOrder.getTenantId()).sn(sn).build();
         
         // 处理租电成功的
         if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {

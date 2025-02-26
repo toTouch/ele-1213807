@@ -2110,7 +2110,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 MDC.put(CommonConstant.TRACE_ID, traceId);
                 
                 if (Objects.isNull(electricityBattery) || Objects.isNull(dto) || Objects.isNull(dto.getNewLabel())) {
-                    log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or labelEnum is null, battery={}, dto={}", electricityBattery, dto);
+                    log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or dto is null, battery={}, dto={}", electricityBattery, dto);
                     return;
                 }
                 
