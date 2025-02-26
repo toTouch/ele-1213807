@@ -46,7 +46,7 @@ public class JsonAdminElectricityConfigController {
     public R queryOne() {
         Integer tenantId = TenantContextHolder.getTenantId();
     
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        ElectricityConfig electricityConfig = electricityConfigService.queryByTenantId(tenantId);
         ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantIdFromCache(tenantId);
     
         ElectricityConfigVO electricityConfigVO = new ElectricityConfigVO();
