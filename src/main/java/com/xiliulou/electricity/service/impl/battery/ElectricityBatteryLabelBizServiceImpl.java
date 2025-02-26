@@ -340,12 +340,12 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.selectLatestBySn(tenantId, battery.getSn());
                         Long lastExchangeTime = null;
                         if (Objects.nonNull(latestOrderBySn)) {
-                            lastExchangeTime = latestOrderBySn.getSwitchEndTime();
+                            lastExchangeTime = latestOrderBySn.getUpdateTime();
                         }
                         
                         // 换电订单中没获取到，直接从租电订单中取，换电订单中获取到了比较获取最大的
-                        if (Objects.nonNull(rentBatteryOrder) && Objects.nonNull(rentBatteryOrder.getCreateTime())) {
-                            lastExchangeTime = Objects.isNull(lastExchangeTime) ? rentBatteryOrder.getCreateTime() : Math.max(lastExchangeTime, rentBatteryOrder.getCreateTime());
+                        if (Objects.nonNull(rentBatteryOrder) && Objects.nonNull(rentBatteryOrder.getUpdateTime())) {
+                            lastExchangeTime = Objects.isNull(lastExchangeTime) ? rentBatteryOrder.getUpdateTime() : Math.max(lastExchangeTime, rentBatteryOrder.getUpdateTime());
                         }
                         
                         if (Objects.isNull(lastExchangeTime)) {

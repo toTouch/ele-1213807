@@ -295,9 +295,9 @@
     </select>
     
     <select id="selectLatestBySn" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
-        select id,uid,switch_end_time
+        select id,uid,update_time
         from t_electricity_cabinet_order
-        where old_electricity_battery_sn = #{sn} or new_electricity_battery_sn = #{sn}
+        where (old_electricity_battery_sn = #{sn} or new_electricity_battery_sn = #{sn})
           and status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
         order by id desc limit 1
     </select>
