@@ -11,6 +11,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
@@ -19,7 +20,6 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
@@ -40,10 +40,10 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
 import com.xiliulou.electricity.event.SiteMessageEvent;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
-import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
@@ -63,7 +63,6 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
@@ -84,14 +83,11 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
-import com.xiliulou.electricity.service.installment.InstallmentBizService;
-import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -114,7 +110,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -252,9 +247,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     EnterpriseChannelUserService enterpriseChannelUserService;
     
     @Resource
-    UserInfoGroupDetailService userInfoGroupDetailService;
-    
-    @Resource
     private PayConfigBizService payConfigBizService;
     
     @Resource
@@ -268,6 +260,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Autowired
     private InstallmentDeductionRecordService installmentDeductionRecordService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -577,7 +572,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
-        
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = null;
+        if (!CollectionUtils.isEmpty(eleDepositOrderVOS)) {
+            List<Long> uidList = eleDepositOrderVOS.stream().map(EleDepositOrderVO::getUid).collect(Collectors.toList());
+            userStatusMap = userDelRecordService.listUserStatus(uidList, List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        }
+    
+        Map<Long, UserDelStatusDTO> finalUserStatusMap = userStatusMap;
         eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
             // orderId
@@ -595,6 +598,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
+    
+            // 查询已删除/已注销
+            eleDepositOrderVO.setUserStatus(userDelRecordService.getUserStatus(eleDepositOrderVO.getUid(), finalUserStatusMap));
         });
         
         return R.ok(eleDepositOrderVOS);

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.lostuser.LostUserRecordMapper">
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_lost_user_record(uid, order_id, package_type, prospect_time, actual_time, tenant_id, create_time, update_time)
+        values (#{uid}, #{orderId}, #{packageType}, #{prospectTime}, #{actualTime}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+</mapper>

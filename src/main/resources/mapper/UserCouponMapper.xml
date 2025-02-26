@@ -273,7 +273,11 @@
             #{id}
         </foreach>
     </update>
-    
+
+    <update id="increaseDeadlineByCouponId">
+        update t_user_coupon set deadline = deadline + #{increaseTime} where coupon_id = #{couponId} and tenant_id = #{tenantId} and status in (1, 5)
+    </update>
+
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(uid, phone, coupon_id, deadline, create_time, update_time, status, source, del_flag,
         discount_type, tenant_id, name, verified_uid, franchisee_id,coupon_type, coupon_way)

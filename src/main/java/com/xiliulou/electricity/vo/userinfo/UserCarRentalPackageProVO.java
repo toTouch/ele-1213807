@@ -124,6 +124,16 @@ public class UserCarRentalPackageProVO {
      */
     private UserMemberInfoVo userMemberInfoVo;
     
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
+    
+    /**
+     * 删除/注销时间
+     */
+    private Long delTime;
+    
     public static Integer FREE_OF_CHARGE = 2;
     
     public static Integer PAID_IN = 1;

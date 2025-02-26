@@ -14,6 +14,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +66,9 @@ public class JsonAdminCouponController extends BaseController {
     
     @Autowired
     private CarRentalPackageService carRentalPackageService;
+
+    @Resource
+    private UserCouponService userCouponService;
     
     /**
      * 搜索
@@ -133,7 +138,13 @@ public class JsonAdminCouponController extends BaseController {
         }
         
         couponQuery.setFranchiseeIds(franchiseeIds);
-        
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+
         return couponService.update(couponQuery);
     }
     

@@ -107,5 +107,4 @@ public class JsonUserMerchantController extends BaseController {
 
         return R.ok(merchantVO);
     }
-    
 }

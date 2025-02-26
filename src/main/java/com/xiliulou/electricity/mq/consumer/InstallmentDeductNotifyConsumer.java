@@ -10,6 +10,8 @@ import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.FyConfigService;
@@ -69,6 +71,9 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
     
     @Resource
     private FengYunConfig fengYunConfig;
+
+    @Resource
+    private LostUserActivityDealPublish lostUserActivityDealPublish;
     
     
     @Override
@@ -140,6 +145,7 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
             
             // 代扣成功后其他记录的处理
             if (Objects.nonNull(handlePackageTriple) && handlePackageTriple.getLeft()) {
+
                 InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
                 installmentRecordUpdate.setId(installmentRecord.getId());
                 // 若全部代扣完，改为已完成，并且解约
@@ -149,7 +155,13 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
                 installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
                 installmentRecordUpdate.setPaidInstallment(paidInstallment + 1);
                 installmentRecordService.update(installmentRecordUpdate);
-                
+
+                if (!Objects.equals(deductionPlanList.get(0).getIssue(), 1)) {
+                    String orderId = Objects.nonNull(handlePackageTriple.getRight()) ? (String) handlePackageTriple.getRight() : "";
+                    // 流失用户活动处理
+                    lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), installmentRecord.getTenantId(), orderId);
+                }
+
                 if (Objects.equals(installmentRecord.getInstallmentNo(), issue)) {
                     FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
                     if (Objects.isNull(config)) {
@@ -169,11 +181,11 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
     }
     
     private void retry(InstallmentMqCommonDTO commonDTO) {
-        if (Objects.nonNull(commonDTO) && commonDTO.getRetryCount() >= fengYunConfig.getRetryCount()) {
+        Integer retryCount = commonDTO.getRetryCount();
+        if (Objects.nonNull(retryCount) && retryCount >= fengYunConfig.getRetryCount()) {
             return;
         }
         
-        Integer retryCount = commonDTO.getRetryCount();
         commonDTO.setRetryCount(Objects.isNull(retryCount) ? 1 : retryCount + 1);
         
         // 延迟5s重试

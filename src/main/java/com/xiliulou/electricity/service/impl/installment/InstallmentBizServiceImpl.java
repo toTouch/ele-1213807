@@ -22,9 +22,11 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.message.RechargeAlarm;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
 import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.EleRefundQuery;
@@ -165,6 +167,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     private XllThreadPoolExecutorService initiatingDeductThreadPool;
     
     private InheritableThreadLocal<String> inheritableThreadLocal;
+
+    private final LostUserActivityDealPublish lostUserActivityDealPublish;
     
     @PostConstruct
     public void init() {
@@ -836,7 +840,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public void handleDeductZero(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, InstallmentDeductionRecord deductionRecord) {
-        handleBatteryMemberCard(installmentRecord, deductionPlans, installmentRecord.getUid());
+        Triple<Boolean, String, Object> tripleResult = handleBatteryMemberCard(installmentRecord, deductionPlans, installmentRecord.getUid());
         
         for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
@@ -853,6 +857,15 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
             installmentRecordService.update(installmentRecordUpdate);
         }
+    
+        if (Objects.isNull(tripleResult) || !tripleResult.getLeft()) {
+            log.info("installment handle deduct info result is null! uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+            return;
+        }
+    
+        // 流失用户活动处理
+        String orderId = Objects.nonNull(tripleResult.getRight()) ? (String) tripleResult.getRight() : "";
+        lostUserActivityDealPublish.publish(installmentRecord.getUid(), YesNoEnum.YES.getCode(), installmentRecord.getTenantId(), orderId);
     }
     
     @Override
@@ -941,11 +954,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 log.warn("NOTIFY AGREEMENT PAY WARN!batteryMemberCard is null,uid={},mid={}", uid, installmentRecord.getPackageId());
                 return Triple.of(false, "套餐不存在", null);
             }
-            electricityMemberCardOrderService.saveRenewalUserBatteryMemberCardOrder(null, userInfo, batteryMemberCard, userBatteryMemberCard, batteryMemberCard, installmentRecord,
+            memberCardOrder = electricityMemberCardOrderService.saveRenewalUserBatteryMemberCardOrder(null, userInfo, batteryMemberCard, userBatteryMemberCard, batteryMemberCard, installmentRecord,
                     memberCardOrder.getSource(), deductionPlans);
         }
         
-        return Triple.of(true, null, null);
+        return Triple.of(true, null, Objects.nonNull(memberCardOrder) ? memberCardOrder.getOrderId() : "");
     }
     
     @Override

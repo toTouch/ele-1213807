@@ -112,4 +112,9 @@ public class RentBatteryOrderVO {
      * @see com.xiliulou.core.base.enums.ChannelEnum
      */
     private String channel;
+    
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
 }

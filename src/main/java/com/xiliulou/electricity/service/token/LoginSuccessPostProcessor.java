@@ -4,6 +4,7 @@ package com.xiliulou.electricity.service.token;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.LoginInfo;
 import com.xiliulou.electricity.service.LoginInfoService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.AuthenticationSuccessPostProcessor;
 import com.xiliulou.security.bean.SecurityUser;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,7 +26,9 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
     private final String UNKNOWN = "unknown";
     @Autowired
     LoginInfoService loginInfoService;
-
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, SecurityUser user, Integer type) {
@@ -40,6 +44,9 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
         loginInfo.setLoginTime(System.currentTimeMillis());
         loginInfo.setTenantId(tenantId);
         loginInfoService.insert(loginInfo);
+    
+        // 如果为"注销中",重新登录后,恢复为正常用户
+        userDelRecordService.asyncRecoverCommonUser(user.getUid(), type);
     }
 
     /**
