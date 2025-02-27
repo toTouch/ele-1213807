@@ -25,6 +25,9 @@
         <if test="endTimeStr != null and endTimeStr != ''">
             and exchange_time &lt;= #{endTimeStr}
         </if>
+        <if test="operatorUid != null">
+            and operator_uid = #{operatorUid}
+        </if>
     </sql>
     
     <select id="listPage" resultType="com.xiliulou.electricity.entity.battery.BatteryLabelRecord">

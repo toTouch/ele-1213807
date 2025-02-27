@@ -66,7 +66,7 @@ public class JsonAdminElectricityBatteryLabelRecordController {
         }
         
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.emptyList());
+            request.setOperatorUid(user.getUid());
         }
         
         request.setTenantId(TenantContextHolder.getTenantId());
@@ -95,10 +95,11 @@ public class JsonAdminElectricityBatteryLabelRecordController {
         }
         
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok();
+            request.setOperatorUid(user.getUid());
         }
         
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setFranchiseeIds(franchiseeIds);
         return R.ok(batteryLabelRecordService.countAll(request));
     }
 }

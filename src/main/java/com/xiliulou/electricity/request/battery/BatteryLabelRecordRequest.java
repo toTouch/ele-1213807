@@ -55,4 +55,9 @@ public class BatteryLabelRecordRequest {
      * 查询范围-结束时间
      */
     private String endTimeStr;
+    
+    /**
+     * 操作人uid
+     */
+    private Long operatorUid;
 }
