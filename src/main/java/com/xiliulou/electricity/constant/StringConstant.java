@@ -30,4 +30,6 @@ public interface StringConstant {
 
 
     String UNDERLINE = "_";
+
+    String DASH = "-";
 }

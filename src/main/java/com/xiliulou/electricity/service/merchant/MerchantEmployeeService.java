@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQu
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
+import com.xiliulou.security.bean.TokenUser;
 
 import java.util.List;
 
@@ -49,4 +50,6 @@ public interface MerchantEmployeeService {
     List<MerchantEmployeeBO> listMerchantAndEmployeeInfoByUidList(List<Long> merchantEmployeesUidList);
 
     MerchantEmployeeBO queryMerchantAndEmployeeInfoByUid(Long uid);
+
+    Long getCurrentMerchantUid(TokenUser userInfo);
 }

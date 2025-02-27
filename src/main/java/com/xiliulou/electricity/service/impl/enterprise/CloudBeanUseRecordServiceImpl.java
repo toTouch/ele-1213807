@@ -28,6 +28,7 @@ import com.xiliulou.electricity.request.enterprise.EnterpriseCloudBeanUseRecordP
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -86,7 +87,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     @Autowired
     StorageConfig storageConfig;
-    
+
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
@@ -131,25 +132,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     private EnterpriseCloudBeanOrderService enterpriseCloudBeanOrderService;
     
     @Autowired
-    private InsuranceUserInfoService insuranceUserInfoService;
-    
-    @Autowired
-    private InsuranceOrderService insuranceOrderService;
-    
-    @Autowired
-    private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
-    
-    @Autowired
-    private UserBatteryTypeService userBatteryTypeService;
-    
-    @Autowired
     private ServiceFeeUserInfoService serviceFeeUserInfoService;
-    
-    @Autowired
-    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-    
-    @Autowired
-    private EnterpriseRentRecordService enterpriseRentRecordService;
     
     @Resource
     private EnterpriseChannelUserExitMapper userExitMapper;
@@ -158,13 +141,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     private EnterpriseRentRecordDetailService enterpriseRentRecordDetailService;
     
     @Resource
-    private EnableMemberCardRecordService enableMemberCardRecordService;
-    
-    @Resource
     private FranchiseeService franchiseeService;
     
     @Resource
     private MerchantService merchantService;
+
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
     
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
@@ -1086,7 +1069,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     @Slave
     @Override
     public List<CloudBeanUseRecordVO> selectByUserPage(CloudBeanUseRecordQuery query) {
-        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
         if(Objects.isNull(enterpriseInfo)){
             return Collections.emptyList();
         }else {

@@ -189,7 +189,30 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
         
         return merchantPromotionFeeService.statisticUserV2(type, uid, beginTime, endTime, user.getType());
     }
-    
+
+    /**
+     * 用户分析
+     *
+     * @param type      用户类型
+     * @param uid       用户uid
+     * @param beginTime 开始时间
+     * @param endTime   结束时间
+     * @return 用户分析
+     */
+    @GetMapping("/merchant/employee/promotionFee/statistic/user")
+    public R employeePromotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
+                                                       @RequestParam(value = "beginTime") Long beginTime, @RequestParam(value = "endTime") Long endTime) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return merchantPromotionFeeService.statisticUserForEmployee(type, uid, beginTime, endTime, user.getType());
+    }
+
     /**
      * 渠道员商户分析
      *

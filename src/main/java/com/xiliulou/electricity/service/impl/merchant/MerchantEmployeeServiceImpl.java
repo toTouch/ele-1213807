@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
@@ -28,6 +29,7 @@ import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -442,4 +444,28 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeMapper.selectMerchantAndEmployeeInfoByUid(uid);
     }
 
+    /**
+     * 根据员工uid查询当前商户uid
+     * @param userInfo
+     * @return
+     */
+    @Override
+    @Slave
+    public Long getCurrentMerchantUid(TokenUser userInfo) {
+        if (Objects.isNull(userInfo)) {
+            throw new CustomBusinessException("未查询到用户");
+        }
+
+        if (!Objects.equals(userInfo.getType(), User.TYPE_USER_MERCHANT_EMPLOYEE)) {
+            return userInfo.getUid();
+        }
+
+        // 查询员工对应的商户uid
+        MerchantEmployeeBO merchantEmployeeBO = merchantEmployeeMapper.selectMerchantAndEmployeeInfoByUid(userInfo.getUid());
+        if (Objects.isNull(merchantEmployeeBO)) {
+            throw new CustomBusinessException("未查询到用户");
+        }
+
+        return merchantEmployeeBO.getMerchantUid();
+    }
 }
