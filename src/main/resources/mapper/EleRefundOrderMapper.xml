@@ -397,6 +397,6 @@
                  left join t_ele_deposit_order edo on ero.order_id = edo.order_id
         where edo.uid = #{uid}
           and ero.status = 4
-        order by id desc limit 1
+        order by ero.id desc limit 1
     </select>
 </mapper>
