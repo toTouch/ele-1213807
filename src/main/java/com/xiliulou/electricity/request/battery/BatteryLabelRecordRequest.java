@@ -30,6 +30,7 @@ public class BatteryLabelRecordRequest {
     
     private Integer tenantId;
     
+    @NotNull(message = "sn不能为空")
     private String sn;
     
     private Long franchiseeId;

@@ -52,25 +52,7 @@ public class JsonAdminElectricityBatteryLabelRecordController {
             request.setOffset(0L);
         }
         
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.emptyList());
-            }
-        }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            request.setOperatorUid(user.getUid());
-        }
-        
         request.setTenantId(TenantContextHolder.getTenantId());
-        request.setFranchiseeIds(franchiseeIds);
         return R.ok(batteryLabelRecordService.listPage(request));
     }
     
@@ -86,20 +68,7 @@ public class JsonAdminElectricityBatteryLabelRecordController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
-            }
-        }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            request.setOperatorUid(user.getUid());
-        }
-        
         request.setTenantId(TenantContextHolder.getTenantId());
-        request.setFranchiseeIds(franchiseeIds);
         return R.ok(batteryLabelRecordService.countAll(request));
     }
 }
