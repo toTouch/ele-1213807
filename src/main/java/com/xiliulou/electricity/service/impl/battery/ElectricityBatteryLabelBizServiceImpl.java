@@ -113,6 +113,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             ElectricityBatteryLabel newBatteryLabel = new ElectricityBatteryLabel();
             BeanUtils.copyProperties(batteryLabel, newBatteryLabel);
             newBatteryLabel.setSn(sn);
+            newBatteryLabel.setTenantId(tenantId);
             newBatteryLabel.setFranchiseeId(battery.getFranchiseeId());
             newBatteryLabel.setCreateTime(now);
             newBatteryLabel.setUpdateTime(now);

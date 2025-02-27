@@ -2268,6 +2268,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 batteryLabelRecordService.sendRecord(battery, labelModifyDto.getOperatorUid(), newLabel, updateTime, labelModifyDto.getOldReceiverId(),
                         labelModifyDto.getNewReceiverId());
+                
+                // 执行完毕删除缓存
+                redisService.delete(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), battery.getSn()));
             });
         } catch (Exception e) {
             log.error("MODIFY LABEL WHEN BATTERY EXIT CABIN ERROR! sn={}", battery.getSn(), e);
