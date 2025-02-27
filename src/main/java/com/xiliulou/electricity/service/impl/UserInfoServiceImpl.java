@@ -21,15 +21,7 @@ import com.xiliulou.electricity.bo.UserBatteryDepositBO;
 import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.OrderForBatteryConstants;
-import com.xiliulou.electricity.constant.StringConstant;
-import com.xiliulou.electricity.constant.UserInfoExtraConstant;
-import com.xiliulou.electricity.constant.UserOperateRecordConstant;
+import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
@@ -96,14 +88,12 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserMoveHistoryService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
-import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
@@ -184,14 +174,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -405,12 +388,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Resource
     private EmergencyContactService emergencyContactService;
     
-    @Resource
-    private UserCouponService userCouponService;
-    
-    @Resource
-    private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
-
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
 
@@ -724,18 +701,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (MapUtils.isEmpty(userStatusMap)) {
-                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
-            } else {
-                if (userStatusMap.containsKey(userCarRentalPackageDO.getUid())) {
-                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(userCarRentalPackageDO.getUid());
-                    if (Objects.nonNull(userDelStatusDTO)) {
-                        userCarRentalPackageVO.setDelTime(userDelStatusDTO.getDelTime());
-                        userStatus = userDelStatusDTO.getUserStatus();
-                    }
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(userCarRentalPackageDO.getUid())) {
+                UserDelStatusDTO userDelStatusDTO = userStatusMap.get(userCarRentalPackageDO.getUid());
+                if (Objects.nonNull(userDelStatusDTO)) {
+                    userCarRentalPackageVO.setDelTime(userDelStatusDTO.getDelTime());
+                    userStatus = userDelStatusDTO.getUserStatus();
                 }
             }
-
             userCarRentalPackageVO.setUserStatus(userStatus);
 
             userCarRentalPackageVOList.add(userCarRentalPackageVO);
@@ -977,18 +949,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCarModel(car.getModel());
                 }
             }
-
+    
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (MapUtils.isEmpty(userStatusMap)) {
-                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
-            } else {
-                if (userStatusMap.containsKey(uid)) {
-                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
-                    if (Objects.nonNull(userDelStatusDTO)) {
-                        item.setDelTime(userDelStatusDTO.getDelTime());
-                        userStatus = userDelStatusDTO.getUserStatus();
-                    }
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid)) {
+                UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
+                if (Objects.nonNull(userDelStatusDTO)) {
+                    item.setDelTime(userDelStatusDTO.getDelTime());
+                    userStatus = userDelStatusDTO.getUserStatus();
                 }
             }
             item.setUserStatus(userStatus);
@@ -1172,15 +1140,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (MapUtils.isEmpty(userStatusMap)) {
-                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
-            } else {
-                if (userStatusMap.containsKey(uid)) {
-                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
-                    if (Objects.nonNull(userDelStatusDTO)) {
-                        vo.setDelTime(userDelStatusDTO.getDelTime());
-                        userStatus = userDelStatusDTO.getUserStatus();
-                    }
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid)) {
+                UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
+                if (Objects.nonNull(userDelStatusDTO)) {
+                    vo.setDelTime(userDelStatusDTO.getDelTime());
+                    userStatus = userDelStatusDTO.getUserStatus();
                 }
             }
             vo.setUserStatus(userStatus);
@@ -3556,15 +3520,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 // 查询已删除/已注销
                 Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-                if (org.apache.commons.collections4.MapUtils.isEmpty(userStatusMap)) {
-                    userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
-                } else {
-                    if (userStatusMap.containsKey(item.getUid())) {
-                        UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
-                        if (Objects.nonNull(userDelStatusDTO)) {
-                            item.setDelTime(userDelStatusDTO.getDelTime());
-                            userStatus = userDelStatusDTO.getUserStatus();
-                        }
+                if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid())) {
+                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
+                    if (Objects.nonNull(userDelStatusDTO)) {
+                        item.setDelTime(userDelStatusDTO.getDelTime());
+                        userStatus = userDelStatusDTO.getUserStatus();
                     }
                 }
                 item.setUserStatus(userStatus);
@@ -3714,22 +3674,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             eleInfoProVO.setBasicInfo(basicInfo);
 
-            // 查询已删除/已注销
-            Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (Objects.equals(item.getDelFlag(), CommonConstant.DEL_Y)) {
-                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
-
-                UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(item.getUid(),
-                        List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
-                if (Objects.nonNull(userDelRecord)) {
-                    item.setDelTime(userDelRecord.getDelTime());
-                    if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
-                        userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
-                    }
-                }
-            }
-            item.setUserStatus(userStatus);
-
             uidList.add(uid);
             UserOauthBindListQuery query = UserOauthBindListQuery.builder().phone(item.getPhone()).uid(uid).build();
             userOauthBindListQueryList.add(query);
@@ -3789,15 +3733,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 // 查询已删除/已注销
                 Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-                if (MapUtils.isEmpty(userStatusMap)) {
-                    userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
-                } else {
-                    if (userStatusMap.containsKey(item.getUid())) {
-                        UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
-                        if (Objects.nonNull(userDelStatusDTO)) {
-                            item.setDelTime(userDelStatusDTO.getDelTime());
-                            userStatus = userDelStatusDTO.getUserStatus();
-                        }
+                if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid())) {
+                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
+                    if (Objects.nonNull(userDelStatusDTO)) {
+                        item.setDelTime(userDelStatusDTO.getDelTime());
+                        userStatus = userDelStatusDTO.getUserStatus();
                     }
                 }
                 item.setUserStatus(userStatus);
@@ -4009,16 +3949,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (Objects.equals(item.getDelFlag(), CommonConstant.DEL_Y)) {
-                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
-        
-                UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(item.getUid(),
-                        List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
-                if (Objects.nonNull(userDelRecord)) {
-                    vo.setDelTime(userDelRecord.getDelTime());
-                    if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
-                        userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
-                    }
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid())) {
+                UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
+                if (Objects.nonNull(userDelStatusDTO)) {
+                    vo.setDelTime(userDelStatusDTO.getDelTime());
+                    userStatus = userDelStatusDTO.getUserStatus();
                 }
             }
             vo.setUserStatus(userStatus);
@@ -4564,7 +4499,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             List<Long> userGroupIds = userInfoGroupNamesBos.stream().map(UserInfoGroupNamesBO::getGroupId)
                     .collect(Collectors.toList());
             userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (org.apache.commons.collections4.CollectionUtils.isEmpty(userGroupIds)) {
+            if (CollectionUtils.isEmpty(userGroupIds)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
         } else {
