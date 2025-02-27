@@ -1789,6 +1789,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
                     rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
                     rentBatteryOrder.setOrderType(orderType);
+                    rentBatteryOrder.setIsFreeze(RentBatteryOrder.IS_FREEZE_NO);
                     rentBatteryOrderService.insert(rentBatteryOrder);
                 }
             }
@@ -2040,6 +2041,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
         rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
         rentBatteryOrder.setOrderType(orderType);
+        rentBatteryOrder.setIsFreeze(RentBatteryOrder.IS_FREEZE_NO);
         rentBatteryOrderService.insert(rentBatteryOrder);
         
         // 生成后台操作记录
