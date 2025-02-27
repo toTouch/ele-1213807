@@ -307,14 +307,13 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     }
                     // 值是 List 类型，继续转换
                     List<?> list = (List<?>) value;
-                    if (CollectionUtils.isEmpty(list) || !(list.get(0) instanceof Integer)) {
-                        // 列表中的元素是 Integer 类型，安全转换
+                    if (CollectionUtils.isEmpty(list)) {
                         log.warn("UPDATE OPEN CELL WARN! can not get cellNo, eleOuterCommandQuery={}, list={}", eleOuterCommandQuery, list);
                         return;
                     }
                     
                     for (Object o : list) {
-                        cellNo = (Integer) o;
+                        cellNo = Integer.valueOf(o.toString());
                         ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo.toString());
                         if (Objects.isNull(box) || Objects.isNull(box.getSn())) {
                             continue;
