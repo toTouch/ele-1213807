@@ -110,19 +110,23 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         Long now = System.currentTimeMillis();
         
         if (Objects.isNull(batteryLabelFromDb)) {
-            ElectricityBatteryLabel newBatteryLabel = ElectricityBatteryLabel.builder().sn(sn).tenantId(tenantId).franchiseeId(battery.getFranchiseeId()).createTime(now)
-                    .updateTime(now).build();
+            ElectricityBatteryLabel newBatteryLabel = new ElectricityBatteryLabel();
             BeanUtils.copyProperties(batteryLabel, newBatteryLabel);
+            newBatteryLabel.setSn(sn);
+            newBatteryLabel.setFranchiseeId(battery.getFranchiseeId());
+            newBatteryLabel.setCreateTime(now);
+            newBatteryLabel.setUpdateTime(now);
             
             electricityBatteryLabelService.insert(newBatteryLabel);
         } else {
-            // 出于健壮性考虑，拷贝属性之前清楚一下不能通过此处逻辑自动修改的属性
+            ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
+            BeanUtils.copyProperties(batteryLabel, batteryLabelUpdate);
+            
+            // 出于健壮性考虑，清除一下不能通过此处逻辑自动修改的属性
             batteryLabel.setSn(null);
             batteryLabel.setTenantId(null);
             batteryLabel.setCreateTime(null);
             
-            ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
-            BeanUtils.copyProperties(batteryLabel, batteryLabelUpdate);
             batteryLabelUpdate.setId(batteryLabelFromDb.getId());
             batteryLabelUpdate.setUpdateTime(now);
             electricityBatteryLabelService.updateById(batteryLabelUpdate);
