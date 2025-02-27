@@ -341,6 +341,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         if (optional.isPresent()) {
             InstallmentDeductionPlan updatePlan = new InstallmentDeductionPlan();
             updatePlan.setId(optional.get().getId());
+            updatePlan.setPaymentTime(System.currentTimeMillis());
             updatePlan.setUpdateTime(System.currentTimeMillis());
             updatePlan.setStatus(InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
             installmentDeductionPlanService.update(updatePlan);
