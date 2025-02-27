@@ -479,7 +479,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     public List<CarRentalPackageOrderPo> queryListByOrderNo(Integer tenantId, List<String> orderNos) {
         return carRentalPackageOrderMapper.selectListByOrderNos(tenantId,orderNos);
     }
-    
+
     @Slave
     @Override
     public List<CarRentalPackageOrderPo> listUnUseAndRefundByUidList(Integer tenantId, List<Long> uidList, Long rentRebateEndTime) {
@@ -541,5 +541,20 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         
         return carRentalPackageOrderRefundFlag;
     }
-    
+
+    /**
+     * 检测用户是否存在使用中，未使用的支付成功的订单
+     * @param uid
+     * @return
+     */
+    @Override
+    @Slave
+    public boolean existNotFinishOrderByUid(Long uid) {
+        Integer count = carRentalPackageOrderMapper.existNotFinishOrderByUid(uid);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+
+        return false;
+    }
 }

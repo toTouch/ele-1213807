@@ -19,13 +19,17 @@
         <result property="minTimeOfMonth" column="min_time_of_month" jdbcType="BIGINT"/>
         <result property="packageFreezeCount" column="package_freeze_count" jdbcType="TINYINT"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="lostUserStatus" column="lost_user_status" jdbcType="INTEGER"/>
+        <result property="lostUserTime" column="lost_user_time" jdbcType="BIGINT"/>
+        <result property="lostUserFirstRebateTime" column="lost_user_first_rebate_time" jdbcType="BIGINT"/>
+        <result property="lostUserRecentlyFirstOrderId" column="lost_user_recently_first_order_id" jdbcType="INTEGER"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserInfoExtraMap">
         select
           uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid,
-          latest_activity_source, ele_limit, min_time_of_month, package_freeze_count,remark
+          latest_activity_source, ele_limit, min_time_of_month, package_freeze_count,remark,lost_user_status, lost_user_time, lost_user_first_rebate_time, lost_user_recently_first_order_id
         from t_user_info_extra
         where uid = #{uid}
     </select>
@@ -88,10 +92,35 @@
             <if test="remark != null">
                 remark = #{remark}
             </if>
-        </set>
+            <if test="lostUserStatus != null">
+                lost_user_status = #{lostUserStatus},
+            </if>
+            <if test="lostUserTime != null">
+                lost_user_time = #{lostUserTime},
+            </if>
+            <if test="lostUserFirstRebateTime">
+                lost_user_first_rebate_time = #{lostUserFirstRebateTime},
+            </if>
+            <if test="lostUserRecentlyFirstOrderId">
+                lost_user_recently_first_order_id = #{lostUserRecentlyFirstOrderId},
+            </if>
+            </set>
         where uid = #{uid}
     </update>
-    
+
+    <update id="updateUserNotActivityByUid">
+        update t_user_info_extra
+        set merchant_id = null,
+            channel_employee_uid = null,
+            place_uid = null,
+            place_id = null,
+            activity_source = 0,
+            inviter_uid = 0,
+            latest_activity_source = 0,
+            update_time =#{updateTime}
+        where uid = #{uid}
+    </update>
+
     <!--通过主键删除-->
     <delete id="deleteByUid">
         delete from t_user_info_extra where uid = #{uid}

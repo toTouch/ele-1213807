@@ -22,8 +22,8 @@ import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
@@ -78,6 +78,8 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
     @Resource
     private UserCouponService userCouponService;
     
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("login-activity-pool" ,1,"login-activity-"));
     
@@ -268,20 +270,25 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
         if (Objects.nonNull(newUserActivity)) {
-            log.info("send the coupon to new user after logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
-            //优惠券
-            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
-                //异步批量发放优惠券
-                CompletableFuture.runAsync(()-> userCouponService.batchSendCouponByNewActive(newUserActivity.getId(), insert.getUid(),newUserActivity.getCoupons()),executorService)
-                        .exceptionally(ex->{
-                            log.error("send coupon to new user error", ex);
-                            return null;
-                        });
-//                //发放优惠券
-//                Long[] uids = new Long[1];
-//                uids[0] = insert.getUid();
-//                log.info("uids is -->{}", uids[0]);
-//                userCouponService.batchRelease(newUserActivity.getCouponId(), uids, newUserActivity.getId().longValue());
+            if (userDelRecordService.existsByDelPhone(insertUser.getPhone(), tenantId)) {
+                log.warn("The user ever deleted by phone, can not send coupon! phone={}", insertUser.getPhone());
+            } else {
+                log.info("send the coupon to new user after logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
+                //优惠券
+                if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
+                    //异步批量发放优惠券
+                    CompletableFuture.runAsync(() -> userCouponService.batchSendCouponByNewActive(newUserActivity.getId(), insert.getUid(), newUserActivity.getCoupons()),
+                                    executorService)
+                            .exceptionally(ex->{
+                                log.error("send coupon to new user error", ex);
+                                return null;
+                            });
+                    //                //发放优惠券
+                    //                Long[] uids = new Long[1];
+                    //                uids[0] = insert.getUid();
+                    //                log.info("uids is -->{}", uids[0]);
+                    //                userCouponService.batchRelease(newUserActivity.getCouponId(), uids, newUserActivity.getId().longValue());
+                }
             }
         }
         

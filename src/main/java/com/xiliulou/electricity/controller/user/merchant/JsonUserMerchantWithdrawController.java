@@ -2,12 +2,16 @@ package com.xiliulou.electricity.controller.user.merchant;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.merchant.MerchantVO;
+import com.xiliulou.electricity.vo.merchant.MerchantWithdrawProcessVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,6 +74,31 @@ public class JsonUserMerchantWithdrawController extends BaseController {
         
         return R.ok(merchantWithdrawApplicationService.queryMerchantWithdrawApplicationList(merchantWithdrawApplicationRequest));
     }
-    
-    
+
+    /**
+     * 获取商户提现流程
+     *
+     * @return
+     */
+    @GetMapping("/merchant/getMerchantWithdrawProcess")
+    public R getMerchantWithdrawProcess() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Triple<Boolean, String, Object> merchantWithdrawProcess = merchantWithdrawApplicationService.getMerchantWithdrawProcess(uid);
+
+        return returnTripleResult(merchantWithdrawProcess);
+    }
+
+    @GetMapping("/merchant/withdraw/getConfirmReceiptInfo")
+    public R getConfirmReceiptInfo(@RequestParam("id") Long id) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("120013", "未找到用户");
+        }
+
+        return returnTripleResult(merchantWithdrawApplicationService.getConfirmReceiptInfo(user.getUid(), id));
+    }
 }

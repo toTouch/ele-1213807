@@ -392,18 +392,22 @@
         select count(1)
         from t_electricity_member_card_order emco
                  left join t_battery_membercard_refund_order bmro on (emco.order_id) = (bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
+                 left join t_user_info_extra uie on emco.uid = uie.uid
         where emco.status = 1
           and emco.pay_type = 0
           and bmro.status = 4
           and emco.uid = #{uid}
+          and emco.id >= uie.lost_user_recently_first_order_id
     </select>
     
     <select id="countSuccessOrderByUid" resultType="Integer">
         select count(1)
-        from t_electricity_member_card_order
-        where status = 1
-          and pay_type = 0
-          and uid = #{uid}
+        from t_electricity_member_card_order emco
+            left join t_user_info_extra uie on emco.uid = uie.uid
+        where emco.status = 1
+          and emco.pay_type = 0
+          and emco.uid = #{uid}
+          and emco.id >= uie.lost_user_recently_first_order_id
     </select>
     
     <update id="batchUpdateChannelOrderStatusByOrderNo">
@@ -573,6 +577,10 @@
         where
         create_time &gt;=#{beginTime}
         and create_time &lt;=#{endTime}
+    </select>
+    
+    <select id="existNotFinishOrderByUid" resultType="java.lang.Integer">
+        select 1 from t_electricity_member_card_order where uid = #{uid} and use_status in (1, 2) and status = 1 limit 1
     </select>
     
     <select id="selectOrderByAgreementNoAndIssue"

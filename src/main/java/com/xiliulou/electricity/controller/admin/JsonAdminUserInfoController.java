@@ -8,12 +8,14 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
@@ -25,6 +27,7 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -94,6 +97,9 @@ public class JsonAdminUserInfoController extends BaseController {
     
     @Resource
     private UserInfoExtraService userInfoExtraService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     // 列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -275,6 +281,9 @@ public class JsonAdminUserInfoController extends BaseController {
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         log.info("handle activity after manual review success: {}", JsonUtil.toJson(activityProcessDTO));
         activityService.asyncProcessActivity(activityProcessDTO);
+    
+        // 老用户实名认证后,恢复用户历史分组及流失用户标记
+        userDelRecordService.asyncRecoverUserInfoGroup(userInfo.getUid());
         
         return result;
     }
@@ -593,7 +602,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
             @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType,
             @RequestParam(value = "depositStatus", required = false) Integer depositStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus) {
+            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus,
+            @RequestParam(value = "accountStatus", required = false) Integer accountStatus) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -630,6 +640,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         verifyCarMemberCardExpireTimeEnd(userInfoQuery);
+        verifyUserStatus(accountStatus, userInfoQuery);
         
         return userInfoService.queryCarRentalList(userInfoQuery);
     }
@@ -647,7 +658,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
             @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType,
             @RequestParam(value = "depositStatus", required = false) Integer depositStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus) {
+            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus,
+            @RequestParam(value = "accountStatus", required = false) Integer accountStatus) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -684,6 +696,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         verifyCarMemberCardExpireTimeEnd(userInfoQuery);
+        verifyUserStatus(accountStatus, userInfoQuery);
         
         return userInfoService.queryCarRentalListForPro(userInfoQuery);
     }
@@ -759,7 +772,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "carRentalExpireTimeEnd", required = false) Long carRentalExpireTimeEnd,
             @RequestParam(value = "carRentalExpireType", required = false) Integer carRentalExpireType,
             @RequestParam(value = "depositStatus", required = false) Integer depositStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus) {
+            @RequestParam(value = "packageFreezeStatus", required = false) Integer packageFreezeStatus,
+            @RequestParam(value = "accountStatus", required = false) Integer accountStatus) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -787,6 +801,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .freezeStatus(packageFreezeStatus).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId()).build();
         
         verifyCarMemberCardExpireTimeEnd(userInfoQuery);
+        verifyUserStatus(accountStatus, userInfoQuery);
         
         return userInfoService.queryCarRentalCount(userInfoQuery);
     }
@@ -801,7 +816,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, @RequestParam(value = "sortType", required = false) Integer sortType,
             @RequestParam(value = "sortBy", required = false) String sortBy, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
-            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "accountStatus", required = false) Integer accountStatus) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -837,6 +853,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).memberCardStatus(memberCardStatus).batteryDepositStatus(batteryDepositStatus).build();
         
         verifyMemberCardExpireTimeEnd(userInfoQuery);
+        verifyUserStatus(accountStatus, userInfoQuery);
         
         return userInfoService.queryEleList(userInfoQuery);
     }
@@ -854,7 +871,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, @RequestParam(value = "sortType", required = false) Integer sortType,
             @RequestParam(value = "sortBy", required = false) String sortBy, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
-            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "accountStatus", required = false) Integer accountStatus) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -890,6 +908,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).memberCardStatus(memberCardStatus).batteryDepositStatus(batteryDepositStatus).build();
         
         verifyMemberCardExpireTimeEnd(userInfoQuery);
+        verifyUserStatus(accountStatus, userInfoQuery);
         
         return userInfoService.queryEleListForPro(userInfoQuery);
     }
@@ -964,7 +983,8 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
-            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "memberCardFreezeStatus", required = false) Integer memberCardStatus, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "accountStatus", required = false) Integer accountStatus) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -994,6 +1014,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .franchiseeId(franchiseeId).batteryDepositStatus(batteryDepositStatus).memberCardStatus(memberCardStatus).build();
         
         verifyMemberCardExpireTimeEnd(userInfoQuery);
+        verifyUserStatus(accountStatus, userInfoQuery);
         
         return userInfoService.queryEleListCount(userInfoQuery);
     }
@@ -1040,6 +1061,28 @@ public class JsonAdminUserInfoController extends BaseController {
         }
 
         return userInfoExtraService.editUserInfoExtra(request);
+    }
+    
+    private void verifyUserStatus(Integer accountStatus, UserInfoQuery userInfoQuery) {
+        // 全部：包含已删除和已注销
+        if (Objects.isNull(accountStatus)) {
+            userInfoQuery.setDelFlag(null);
+            userInfoQuery.setUserStatus(null);
+        } else {
+            if (Objects.equals(accountStatus, UserStatusEnum.USER_STATUS_REQUEST_DELETED.getCode())) {
+                // 只查已删除的，不查已注销的
+                userInfoQuery.setDelFlag(CommonConstant.DEL_Y);
+                userInfoQuery.setUserStatus(UserStatusEnum.USER_STATUS_DELETED.getCode());
+            } else if (Objects.equals(accountStatus, UserStatusEnum.USER_STATUS_REQUEST_CANCELLED.getCode())) {
+                // 只查已注销的，不查已删除的(但已注销的必然是已删除的)
+                userInfoQuery.setDelFlag(CommonConstant.DEL_Y);
+                userInfoQuery.setUserStatus(UserStatusEnum.USER_STATUS_CANCELLED.getCode());
+            } else {
+                // 正常：未被删除且未被注销的
+                userInfoQuery.setDelFlag(CommonConstant.DEL_N);
+                userInfoQuery.setUserStatus(null);
+            }
+        }
     }
     
 }

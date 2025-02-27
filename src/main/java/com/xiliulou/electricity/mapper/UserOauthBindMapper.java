@@ -84,4 +84,6 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     Integer countByThirdIdAndSourceAndTenantId(@Param("thirdId") String thirdId, @Param("source") Integer source, @Param("tenantId") Integer tenantId);
     
     List<UserOauthBind> selectListByUidAndPhoneList(@Param("queryList") List<UserOauthBindListQuery> queryList, @Param("tenantId") Integer tenantId);
+
+    List<UserOauthBind> selectListByUidAndTenantAndSource(@Param("uidList") List<Long> uidList,@Param("tenantId") Integer tenantId,@Param("source") Integer source);
 }

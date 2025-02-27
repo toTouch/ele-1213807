@@ -345,8 +345,8 @@
             </foreach>
         </where>
     </select>
-    
-    
+
+
     <!-- 根据ID查询 -->
     <select id="selectById" resultMap="entityMap">
         SELECT
@@ -445,5 +445,9 @@
                 #{uid}
             </foreach>
         </where>
+    </select>
+
+    <select id="existNotFinishOrderByUid" resultType="java.lang.Integer">
+        select 1 from t_car_rental_package_order where uid = #{uid} and pay_state = 2 and use_state in (1, 2) limit 1
     </select>
 </mapper>

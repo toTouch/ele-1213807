@@ -102,4 +102,14 @@ public class UserEleInfoProVO {
      */
     private EleDepositRefundVO eleDepositRefund;
     
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
+    
+    /**
+     * 删除/注销时间
+     */
+    private Long delTime;
+    
 }

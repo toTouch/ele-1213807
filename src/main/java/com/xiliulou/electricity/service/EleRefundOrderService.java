@@ -111,7 +111,7 @@ public interface EleRefundOrderService {
     
     EleRefundOrder queryLastByOrderId(String orderId);
     
-    Integer existsRefundOrderByUid(Long uid);
+    Integer existsRefundOrderByUid(Long uid, Long lostUserFirstRebateTime);
     
     Integer updateById(EleRefundOrder eleRefundOrderUpdate);
     

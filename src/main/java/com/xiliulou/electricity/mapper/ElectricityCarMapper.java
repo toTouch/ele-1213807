@@ -152,7 +152,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      */
     Integer queryOfflineCarDataCount(@Param("query") CarDataConditionReq carDataConditionReq);
     
-    // TODO(heyafeng) 2024/6/7 16:30 换电套餐到期时间<当期时间为过期 车辆套餐<=当前时间为过期
+    
     List<CarDataVO> queryCarPageByCondition(@Param("query") CarDataQuery carDataQuery, @Param("offset") Long offset, @Param("size") Long size);
     
     Integer queryCarDataCountByCondition(@Param("query") CarDataQuery carDataQuery);

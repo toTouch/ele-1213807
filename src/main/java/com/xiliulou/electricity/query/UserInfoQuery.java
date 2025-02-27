@@ -132,6 +132,10 @@ public class UserInfoQuery {
      */
     private String idNumber;
     
+    private Integer delFlag;
+    
+    private Integer userStatus;
+    
     public static final Integer SORT_TYPE_EXPIRE_TIME = 0;
     
     public static final Integer SORT_TYPE_AUTH_TIME = 1;

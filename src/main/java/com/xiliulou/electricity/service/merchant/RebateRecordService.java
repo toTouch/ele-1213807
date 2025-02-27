@@ -60,4 +60,6 @@ public interface RebateRecordService {
     Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId);
     
     List<MerchantStatisticsUserVO> listRenewal(MerchantPromotionRenewalQueryModel renewalQueryModel);
+
+    boolean existsRebateRecord(String messageId);
 }

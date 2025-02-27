@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.DelFlagEnum;
@@ -22,12 +23,15 @@ import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.car.CarRentalPackageSearchVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +78,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     @Resource
     private FyConfigService fyConfigService;
+    
+    @Autowired
+    private UserDataScopeService userDataScopeService;
+    
+    @Autowired
+    private StoreService storeService;
     
     /**
      * 根据主键ID查询，不区分是否删除
@@ -424,7 +434,30 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     @Slave
     @Override
-    public List<CarRentalPackagePo> listCarRentalPackageForSort() {
-        return carRentalPackageMapper.listCarRentalPackageForSort(TenantContextHolder.getTenantId());
+    public List<CarRentalPackagePo> listCarRentalPackageForSort(TokenUser tokenUser) {
+        List<Integer> franchiseeIds = null;
+        if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> longIds = userDataScopeService.selectDataIdByUid(tokenUser.getUid());
+            if (CollectionUtils.isEmpty(longIds)) {
+                return Collections.emptyList();
+            }
+            franchiseeIds = longIds.stream().map(Long::intValue).collect(Collectors.toList());
+        }
+        
+        if (Objects.equals(tokenUser.getDataType(), User.DATA_TYPE_STORE)) {
+            List<Long> storeIds = userDataScopeService.selectDataIdByUid(tokenUser.getUid());
+            if (!CollectionUtils.isEmpty(storeIds)) {
+                franchiseeIds = storeIds.stream().map(storeId -> storeService.queryByIdFromCache(storeId).getFranchiseeId().intValue()).collect(Collectors.toList());
+            }
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
+            }
+        }
+        
+        CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+        qryModel.setTenantId(TenantContextHolder.getTenantId());
+        qryModel.setFranchiseeIdList(franchiseeIds);
+        
+        return carRentalPackageMapper.listCarRentalPackageForSort(qryModel);
     }
 }

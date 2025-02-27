@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.ElectricityConfigExtraEnum;
 import lombok.Data;
 
 import java.util.List;
@@ -153,4 +154,11 @@ public class TenantConfigVO {
      * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
      */
     private Integer expiredProtectionTime;
+    
+    /**
+     * 用户账号注销开关：0-开启 1-关闭（默认）
+     *
+     * @see ElectricityConfigExtraEnum
+     */
+    private Integer accountDelSwitch;
 }

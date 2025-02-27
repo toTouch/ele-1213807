@@ -284,7 +284,11 @@
     
     <select id="existsRefundOrderByUid" resultType="java.lang.Integer">
         select  1 from t_ele_refund_order  ero  left join t_ele_deposit_order edo on ero.order_id=edo.order_id
-        WHERE edo.uid = #{uid} and ero.status=4 limit 1
+        WHERE edo.uid = #{uid} and ero.status=4
+        <if test="lostUserFirstRebateTime != null">
+            and ero.create_time > #{lostUserFirstRebateTime}
+        </if>
+        limit 1
     </select>
     
     <select id="selectLastByOrderId" resultType="com.xiliulou.electricity.entity.EleRefundOrder">

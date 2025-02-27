@@ -1813,8 +1813,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Slave
     @Override
-    public Integer existsRefundOrderByUid(Long uid) {
-        return eleRefundOrderMapper.existsRefundOrderByUid(uid);
+    public Integer existsRefundOrderByUid(Long uid, Long lostUserFirstRebateTime) {
+        return eleRefundOrderMapper.existsRefundOrderByUid(uid, lostUserFirstRebateTime);
     }
     
     @Override

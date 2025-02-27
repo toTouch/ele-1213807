@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -20,6 +19,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.dto.ExchangeAssertProcessDTO;
 import com.xiliulou.electricity.dto.ExchangeChainDTO;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleCabinetUsedRecord;
@@ -30,9 +30,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
@@ -57,6 +55,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
 import com.xiliulou.electricity.service.pipeline.ProcessController;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.AssertUtil;
@@ -98,7 +97,6 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-import static com.xiliulou.electricity.entity.ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE;
 import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.MIN_RETAIN_BATTERY;
 import static com.xiliulou.electricity.entity.ElectricityCabinetExtra.MIN_RETAIN_EMPTY_CELL;
 
@@ -232,9 +230,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     private TenantFranchiseeMutualExchangeService mutualExchangeService;
 
     @Autowired
-    private MemberCardBatteryTypeService memberCardBatteryTypeService;
-    @Autowired
     private ProcessController processController;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
 
     /**
      * 新增数据
@@ -256,6 +255,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
             return R.ok(new ArrayList<>());
         }
+    
+        // 查询已删除/已注销
+        List<Long> uidList = rentBatteryOrderVOList.stream().map(RentBatteryOrderVO::getUid).collect(Collectors.toList());
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        
         if (ObjectUtil.isNotEmpty(rentBatteryOrderVOList)) {
             rentBatteryOrderVOList.parallelStream().forEach(e -> {
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
@@ -268,6 +273,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 if (Objects.nonNull(franchisee)) {
                     e.setFranchiseeName(franchisee.getName());
                 }
+    
+                // 查询已删除/已注销
+                e.setUserStatus(userDelRecordService.getUserStatus(e.getUid(), userStatusMap));
             });
         }
         

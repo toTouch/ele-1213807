@@ -13,6 +13,7 @@ import com.xiliulou.electricity.request.userinfo.EleUserAuthRequest;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,6 +51,9 @@ public class JsonUserEleUserAuthController {
     @Autowired
     ActivityService activityService;
     
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
     //实名认证
     @PostMapping("/user/auth")
     public R webAuth(@RequestBody @Validated ValidList<EleUserAuthRequest> eleUserAuthList) {
@@ -76,6 +81,9 @@ public class JsonUserEleUserAuthController {
         log.info("handle activity after auto review success: {}", JsonUtil.toJson(activityProcessDTO));
         
         activityService.asyncProcessActivity(activityProcessDTO);
+    
+        // 老用户实名认证后,恢复用户历史分组及流失用户标记
+        userDelRecordService.asyncRecoverUserInfoGroup(uid);
         
         return result;
         

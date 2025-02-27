@@ -115,5 +115,10 @@ public class MerchantWithdrawApplicationVO {
      */
     
     private Long franchiseeId;
-    
+
+    /**
+     * 微信订单状态：-1（审核拒绝，老流程数据，待审核，发起转账接口失败），,0-ACCEPTED，1-PROCESSING，2-WAIT_USER_CONFIRM
+     * ，3-TRANSFERING，4-SUCCESS，5-FAIL，6-CANCELING，7-CANCELLED
+     */
+    private Integer state;
 }
