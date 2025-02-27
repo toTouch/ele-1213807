@@ -68,4 +68,6 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     int updateLockSnByEidAndCellNo(@Param("eid") Integer eId, @Param("cellNo") Integer cellNo, @Param("lockSn") String lockSn);
     
     List<ElectricityCabinetBox> selectListBySnAndEid(@Param("sn") String sn, @Param("eid") Integer eid);
+    
+    List<ElectricityCabinetBox> selectListByLockSn(@Param("lockSn") String lockSn);
 }

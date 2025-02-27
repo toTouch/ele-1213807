@@ -92,4 +92,6 @@ public interface ElectricityCabinetBoxService {
     int updateLockSnByEidAndCellNo(Integer eId, Integer cellNo, String lockSn);
     
     List<ElectricityCabinetBox> listBySnAndEid(String sn, Integer eid);
+    
+    List<ElectricityCabinetBox> listByLockSn(String lockSn);
 }

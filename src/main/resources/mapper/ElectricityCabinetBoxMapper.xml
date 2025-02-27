@@ -225,18 +225,7 @@
     </update>
     
     <update id="updateLockSnByEidAndCellNo">
-        update t_electricity_cabinet_box
-        <set>
-            <choose>
-                <when test="lockSn != null and lockSn != ''">
-                    lock_sn = #{lockSn},
-                </when>
-                <otherwise>
-                    lock_sn = null,
-                </otherwise>
-            </choose>
-        </set>
-        where electricity_cabinet_id = #{eid} and cell_no = #{cellNo}
+        update t_electricity_cabinet_box set lock_sn = #{lockSn} where electricity_cabinet_id = #{eid} and cell_no = #{cellNo}
     </update>
     
     <select id="queryBoxCount" resultType="integer">
@@ -361,5 +350,9 @@
             and electricity_cabinet_id = #{eid}
             and del_flag = 0
         </where>
+    </select>
+    
+    <select id="selectListByLockSn" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select electricity_cabinet_id,cell_no from t_electricity_cabinet_box where lock_sn = #{lockSn}
     </select>
 </mapper>

@@ -2182,14 +2182,33 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 
                 // 4.新标签是在仓的
                 if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
-                    // 判断旧标签是锁定在仓的就不修改了
-                    if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                    // 旧标签不是锁定在仓的，直接修改就完事
+                    if (!Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                        electricitybatterymapper.update(batteryUpdate);
+                        batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
                         return;
                     }
                     
-                    // 其他的直接修改就完事
+                    // 判断旧标签是锁定在仓的，需要校验仓门是否一致，若上报在仓的仓门不是当初锁定的仓门则需要修改为在仓
+                    List<ElectricityCabinetBox> lockedBoxes = electricityCabinetBoxService.listByLockSn(battery.getSn());
+                    if (CollectionUtils.isEmpty(lockedBoxes)) {
+                        // 没有格挡保存有锁定电池的sn，直接更新为在仓
+                        electricitybatterymapper.update(batteryUpdate);
+                        batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
+                        return;
+                    }
+                    // 只要有一个保存有改锁定电池sn的格挡的eid与仓门号与上报的格挡相同，就不更新了
+                    for (ElectricityCabinetBox lockedBox : lockedBoxes) {
+                        if (Objects.equals(lockedBox.getElectricityCabinetId(), box.getElectricityCabinetId()) && Objects.equals(lockedBox.getCellNo(), box.getCellNo())) {
+                            return;
+                        }
+                        
+                        // 保存锁仓电池sn的格挡跟上报在仓的格挡对不上时，清除掉锁仓sn，清除完毕后，使用下面的逻辑更新
+                        electricityCabinetBoxService.updateLockSnByEidAndCellNo(lockedBox.getElectricityCabinetId(), Integer.valueOf(lockedBox.getCellNo()), null);
+                    }
+                    
+                    // 全部都清除了，更新标签
                     electricitybatterymapper.update(batteryUpdate);
-                    // 发送修改记录到mq，在batch项目中批量保存
                     batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
                     return;
                 }

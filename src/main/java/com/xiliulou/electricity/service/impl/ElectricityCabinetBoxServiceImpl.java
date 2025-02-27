@@ -415,4 +415,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> listBySnAndEid(String sn, Integer eid) {
         return electricityCabinetBoxMapper.selectListBySnAndEid(sn, eid);
     }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetBox> listByLockSn(String lockSn) {
+        return electricityCabinetBoxMapper.selectListByLockSn(lockSn);
+    }
 }
