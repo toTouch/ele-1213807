@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.userinfo;
 
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.vo.DetailsBatteryInfoProVO;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import com.xiliulou.electricity.vo.EleDepositRefundVO;
@@ -133,5 +134,11 @@ public class UserEleInfoProV2VO {
      * 删除/注销时间
      */
     private Long delTime;
+    
+    /**
+     * 自主续费状态 0:不自主续费, 1:自主续费
+     * @see RenewalStatusEnum
+     */
+    private Integer renewalStatus;
     
 }

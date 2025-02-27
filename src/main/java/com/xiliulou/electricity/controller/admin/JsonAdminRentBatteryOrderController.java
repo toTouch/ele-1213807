@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;

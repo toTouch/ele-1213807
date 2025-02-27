@@ -699,12 +699,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(userCarRentalPackageDO.getUid())) {
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(userCarRentalPackageDO.getUid()) && Objects.nonNull(
+                    userStatusMap.get(userCarRentalPackageDO.getUid()))) {
                 UserDelStatusDTO userDelStatusDTO = userStatusMap.get(userCarRentalPackageDO.getUid());
-                if (Objects.nonNull(userDelStatusDTO)) {
-                    userCarRentalPackageVO.setDelTime(userDelStatusDTO.getDelTime());
-                    userStatus = userDelStatusDTO.getUserStatus();
-                }
+                userCarRentalPackageVO.setDelTime(userDelStatusDTO.getDelTime());
+                userStatus = userDelStatusDTO.getUserStatus();
             }
             userCarRentalPackageVO.setUserStatus(userStatus);
 
@@ -950,12 +949,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid)) {
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid) && Objects.nonNull(userStatusMap.get(uid))) {
                 UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
-                if (Objects.nonNull(userDelStatusDTO)) {
-                    item.setDelTime(userDelStatusDTO.getDelTime());
-                    userStatus = userDelStatusDTO.getUserStatus();
-                }
+                item.setDelTime(userDelStatusDTO.getDelTime());
+                userStatus = userDelStatusDTO.getUserStatus();
             }
             item.setUserStatus(userStatus);
         }), threadPoolPro).exceptionally(e -> {
@@ -1137,12 +1134,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid)) {
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid) && Objects.nonNull(userStatusMap.get(uid))) {
                 UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
-                if (Objects.nonNull(userDelStatusDTO)) {
-                    vo.setDelTime(userDelStatusDTO.getDelTime());
-                    userStatus = userDelStatusDTO.getUserStatus();
-                }
+                vo.setDelTime(userDelStatusDTO.getDelTime());
+                userStatus = userDelStatusDTO.getUserStatus();
             }
             vo.setUserStatus(userStatus);
             
@@ -3489,15 +3484,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(item.getUid());
                 item.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
-
+    
                 // 查询已删除/已注销
                 Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-                if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid())) {
+                if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid()) && Objects.nonNull(userStatusMap.get(item.getUid()))) {
                     UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
-                    if (Objects.nonNull(userDelStatusDTO)) {
-                        item.setDelTime(userDelStatusDTO.getDelTime());
-                        userStatus = userDelStatusDTO.getUserStatus();
-                    }
+                    item.setDelTime(userDelStatusDTO.getDelTime());
+                    userStatus = userDelStatusDTO.getUserStatus();
                 }
                 item.setUserStatus(userStatus);
 
@@ -3705,12 +3698,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 // 查询已删除/已注销
                 Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-                if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid())) {
-                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
-                    if (Objects.nonNull(userDelStatusDTO)) {
-                        item.setDelTime(userDelStatusDTO.getDelTime());
-                        userStatus = userDelStatusDTO.getUserStatus();
-                    }
+                if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid) && Objects.nonNull(userStatusMap.get(uid))) {
+                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
+                    item.setDelTime(userDelStatusDTO.getDelTime());
+                    userStatus = userDelStatusDTO.getUserStatus();
                 }
                 item.setUserStatus(userStatus);
             });
@@ -3869,11 +3860,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 查询已删除/已注销
         Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
                 List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        // 查询企业信息
+        Map<Long, EnterpriseChannelUserVO> enterpriseChannelUserMap = null;
+        List<EnterpriseChannelUserVO> enterpriseChannelUserList = enterpriseChannelUserService.listByUidList(uidList, tenantId);
+        if (CollectionUtils.isNotEmpty(enterpriseChannelUserList)) {
+            enterpriseChannelUserMap = enterpriseChannelUserList.stream().collect(Collectors.toMap(EnterpriseChannelUserVO::getUid, Function.identity(), (k1, k2) -> k1));
+        }
     
         Map<Long, BatteryMemberCard> finalBatteryMemberCardMap = batteryMemberCardMap;
         Map<Long, UserBatteryDepositBO> finalUserBatteryDepositMap = userBatteryDepositMap;
         Map<Long, Franchisee> finalFranchiseeMap = franchiseeMap;
         Map<Long, Store> finalStoreMap = storeMap;
+        Map<Long, EnterpriseChannelUserVO> finalEnterpriseChannelUserMap = enterpriseChannelUserMap;
         List<UserEleInfoProV2VO> resultList = userEleInfoVOS.stream().map(item -> {
             UserEleInfoProV2VO vo = new UserEleInfoProV2VO();
             Long uid = item.getUid();
@@ -3922,14 +3920,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
-            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid())) {
-                UserDelStatusDTO userDelStatusDTO = userStatusMap.get(item.getUid());
-                if (Objects.nonNull(userDelStatusDTO)) {
-                    vo.setDelTime(userDelStatusDTO.getDelTime());
-                    userStatus = userDelStatusDTO.getUserStatus();
-                }
+            if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(uid) && Objects.nonNull(userStatusMap.get(uid))) {
+                UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
+                vo.setDelTime(userDelStatusDTO.getDelTime());
+                userStatus = userDelStatusDTO.getUserStatus();
             }
             vo.setUserStatus(userStatus);
+            if (MapUtils.isNotEmpty(finalEnterpriseChannelUserMap) && finalEnterpriseChannelUserMap.containsKey(uid) && Objects.nonNull(finalEnterpriseChannelUserMap.get(uid))) {
+                vo.setRenewalStatus(finalEnterpriseChannelUserMap.get(uid).getRenewalStatus());
+            }
         
             return vo;
         }).collect(Collectors.toList());
