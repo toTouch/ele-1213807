@@ -15,7 +15,6 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxLockMapper;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetIdByFilterQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
@@ -24,6 +23,8 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
 
     @Resource
     private MerchantAreaService merchantAreaService;
+    
+    @Resource
+    private BoxOtherPropertiesService boxOtherPropertiesService;
 
     @Override
     public void insertElectricityCabinetBoxLock(ElectricityCabinetBoxLock cabinetBoxLock) {
@@ -142,13 +146,21 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
                 return CollUtil.newArrayList();
             }
         }
-
-
+    
+        Map<Integer, List<BoxOtherProperties>> boxOtherPropertiesMap = null;
+        if (CollectionUtils.isNotEmpty(query.getIdsByLikeName())) {
+            List<BoxOtherProperties> boxOtherProperties = boxOtherPropertiesService.listByEidList(query.getIdsByLikeName());
+            if (CollectionUtils.isNotEmpty(boxOtherProperties)) {
+                boxOtherPropertiesMap = boxOtherProperties.stream().collect(Collectors.groupingBy(BoxOtherProperties::getElectricityCabinetId));
+            }
+        }
+    
         List<ElectricityCabinetBoxLock> electricityCabinetBoxLocks = electricityCabinetBoxLockMapper.listCabinetBoxLock(query);
         if (CollUtil.isEmpty(electricityCabinetBoxLocks)) {
             return CollUtil.newArrayList();
         }
-
+    
+        Map<Integer, List<BoxOtherProperties>> finalBoxOtherPropertiesMap = boxOtherPropertiesMap;
         return electricityCabinetBoxLocks.stream().map(item -> {
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
@@ -156,14 +168,30 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             vo.setStoreName(Objects.nonNull(store) ? store.getName() : null);
-
-
-            Optional.ofNullable(electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId())).ifPresent(cabinet -> {
+    
+            Integer electricityCabinetId = item.getElectricityCabinetId();
+            Optional.ofNullable(electricityCabinetService.queryByIdFromCache(electricityCabinetId)).ifPresent(cabinet -> {
                 vo.setName(cabinet.getName());
                 vo.setAddress(cabinet.getAddress());
                 MerchantArea merchantArea = merchantAreaService.queryById(cabinet.getAreaId());
                 vo.setAreaName(Objects.isNull(merchantArea) ? null : merchantArea.getName());
             });
+    
+            // 锁仓备注
+            if (MapUtils.isNotEmpty(finalBoxOtherPropertiesMap) && finalBoxOtherPropertiesMap.containsKey(electricityCabinetId)) {
+                List<BoxOtherProperties> boxOtherPropertiesList = finalBoxOtherPropertiesMap.get(electricityCabinetId);
+                if (CollectionUtils.isNotEmpty(boxOtherPropertiesList)) {
+                    boxOtherPropertiesList.forEach(boxOtherProperties -> {
+                        if (Objects.isNull(boxOtherProperties)) {
+                            return;
+                        }
+                        
+                        if (Objects.nonNull(item.getCellNo()) && Objects.equals(boxOtherProperties.getCellNo(), item.getCellNo().toString())) {
+                            vo.setRemark(boxOtherProperties.getRemark());
+                        }
+                    });
+                }
+            }
 
             return vo;
         }).collect(Collectors.toList());

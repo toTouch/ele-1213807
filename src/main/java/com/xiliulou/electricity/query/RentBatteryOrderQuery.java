@@ -68,4 +68,9 @@ public class RentBatteryOrderQuery {
      * @see com.xiliulou.core.base.enums.ChannelEnum
      */
     private String channel;
+    
+    /**
+     * 0-退租退电（默认） 1-冻结退电
+     */
+    private Integer isFreeze;
 }

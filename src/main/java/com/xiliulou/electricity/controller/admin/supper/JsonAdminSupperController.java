@@ -455,6 +455,7 @@ public class JsonAdminSupperController {
 
     /**
      * 租退电订单列表
+     * @param isFreeze: 1-冻结退电 0-正常退电
      */
     @GetMapping(value = "/rentBatteryOrder/list")
     public R querySuperList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
@@ -465,7 +466,8 @@ public class JsonAdminSupperController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,
+            @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -482,16 +484,16 @@ public class JsonAdminSupperController {
         if (!SecurityUtils.isAdmin()) {
             return R.ok(Collections.emptyList());
         }
-
-        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size)
-                .name(name).phone(phone).beginTime(beginTime).endTime(endTime)
-                .status(status).orderId(orderId).type(type).eleIdList(null).tenantId(tenantId).build();
+    
+        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).beginTime(beginTime).endTime(endTime)
+                .status(status).orderId(orderId).type(type).eleIdList(null).tenantId(tenantId).isFreeze(isFreeze).build();
 
         return rentBatteryOrderService.listSuperAdminPage(rentBatteryOrderQuery);
     }
 
     /**
      * 租退电订单列表
+     * @param isFreeze: 1-冻结退电 0-正常退电
      */
     @GetMapping(value = "/rentBatteryOrder/queryCount")
     public R querySuperCount(@RequestParam(value = "status", required = false) String status,
@@ -501,7 +503,8 @@ public class JsonAdminSupperController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,
+            @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -514,7 +517,7 @@ public class JsonAdminSupperController {
 
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().name(name).phone(phone)
                 .beginTime(beginTime).endTime(endTime).status(status).orderId(orderId)
-                .type(type).eleIdList(null).tenantId(tenantId).build();
+                .type(type).eleIdList(null).tenantId(tenantId).isFreeze(isFreeze).build();
 
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
     }

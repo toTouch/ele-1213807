@@ -8,7 +8,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.RentBatteryOrderVO">
         select
         id, order_id,uid,name , phone, electricity_battery_sn, battery_deposit,electricity_cabinet_id,cell_no,type,
-        status, create_time,update_time,remark, franchisee_id,channel
+        status, create_time,update_time,remark, franchisee_id,channel, is_freeze
         from t_rent_battery_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
@@ -61,6 +61,9 @@
             </if>
             <if test="query.channel != null and query.channel != ''">
                 and channel = #{query.channel}
+            </if>
+            <if test="query.isFreeze != null">
+                and is_freeze = #{query.isFreeze}
             </if>
         </where>
         order by id desc
@@ -122,6 +125,9 @@
             </if>
             <if test="query.channel != null and query.channel != ''">
                 and channel = #{query.channel}
+            </if>
+            <if test="query.isFreeze != null">
+                and is_freeze = #{query.isFreeze}
             </if>
         </where>
     </select>
@@ -243,7 +249,7 @@
     
     <sql id="column">
         id, order_id,uid,name , phone, electricity_battery_sn, battery_deposit,electricity_cabinet_id,cell_no,type,
-        status, create_time,update_time,remark, franchisee_id, tenant_id
+        status, create_time,update_time,remark, franchisee_id, tenant_id, is_freeze
     </sql>
     
     <sql id="pageFilter">
@@ -295,6 +301,9 @@
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.isFreeze != null">
+                and is_freeze = #{query.isFreeze}
             </if>
         </where>
     </sql>

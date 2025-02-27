@@ -62,4 +62,9 @@ public class ElectricityCabinetBoxLockPageVO {
      * 设备产品
      */
     private String productKey;
+    
+    /**
+     * 锁仓备注
+     */
+    private String remark;
 }

@@ -75,4 +75,6 @@ public interface BoxOtherPropertiesMapper extends BaseMapper<BoxOtherProperties>
     int insertBoxOtherProperties(BoxOtherProperties boxOtherProperties);
     
     Integer existsByUk(@Param("electricityCabinetId") Integer electricityCabinetId, @Param("cellNo") String cellNo);
+    
+    List<BoxOtherProperties> selectByEidList(@Param("eidList") List<Integer> eidList);
 }
