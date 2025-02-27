@@ -136,6 +136,11 @@ public class DetailsBatteryInfoVo {
 
     private Integer businessType;
 
+    /**
+     * 租金
+     */
+    private BigDecimal rentPrice;
+
     public static Integer IS_VIEW_OFF_LINE_AGREE = 1;
     public static Integer NOT_IS_VIEW_OFF_LINE_AGREE = 0;
 }
