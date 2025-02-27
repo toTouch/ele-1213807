@@ -755,16 +755,6 @@ public class JsonAdminUserInfoController extends BaseController {
         return userInfoService.queryCarRentalListForProV2(userInfoQuery);
     }
     
-    /**
-     * @description 运维小程序租车会员列表-更多
-     * @date 2025/1/3 21:02:44
-     * @author HeYafeng
-     */
-    @GetMapping(value = "/admin/userInfo/carRentalList/pro/more")
-    public R queryCarRentalListMoreForPro(@RequestParam("uid") Long uid) {
-        return userInfoService.queryCarRentalListMoreForPro(uid);
-    }
-    
     @GetMapping(value = "/admin/userInfo/carRentalCount")
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "sortType", required = false) Integer sortType,
@@ -964,16 +954,6 @@ public class JsonAdminUserInfoController extends BaseController {
         verifyMemberCardExpireTimeEnd(userInfoQuery);
         
         return userInfoService.queryEleListForProV2(userInfoQuery);
-    }
-    
-    /**
-     * @description 运维小程序换电会员列表-更多
-     * @date 2025/1/3 21:02:44
-     * @author HeYafeng
-     */
-    @GetMapping(value = "/admin/userInfo/eleList/pro/more")
-    public R queryEleListMoreForPro(@RequestParam("uid") Long uid) {
-        return userInfoService.queryEleListMoreForPro(uid);
     }
     
     // 列表查询

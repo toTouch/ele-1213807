@@ -135,5 +135,8 @@ public interface CarRentalPackageDepositPayService {
     
     List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList);
     
+    /**
+     * 运维小程序预留：是否可退押
+     */
     Boolean isCarDepositRefund(CarRentalPackageMemberTermPo carRentalPackageMemberTermPo);
 }

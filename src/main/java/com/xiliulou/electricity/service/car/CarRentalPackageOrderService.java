@@ -244,5 +244,8 @@ public interface CarRentalPackageOrderService {
      */
     List<CarRentalPackageOrderPo> listUnUseAndRefundByUidList(Integer tenantId, List<Long> uidList, Long rentRebateEndTime);
     
+    /**
+     * 运维小程序预留：是否可退租
+     */
     Boolean isCarRentalPackageOrderRefund(Long uid, Integer tenantId, CarRentalPackageMemberTermPo carRentalPackageMemberTermPo);
 }

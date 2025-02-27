@@ -49,6 +49,11 @@ public class UserEleInfoProV2VO {
     private Integer batteryRentStatus;
     
     /**
+     * 电池SN信息
+     */
+    private String batterySn;
+    
+    /**
      * 押金金额(元)
      */
     private BigDecimal deposit;

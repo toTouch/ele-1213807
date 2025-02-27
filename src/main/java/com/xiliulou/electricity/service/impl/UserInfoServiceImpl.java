@@ -149,7 +149,6 @@ import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageProV2VO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageProVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserDepositStatusVO;
-import com.xiliulou.electricity.vo.userinfo.UserEleInfoProMoreVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoProV2VO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoProVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -1066,7 +1065,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (CollectionUtils.isNotEmpty(carList)) {
             carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
         }
-    
         // 查询已删除/已注销
         Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
                 List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
@@ -1153,33 +1151,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }).collect(Collectors.toList());
         
         return R.ok(resultList);
-    }
-    
-    @Override
-    public R queryCarRentalListMoreForPro(Long uid) {
-        UserCarInfoProMoreVO vo = new UserCarInfoProMoreVO();
-    
-        UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(uid);
-        Integer tenantId = TenantContextHolder.getTenantId();
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-    
-        // 认证信息
-        List<UserOauthBind> userOauthBinds = userOauthBindService.selectListByUidAndPhone(userInfo.getPhone(), uid, tenantId);
-        Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()
-                .collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
-        vo.setBindWX(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_WX_PRO)) ? UserOauthBind.STATUS_BIND_VX : UserOauthBind.STATUS_UN_BIND_VX);
-        vo.setBindAlipay(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
-        
-        // 是否可退押
-        CarRentalPackageMemberTermPo carRentalPackageMemberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        vo.setDepositRefundFlag(carRentalPackageDepositPayService.isCarDepositRefund(carRentalPackageMemberTermPo));
-        
-        // 是否可退租
-        vo.setCarRentalPackageOrderRefundFlag(carRentalPackageOrderService.isCarRentalPackageOrderRefund(uid, tenantId, carRentalPackageMemberTermPo));
-    
-        return R.ok(vo);
     }
     
     private Map<Long, Boolean> getCarNoUsingOrderPro(Integer tenantId, List<Long> uidList) {
@@ -3879,14 +3850,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 storeMap = storeList.stream().collect(Collectors.toMap(Store::getId, Function.identity(), (k1, k2) -> k1));
             }
         }
-    
         // 查询用户押金信息
         Map<Long, UserBatteryDepositBO> userBatteryDepositMap = null;
         List<UserBatteryDepositBO> userBatteryDepositBOList = userBatteryDepositService.listPayTypeByUidList(tenantId, uidList);
         if (CollectionUtils.isNotEmpty(userBatteryDepositBOList)) {
             userBatteryDepositMap = userBatteryDepositBOList.stream().collect(Collectors.toMap(UserBatteryDepositBO::getUid, Function.identity(), (item1, item2) -> item2));
         }
-    
         // 查询用户绑定套餐信息
         List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.listByUidList(uidList);
         // 查询用户电池服务费信息
@@ -3894,7 +3863,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 查询用户滞纳金
         Map<Long, BigDecimal> userServiceFeeMap = serviceFeeUserInfoService.acquireUserBatteryServiceFeeByUserList(userInfoList, userBatteryMemberCardList, batteryMemberCards,
                 serviceFeeUserInfoList);
-    
+        // 查询用户电池
+        Map<Long, ElectricityBattery> userBatteryMap = electricityBatteryService.listUserBatteryByUidList(uidList, tenantId);
         // 查询已删除/已注销
         Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
                 List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
@@ -3946,7 +3916,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (MapUtils.isNotEmpty(userServiceFeeMap) && userServiceFeeMap.containsKey(uid) && Objects.nonNull(userServiceFeeMap.get(uid))) {
                 vo.setUserBatteryServiceFee(userServiceFeeMap.get(uid));
             }
-    
+            if (MapUtils.isNotEmpty(userBatteryMap) && userBatteryMap.containsKey(uid) && Objects.nonNull(userBatteryMap.get(uid))) {
+                vo.setBatterySn(userBatteryMap.get(uid).getSn());
+            }
             // 查询已删除/已注销
             Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
             if (MapUtils.isNotEmpty(userStatusMap) && userStatusMap.containsKey(item.getUid())) {
@@ -3962,34 +3934,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }).collect(Collectors.toList());
     
         return R.ok(resultList);
-    }
-    
-    @Override
-    public R queryEleListMoreForPro(Long uid) {
-        UserEleInfoProMoreVO vo = new UserEleInfoProMoreVO();
-        
-        UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(uid);
-        Integer tenantId = TenantContextHolder.getTenantId();
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-    
-        // 认证信息
-        List<UserOauthBind> userOauthBinds = userOauthBindService.selectListByUidAndPhone(userInfo.getPhone(), uid, tenantId);
-        Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()
-                .collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
-        vo.setBindWX(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_WX_PRO)) ? UserOauthBind.STATUS_BIND_VX : UserOauthBind.STATUS_UN_BIND_VX);
-        vo.setBindAlipay(this.getIsBindThird(sourceMap.get(UserOauthBind.SOURCE_ALI_PAY)) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
-    
-        // 是否可退押
-        // TODO(heyafeng) 2025/2/26 18:55
-//        vo.setDepositRefundFlag();
-    
-        // 是否可退租
-        // TODO(heyafeng) 2025/2/26 18:55
-//        vo.setRentRefundFlag();
-    
-        return R.ok(vo);
     }
     
     private DetailsBatteryInfoProVO getEleBatteryInfoPro(UserEleInfoProVO userEleInfoProVO, Map<Long, List<String>> userShortBatteryMap,
