@@ -28,6 +28,8 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import com.xiliulou.electricity.vo.UserServiceFeeDetail;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +39,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 用户停卡绑定(TServiceFeeUserInfo)实体类
@@ -322,6 +327,149 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         return Triple.of(false, null, null);
     }
     
+    /**
+     * 批量查询滞纳金，参照上面方法：acquireUserBatteryServiceFee
+     */
+    @Override
+    public Map<Long, BigDecimal> acquireUserBatteryServiceFeeByUserList(List<UserInfo> userInfoList, List<UserBatteryMemberCard> userBatteryMemberCardList,
+            List<BatteryMemberCard> batteryMemberCardList, List<ServiceFeeUserInfo> serviceFeeUserInfoList) {
+        if (CollectionUtils.isEmpty(userInfoList) || CollectionUtils.isEmpty(userBatteryMemberCardList) || CollectionUtils.isEmpty(serviceFeeUserInfoList)) {
+            return null;
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Map<Long, UserBatteryMemberCard> userBatteryMemberCardMap = userBatteryMemberCardList.stream()
+                .collect(Collectors.toMap(UserBatteryMemberCard::getUid, v -> v, (k1, k2) -> k1));
+        Map<Long, ServiceFeeUserInfo> userServiceFeeUserInfoMap = serviceFeeUserInfoList.stream().collect(Collectors.toMap(ServiceFeeUserInfo::getUid, v -> v, (k1, k2) -> k1));
+        List<String> expireOrderNoList = serviceFeeUserInfoList.stream().map(ServiceFeeUserInfo::getExpireOrderNo).collect(Collectors.toList());
+        List<String> pauseOrderNoList = serviceFeeUserInfoList.stream().map(ServiceFeeUserInfo::getPauseOrderNo).collect(Collectors.toList());
+        Map<Long, BatteryMemberCard> batteryMemberCardMap = null;
+        if (CollectionUtils.isNotEmpty(batteryMemberCardList)) {
+            batteryMemberCardMap = batteryMemberCardList.stream().collect(Collectors.toMap(BatteryMemberCard::getId, v -> v, (k1, k2) -> k1));
+        }
+        
+        // 查询套餐过期电池服务费订单
+        Map<String, EleBatteryServiceFeeOrder> expireServiceFeeOrderMap = null;
+        if (CollectionUtils.isNotEmpty(expireOrderNoList)) {
+            List<EleBatteryServiceFeeOrder> expireServiceFeeOrderList = eleBatteryServiceFeeOrderService.listByOrderNoList(expireOrderNoList, tenantId);
+            if (CollectionUtils.isNotEmpty(expireServiceFeeOrderList)) {
+                expireServiceFeeOrderMap = expireServiceFeeOrderList.stream().collect(Collectors.toMap(EleBatteryServiceFeeOrder::getOrderId, v -> v, (k1, k2) -> k1));
+            }
+        }
+        
+        // 查询停卡系统启用电池服务费订单
+        Map<String, EleBatteryServiceFeeOrder> pauseServiceFeeOrderMap = null;
+        if (CollectionUtils.isNotEmpty(pauseOrderNoList)) {
+            List<EleBatteryServiceFeeOrder> pauseServiceFeeOrderList = eleBatteryServiceFeeOrderService.listByOrderNoList(pauseOrderNoList, tenantId);
+            if (CollectionUtils.isNotEmpty(pauseServiceFeeOrderList)) {
+                pauseServiceFeeOrderMap = pauseServiceFeeOrderList.stream().collect(Collectors.toMap(EleBatteryServiceFeeOrder::getOrderId, v -> v, (k1, k2) -> k1));
+            }
+        }
+        
+        return acquireUserBatteryServiceFeeByUsers(userInfoList, userBatteryMemberCardMap, batteryMemberCardMap, userServiceFeeUserInfoMap, expireServiceFeeOrderMap,
+                pauseServiceFeeOrderMap);
+    }
+    
+    private Map<Long, BigDecimal> acquireUserBatteryServiceFeeByUsers(List<UserInfo> userInfoList, Map<Long, UserBatteryMemberCard> userBatteryMemberCardMap,
+            Map<Long, BatteryMemberCard> batteryMemberCardMap, Map<Long, ServiceFeeUserInfo> userServiceFeeUserInfoMap,
+            Map<String, EleBatteryServiceFeeOrder> expireServiceFeeOrderMap, Map<String, EleBatteryServiceFeeOrder> pauseServiceFeeOrderMap) {
+        Map<Long, BigDecimal> resultMap = new HashMap<>(userInfoList.size());
+        
+        for (UserInfo userInfo : userInfoList) {
+            if (Objects.isNull(userInfo)) {
+                continue;
+            }
+            Long uid = userInfo.getUid();
+            UserBatteryMemberCard userBatteryMemberCard = null;
+            if (MapUtils.isNotEmpty(userBatteryMemberCardMap) && userBatteryMemberCardMap.containsKey(uid)) {
+                userBatteryMemberCard = userBatteryMemberCardMap.get(uid);
+            }
+            
+            BatteryMemberCard userBindBatteryMemberCard = null;
+            if (Objects.nonNull(userBatteryMemberCard) && MapUtils.isNotEmpty(batteryMemberCardMap) && batteryMemberCardMap.containsKey(userBatteryMemberCard.getMemberCardId())) {
+                userBindBatteryMemberCard = batteryMemberCardMap.get(userBatteryMemberCard.getMemberCardId());
+            }
+            
+            ServiceFeeUserInfo serviceFeeUserInfo = null;
+            if (MapUtils.isNotEmpty(userServiceFeeUserInfoMap) && userServiceFeeUserInfoMap.containsKey(uid)) {
+                serviceFeeUserInfo = userServiceFeeUserInfoMap.get(uid);
+            }
+            
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBindBatteryMemberCard) || Objects.isNull(serviceFeeUserInfo)) {
+                continue;
+            }
+            
+            // 防止上线重启过程中还未删除缓存的情况下报错，暂时先取过期滞纳金，上线之后不可能为null了
+            BigDecimal freezeServiceCharge = userBindBatteryMemberCard.getFreezeServiceCharge();
+            if (Objects.isNull(freezeServiceCharge)) {
+                log.info("BATTERY SERVICE FEE INFO BY USERINFO LIST!freezeServiceCharge user the value of ServiceCharge,uid={}", uid);
+                freezeServiceCharge = userBindBatteryMemberCard.getServiceCharge();
+            }
+            
+            // 此时若仍然为null，则说明两个计算标准都为null，不再执行
+            if (Objects.isNull(freezeServiceCharge)) {
+                log.info("BATTERY SERVICE FEE INFO BY USERINFO LIST!freezeServiceCharge and ServiceCharge both are null,uid={}", uid);
+                continue;
+            }
+            
+            if (BigDecimal.valueOf(0).compareTo(userBindBatteryMemberCard.getServiceCharge()) == 0 && BigDecimal.valueOf(0).compareTo(freezeServiceCharge) == 0) {
+                continue;
+            }
+            
+            if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                continue;
+            }
+            
+            //停卡电池服务费
+            BigDecimal pauseBatteryServiceFee = BigDecimal.ZERO;
+            //套餐过期电池服务费
+            BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
+            //停卡系统启用电池服务费
+            BigDecimal systemEnableBatteryServiceFee = BigDecimal.ZERO;
+            
+            //是否存在停卡电池服务费
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
+                pauseBatteryServiceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                log.info("BATTERY SERVICE FEE INFO BY USERINFO LIST!user exist pause fee,uid={},fee={}", uid, pauseBatteryServiceFee.doubleValue());
+            }
+            
+            EleBatteryServiceFeeOrder expireEleBatteryServiceFeeOrder = null;
+            if (MapUtils.isNotEmpty(expireServiceFeeOrderMap) && expireServiceFeeOrderMap.containsKey(serviceFeeUserInfo.getExpireOrderNo())) {
+                expireEleBatteryServiceFeeOrder = expireServiceFeeOrderMap.get(serviceFeeUserInfo.getExpireOrderNo());
+            }
+            
+            Integer expiredProtectionTime = eleBatteryServiceFeeOrderService.getExpiredProtectionTime(expireEleBatteryServiceFeeOrder, userInfo.getTenantId());
+            //是否存在套餐过期电池服务费
+            if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (
+                    System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L) > 0)) {
+                int batteryMemebercardExpireDays = (int) Math.ceil(
+                        (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                expireBatteryServiceFee = userBindBatteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
+                log.info("BATTERY SERVICE FEE INFO BY USERINFO LIST!user exist expire fee,uid={},fee={}", uid, expireBatteryServiceFee.doubleValue());
+            }
+            
+            //是否存在停卡系统启用电池服务费
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) && StringUtils.isNotBlank(
+                    serviceFeeUserInfo.getPauseOrderNo())) {
+                EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = null;
+                if (MapUtils.isNotEmpty(pauseServiceFeeOrderMap) && pauseServiceFeeOrderMap.containsKey(serviceFeeUserInfo.getPauseOrderNo())) {
+                    eleBatteryServiceFeeOrder = pauseServiceFeeOrderMap.get(serviceFeeUserInfo.getPauseOrderNo());
+                }
+                
+                if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
+                    systemEnableBatteryServiceFee = eleBatteryServiceFeeOrder.getPayAmount();
+                    log.info("BATTERY SERVICE FEE INFO BY USERINFO LIST!user exist system enable expire fee,uid={},fee={}", uid, systemEnableBatteryServiceFee.doubleValue());
+                }
+            }
+            
+            BigDecimal totalBatteryServiceFee = pauseBatteryServiceFee.add(expireBatteryServiceFee).add(systemEnableBatteryServiceFee);
+            if (totalBatteryServiceFee.doubleValue() > 0) {
+                resultMap.put(uid, totalBatteryServiceFee);
+            }
+        }
+        return resultMap;
+    }
     
     @Override
     public BigDecimal selectBatteryServiceFeeByUid(Long uid) {
@@ -394,6 +542,12 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         }
         
         return delete;
+    }
+    
+    @Slave
+    @Override
+    public List<ServiceFeeUserInfo> listByUidList(List<Long> uidList) {
+        return serviceFeeUserInfoMapper.selectListByUidList(uidList);
     }
     
     @Override

@@ -235,7 +235,12 @@ public interface CarRentalPackageOrderService {
      */
     List<CarRentalPackageOrderPo> queryListByOrderNo(Integer tenantId,List<String> orderNos);
     
-    List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus);
+    /**
+     * @description 根据用户UID查询是未使用且可退的订单
+     * @date 2025/2/26 18:14:41
+     * @author HeYafeng
+     */
+    List<CarRentalPackageOrderPo> listUnUseAndRefundByUidList(Integer tenantId, List<Long> uidList, Long rentRebateEndTime);
     
     Boolean isCarRentalPackageOrderRefund(Long uid, Integer tenantId, CarRentalPackageMemberTermPo carRentalPackageMemberTermPo);
 }

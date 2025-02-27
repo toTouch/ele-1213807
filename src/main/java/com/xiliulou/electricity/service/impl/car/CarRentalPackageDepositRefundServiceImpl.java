@@ -205,4 +205,10 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
 
         return entity.getId();
     }
+    
+    @Slave
+    @Override
+    public CarRentalPackageDepositRefundPo queryLastSuccessOrderByUid(Long uid) {
+        return carRentalPackageDepositRefundMapper.selectLastSuccessOrderByUid(uid);
+    }
 }

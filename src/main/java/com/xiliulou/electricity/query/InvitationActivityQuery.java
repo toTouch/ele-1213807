@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -100,5 +101,12 @@ public class InvitationActivityQuery {
     private Long franchiseeId;
     
     private List<Long> franchiseeIds;
+    
+    /**
+     *  退押后再次购买是否返现开关:0-开启,1-关闭
+     */
+    @Range(min = 1, max = 2, message = "退押后再次购买是否返现字段值不合法")
+    @NotNull(message = "退押后再次购买是否返现字段值不能为空", groups = {UpdateGroup.class})
+    private Integer depositRefundRebateSwitch;
     
 }

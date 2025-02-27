@@ -91,4 +91,9 @@ public class InvitationActivityVO {
     private Long franchiseeId;
     
     private String franchiseeName;
+    
+    /**
+     *  退押后再次购买是否返现开关:0-开启,1-关闭
+     */
+    private Integer depositRefundRebateSwitch;
 }

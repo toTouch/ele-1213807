@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.bo.EleDepositRefundBO;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 
 import java.math.BigDecimal;
@@ -58,4 +59,6 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
     Integer updateRefundAmountById(@Param("id") Long id,@Param("refundAmount") BigDecimal refundAmount,@Param("updateTime") long updateTime);
     
     List<EleRefundOrder> selectListByOrderIdList(@Param("tenantId") Integer tenantId, @Param("orderIdList") List<String> orderIdList);
+    
+    EleDepositRefundBO selectLastSuccessOrderByUid(Long uid);
 }

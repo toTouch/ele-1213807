@@ -511,4 +511,10 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public Integer updateByUidForEmptyOrder(UserBatteryMemberCard updateUserBatteryMemberCard) {
         return userBatteryMemberCardMapper.updateByUidForEmptyOrder(updateUserBatteryMemberCard);
     }
+    
+    @Slave
+    @Override
+    public List<UserBatteryMemberCard> listByUidList(List<Long> uidList) {
+        return userBatteryMemberCardMapper.selectListByUidList(uidList);
+    }
 }

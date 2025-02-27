@@ -722,7 +722,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     }
     @Override
     public UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO,
-            Map<Long, Boolean> usingRefundMap, Map<Long, Boolean> noUsingRefundMap) {
+            Map<Long, Boolean> noUsingRefundMap) {
         if (Objects.isNull(carUserMemberInfoProDTO)) {
             log.warn("carUserMemberInfoProDTO is null, uid={}, uidList={}, carUserMemberInfoProDTO={}", uid, uidList, carUserMemberInfoProDTO);
             return null;
@@ -822,7 +822,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
     
         return buildUserMemberInfoVoForPro(memberTermEntity, rentalPackageEntity, batteryModelEntityList, rentalPackageOrderEntity, depositPayEntity, carModelEntity, carEntity,
-                franchiseeEntity, storeEntity, rentalPackageEntityFlag, lateFeeAmount, usingRefundMap, noUsingRefundMap);
+                franchiseeEntity, storeEntity, rentalPackageEntityFlag, lateFeeAmount, noUsingRefundMap);
     }
     
     /**
@@ -924,7 +924,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     private UserMemberInfoVo buildUserMemberInfoVoForPro(CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackagePo rentalPackageEntity,
             List<BatteryModel> batteryModelEntityList, CarRentalPackageOrderPo rentalPackageOrderEntity, CarRentalPackageDepositPayPo depositPayEntity,
             ElectricityCarModel carModelEntity, ElectricityCar carEntity, Franchisee franchiseeEntity, Store storeEntity, boolean rentalPackageEntityFlag, BigDecimal lateFeeAmount,
-            Map<Long, Boolean> usingRefundMap, Map<Long, Boolean> noUsingRefundMap) {
+            Map<Long, Boolean> noUsingRefundMap) {
         
         UserMemberInfoVo userMemberInfoVo = new UserMemberInfoVo();
         userMemberInfoVo.setType(memberTermEntity.getRentalPackageType());
@@ -963,41 +963,56 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         }
         
         // 套餐购买信息
+        boolean carRentalPackageOrderRefundFlag = true;
         if (ObjectUtils.isNotEmpty(rentalPackageOrderEntity)) {
             CarRentalPackageOrderVo carRentalPackageOrder = new CarRentalPackageOrderVo();
             BeanUtils.copyProperties(rentalPackageOrderEntity, carRentalPackageOrder);
             userMemberInfoVo.setCarRentalPackageOrder(carRentalPackageOrder);
-            if (YesNoEnum.NO.getCode().equals(carRentalPackageOrder.getRentRebate()) || carRentalPackageOrder.getRentRebateEndTime() <= System.currentTimeMillis()) {
-                userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
-            }
+    
+            if (Objects.equals(rentalPackageOrderEntity.getRentRebate(), YesNoEnum.NO.getCode())) {
+                carRentalPackageOrderRefundFlag = false;
+            } else {
+                // 已过期或已退租->不可退
+                if (Objects.equals(rentalPackageOrderEntity.getUseState(), UseStateEnum.EXPIRED.getCode()) || Objects.equals(rentalPackageOrderEntity.getUseState(),
+                        UseStateEnum.RETURNED.getCode())) {
+                    carRentalPackageOrderRefundFlag = false;
             
-            // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
-            List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(rentalPackageOrderEntity.getOrderNo());
-            if (!CollectionUtils.isEmpty(userCoupons)) {
-                userCoupons.forEach(userCoupon -> {
-                    Integer status = userCoupon.getStatus();
-                    if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
-                        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+                    // 使用中且已过期->不可退
+                } else if (Objects.equals(rentalPackageOrderEntity.getUseState(), UseStateEnum.IN_USE.getCode()) && ObjectUtils.isNotEmpty(memberTermEntity.getDueTime())
+                        && memberTermEntity.getDueTime() <= System.currentTimeMillis()) {
+                    carRentalPackageOrderRefundFlag = false;
+                }
+        
+                // 已过可退期->不可退
+                if (rentalPackageOrderEntity.getRentRebateEndTime() <= System.currentTimeMillis()) {
+                    carRentalPackageOrderRefundFlag = false;
+                }
+    
+                // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
+                List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(rentalPackageOrderEntity.getOrderNo());
+                if (!CollectionUtils.isEmpty(userCoupons)) {
+                    for (UserCoupon userCoupon : userCoupons) {
+                        Integer status = userCoupon.getStatus();
+                        if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
+                            carRentalPackageOrderRefundFlag = false;
+                            break;
+                        }
                     }
-                });
+                }
             }
         } else {
-            userMemberInfoVo.setCarRentalPackageOrderRefundFlag(false);
+            carRentalPackageOrderRefundFlag = false;
         }
     
         Long uid = memberTermEntity.getUid();
         // 当前订单不可退时，需要判断未使用套餐是否可退
-        if (!userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
+        if (!carRentalPackageOrderRefundFlag) {
             if (MapUtils.isNotEmpty(noUsingRefundMap) && noUsingRefundMap.containsKey(uid)) {
-                userMemberInfoVo.setCarRentalPackageOrderRefundFlag(noUsingRefundMap.get(uid));
+                carRentalPackageOrderRefundFlag = noUsingRefundMap.get(uid);
             }
         }
-        // 当前订单是否已失效/已退租
-        if (MapUtils.isNotEmpty(usingRefundMap) && usingRefundMap.containsKey(uid)) {
-            if (userMemberInfoVo.isCarRentalPackageOrderRefundFlag()) {
-                userMemberInfoVo.setCarRentalPackageOrderRefundFlag(usingRefundMap.get(uid));
-            }
-        }
+    
+        userMemberInfoVo.setCarRentalPackageOrderRefundFlag(carRentalPackageOrderRefundFlag);
         
         // 押金缴纳订单信息
         if (ObjectUtils.isNotEmpty(depositPayEntity)) {

@@ -61,6 +61,11 @@ public class UserCarRentalPackageProV2VO {
     private Integer depositPayType;
     
     /**
+     * 押金订单
+     */
+    private String depositOrderNo;
+    
+    /**
      * 套餐ID
      */
     private Long packageId;
@@ -94,6 +99,11 @@ public class UserCarRentalPackageProV2VO {
      * 滞纳金金额
      */
     private BigDecimal lateFeeAmount;
+    
+    /**
+     * 购买订单编号
+     */
+    private String rentalPackageOrderNo;
     
     /**
      * 电池SN信息

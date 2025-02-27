@@ -482,8 +482,8 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     
     @Slave
     @Override
-    public List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus) {
-        return carRentalPackageOrderMapper.selectListByUidAndUseStatus(uidList, useStatus);
+    public List<CarRentalPackageOrderPo> listUnUseAndRefundByUidList(Integer tenantId, List<Long> uidList, Long rentRebateEndTime) {
+        return carRentalPackageOrderMapper.selectListUnUseAndRefundByUidList(tenantId, uidList, rentRebateEndTime);
     }
     
     @Override

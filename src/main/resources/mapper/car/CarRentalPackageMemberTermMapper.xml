@@ -318,6 +318,7 @@
         tcrpme.pay_count as payCount,
         tcrpme.due_time as dueTime,
         tcrpme.residue as residue,
+        tcrpme.rental_package_order_no as rentalPackageOrderNo,
         tui.tenant_id as tenantId,
         tui.franchisee_id as franchiseeId,
         tui.store_id as storeId,

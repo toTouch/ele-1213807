@@ -144,4 +144,9 @@ public class UserCarRentalPackageDO {
     
     private Long residue;
     
+    /**
+     * 购买订单编号
+     */
+    private String rentalPackageOrderNo;
+    
 }

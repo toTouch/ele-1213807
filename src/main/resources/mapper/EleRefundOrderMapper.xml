@@ -386,4 +386,13 @@
             #{orderId}
         </foreach>
     </select>
+    
+    <select id="selectLastSuccessOrderByUid" resultType="com.xiliulou.electricity.bo.EleDepositRefundBO">
+        select ero.order_id, ero.update_time, edo.uid
+        from t_ele_refund_order ero
+                 left join t_ele_deposit_order edo on ero.order_id = edo.order_id
+        where edo.uid = #{uid}
+          and ero.status = 4
+        order by id desc limit 1
+    </select>
 </mapper>

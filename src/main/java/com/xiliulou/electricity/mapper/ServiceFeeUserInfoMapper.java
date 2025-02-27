@@ -22,4 +22,6 @@ public interface ServiceFeeUserInfoMapper extends BaseMapper<ServiceFeeUserInfo>
     int deleteByUid(Long uid);
 
     List<ServiceFeeUserInfo> selectDisableMembercardList(@Param("offset") int offset, @Param("size") int size);
+    
+    List<ServiceFeeUserInfo> selectListByUidList(@Param("uidList") List<Long> uidList);
 }

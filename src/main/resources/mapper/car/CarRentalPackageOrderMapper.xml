@@ -433,13 +433,14 @@
           and pay_state = 2
     </select>
     
-    <select id="selectListByUidAndUseStatus" resultType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo">
+    <select id="selectListUnUseAndRefundByUidList" resultType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo">
         SELECT
         <include refid="all_field"/>
         FROM
         <include refid="table_name"/>
         <where>
-            use_state = #{useStatus} and uid in
+            tenant_id = #{tenantId} AND use_state = 1 AND pay_state = 2 AND rent_rebate = 0 AND rent_rebate_end_time <![CDATA[ > ]]>
+            #{rentRebateEndTime} AND del_flag = 0 and uid in
             <foreach collection="uidList" open="(" close=")" separator="," item="uid">
                 #{uid}
             </foreach>

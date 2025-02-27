@@ -21,6 +21,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -270,20 +271,24 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
             depositRefundFlag = false;
         } else {
             String depositPayOrderNo = carRentalPackageMemberTermPo.getDepositPayOrderNo();
-            CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = this.selectByOrderNo(depositPayOrderNo);
-            if (Objects.isNull(carRentalPackageDepositPayPo)) {
+            if (StringUtils.isBlank(depositPayOrderNo)) {
                 depositRefundFlag = false;
             } else {
-                if (!Objects.equals(carRentalPackageDepositPayPo.getPayState(), PayStateEnum.SUCCESS.getCode())) {
+                CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = this.selectByOrderNo(depositPayOrderNo);
+                if (Objects.isNull(carRentalPackageDepositPayPo)) {
                     depositRefundFlag = false;
                 } else {
-                    // 查询当前订单是否存在退押的状态
-                    CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
-                    if (Objects.nonNull(depositRefundEntity)) {
-                        // 正在退押或已退押->不可退
-                        if (Objects.equals(depositRefundEntity.getRefundState(), RefundStateEnum.REFUNDING.getCode()) || Objects.equals(depositRefundEntity.getRefundState(),
-                                RefundStateEnum.SUCCESS.getCode())) {
-                            depositRefundFlag = false;
+                    if (!Objects.equals(carRentalPackageDepositPayPo.getPayState(), PayStateEnum.SUCCESS.getCode())) {
+                        depositRefundFlag = false;
+                    } else {
+                        // 查询当前订单是否存在退押的状态
+                        CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
+                        if (Objects.nonNull(depositRefundEntity)) {
+                            // 正在退押或已退押->不可退
+                            if (Objects.equals(depositRefundEntity.getRefundState(), RefundStateEnum.REFUNDING.getCode()) || Objects.equals(depositRefundEntity.getRefundState(),
+                                    RefundStateEnum.SUCCESS.getCode())) {
+                                depositRefundFlag = false;
+                            }
                         }
                     }
                 }

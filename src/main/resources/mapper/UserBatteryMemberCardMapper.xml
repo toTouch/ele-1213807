@@ -410,4 +410,12 @@
             limit #{offset}
             , #{size}
     </select>
+    
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserBatteryMemberCard">
+        <include refid="selectUserBatteryMemberCard"/>
+         where uid in
+        <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
 </mapper>

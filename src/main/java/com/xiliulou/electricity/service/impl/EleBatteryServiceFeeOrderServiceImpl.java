@@ -338,4 +338,10 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         
         return expiredProtectionTime;
     }
+    
+    @Slave
+    @Override
+    public List<EleBatteryServiceFeeOrder> listByOrderNoList(List<String> expireOrderNoList, Integer tenantId) {
+        return eleBatteryServiceFeeOrderMapper.selectListByOrderNoList(expireOrderNoList, tenantId);
+    }
 }

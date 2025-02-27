@@ -21,12 +21,13 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="depositRefundRebateSwitch" column="deposit_refund_rebate_switch" jdbcType="INTEGER"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="InvitationActivityMap">
         select
-          id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id, franchisee_id
+          id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id, franchisee_id, deposit_refund_rebate_switch
         from t_invitation_activity
         where id = #{id} and del_flag =0
     </select>
@@ -250,6 +251,9 @@
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
+            </if>
+            <if test="depositRefundRebateSwitch != null">
+                deposit_refund_rebate_switch = #{depositRefundRebateSwitch},
             </if>
         </set>
         where id = #{id}

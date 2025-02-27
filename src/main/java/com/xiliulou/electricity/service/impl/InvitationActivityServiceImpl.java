@@ -34,6 +34,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.InvitationActivityMemberCardVO;
@@ -96,6 +97,9 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Resource
     private UserInfoService userInfoService;
+    
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("shareActivityHandlerExecutor", 1, "SHARE_ACTIVITY_HANDLER_EXECUTOR");
     
@@ -267,6 +271,9 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             invitationActivityUpdate.setHours(NumberConstant.ZERO);
         }
         
+        // 默认开启
+        invitationActivityUpdate.setDepositRefundRebateSwitch(query.getDepositRefundRebateSwitch());
+        
         Integer update = this.update(invitationActivityUpdate);
         
         if (update > 0) {
@@ -280,6 +287,13 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             if (CollectionUtils.isNotEmpty(shareActivityMemberCards)) {
                 invitationActivityMemberCardService.batchInsert(shareActivityMemberCards);
             }
+    
+            Map<String, Object> oldMap = new HashMap<>();
+            oldMap.put("depositRefundRebateSwitch", invitationActivity.getDepositRefundRebateSwitch());
+            Map<String, Object> newMap = new HashMap<>();
+            newMap.put("invitationActivityName", invitationActivity.getName());
+            newMap.put("depositRefundRebateSwitch", invitationActivityUpdate.getDepositRefundRebateSwitch());
+            operateRecordUtil.record(oldMap, newMap);
         }
         
         return Triple.of(true, null, null);

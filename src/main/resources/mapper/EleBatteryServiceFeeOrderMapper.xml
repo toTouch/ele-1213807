@@ -413,5 +413,20 @@
         </where>
     </select>
     
+    <select id="selectListByOrderNoList" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_ele_battery_service_fee_order te
+        <where>
+            tenant_id =#{tenantId}
+            <if test="expireOrderNoList != null">
+                and te.order_id in
+                <foreach collection="expireOrderNoList" item="orderNo" index="index" open="(" close=")" separator=",">
+                    #{orderNo}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 </mapper>

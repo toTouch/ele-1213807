@@ -4,6 +4,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.UserBatteryDepositBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.mapper.UserBatteryDepositMapper;
@@ -91,6 +92,12 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
     @Override
     public List<UserBatteryDeposit> listByUidList(Integer tenantId, List<Long> uidList) {
         return userBatteryDepositMapper.selectListByUidList(tenantId, uidList);
+    }
+    
+    @Slave
+    @Override
+    public List<UserBatteryDepositBO> listPayTypeByUidList(Integer tenantId, List<Long> uidList) {
+        return userBatteryDepositMapper.selectPayTypeByUidList(tenantId, uidList);
     }
     
     /**
