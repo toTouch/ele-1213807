@@ -89,7 +89,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
         // 旧标签会从电池中取，所以把要把电池中的清除掉
         Integer newLabel = battery.getLabel();
         battery.setLabel(null);
-        batteryLabelRecordService.sendRecord(battery, SecurityUtils.getUid(), newLabel, now);
+        batteryLabelRecordService.sendRecord(battery, SecurityUtils.getUid(), newLabel, now, null, null);
     }
     
     @Override
@@ -107,7 +107,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             
             Integer newLabel = battery.getLabel();
             battery.setLabel(null);
-            batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, now);
+            batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, now, null, null);
         }
         
         electricityBatteryLabelMapper.batchInsert(batteryLabels);

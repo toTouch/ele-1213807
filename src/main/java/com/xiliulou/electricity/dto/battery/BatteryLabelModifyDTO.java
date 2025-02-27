@@ -35,12 +35,18 @@ public class BatteryLabelModifyDTO {
      */
     private Long newReceiverId;
     
+    public BatteryLabelModifyDTO(Integer newLabel) {
+        this.newLabel = newLabel;
+    }
+    
     public BatteryLabelModifyDTO(Integer newLabel, Long operatorUid) {
         this.newLabel = newLabel;
         this.operatorUid = operatorUid;
     }
     
-    public BatteryLabelModifyDTO(Integer newLabel) {
+    public BatteryLabelModifyDTO(Integer newLabel, Long operatorUid, Long newReceiverId) {
         this.newLabel = newLabel;
+        this.operatorUid = operatorUid;
+        this.newReceiverId = newReceiverId;
     }
 }
