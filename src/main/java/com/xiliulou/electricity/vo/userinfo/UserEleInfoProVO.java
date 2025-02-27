@@ -106,5 +106,10 @@ public class UserEleInfoProVO {
      * 删除/注销时间
      */
     private Long delTime;
-    
+
+
+    /**
+     * 是否展示线下履约，0否，1是
+     */
+    private Integer isViewOffLineAgree = 0;
 }

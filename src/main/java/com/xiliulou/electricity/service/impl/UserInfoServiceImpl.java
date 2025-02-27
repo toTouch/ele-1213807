@@ -3500,14 +3500,28 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 eleInfoProVO.setLimitCount(batteryMemberCard.getLimitCount());
             }
 
+
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
             if (Objects.nonNull(userBatteryMemberCard)) {
                 userBatteryMemberCardList.add(userBatteryMemberCard);
+                // 添加是否展示线下履约按钮
+                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(
+                        userBatteryMemberCard.getOrderId());
+                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())
+                        && Objects.nonNull(electricityMemberCardOrder) && Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_EXPIRE)
+                ) {
+                    InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
+                            CollUtil.newArrayList(InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN));
+                    eleInfoProVO.setIsViewOffLineAgree(Objects.nonNull(installmentRecord) ? DetailsBatteryInfoVo.IS_VIEW_OFF_LINE_AGREE : DetailsBatteryInfoVo.NOT_IS_VIEW_OFF_LINE_AGREE);
+                }
+
             }
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
             if (Objects.nonNull(userBatteryDeposit)) {
                 userBatteryDepositList.add(userBatteryDeposit);
             }
+
+
 
             // 封装basicInfo
             UserBasicInfoEleProVO basicInfo = UserBasicInfoEleProVO.builder().name(item.getName()).phone(item.getPhone()).batteryDepositStatus(item.getBatteryDepositStatus())
