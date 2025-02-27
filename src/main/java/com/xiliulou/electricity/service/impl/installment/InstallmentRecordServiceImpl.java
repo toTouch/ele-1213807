@@ -263,17 +263,16 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private void setPackageMessage(InstallmentRecordVO installmentRecordVO, InstallmentRecord installmentRecord) {
         if (Objects.equals(installmentRecordVO.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecordVO.getPackageId());
-            if (Objects.isNull(batteryMemberCard)) {
-                return;
+
+            if (Objects.nonNull(batteryMemberCard)) {
+                installmentRecordVO.setPackageName(batteryMemberCard.getName());
+                installmentRecordVO.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
+                installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
+                installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
+                installmentRecordVO.setUnpaidAmount(batteryMemberCard.getRentPrice().subtract(installmentRecord.getPaidAmount()));
+                installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
             }
-            
-            installmentRecordVO.setPackageName(batteryMemberCard.getName());
-            installmentRecordVO.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
-            installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
-            installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
-            installmentRecordVO.setUnpaidAmount(batteryMemberCard.getRentPrice().subtract(installmentRecord.getPaidAmount()));
-            installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
-            
+
             if (Objects.equals(installmentRecordVO.getInstallmentNo(), 1)) {
                 return;
             }
