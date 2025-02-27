@@ -143,7 +143,6 @@ import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.userinfo.UserAccountInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserBasicInfoCarProVO;
 import com.xiliulou.electricity.vo.userinfo.UserBasicInfoEleProVO;
-import com.xiliulou.electricity.vo.userinfo.UserCarInfoProMoreVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageProV2VO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageProVO;
