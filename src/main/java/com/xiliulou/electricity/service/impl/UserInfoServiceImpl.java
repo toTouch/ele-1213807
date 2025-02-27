@@ -2914,6 +2914,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
         vo.setDownPayment(Objects.isNull(batteryMemberCard) ? BigDecimal.valueOf(0.0) : batteryMemberCard.getDownPayment());
         vo.setValidDays(Objects.isNull(batteryMemberCard) ? 0 : batteryMemberCard.getValidDays());
+        vo.setBusinessType(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getBusinessType());
 
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(
                 userBatteryMemberCard.getOrderId());

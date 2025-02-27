@@ -134,6 +134,8 @@ public class DetailsBatteryInfoVo {
 
     private Integer validDays;
 
+    private Integer businessType;
+
     public static Integer IS_VIEW_OFF_LINE_AGREE = 1;
     public static Integer NOT_IS_VIEW_OFF_LINE_AGREE = 0;
 }
