@@ -644,7 +644,18 @@ public class UserServiceImpl implements UserService {
         
         // 不是同一个表内的数据，只能自己级联查询
         // 收集租户id并查询关联的加盟商
+        List<UserSearchVO> administrators = new ArrayList<>();
+        List<Long> tenantUserUid = new ArrayList<>();
         if (Objects.nonNull(tenantId)) {
+            // 查询租户下运营商级别的管理员
+            List<UserSearchVO> tenantUsers = listTenantUsers(tenantId);
+            if (CollectionUtils.isNotEmpty(tenantUsers)) {
+                administrators.addAll(tenantUsers);
+                // 需要排除掉的uid，数据权限可以交叉绑定，需要排除掉已经查询过的租户
+                tenantUserUid = tenantUsers.stream().map(UserSearchVO::getUid).collect(Collectors.toList());
+            }
+            
+            // 查询租户下属的加盟商
             List<Long> franchiseeIdsSearch = franchiseeService.listFranchiseeIdsByTenantId(tenantId);
             if (CollectionUtils.isNotEmpty(franchiseeIdsSearch)) {
                 franchiseeIds.addAll(franchiseeIdsSearch);
@@ -668,11 +679,17 @@ public class UserServiceImpl implements UserService {
         }
         
         if (CollectionUtils.isEmpty(allDataIds)) {
-            return R.ok();
+            return R.ok(administrators);
         }
         
         request.setAllDataIds(allDataIds);
-        return R.ok(userMapper.selectListAdministrator(request));
+        request.setRuleOutUIds(tenantUserUid);
+        List<UserSearchVO> userSearchVOS = userMapper.selectListAdministrator(request);
+        if (CollectionUtils.isNotEmpty(userSearchVOS)) {
+            administrators.addAll(userSearchVOS);
+        }
+        
+        return R.ok(administrators);
     }
     
     @Override

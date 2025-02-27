@@ -350,6 +350,12 @@
 		<if test="name != null and name != ''">
 			and tu.name like concat('%', #{name}, '%')
 		</if>
+		<if test="ruleOutUIds != null and ruleOutUIds.size() > 0">
+			and tu.uid not in
+			<foreach collection="ruleOutUIds" item="ruleOutUId" open="(" separator="," close=")">
+				#{ruleOutUId}
+			</foreach>
+		</if>
 		limit #{offset}, #{size}
 	</select>
 	

@@ -26,9 +26,14 @@ public class BatteryLabelModifyDTO {
     private Long operatorUid;
     
     /**
+     * 旧领用人id，管理员uid或商户id
+     */
+    private Long oldReceiverId;
+    
+    /**
      * 领用人，管理员uid或者商户id
      */
-    private Long receiverId;
+    private Long newReceiverId;
     
     public BatteryLabelModifyDTO(Integer newLabel, Long operatorUid) {
         this.newLabel = newLabel;

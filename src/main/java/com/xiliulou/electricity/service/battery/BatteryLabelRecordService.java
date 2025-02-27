@@ -12,7 +12,7 @@ import java.util.List;
  **/
 public interface BatteryLabelRecordService {
 
-    void sendRecord(ElectricityBattery battery, Long uid, Integer newLabel, Long updateTime);
+    void sendRecord(ElectricityBattery battery, Long operatorUid, Integer newLabel, Long updateTime, Long oldReceiverId, Long newReceiverId);
     
     List<BatteryLabelRecord> listPage(BatteryLabelRecordRequest request);
     

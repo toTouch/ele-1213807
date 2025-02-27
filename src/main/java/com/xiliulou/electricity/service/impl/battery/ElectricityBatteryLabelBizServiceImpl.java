@@ -32,7 +32,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.BatteryLabelBatchUpdateVO;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -253,7 +252,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 return R.ok(BatteryLabelBatchUpdateVO.builder().successCount(0).failureCount(failureCount).failReasons(failReasons).build());
             }
             
-            BatteryLabelModifyDTO modifyDto = BatteryLabelModifyDTO.builder().newLabel(newLabel).operatorUid(user.getUid()).receiverId(request.getReceiverId()).build();
+            BatteryLabelModifyDTO modifyDto = BatteryLabelModifyDTO.builder().newLabel(newLabel).operatorUid(user.getUid()).newReceiverId(request.getReceiverId()).build();
             String traceId = MDC.get(CommonConstant.TRACE_ID);
             batteriesNeedUpdate.parallelStream().forEach(battery -> {
                 MDC.put(CommonConstant.TRACE_ID, traceId);

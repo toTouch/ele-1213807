@@ -38,12 +38,14 @@ public class BatteryLabelRecordServiceImpl implements BatteryLabelRecordService 
     
     
     @Override
-    public void sendRecord(ElectricityBattery battery, Long uid, Integer newLabel, Long updateTime) {
+    public void sendRecord(ElectricityBattery battery, Long operatorUid, Integer newLabel, Long updateTime, Long oldReceiverId, Long newReceiverId) {
         BatteryLabelRecord record = new BatteryLabelRecord();
         record.setSn(battery.getSn());
         record.setOldLabel(battery.getLabel());
         record.setNewLabel(newLabel);
-        record.setOperatorUid(uid);
+        record.setOperatorUid(operatorUid);
+        record.setOldReceiverId(oldReceiverId);
+        record.setNewReceiverId(newReceiverId);
         record.setTenantId(battery.getTenantId());
         record.setFranchiseeId(battery.getFranchiseeId());
         record.setExchangeTime(TimeUtils.convertToStandardFormatTime(updateTime));

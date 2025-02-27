@@ -34,6 +34,26 @@ public class BatteryLabelRecord {
     private String operatorName;
     
     /**
+     * 旧领用人id，管理员uid或商户id
+     */
+    private Long oldReceiverId;
+    
+    /**
+     * 旧领用人名称
+     */
+    private String oldReceiverName;
+    
+    /**
+     * 新领用人id，管理员uid或商户id
+     */
+    private Long newReceiverId;
+    
+    /**
+     * 新领用人名称
+     */
+    private String newReceiverName;
+    
+    /**
      * 租户id
      */
     private Integer tenantId;
