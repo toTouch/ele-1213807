@@ -134,4 +134,14 @@ public class UserCarRentalPackageProV2VO {
      * 所属门店名称
      */
     private String storeName;
+    
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
+    
+    /**
+     * 删除/注销时间
+     */
+    private Long delTime;
 }

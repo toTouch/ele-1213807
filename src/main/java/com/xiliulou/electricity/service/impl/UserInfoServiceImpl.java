@@ -34,6 +34,7 @@ import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -1091,12 +1092,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         .collect(Collectors.toMap(CarRentalPackageDepositPayPo::getOrderNo, CarRentalPackageDepositPayPo::getPayType, (k1, k2) -> k1));
             }
         }
-        // 查询车辆
+        // 查询车辆信息
         List<ElectricityCar> carList = electricityCarService.listByUidList(uidList, CommonConstant.DEL_N);
         Map<Long, ElectricityCar> carMap = null;
         if (CollectionUtils.isNotEmpty(carList)) {
             carMap = carList.stream().collect(Collectors.toMap(ElectricityCar::getUid, Function.identity()));
         }
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
         
         Map<Long, CarRentalPackagePo> finalPackageMap = packageMap;
         Map<Long, Franchisee> finalFranchiseeMap = franchiseeMap;
@@ -1164,6 +1169,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     vo.setCarSn(car.getSn());
                 }
             }
+    
+            // 查询已删除/已注销
+            Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+            if (MapUtils.isEmpty(userStatusMap)) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+            } else {
+                if (userStatusMap.containsKey(uid)) {
+                    UserDelStatusDTO userDelStatusDTO = userStatusMap.get(uid);
+                    if (Objects.nonNull(userDelStatusDTO)) {
+                        vo.setDelTime(userDelStatusDTO.getDelTime());
+                        userStatus = userDelStatusDTO.getUserStatus();
+                    }
+                }
+            }
+            vo.setUserStatus(userStatus);
             
             return vo;
         }).collect(Collectors.toList());
@@ -1196,32 +1216,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setCarRentalPackageOrderRefundFlag(carRentalPackageOrderService.isCarRentalPackageOrderRefund(uid, tenantId, carRentalPackageMemberTermPo));
     
         return R.ok(vo);
-    }
-    
-    /**
-     * 当前订单是否已失效/已退租
-     */
-    private Map<Long, Boolean> getUsingRentedOrderPro(List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO) {
-        if (CollectionUtils.isEmpty(uidList) || Objects.isNull(carUserMemberInfoProDTO)) {
-            return null;
-        }
-    
-        List<CarRentalPackageOrderPo> usingPackageOrderList = carUserMemberInfoProDTO.getUsingPackageOrderList();
-        if (CollectionUtils.isEmpty(usingPackageOrderList)) {
-            return null;
-        }
-
-        Map<Long, Boolean> usingRentRefundFlagMap = new HashMap<>();
-        usingPackageOrderList.forEach(item -> {
-            Integer useState = item.getUseState();
-            if (Objects.equals(useState, UseStateEnum.IN_USE.getCode())) {
-                usingRentRefundFlagMap.put(item.getUid(), true);
-            } else {
-                usingRentRefundFlagMap.put(item.getUid(), false);
-            }
-        });
-
-        return usingRentRefundFlagMap;
     }
     
     private Map<Long, Boolean> getCarNoUsingOrderPro(Integer tenantId, List<Long> uidList) {
@@ -3961,6 +3955,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<Long, BigDecimal> userServiceFeeMap = serviceFeeUserInfoService.acquireUserBatteryServiceFeeByUserList(userInfoList, userBatteryMemberCardList, batteryMemberCards,
                 serviceFeeUserInfoList);
     
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+    
         Map<Long, BatteryMemberCard> finalBatteryMemberCardMap = batteryMemberCardMap;
         Map<Long, UserBatteryDepositBO> finalUserBatteryDepositMap = userBatteryDepositMap;
         Map<Long, Franchisee> finalFranchiseeMap = franchiseeMap;
@@ -4008,6 +4006,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (MapUtils.isNotEmpty(userServiceFeeMap) && userServiceFeeMap.containsKey(uid) && Objects.nonNull(userServiceFeeMap.get(uid))) {
                 vo.setUserBatteryServiceFee(userServiceFeeMap.get(uid));
             }
+    
+            // 查询已删除/已注销
+            Integer userStatus = UserStatusEnum.USER_STATUS_VO_COMMON.getCode();
+            if (Objects.equals(item.getDelFlag(), CommonConstant.DEL_Y)) {
+                userStatus = UserStatusEnum.USER_STATUS_VO_DELETED.getCode();
+        
+                UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(item.getUid(),
+                        List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+                if (Objects.nonNull(userDelRecord)) {
+                    vo.setDelTime(userDelRecord.getDelTime());
+                    if (Objects.equals(userDelRecord.getStatus(), UserStatusEnum.USER_STATUS_CANCELLED.getCode())) {
+                        userStatus = UserStatusEnum.USER_STATUS_VO_CANCELLED.getCode();
+                    }
+                }
+            }
+            vo.setUserStatus(userStatus);
         
             return vo;
         }).collect(Collectors.toList());
