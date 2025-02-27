@@ -29,11 +29,6 @@ public class InstallmentRecordVO extends InstallmentRecord {
     private String franchiseeName;
     
     /**
-     * 分期套餐服务费
-     */
-    private BigDecimal installmentServiceFee;
-    
-    /**
      * 分期套餐首期费用
      */
     private BigDecimal downPayment;

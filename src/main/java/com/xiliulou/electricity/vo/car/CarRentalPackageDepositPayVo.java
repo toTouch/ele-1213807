@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.car;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
@@ -163,4 +164,9 @@ public class CarRentalPackageDepositPayVo implements Serializable {
     */
     private BigDecimal payTransAmt;
     
+    
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
 }

@@ -17,6 +17,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleUserEsignRecord;
@@ -42,6 +43,7 @@ import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.OrderCheckEnum;
 import com.xiliulou.electricity.enums.OrderDataModeEnums;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
@@ -60,6 +62,7 @@ import com.xiliulou.electricity.query.SelectionExchangeCheckQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
@@ -222,7 +225,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Resource
     private LessTimeExchangeService lessTimeExchangeService;
-
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
 
     
     /**
@@ -423,16 +428,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (ObjectUtils.isNotEmpty(userInfos)) {
                 userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
             }
-            Map<Long, String> finalUserNameMap = userNameMap;
+    
+            // 查询已删除/已注销
+            Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uIdList,
+                    List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
             
+            Map<Long, String> finalUserNameMap = userNameMap;
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
+                Long uid = e.getUid();
                 
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
                 
                 // 设置会员名称
-                if (ObjectUtils.isNotEmpty(finalUserNameMap.get(e.getUid()))) {
-                    e.setUName(finalUserNameMap.get(e.getUid()));
+                if (ObjectUtils.isNotEmpty(finalUserNameMap.get(uid))) {
+                    e.setUName(finalUserNameMap.get(uid));
                 }
                 
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
@@ -454,7 +464,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.nonNull(franchisee)) {
                     e.setFranchiseeName(franchisee.getName());
                 }
-                
+    
+                // 查询已删除/已注销
+                e.setUserStatus(userDelRecordService.getUserStatus(uid, userStatusMap));
             });
         }
         

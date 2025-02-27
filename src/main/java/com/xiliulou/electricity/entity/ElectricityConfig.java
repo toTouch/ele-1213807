@@ -191,6 +191,21 @@ public class ElectricityConfig {
     private Integer chargeRateType;
     
     /**
+     * 流失用户拉新 0 - 开启, 1 - 关闭
+     */
+    private Integer lostUserFirst;
+    
+    /**
+     * 流失用户转化条件
+     */
+    private Integer lostUserDays;
+    
+    /**
+     * 允许原邀请人重新邀请：0-允许, 1 - 不允许
+     */
+    private Integer allowOriginalInviter;
+    
+    /**
      * 是否舒适换电，默认0关闭，1是开启
      */
     private Integer isComfortExchange;

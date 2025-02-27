@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityConfigExtraMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, tenant_id, create_time, update_time, account_del_switch, withdraw_amount_limit
+    </sql>
+    
+    <insert id="insert">
+        insert into t_electricity_config_extra(tenant_id, create_time, update_time)
+        values (#{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="update">
+        update t_electricity_config_extra
+        <set>
+            <if test="accountDelSwitch != null">
+                account_del_switch = #{accountDelSwitch},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+    
+    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.ElectricityConfigExtra">
+        select
+        <include refid="basic_field"/>
+        from t_electricity_config_extra
+        where tenant_id = #{tenantId} limit 1;
+    </select>
+
+
+</mapper>

@@ -12,26 +12,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
-import com.xiliulou.electricity.entity.UnionPayOrder;
-import com.xiliulou.electricity.entity.UnionTradeOrder;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
@@ -44,6 +25,7 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderType
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
@@ -1001,7 +983,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("INSTALLMENT PAY WARN! not found user,uid={}", uid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
-            
+
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userInfoExtra)) {
+                log.warn("INSTALLMENT PAY WARN! not found user extra,uid={}", uid);
+                return R.fail("120125", "未找到用户");
+            }
+
             InstallmentRecord installmentRecord = installmentSearchApiService.queryUsingRecordForUser(uid);
             if (Objects.nonNull(installmentRecord)) {
                 return R.fail("301008", "当前有进行中的分期签约，完成或取消当前分期签约后方可续签分期套餐");
@@ -1083,7 +1071,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
                 
                 // 校验用户与套餐的分组是否一致
-                Triple<Boolean, String, String> checkMemberCardGroup = userInfoService.checkMemberCardGroup(userInfo, batteryMemberCard);
+                Triple<Boolean, String, String> checkMemberCardGroup = userInfoService.checkMemberCardGroup(userInfo, batteryMemberCard, userInfoExtra);
                 if (!checkMemberCardGroup.getLeft()) {
                     return R.fail(checkMemberCardGroup.getMiddle(), checkMemberCardGroup.getRight());
                 }
@@ -1134,7 +1122,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 // 生成一期子套餐订单
                 Triple<Boolean, String, ElectricityMemberCardOrder> memberCardOrderTriple = electricityMemberCardOrderService.generateInstallmentMemberCardOrder(userInfo,
-                        batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight());
+                        batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight(), null);
                 if (Objects.isNull(memberCardOrderTriple) || Boolean.FALSE.equals(memberCardOrderTriple.getLeft()) || Objects.isNull(memberCardOrderTriple.getRight())) {
                     log.info("INSTALLMENT PAY INFO! generate memberCardOrder fail, uid={}", uid);
                     return R.fail("301001", "购买分期套餐失败，请联系管理员");

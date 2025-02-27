@@ -3,18 +3,21 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositPayQryReq;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +49,10 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
     
     @Resource
     private FreeDepositOrderService freeDepositOrderService;
-
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
     /**
      * 根据订单编号同步免押状态
      * @param orderNo 押金缴纳订单编码
@@ -108,6 +114,11 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         Map<String, CarRentalPackageDepositRefundPo> refundPoMap = depositRefundPos.stream().collect(Collectors.toMap(CarRentalPackageDepositRefundPo::getDepositPayOrderNo, Function.identity(), (k1, k2) -> k2));
         
         Map<String, Double> payTransAmtMap = freeDepositOrderService.selectPayTransAmtByOrderIdsToMap(depositPayOrderNoList);
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(new ArrayList<>(uids),
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        
         // 模型转换，封装返回
         List<CarRentalPackageDepositPayVo> depositPayVOList = depositPayEntityList.stream().map(depositPayEntity -> {
             CarRentalPackageDepositPayVo depositPayVO = new CarRentalPackageDepositPayVo();
@@ -149,6 +160,9 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
             if (payTransAmtMap.containsKey(depositPayEntity.getOrderNo())){
                 depositPayVO.setPayTransAmt(BigDecimal.valueOf(payTransAmtMap.get(depositPayEntity.getOrderNo())));
             }
+    
+            // 查询已删除/已注销
+            depositPayVO.setUserStatus(userDelRecordService.getUserStatus(depositPayEntity.getUid(), userStatusMap));
             return depositPayVO;
         }).collect(Collectors.toList());
 

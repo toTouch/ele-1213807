@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * (UserInfoExtra)表数据库访问层
@@ -20,4 +21,5 @@ public interface UserInfoExtraMapper extends BaseMapper<UserInfoExtra> {
 
     int deleteByUid(Long uid);
     
+    Integer updateUserNotActivityByUid(@Param("uid") Long uid, @Param("updateTime") Long updateTime);
 }

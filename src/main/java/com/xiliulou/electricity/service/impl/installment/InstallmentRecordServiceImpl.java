@@ -28,6 +28,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_CANCEL_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UNPAID;
@@ -147,6 +149,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
 
             Integer installmentNo = batteryMemberCard.getValidDays() / 30;
             installmentRecord.setInstallmentNo(installmentNo);
+            installmentRecord.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
             installmentRecord.setTenantId(batteryMemberCard.getTenantId());
             installmentRecord.setFranchiseeId(batteryMemberCard.getFranchiseeId());
             installmentRecord.setPackageId(batteryMemberCard.getId());
@@ -263,13 +266,15 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private void setPackageMessage(InstallmentRecordVO installmentRecordVO, InstallmentRecord installmentRecord) {
         if (Objects.equals(installmentRecordVO.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecordVO.getPackageId());
-
+            
+            // 根据代扣计划计算签约总金额与未支付金额
+            Pair<BigDecimal, BigDecimal> pair = installmentTerminatingRecordService.queryRentPriceAndUnpaidAmount(installmentRecord.getExternalAgreementNo());
+            
             if (Objects.nonNull(batteryMemberCard)) {
                 installmentRecordVO.setPackageName(batteryMemberCard.getName());
-                installmentRecordVO.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
                 installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
-                installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
-                installmentRecordVO.setUnpaidAmount(batteryMemberCard.getRentPrice().subtract(installmentRecord.getPaidAmount()));
+                installmentRecordVO.setRentPrice(pair.getLeft());
+                installmentRecordVO.setUnpaidAmount(pair.getRight());
                 installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
             }
 

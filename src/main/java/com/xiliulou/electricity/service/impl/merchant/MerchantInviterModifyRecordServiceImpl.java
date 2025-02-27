@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantInviterModifyRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -91,8 +93,13 @@ public class MerchantInviterModifyRecordServiceImpl implements MerchantInviterMo
                 
                 recordVO.setOldInviterName(inviterName);
             }
-            
-            recordVO.setOperator(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).orElse(new User()).getName());
+    
+            // 流失用户操作人为系统
+            if (Objects.equals(item.getOperator(), NumberConstant.ZERO_L)) {
+                recordVO.setOperator(MerchantInviterModifyRecordConstant.LOST_USER_OPERATOR);
+            } else {
+                recordVO.setOperator(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).orElse(new User()).getName());
+            }
             
             recordVO.setOldInviterSource(inviterSource);
             recordVO.setOperateTime(item.getCreateTime());
@@ -109,5 +116,16 @@ public class MerchantInviterModifyRecordServiceImpl implements MerchantInviterMo
         queryModel.setTenantId(TenantContextHolder.getTenantId());
         
         return merchantInviterModifyRecordMapper.countTotal(queryModel);
+    }
+    
+    @Override
+    @Slave
+    public boolean existsModifyRecordByUid(Long uid) {
+        Integer count = merchantInviterModifyRecordMapper.existsModifyRecordByUid(uid);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
     }
 }
