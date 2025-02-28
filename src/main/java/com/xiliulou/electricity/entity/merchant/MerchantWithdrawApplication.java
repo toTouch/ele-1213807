@@ -153,4 +153,20 @@ public class MerchantWithdrawApplication {
      * 加盟商ID
      */
     private Long franchiseeId;
+
+    /**
+     * 业务类型：0-旧，1-新
+     */
+    private Integer type;
+
+    /**
+     * 微信订单状态：-1（审核拒绝，老流程数据，待审核，发起转账接口失败），,0-ACCEPTED，1-PROCESSING，2-WAIT_USER_CONFIRM
+     * ，3-TRANSFERING，4-SUCCESS，5-FAIL，6-CANCELING，7-CANCELLED
+     */
+    private Integer state;
+
+    /**
+     * 用户确认收款参数
+     */
+    private String packageInfo;
 }

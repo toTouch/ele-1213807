@@ -10,6 +10,7 @@ import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -56,6 +57,9 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
     
     @Resource
     private UserInfoExtraService userInfoExtraService;
+	
+	@Resource
+	private UserDelRecordService userDelRecordService;
 
 	/**
 	 * 修改数据
@@ -77,7 +81,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.warn("joinActivity  ERROR! not found user ");
+			log.warn("join share money activity WARN! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -87,7 +91,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.warn("joinActivity  WARN! not found userInfo,uid:{} ", user.getUid());
+			log.warn("join share money activity WARN! not found userInfo,uid={} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 		
@@ -100,14 +104,14 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//查找活动
 		ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByStatus(activityId);
 		if (Objects.isNull(shareMoneyActivity)) {
-			log.warn("joinActivity WARN! not found Activity ! ActivityId={} ", activityId);
+			log.warn("join share money activity WARN! not found Activity! ActivityId={} ", activityId);
 			return R.fail("ELECTRICITY.00106", "活动已下架");
 		}
 
 		//查找分享的用户
 		User oldUser = userService.queryByUidFromCache(uid);
 		if (Objects.isNull(oldUser)) {
-			log.warn("joinActivity  WARN! not found oldUser ,uid :{}", uid);
+			log.warn("join share money activity WARN! not found oldUser ,uid :{}", uid);
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -122,9 +126,16 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			return canJoinActivity;
 		}
 		
+		// 是否被删除过的老用户
+		if (userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), tenantId)) {
+			log.warn("join share money activity WARN! The user ever deleted, joinUid={}, phone={}", uid, oldUser.getPhone());
+			return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
+		}
+		
 		// 判断是否已经参与过该活动
 		List<JoinShareMoneyActivityHistory> joinShareMoneyActivityHistories = joinShareMoneyActivityHistoryService.queryUserJoinedActivity(user.getUid(), tenantId);
 		if (CollectionUtils.isNotEmpty(joinShareMoneyActivityHistories)) {
+			log.warn("join share money activity WARN! The user ever joined shareMoneyActivity, joinUid={}", uid);
 			return R.fail("110207", "已参加过邀请返现活动");
 		}
 		

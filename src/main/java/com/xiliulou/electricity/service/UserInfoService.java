@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -34,6 +36,8 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 用户集
      */
     List<UserInfo> page(UserInfoQuery userInfoQuery);
+    
+    List<UserInfoBO> pageV2(UserInfoQuery userInfoQuery);
     
     /**
      * 查询总数
@@ -196,11 +200,13 @@ public interface UserInfoService extends IService<UserInfo> {
     
     /**
      * 检查用户与换电套餐的分组是否匹配
-     * @param userInfo 用户信息
+     *
+     * @param userInfo          用户信息
      * @param batteryMemberCard 套餐信息
+     * @param userInfoExtra
      * @return 校验结果
      */
-    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard);
+    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserInfoExtra userInfoExtra);
     
     R bindBattery(BindBatteryRequest bindBatteryRequest);
     
@@ -209,4 +215,20 @@ public interface UserInfoService extends IService<UserInfo> {
     UserInfo queryByUidFromDB(Long uid);
     
     UserDepositStatusVO queryDepositStatus();
+    
+    R deleteAccountPreCheck();
+    
+    R deleteAccount();
+    
+    /**
+     * 0-正常,1-已删除, 2-已注销
+     */
+    Integer queryUserDelStatus(Long uid);
+    
+    /**
+     * 满足下面条件之一，即为老用户：
+     *  1、根据uid查询，payCount>0的用户
+     *  2、根据手机号查询，曾被删除后又重新注册的用户（删除前payCount>0）
+     */
+    Boolean isOldUser(UserInfo userInfo);
 }

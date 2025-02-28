@@ -144,4 +144,9 @@ public class RebateRecord {
      * 创建日期 yyyy-MM-dd
      */
     private String monthDate;
+
+    /**
+     * 消息id
+     */
+    private String messageId;
 }

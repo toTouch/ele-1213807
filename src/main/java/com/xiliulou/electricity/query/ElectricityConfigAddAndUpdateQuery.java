@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.enums.ElectricityConfigExtraEnum;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -8,6 +9,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -175,6 +177,23 @@ public class ElectricityConfigAddAndUpdateQuery {
     private Integer chargeRateType;
     
     /**
+     * 流失用户拉新 0 - 开启, 1 - 关闭
+     */
+    private Integer lostUserFirst;
+    
+    /**
+     * 流失用户转化条件
+     */
+    @Range(min = 30, max = 365, message = "流失用户转化条件: 最小30，最大365", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "流失用户转化条件不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer lostUserDays;
+    
+    /**
+     * 允许原邀请人重新邀请：0-允许, 1 - 不允许
+     */
+    private Integer allowOriginalInviter;
+    
+    /**
      * 是否开启舒适换电；默认是1是关闭，0是开启
      */
     private Integer isComfortExchange;
@@ -266,6 +285,13 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否绑定电池
      */
     private Integer isBindBattery;
+    
+    /**
+     * 用户账号注销开关：0-开启 1-关闭（默认）
+     *
+     * @see ElectricityConfigExtraEnum
+     */
+    private Integer accountDelSwitch;
 }
 
 

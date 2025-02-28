@@ -64,7 +64,7 @@ public class JsonAdminUserInfoGroupDetailHistoryController extends BasicControll
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -116,7 +116,7 @@ public class JsonAdminUserInfoGroupDetailHistoryController extends BasicControll
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("ELE WARN! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");

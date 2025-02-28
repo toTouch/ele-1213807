@@ -3,13 +3,13 @@
 <mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentRecordMapper">
     
     <sql id="columnsWithoutId">
-        uid, external_agreement_no, agreement_no, user_name, mobile, package_id, package_type, paid_amount, `status`, installment_no, paid_installment, tenant_id,
-        franchisee_id, create_time, update_time
+        uid, external_agreement_no, agreement_no, user_name, mobile, package_id, package_type, paid_amount, `status`, installment_no, paid_installment,
+        installment_service_fee, tenant_id,franchisee_id, create_time, update_time
     </sql>
     
     <sql id="fieldsWithoutId">
         #{uid}, #{externalAgreementNo}, #{agreementNo}, #{userName}, #{mobile}, #{packageId}, #{packageType}, #{paidAmount}, #{status}, #{installmentNo}, #{paidInstallment},
-        #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
+        #{installmentServiceFee}, #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
     </sql>
     
     <sql id="ifLabelsForWhere">
@@ -46,6 +46,9 @@
         <if test="paidInstallment != null">
             and paid_installment = #{paidInstallment}
         </if>
+        <if test="installmentServiceFee != null">
+            and installment_service_fee = #{installmentServiceFee}
+        </if>
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
@@ -76,6 +79,7 @@
         <result property="status" column="status" jdbcType="TINYINT"/>
         <result property="installmentNo" column="installment_no" jdbcType="TINYINT"/>
         <result property="paidInstallment" column="paid_installment" jdbcType="TINYINT"/>
+        <result property="installmentServiceFee" column="installment_service_fee" jdbcType="DECIMAL"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
         <result property="createTime" column="create_time" jdbcType="BIGINT"/>
@@ -178,6 +182,9 @@
             </if>
             <if test="paidInstallment != null">
                 paid_installment = #{paidInstallment},
+            </if>
+            <if test="installmentServiceFee != null">
+                installment_service_fee = #{installmentServiceFee},
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},

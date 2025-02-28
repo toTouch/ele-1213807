@@ -97,4 +97,9 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     private Integer tenantId;
     
     private Integer installmentRecordStatus;
+    
+    /**
+     * 用户状态:0-正常,1-已删除, 2-已注销
+     */
+    private Integer userStatus;
 }

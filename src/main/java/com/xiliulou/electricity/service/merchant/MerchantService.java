@@ -73,5 +73,6 @@ public interface MerchantService {
     Integer countOverdueUserTotal(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
 
     List<MerchantJoinUserVO> listOverdueUserByPage(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
-    
+
+    List<Merchant> list(int offset, int size);
 }

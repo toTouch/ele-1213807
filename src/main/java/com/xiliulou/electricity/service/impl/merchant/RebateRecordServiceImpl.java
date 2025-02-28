@@ -187,7 +187,18 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     public List<MerchantStatisticsUserVO> listRenewal(MerchantPromotionRenewalQueryModel renewalQueryModel) {
         return this.rebateRecordMapper.selectListRenewal(renewalQueryModel);
     }
-    
+
+    @Override
+    @Slave
+    public boolean existsRebateRecord(String messageId) {
+        Integer num = rebateRecordMapper.existsRebateRecord(messageId);
+        if (Objects.nonNull(num)) {
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleRebate(RebateRecord rebateRecord) {

@@ -45,5 +45,6 @@ public interface CouponActivityPackageService {
      * @see PackageTypeEnum
      */
     Boolean checkPackageIsValid(Coupon coupon, Long packageId, Integer packageType);
-    
+
+    void deleteByCouponId(Integer couponId, Integer tenantId);
 }

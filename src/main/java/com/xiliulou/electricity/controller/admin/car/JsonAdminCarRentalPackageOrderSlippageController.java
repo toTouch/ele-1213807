@@ -3,11 +3,14 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderSlippageQryReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVo;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +37,10 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
 
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
-
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
     /**
      * 条件查询列表
      * @param qryReq 请求参数类
@@ -81,15 +87,20 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
 
         // 加盟商信息
         Map<Long, String> franchiseeNameMap = getFranchiseeNameByIdsForMap(franchiseeIds);
-
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(new ArrayList<>(uids),
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        
         // 模型转换，封装返回
         List<CarRentalPackageOrderSlippageVo> slippageVOList = slippageEntityList.stream().map(slippageEntity -> {
 
             CarRentalPackageOrderSlippageVo slippageVo = new CarRentalPackageOrderSlippageVo();
             BeanUtils.copyProperties(slippageEntity, slippageVo);
-
+    
+            Long uid = slippageEntity.getUid();
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(slippageEntity.getUid(), new UserInfo());
+                UserInfo userInfo = userInfoMap.getOrDefault(uid, new UserInfo());
                 slippageVo.setUserRelName(userInfo.getName());
                 slippageVo.setUserPhone(userInfo.getPhone());
             }
@@ -97,7 +108,10 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
             if (!franchiseeNameMap.isEmpty()) {
                 slippageVo.setFranchiseeName(franchiseeNameMap.getOrDefault(Long.valueOf(slippageEntity.getFranchiseeId()), ""));
             }
-
+    
+            // 查询已删除/已注销
+            slippageVo.setUserStatus(userDelRecordService.getUserStatus(uid, userStatusMap));
+            
             return slippageVo;
         }).collect(Collectors.toList());
 

@@ -227,8 +227,29 @@
             #{query.phone}
         </foreach>
     </select>
-    
-    
+    <select id="selectListByUidAndTenantAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               phone,
+               create_time,
+               update_time,
+               `tenant_id`
+        FROM t_user_oauth_bind
+        WHERE uid in
+        <foreach collection="uidList" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+          and tenant_id = #{tenantId}
+          and source = #{source}
+    </select>
+
+
     <delete id="deleteByUid">
         delete
         from t_user_oauth_bind

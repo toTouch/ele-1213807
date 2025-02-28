@@ -137,6 +137,9 @@ public interface MerchantJoinRecordService {
     
     Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest);
     
+    MerchantJoinRecord queryNotSuccessByJoinUid(Long uid);
+    
+    
     MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId);
 
     List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList, long currentTime);

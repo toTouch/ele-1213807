@@ -105,4 +105,9 @@ public class CouponActivityPackageServiceImpl implements CouponActivityPackageSe
         
         return Boolean.TRUE;
     }
+
+    @Override
+    public void deleteByCouponId(Integer couponId, Integer tenantId) {
+        couponActivityPackageMapper.deleteByCouponId(couponId, tenantId);
+    }
 }

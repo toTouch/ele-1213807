@@ -3,13 +3,16 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 import com.xiliulou.electricity.query.car.CarRentalOrderQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalOrderVo;
@@ -43,6 +46,9 @@ public class JsonAdminCarRentalOrderController extends BasicController {
 
     @Resource
     private CarRentalOrderService carRentalOrderService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
 
     /**
      * 审核拒绝
@@ -135,15 +141,20 @@ public class JsonAdminCarRentalOrderController extends BasicController {
 
         // 门店信息
         Map<Long, String> storeMap = getStoreNameByIdsForMap(storeIds);
-
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(new ArrayList<>(uids),
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        
         // 模型转换，封装返回
         List<CarRentalOrderVo> carRentalPackageVOList = rentalOrderEntityList.stream().map(rentalOrderEntity -> {
 
             CarRentalOrderVo rentalOrderVo = new CarRentalOrderVo();
             BeanUtils.copyProperties(rentalOrderEntity, rentalOrderVo);
-
+    
+            Long uid = rentalOrderEntity.getUid();
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(rentalOrderEntity.getUid(), new UserInfo());
+                UserInfo userInfo = userInfoMap.getOrDefault(uid, new UserInfo());
                 rentalOrderVo.setUserRelName(userInfo.getName());
                 rentalOrderVo.setUserPhone(userInfo.getPhone());
             }
@@ -155,6 +166,8 @@ public class JsonAdminCarRentalOrderController extends BasicController {
             if (!storeMap.isEmpty()) {
                 rentalOrderVo.setStoreName(storeMap.getOrDefault(Long.valueOf(rentalOrderEntity.getStoreId()), ""));
             }
+    
+            rentalOrderVo.setUserStatus(userDelRecordService.getUserStatus(uid, userStatusMap));
 
             return rentalOrderVo;
         }).collect(Collectors.toList());
