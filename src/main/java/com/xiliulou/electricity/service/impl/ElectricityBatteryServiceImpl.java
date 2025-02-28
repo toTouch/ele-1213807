@@ -2296,6 +2296,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
     }
     
+    @Slave
     @Override
     public R listAllBatterySn(ElectricityBatteryQuery batteryQuery) {
         return R.ok(electricitybatterymapper.selectListAllBatterySn(batteryQuery));

@@ -881,7 +881,9 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         }
         
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
+            // 门店登陆按管理员领用查询
+            batteryQuery.setLabel(List.of(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode()));
+            batteryQuery.setReceiverId(user.getUid());
         }
         
         batteryQuery.setTenantId(TenantContextHolder.getTenantId());
