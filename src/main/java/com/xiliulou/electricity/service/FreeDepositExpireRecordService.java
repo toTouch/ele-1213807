@@ -40,4 +40,14 @@ public interface FreeDepositExpireRecordService {
      */
 
     void offLineDeal(List<Long> id);
+
+    /**
+     * editRemark
+     *
+     * @param id id
+     * @param remark remark
+     * @return:
+     */
+
+    void editRemark(Long id, String remark);
 }

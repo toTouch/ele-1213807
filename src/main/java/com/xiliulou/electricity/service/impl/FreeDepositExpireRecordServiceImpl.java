@@ -80,4 +80,13 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
         }
         freeDepositExpireRecordMapper.updateStatus(ids);
     }
+
+    @Override
+    public void editRemark(Long id, String remark) {
+        Integer count = freeDepositExpireRecordMapper.selectByIds(CollUtil.newArrayList(id));
+        if (!Objects.equals(count, NumberConstant.ONE)) {
+            throw new BizException("402040", "不存在的免押到期记录,请检查");
+        }
+        freeDepositExpireRecordMapper.updateRemark(id, remark);
+    }
 }

@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.FreeDepositExpireRecordQuery;
 import com.xiliulou.electricity.service.FreeDepositExpireRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +18,7 @@ import java.util.List;
  */
 
 @RestController
-@Slf4j
+@RequestMapping("/admin/freeDepositExpireRecord")
 public class JsonAdminFreeDepositExpireRecordController {
 
     @Autowired
@@ -28,7 +27,7 @@ public class JsonAdminFreeDepositExpireRecordController {
     /**
      * 分页
      */
-    @GetMapping("/admin/freeDepositExpireRecord/page")
+    @GetMapping("page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
                   @RequestParam(value = "status") Integer status,
                   @RequestParam(value = "depositType", required = false) Integer depositType,
@@ -59,7 +58,7 @@ public class JsonAdminFreeDepositExpireRecordController {
     /**
      * 分页
      */
-    @GetMapping("/admin/freeDepositExpireRecord/count")
+    @GetMapping("count")
     public R count(@RequestParam(value = "status") Integer status,
                    @RequestParam(value = "depositType", required = false) Integer depositType,
                    @RequestParam(value = "uid", required = false) Long uid,
@@ -76,10 +75,18 @@ public class JsonAdminFreeDepositExpireRecordController {
     }
 
 
-    @GetMapping("/admin/freeDepositExpireRecord/offLineDeal")
+    @GetMapping("offLineDeal")
     public R offLineDeal(@RequestParam(value = "ids") List<Long> ids
     ) {
         freeDepositExpireRecordService.offLineDeal(ids);
+        return R.ok();
+    }
+
+
+    @GetMapping("editRemark")
+    public R editRemark(@RequestParam(value = "id") Long id, @RequestParam(value = "remark") String remark
+    ) {
+        freeDepositExpireRecordService.editRemark(id, remark);
         return R.ok();
     }
 
