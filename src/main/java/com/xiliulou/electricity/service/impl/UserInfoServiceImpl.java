@@ -1009,7 +1009,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             uidList.add(uid);
             packageIds.add(packageId);
-            franchiseeIds.add(franchiseeId);
+            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, 0L)) {
+                franchiseeIds.add(franchiseeId);
+            }
             storeIds.add(storeId);
             depositOrderNoList.add(depositOrderNo);
         });
@@ -3811,7 +3813,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
             uidList.add(uid);
             packageIds.add(packageId);
-            franchiseeIds.add(franchiseeId);
+            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, 0L)) {
+                franchiseeIds.add(franchiseeId);
+            }
             storeIds.add(storeId);
             userInfoList.add(UserInfo.builder().uid(uid).batteryRentStatus(item.getBatteryRentStatus()).build());
         });
