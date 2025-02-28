@@ -1364,6 +1364,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(SecurityUtils.getUid());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             // 记录企业代付订单信息
@@ -1666,6 +1667,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(SecurityUtils.getUid());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             // 记录企业代付订单信息
@@ -1969,6 +1971,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(SecurityUtils.getUid());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             // 记录企业代付订单信息

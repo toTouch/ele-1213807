@@ -83,7 +83,7 @@ public interface EnterpriseInfoService {
     
     Triple<Boolean, String, Object> cloudBeanGeneralView();
     
-    Triple<Boolean, String, Object> recycleCloudBean(Long uid);
+    Triple<Boolean, String, Object> recycleCloudBean(Long uid, Long operateUid);
     
     void unbindUserData(UserInfo userInfo, EnterpriseChannelUser enterpriseChannelUser);
     
@@ -91,7 +91,7 @@ public interface EnterpriseInfoService {
     
     Triple<Boolean, String, Object> recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
     
-    Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
+    Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, Long operateUid);
     
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
     
@@ -117,11 +117,11 @@ public interface EnterpriseInfoService {
     
     List<EnterpriseInfo> queryListByIdList(List<Long> enterpriseIdList);
     
-    Triple<Boolean, String, Object> recycleBatteryMemberCardV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard item);
+    Triple<Boolean, String, Object> recycleBatteryMemberCardV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard item, Long operateUid);
     
     List<EnterpriseInfo> queryList(Integer tenantId);
     
     void deleteCacheByEnterpriseId(Long enterpriseId);
     
-    Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid);
+    Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid, Long operateUid);
 }

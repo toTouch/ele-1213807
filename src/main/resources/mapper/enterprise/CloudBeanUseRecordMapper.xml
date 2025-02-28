@@ -16,6 +16,7 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="operateUid" column="operate_uid" jdbcType="INTEGER"/>
     </resultMap>
     
     <!--查询单个-->
@@ -69,7 +70,7 @@
     
     <select id="selectByUserPage" resultMap="CloudBeanUseRecordMap">
         select
-        id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, operate_uid
         from t_cloud_bean_use_record
         <where>
             <if test="startTime != null">
@@ -229,11 +230,11 @@
     </delete>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_cloud_bean_use_record (id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, order_type)
+        insert into t_cloud_bean_use_record (id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, order_type, operate_uid)
         values
         <foreach item="item" index="index" collection="list" separator=",">
             (#{item.id}, #{item.enterpriseId}, #{item.uid}, #{item.type}, #{item.beanAmount}, #{item.remainingBeanAmount}, #{item.packageId}, #{item.franchiseeId}, #{item.ref}, #{item.tenantId},
-            #{item.createTime}, #{item.updateTime}, #{item.orderType})
+            #{item.createTime}, #{item.updateTime}, #{item.orderType}, #{item.operateUid})
         </foreach>
     </insert>
 </mapper>

@@ -70,7 +70,9 @@
           tme.del_flag,
           tme.remark,
           tme.create_time,
-          tme.update_time
+          tme.update_time,
+          tme.invite_auth,
+          tme.enterprise_package_auth
         from t_merchant_employee tme
         left join t_merchant tm on tm.uid = tme.merchant_uid
         <where>
