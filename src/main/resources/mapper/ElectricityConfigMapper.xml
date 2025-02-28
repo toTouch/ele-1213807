@@ -311,7 +311,8 @@
        `is_bind_battery` ,
        `lost_user_first` ,
        `lost_user_days` ,
-       `allow_original_inviter`
+       `allow_original_inviter`,
+       `not_exchange_protection_time`
     </sql>
 
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.ElectricityConfig">
