@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -84,6 +85,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
 
     private final EleRefundOrderService refundOrderService;
 
+    @Lazy
     private final InstallmentBizService installmentBizService;
 
     @Override
