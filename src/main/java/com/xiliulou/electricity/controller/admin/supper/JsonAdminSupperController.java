@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.EnableMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
+import com.xiliulou.electricity.query.supper.ClearUserDelMarkRequest;
 import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.supper.DelBatteryVo;
 import com.xiliulou.security.bean.TokenUser;
@@ -94,6 +96,19 @@ public class JsonAdminSupperController {
 
     @Resource
     private EleOnlineLogService eleOnlineLogService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
+    /**
+     * @description 清除用户的删除标记（该接口仅供内部测试使用）
+     * @date 2025/2/28 11:13:05
+     * @author HeYafeng
+     */
+    @PostMapping("/clearUserDelMark")
+    public R clearUserDelMark(@RequestBody ClearUserDelMarkRequest clearUserDelMarkParam) {
+        return userDelRecordService.clearUserDelMark(clearUserDelMarkParam);
+    }
 
     /**
      * 根据电池SN删除电池
