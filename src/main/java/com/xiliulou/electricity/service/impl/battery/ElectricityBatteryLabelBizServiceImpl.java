@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -244,6 +245,15 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 // 校验领用人权限
                 if (!permissionVerificationForReceiver(electricityBattery, request.getReceiverId(), newLabel)) {
                     failReason.put("reason", "领用人无权领用");
+                    failReasons.add(failReason);
+                    failureCount = failureCount + 1;
+                    continue;
+                }
+                
+                // 校验电池是否出库，即是否绑定加盟商
+                if (Objects.equals(electricityBattery.getLabel(), BatteryLabelEnum.INVENTORY.getCode()) && Objects.equals(electricityBattery.getStockStatus(),
+                        StockStatusEnum.STOCK.getCode())) {
+                    failReason.put("reason", "该电池未出库，不支持更新");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
                     continue;
