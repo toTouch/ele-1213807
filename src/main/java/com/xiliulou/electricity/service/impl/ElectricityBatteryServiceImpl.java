@@ -2202,13 +2202,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                         if (Objects.equals(lockedBox.getElectricityCabinetId(), box.getElectricityCabinetId()) && Objects.equals(lockedBox.getCellNo(), box.getCellNo())) {
                             return;
                         }
-                        
-                        // 保存锁仓电池sn的格挡跟上报在仓的格挡对不上时，清除掉锁仓sn，清除完毕后，使用下面的逻辑更新
-                        electricityCabinetBoxService.updateLockSnByEidAndCellNo(lockedBox.getElectricityCabinetId(), Integer.valueOf(lockedBox.getCellNo()), null);
                     }
                     
-                    // 全部都清除了，更新标签
+                    // 更新标签，全部清除
                     electricitybatterymapper.update(batteryUpdate);
+                    electricityCabinetBoxService.deleteLockSn(battery.getSn());
                     batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
                     return;
                 }
@@ -2236,6 +2234,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
                     electricityBatteryLabelService.deleteReceivedData(battery.getSn());
+                }
+                
+                // 8.旧标签是锁定在仓的，清除掉格挡表的锁仓sn
+                if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                    electricityCabinetBoxService.deleteLockSn(battery.getSn());
                 }
                 
                 // 发送修改记录到mq，在batch项目中批量保存

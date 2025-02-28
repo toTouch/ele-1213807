@@ -421,4 +421,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> listByLockSn(String lockSn) {
         return electricityCabinetBoxMapper.selectListByLockSn(lockSn);
     }
+    
+    @Override
+    public int deleteLockSn(String lockSn) {
+        return electricityCabinetBoxMapper.deleteLockSn(lockSn);
+    }
 }

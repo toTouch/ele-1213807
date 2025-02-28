@@ -94,4 +94,6 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> listBySnAndEid(String sn, Integer eid);
     
     List<ElectricityCabinetBox> listByLockSn(String lockSn);
+    
+    int deleteLockSn(String lockSn);
 }

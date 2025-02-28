@@ -228,6 +228,10 @@
         update t_electricity_cabinet_box set lock_sn = #{lockSn} where electricity_cabinet_id = #{eid} and cell_no = #{cellNo}
     </update>
     
+    <update id="deleteLockSn">
+        update t_electricity_cabinet_box set lock_sn = null where lock_sn = #{lockSn}
+    </update>
+    
     <select id="queryBoxCount" resultType="integer">
         select count(1) from t_electricity_cabinet_box
         where del_flag=0

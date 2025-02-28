@@ -70,4 +70,6 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     List<ElectricityCabinetBox> selectListBySnAndEid(@Param("sn") String sn, @Param("eid") Integer eid);
     
     List<ElectricityCabinetBox> selectListByLockSn(@Param("lockSn") String lockSn);
+    
+    int deleteLockSn(@Param("lockSn") String lockSn);
 }

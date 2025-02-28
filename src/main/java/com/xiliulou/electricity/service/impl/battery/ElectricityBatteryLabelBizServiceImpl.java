@@ -235,7 +235,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 }
                 
                 // 校验操作人权限
-                if (!permissionVerificationForUser(electricityBattery, user, newLabel)) {
+                if (!permissionVerificationForUser(electricityBattery, user, newLabel, labelMap.get(sn))) {
                     failReason.put("reason", "无操作权限");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
@@ -243,7 +243,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 }
                 
                 // 校验领用人权限
-                if (!permissionVerificationForReceiver(electricityBattery, request.getReceiverId(), newLabel)) {
+                if (!permissionVerificationForReceiver(electricityBattery, request.getReceiverId(), newLabel, labelMap.get(sn))) {
                     failReason.put("reason", "领用人无权领用");
                     failReasons.add(failReason);
                     failureCount = failureCount + 1;
@@ -288,16 +288,16 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
      *
      * @return true-有操作权限；false-无权限
      */
-    private boolean permissionVerificationForUser(ElectricityBattery battery, User user, Integer label) {
+    private boolean permissionVerificationForUser(ElectricityBattery battery, User user, Integer label, ElectricityBatteryLabel batteryLabel) {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             return !CollectionUtils.isEmpty(franchiseeIds) && franchiseeIds.contains(battery.getFranchiseeId());
         }
         
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            // 门店用户，如果操作不属于管理员领用，就无权限修改
+            // 门店用户，如果操作不属于管理员领用，校验电池是否是其领用的
             if (!Objects.equals(label, BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode())) {
-                return false;
+                return Objects.nonNull(batteryLabel) && Objects.equals(batteryLabel.getReceiverId(), user.getUid());
             }
             
             // 操作为管理员领用的，校验门店所属加盟商与电池的是否一致
@@ -316,7 +316,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
      *
      * @return true-有操作权限；false-无权限
      */
-    private boolean permissionVerificationForReceiver(ElectricityBattery battery, Long receiverId, Integer label) {
+    private boolean permissionVerificationForReceiver(ElectricityBattery battery, Long receiverId, Integer label, ElectricityBatteryLabel batteryLabel) {
         if (Objects.equals(label, BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode())) {
             User user = userService.queryByUidFromCache(receiverId);
             if (Objects.isNull(user)) {
@@ -324,7 +324,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 return false;
             }
             
-            return permissionVerificationForUser(battery, user, label);
+            return permissionVerificationForUser(battery, user, label, batteryLabel);
         }
         
         if (Objects.equals(label, BatteryLabelEnum.RECEIVED_MERCHANT.getCode())) {
