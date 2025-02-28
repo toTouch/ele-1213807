@@ -153,9 +153,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         }
     
         Map<Integer, List<BoxOtherProperties>> boxOtherPropertiesMap = null;
-        List<Integer> eidList = electricityCabinetBoxLocks.stream().map(ElectricityCabinetBoxLock::getElectricityCabinetId).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(eidList)) {
-            List<BoxOtherProperties> boxOtherProperties = boxOtherPropertiesService.listByEidList(eidList);
+        Set<Integer> eidSet = electricityCabinetBoxLocks.stream().map(ElectricityCabinetBoxLock::getElectricityCabinetId).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(eidSet)) {
+            List<BoxOtherProperties> boxOtherProperties = boxOtherPropertiesService.listByEidList(new ArrayList<>(eidSet));
             if (CollectionUtils.isNotEmpty(boxOtherProperties)) {
                 boxOtherPropertiesMap = boxOtherProperties.stream().collect(Collectors.groupingBy(BoxOtherProperties::getElectricityCabinetId));
             }
