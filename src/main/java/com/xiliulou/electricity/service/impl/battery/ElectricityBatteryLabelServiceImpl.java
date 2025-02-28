@@ -140,13 +140,22 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                 return;
             }
             
-            BatteryLabelModifyDTO dto = JsonUtil.fromJson(dtoStr, BatteryLabelModifyDTO.class);
-            Integer oldPreLabel = dto.getNewLabel();
+            BatteryLabelModifyDTO oldDto = JsonUtil.fromJson(dtoStr, BatteryLabelModifyDTO.class);
+            Integer oldPreLabel = oldDto.getNewLabel();
             Integer newPreLabel = labelModifyDto.getNewLabel();
-            // 新旧一样,刷新下时间
+            // 新旧一样,判断是否刷新时间
             if (Objects.equals(oldPreLabel, newPreLabel)) {
-                redisService.expire(key, 30 * 60 * 1000L, false);
-                return;
+                // 不是领用的直接刷新时间
+                if (!BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldPreLabel)) {
+                    redisService.expire(key, 30 * 60 * 1000L, false);
+                    return;
+                }
+                
+                // 领用类型的标签，新领用人一样时，再刷新时间
+                if (Objects.equals(oldDto.getNewReceiverId(), labelModifyDto.getNewReceiverId())) {
+                    redisService.expire(key, 30 * 60 * 1000L, false);
+                    return;
+                }
             }
             
             // 旧预修改标签是租借时，如果新预修改标签也属于租借则更新缓存，否则直接返回，租借的优先级更高
