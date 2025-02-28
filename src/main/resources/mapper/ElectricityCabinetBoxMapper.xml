@@ -367,7 +367,7 @@
                 where electricity_cabinet_id = #{eid}
                     and cell_no in
                     <foreach collection="callNos" item="cellNo" open="(" separator="," close=")">
-                        #{callNo}
+                        #{cellNo}
                     </foreach>
         </foreach>
     </select>
