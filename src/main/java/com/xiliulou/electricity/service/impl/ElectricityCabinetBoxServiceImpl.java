@@ -35,6 +35,7 @@ import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -425,5 +427,29 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public int deleteLockSn(String lockSn) {
         return electricityCabinetBoxMapper.deleteLockSn(lockSn);
+    }
+    
+    @Override
+    public Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, String> eidAndCellNo) {
+        if (MapUtils.isEmpty(eidAndCellNo)) {
+            return null;
+        }
+        List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.selectListLockSnsByEidAndCellNo(eidAndCellNo);
+        if (CollectionUtils.isEmpty(boxes)) {
+            return null;
+        }
+        
+        Map<Integer, Map<String, String>> result = new HashMap<>();
+        for (ElectricityCabinetBox box : boxes) {
+            Integer eid = box.getElectricityCabinetId();
+            if (result.containsKey(eid)) {
+                result.get(eid).put(box.getCellNo(), box.getLockSn());
+            } else {
+                HashMap<String, String> cellAndLockSn = new HashMap<>();
+                cellAndLockSn.put(box.getCellNo(), box.getLockSn());
+                result.put(eid, cellAndLockSn);
+            }
+        }
+        return result;
     }
 }

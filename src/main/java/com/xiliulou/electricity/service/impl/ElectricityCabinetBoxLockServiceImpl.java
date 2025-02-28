@@ -24,6 +24,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
 
     @Resource
     private MerchantAreaService merchantAreaService;
+    
+    @Resource
+    private ElectricityCabinetBoxService electricityCabinetBoxService;
 
     @Override
     public void insertElectricityCabinetBoxLock(ElectricityCabinetBoxLock cabinetBoxLock) {
@@ -148,25 +152,39 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         if (CollUtil.isEmpty(electricityCabinetBoxLocks)) {
             return CollUtil.newArrayList();
         }
-
-        return electricityCabinetBoxLocks.stream().map(item -> {
+        
+        Map<Integer, String> eidAndCellNo = new HashMap<>();
+        List<ElectricityCabinetBoxLockPageVO> cabinetBoxLockPageVOS = electricityCabinetBoxLocks.stream().map(item -> {
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             vo.setStoreName(Objects.nonNull(store) ? store.getName() : null);
-
-
+            
             Optional.ofNullable(electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId())).ifPresent(cabinet -> {
                 vo.setName(cabinet.getName());
                 vo.setAddress(cabinet.getAddress());
                 MerchantArea merchantArea = merchantAreaService.queryById(cabinet.getAreaId());
                 vo.setAreaName(Objects.isNull(merchantArea) ? null : merchantArea.getName());
             });
-
+            
+            eidAndCellNo.put(item.getElectricityCabinetId(), item.getCellNo().toString());
             return vo;
         }).collect(Collectors.toList());
+        
+        // 查询拼装锁定在仓sn
+        Map<Integer, Map<String, String>> lockSnsMap = electricityCabinetBoxService.listLockSnsByEidAndCellNo(eidAndCellNo);
+        if (MapUtils.isEmpty(lockSnsMap)) {
+            return cabinetBoxLockPageVOS;
+        }
+        for (ElectricityCabinetBoxLockPageVO pageVO : cabinetBoxLockPageVOS) {
+            if (lockSnsMap.containsKey(pageVO.getElectricityCabinetId())) {
+                pageVO.setLockSn(lockSnsMap.get(pageVO.getElectricityCabinetId()).get(pageVO.getCellNo()));
+            }
+        }
+        
+        return cabinetBoxLockPageVOS;
     }
 
     @Override

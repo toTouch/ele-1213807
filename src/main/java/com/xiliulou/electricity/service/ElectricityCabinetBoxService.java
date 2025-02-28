@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -96,4 +97,6 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> listByLockSn(String lockSn);
     
     int deleteLockSn(String lockSn);
+    
+    Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, String> eidAndCellNo);
 }
