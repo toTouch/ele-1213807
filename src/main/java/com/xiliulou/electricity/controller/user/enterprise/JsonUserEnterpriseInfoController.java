@@ -95,7 +95,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      */
     @GetMapping({"/user/enterpriseInfo/queryPurchasePackageCount", "/merchant/enterpriseInfo/queryPurchasePackageCount"})
     public R queryPurchasePackageCount() {
-        Long uid = SecurityUtils.getUid();
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         Long tenantId = TenantContextHolder.getTenantId().longValue();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
         

@@ -94,7 +94,8 @@ public interface EnterpriseInfoService {
     Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, Long operateUid);
     
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
-    
+
+    @Deprecated
     Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);
     
     EnterpriseInfoVO selectDetailByUid(Long uid);
