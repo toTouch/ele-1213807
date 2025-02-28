@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.installment;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
+import cn.hutool.json.JSONUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
@@ -81,6 +83,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private final BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
 
     private final EleRefundOrderService refundOrderService;
+
+    private final InstallmentBizService installmentBizService;
 
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -336,18 +340,22 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             return R.fail("402045", "用户不存在代扣计划");
         }
 
-        Optional<InstallmentDeductionPlan> optional = deductionPlans.stream().sorted(Comparator.comparing(InstallmentDeductionPlan::getIssue)).filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL)).findFirst();
-
-        if (optional.isPresent()) {
-            InstallmentDeductionPlan updatePlan = new InstallmentDeductionPlan();
-            updatePlan.setId(optional.get().getId());
-            updatePlan.setPaymentTime(System.currentTimeMillis());
-            updatePlan.setUpdateTime(System.currentTimeMillis());
-            updatePlan.setStatus(InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
-            installmentDeductionPlanService.update(updatePlan);
-            return R.ok();
+        List<InstallmentDeductionPlan> plans = deductionPlans.stream().filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
+                        .sorted(Comparator.comparing(InstallmentDeductionPlan::getIssue)).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(plans)){
+            return R.fail("402046", "代扣计划已完成，线下履约失败");
         }
 
-        return R.fail("402046", "代扣计划已完成，线下履约失败");
+        OptionalInt minIssue = plans.stream()
+                .mapToInt(InstallmentDeductionPlan::getIssue)
+                .min();
+
+        minIssue.ifPresent(issue -> {
+            List<InstallmentDeductionPlan> planList = plans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
+            log.info("offlineAgree Info! minIssue is {}, planList is {}", minIssue.getAsInt(), JSONUtil.toJsonStr(issue));
+            // 处理套餐购买记录
+            installmentBizService.handleDeductZero(installmentRecord, planList, null, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+        });
+        return R.ok();
     }
 }

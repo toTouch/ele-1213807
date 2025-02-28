@@ -140,7 +140,7 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
             Triple<Boolean, String, Object> handlePackageTriple = null;
             if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
                 // 处理换电代扣成功的场景
-                handlePackageTriple = installmentBizService.handleBatteryMemberCard(installmentRecord, deductionPlanList, uid);
+                handlePackageTriple = installmentBizService.handleBatteryMemberCard(installmentRecord, deductionPlanList, uid, null);
             }
             
             // 代扣成功后其他记录的处理
