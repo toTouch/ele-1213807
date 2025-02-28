@@ -153,8 +153,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             return CollUtil.newArrayList();
         }
         
-        Map<Integer, String> eidAndCellNo = new HashMap<>();
+        Map<Integer, List<String>> eidAndCellNo = new HashMap<>();
         List<ElectricityCabinetBoxLockPageVO> cabinetBoxLockPageVOS = electricityCabinetBoxLocks.stream().map(item -> {
+            Integer electricityCabinetId = item.getElectricityCabinetId();
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
@@ -162,14 +163,21 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             vo.setStoreName(Objects.nonNull(store) ? store.getName() : null);
             
-            Optional.ofNullable(electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId())).ifPresent(cabinet -> {
+            Optional.ofNullable(electricityCabinetService.queryByIdFromCache(electricityCabinetId)).ifPresent(cabinet -> {
                 vo.setName(cabinet.getName());
                 vo.setAddress(cabinet.getAddress());
                 MerchantArea merchantArea = merchantAreaService.queryById(cabinet.getAreaId());
                 vo.setAreaName(Objects.isNull(merchantArea) ? null : merchantArea.getName());
             });
             
-            eidAndCellNo.put(item.getElectricityCabinetId(), item.getCellNo().toString());
+            // 收集柜机id与仓门号用于查询锁仓sn
+            if (eidAndCellNo.containsKey(electricityCabinetId)) {
+                eidAndCellNo.get(electricityCabinetId).add(item.getCellNo().toString());
+            } else {
+                List<String> cellNoList = new ArrayList<>();
+                cellNoList.add(item.getCellNo().toString());
+                eidAndCellNo.put(electricityCabinetId, cellNoList);
+            }
             return vo;
         }).collect(Collectors.toList());
         

@@ -98,5 +98,5 @@ public interface ElectricityCabinetBoxService {
     
     int deleteLockSn(String lockSn);
     
-    Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, String> eidAndCellNo);
+    Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, List<String>> eidAndCellNo);
 }

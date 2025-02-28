@@ -430,7 +430,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
     
     @Override
-    public Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, String> eidAndCellNo) {
+    public Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, List<String>> eidAndCellNo) {
         if (MapUtils.isEmpty(eidAndCellNo)) {
             return null;
         }

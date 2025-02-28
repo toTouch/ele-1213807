@@ -362,8 +362,13 @@
     
     <select id="selectListLockSnsByEidAndCellNo"
             resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
-        <foreach collection="eidAndCellNo" index="eid" item="callNo" separator="union all">
-            select electricity_cabinet_id,cell_no,lock_sn from t_electricity_cabinet_box where electricity_cabinet_id = #{eid} and cell_no = #{callNo}
+        <foreach collection="eidAndCellNo" index="eid" item="callNos" separator="union all">
+            select electricity_cabinet_id,cell_no,lock_sn from t_electricity_cabinet_box
+                where electricity_cabinet_id = #{eid}
+                    and cell_no in
+                    <foreach collection="callNos" item="cellNo" open="(" separator="," close=")">
+                        #{callNo}
+                    </foreach>
         </foreach>
     </select>
 </mapper>
