@@ -147,17 +147,18 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
             }
         }
     
-        Map<Integer, List<BoxOtherProperties>> boxOtherPropertiesMap = null;
-        if (CollectionUtils.isNotEmpty(query.getIdsByLikeName())) {
-            List<BoxOtherProperties> boxOtherProperties = boxOtherPropertiesService.listByEidList(query.getIdsByLikeName());
-            if (CollectionUtils.isNotEmpty(boxOtherProperties)) {
-                boxOtherPropertiesMap = boxOtherProperties.stream().collect(Collectors.groupingBy(BoxOtherProperties::getElectricityCabinetId));
-            }
-        }
-    
         List<ElectricityCabinetBoxLock> electricityCabinetBoxLocks = electricityCabinetBoxLockMapper.listCabinetBoxLock(query);
         if (CollUtil.isEmpty(electricityCabinetBoxLocks)) {
             return CollUtil.newArrayList();
+        }
+    
+        Map<Integer, List<BoxOtherProperties>> boxOtherPropertiesMap = null;
+        List<Integer> eidList = electricityCabinetBoxLocks.stream().map(ElectricityCabinetBoxLock::getElectricityCabinetId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(eidList)) {
+            List<BoxOtherProperties> boxOtherProperties = boxOtherPropertiesService.listByEidList(eidList);
+            if (CollectionUtils.isNotEmpty(boxOtherProperties)) {
+                boxOtherPropertiesMap = boxOtherProperties.stream().collect(Collectors.groupingBy(BoxOtherProperties::getElectricityCabinetId));
+            }
         }
     
         Map<Integer, List<BoxOtherProperties>> finalBoxOtherPropertiesMap = boxOtherPropertiesMap;
