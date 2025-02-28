@@ -702,7 +702,7 @@ public class JsonAdminUserInfoController extends BaseController {
     }
     
     /**
-     * @description 运维小程序租车会员列表
+     * @description 运维小程序租车会员列表新接口，原接口admin/userInfo/carRentalList/pro也在用（点击”更多“时会调用）
      * @date 2025/1/3 21:02:44
      * @author HeYafeng
      */
@@ -906,7 +906,7 @@ public class JsonAdminUserInfoController extends BaseController {
     }
     
     /**
-     * @description 运维小程序换电会员列表
+     * @description 运维小程序换电会员列表新接口，原接口admin/userInfo/eleList/pro也在用（点击”更多“时会调用）
      * @date 2025/1/3 21:02:44
      * @author HeYafeng
      */
