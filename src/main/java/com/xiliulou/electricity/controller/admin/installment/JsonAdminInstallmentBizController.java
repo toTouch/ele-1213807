@@ -62,7 +62,7 @@ public class JsonAdminInstallmentBizController {
      * @return R
      */
     @GetMapping("/admin/installment/record/offlineAgree")
-    public R count(@RequestParam("uid") Long uid) {
+    public R offlineAgree(@RequestParam("uid") Long uid) {
         return installmentBizService.offlineAgree(uid);
     }
 }
