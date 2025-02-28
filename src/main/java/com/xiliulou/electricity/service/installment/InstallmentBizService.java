@@ -139,4 +139,12 @@ public interface InstallmentBizService {
      * @param config            租户的蜂云配置信息
      */
     R<String> terminatingInstallmentRecord(InstallmentRecord installmentRecord, FyConfig config);
+
+    /**
+     * 执行线下履约
+     *
+     * @param uid uid
+     * @return R
+     */
+    R offlineAgree(Long uid);
 }

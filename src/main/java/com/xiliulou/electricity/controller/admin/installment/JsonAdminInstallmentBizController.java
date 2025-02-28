@@ -53,4 +53,16 @@ public class JsonAdminInstallmentBizController {
     public R<Object> queryDeductStatus(@RequestParam String payNo) {
         return installmentBizService.queryDeductStatus(payNo);
     }
+
+
+    /**
+     * 执行代扣计划
+     *
+     * @param uid uid
+     * @return R
+     */
+    @GetMapping("/admin/installment/record/offlineAgree")
+    public R count(@RequestParam("uid") Long uid) {
+        return installmentBizService.offlineAgree(uid);
+    }
 }

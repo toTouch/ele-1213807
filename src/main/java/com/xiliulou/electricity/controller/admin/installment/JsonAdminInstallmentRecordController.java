@@ -41,15 +41,4 @@ public class JsonAdminInstallmentRecordController {
         return installmentRecordService.count(installmentRecordQuery);
     }
 
-
-    /**
-     * 执行代扣计划
-     *
-     * @param uid uid
-     * @return R
-     */
-    @GetMapping("/offlineAgree")
-    public R count(@RequestParam("uid") Long uid) {
-        return installmentRecordService.offlineAgree(uid);
-    }
 }

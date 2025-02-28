@@ -77,17 +77,6 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
 
     private final RedisService redisService;
 
-    private final UserBatteryMemberCardService userBatteryMemberCardService;
-
-    private final UserBatteryDepositService userBatteryDepositService;
-
-    private final BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-
-    private final EleRefundOrderService refundOrderService;
-
-    @Lazy
-    private final InstallmentBizService installmentBizService;
-
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
         return installmentRecordMapper.insert(installmentRecord);
@@ -297,67 +286,4 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         }
     }
 
-
-    @Override
-    public R offlineAgree(Long uid) {
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(uid);
-        if (Objects.isNull(userBatteryMemberCard)) {
-            return R.fail("402040", "用户套餐不存在");
-        }
-
-
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)
-                || Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            return R.fail("402041", "套餐冻结审核中");
-        }
-
-        //校验是否有退租审核中的订单
-        BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(
-                userBatteryMemberCard.getOrderId());
-        if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(
-                batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
-            return R.fail("402042", "租金退款审核中");
-        }
-
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-        if (Objects.isNull(userBatteryDeposit)) {
-            return R.fail("100247", "用户信息不存在");
-        }
-
-        Integer isExistStatusInitOrder = refundOrderService.existByOrderIdAndStatus(userBatteryDeposit.getOrderId(), CollUtil.newArrayList(EleRefundOrder.STATUS_INIT));
-        if (Objects.nonNull(isExistStatusInitOrder)) {
-            return R.fail("402043", "押金退款审核中");
-        }
-
-        InstallmentRecord installmentRecord = installmentRecordMapper.selectRecordWithStatusForUser(uid,
-                CollUtil.newArrayList(InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN));
-        if (Objects.isNull(installmentRecord)) {
-            return R.fail("402044", "用户未签约");
-        }
-
-        InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
-        query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(query).getData();
-        if (CollUtil.isEmpty(deductionPlans)) {
-            return R.fail("402045", "用户不存在代扣计划");
-        }
-
-        List<InstallmentDeductionPlan> plans = deductionPlans.stream().filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
-                        .sorted(Comparator.comparing(InstallmentDeductionPlan::getIssue)).collect(Collectors.toList());
-        if (CollUtil.isNotEmpty(plans)){
-            return R.fail("402046", "代扣计划已完成，线下履约失败");
-        }
-
-        OptionalInt minIssue = plans.stream()
-                .mapToInt(InstallmentDeductionPlan::getIssue)
-                .min();
-
-        minIssue.ifPresent(issue -> {
-            List<InstallmentDeductionPlan> planList = plans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
-            log.info("offlineAgree Info! minIssue is {}, planList is {}", minIssue.getAsInt(), JSONUtil.toJsonStr(issue));
-            // 处理套餐购买记录
-            installmentBizService.handleDeductZero(installmentRecord, planList, null, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
-        });
-        return R.ok();
-    }
 }
