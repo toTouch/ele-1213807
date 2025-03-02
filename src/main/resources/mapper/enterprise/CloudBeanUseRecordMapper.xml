@@ -140,10 +140,7 @@
             </if>
         
             <if test="operateUid != null">
-                AND (
-                     (r.type IN ( 2, 3, 4, 5 )
-                AND EXISTS ( SELECT 1 FROM t_enterprise_cloud_bean_order o WHERE o.operate_uid = #{operateUid} AND o.order_id = r.ref ))
-                OR ( r.type IN ( 0, 1 )  and e.uid = #{operateUid} ))
+                AND r.operate_uid = #{operateUid}
             </if>
         </where>
     </sql>
@@ -156,7 +153,8 @@
             r.bean_amount,
             r.create_time,
             r.ref,
-            r.id
+            r.id,
+            r.operate_uid
         FROM
         t_cloud_bean_use_record r
         left join t_enterprise_info e on e.id = r.enterprise_id

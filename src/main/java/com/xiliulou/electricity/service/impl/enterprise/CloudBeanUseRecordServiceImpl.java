@@ -776,8 +776,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             if (Objects.nonNull(franchisee)) {
                 enterpriseCloudBeanOrderVO.setFranchiseeName(franchisee.getName());
             }
-    
-            Long operateUid = finalOperateUidMap.get(item.getRef());
+
+            User user = userService.queryByUidFromCache(item.getOperateUid());
+            if (Objects.nonNull(user)) {
+                enterpriseCloudBeanOrderVO.setOperateName(user.getName());
+            }
+
+            /*Long operateUid = finalOperateUidMap.get(item.getRef());
             if (ObjectUtils.isNotEmpty(operateUid)) {
                 User user = userService.queryByUidFromCache(operateUid);
                 if (Objects.nonNull(user)) {
@@ -785,7 +790,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 }
             } else if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(item.getEnterpriseId()))) {
                 enterpriseCloudBeanOrderVO.setOperateName(finalMerchantNameMap.get(item.getEnterpriseId()));
-            }
+            }*/
         
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             enterpriseCloudBeanOrderVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
