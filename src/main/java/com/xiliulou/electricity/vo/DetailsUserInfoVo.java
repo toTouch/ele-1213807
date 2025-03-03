@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.enums.SignStatusEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.electricity.vo.userinfo.emergencyContact.EmergencyContactVO;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zgw
@@ -120,6 +123,12 @@ public class DetailsUserInfoVo {
     private Integer canModifyInviter;
     
     /**
+     * 邀请记录按钮是否显示 0：是 1：否
+     */
+    private Integer modifyInviterRecordIsView;
+    
+    
+    /**
      * 邀请人名称
      */
     private String inviterName;
@@ -144,4 +153,18 @@ public class DetailsUserInfoVo {
      * 是否对换电套餐购买次数限制:0-不限制 1-限制
      */
     private Integer eleLimit;
+    
+    /**
+     * 紧急联系人
+     */
+    private List<EmergencyContactVO> emergencyContactList;
+
+
+    private String remark;
+    
+    /**
+     * 用户状态：0-正常 1-已删除 2-已注销
+     * @see UserStatusEnum
+     */
+    private Integer userStatus;
 }

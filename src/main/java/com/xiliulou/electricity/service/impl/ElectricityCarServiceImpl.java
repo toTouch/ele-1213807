@@ -877,7 +877,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             String motorNumber = car.getMotorNumber();
             
             if (StringUtils.isNotBlank(licensePlateNumber) && licensePlateNumber.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_LICENSE_PLATE_NUMBER_SIZE) {
-                return R.fail("100604", "车牌号输入长度超限，最长9位，请检查修改后再导入");
+                return R.fail("100604", "车牌号输入长度超限，最长10位，请检查修改后再导入");
             }
     
             if (StringUtils.isNotBlank(vin) && vin.length() > AssetConstant.ASSET_CAR_BATCH_SAVE_VIN_SIZE) {
@@ -1104,5 +1104,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public List<ElectricityCar> queryListByTenantIdAndUidList(Integer tenantId, List<Long> uidList) {
         return electricityCarMapper.selectListByTenantIdAndUidList(tenantId,uidList);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCar> listNoDelByUidList(Integer tenantId, List<Long> uidList) {
+        return electricityCarMapper.selectListNoDelByUidList(tenantId, uidList);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCar> listByUidList(List<Long> uidList, Integer userInfoDelFlag) {
+        return electricityCarMapper.selectListByUidList(uidList, userInfoDelFlag);
     }
 }

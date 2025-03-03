@@ -136,4 +136,10 @@ public class CouponActivityVO {
      */
     private List<BatteryMemberCardVO> carWithBatteryPackages;
 
+
+    /**
+     * 是否启用；0禁用,1启用
+     */
+    private Integer enabledState;
+
 }

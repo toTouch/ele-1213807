@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.mapper.UserOauthBindMapper;
+import com.xiliulou.electricity.query.UserOauthBindListQuery;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
@@ -266,6 +267,18 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return first.isPresent();
     }
     
+    @Slave
+    @Override
+    public List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList, Integer tenantId) {
+        return userOauthBindMapper.selectListByUidAndPhoneList(queryList, tenantId);
+    }
+
+    @Override
+    @Slave
+    public List<UserOauthBind> listByUidAndTenantAndSource(List<Long> uidList, Integer tenantId, Integer sourceWxPro) {
+        return userOauthBindMapper.selectListByUidAndTenantAndSource(uidList, tenantId, sourceWxPro);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean checkOpenIdByJsCode(String jsCode) {

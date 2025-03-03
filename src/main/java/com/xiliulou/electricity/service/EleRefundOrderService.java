@@ -115,11 +115,13 @@ public interface EleRefundOrderService {
     
     EleRefundOrder queryLastByOrderId(String orderId);
     
-    Integer existsRefundOrderByUid(Long uid);
+    Integer existsRefundOrderByUid(Long uid, Long lostUserFirstRebateTime);
     
     Integer updateById(EleRefundOrder eleRefundOrderUpdate);
     
     R listSuperAdminPage(EleRefundQuery eleRefundQuery);
     
     Integer updateRefundAmountById(Long id, BigDecimal refundAmount);
+    
+    List<EleRefundOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.thirdPartyMall;
 
+import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.thirdPartyMall.OrderQuery;
 import org.apache.ibatis.annotations.Param;
@@ -24,4 +25,8 @@ public interface MeiTuanRiderMallOrderMapper {
     Integer updateStatusByOrderId(MeiTuanRiderMallOrder meiTuanRiderMallOrder);
     
     Integer updatePhone(@Param("oldPhone") String oldPhone, @Param("newPhone") String newPhone, @Param("tenantId") Integer tenantId);
+    
+    List<Long> selectAllNoUsePackageId(@Param("phone") String phone, @Param("tenantId") Integer tenantId);
+    
+    MtBatteryPackageBO selectBatteryPackageInfo(OrderQuery query);
 }

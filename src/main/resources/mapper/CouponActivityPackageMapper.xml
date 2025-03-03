@@ -72,6 +72,10 @@
         delete from t_coupon_activity_package where id = #{id}
     </delete>
 
+    <delete id="deleteByCouponId">
+        delete from t_coupon_activity_package where coupon_id = #{couponId} and tenant_id = #{tenantId}
+    </delete>
+
     <!--批量新增优惠券套餐记录-->
     <insert id="batchInsertCouponPackages" keyProperty="id" useGeneratedKeys="true">
         insert into t_coupon_activity_package

@@ -4,7 +4,9 @@ import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantChannelEmployeeBindHistoryConstant;
@@ -12,11 +14,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantPlaceConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
@@ -32,23 +30,14 @@ import com.xiliulou.electricity.entity.merchant.MerchantUserAmount;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanOrderMapper;
+import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
-import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
-import com.xiliulou.electricity.query.merchant.MerchantPlaceCabinetBindQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantPlaceMapQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantPlaceQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantQueryModel;
-import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
-import com.xiliulou.electricity.query.merchant.MerchantUserAmountQueryMode;
+import com.xiliulou.electricity.query.merchant.*;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
@@ -69,17 +58,10 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePackageVO;
-import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
-import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
-import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceMapVO;
-import com.xiliulou.electricity.vo.merchant.MerchantPlaceSelectVO;
-import com.xiliulou.electricity.vo.merchant.MerchantQrCodeVO;
-import com.xiliulou.electricity.vo.merchant.MerchantUpdateShowVO;
-import com.xiliulou.electricity.vo.merchant.MerchantUserVO;
-import com.xiliulou.electricity.vo.merchant.MerchantVO;
+import com.xiliulou.electricity.vo.merchant.*;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -151,7 +133,7 @@ public class MerchantServiceImpl implements MerchantService {
     @Resource
     private MerchantPlaceCabinetBindService merchantPlaceCabinetBindService;
     
-    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-DATA-SCREEN-THREAD-POOL", 5, "merchantDataScreenThread:");
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-DATA-SCREEN-THREAD-POOL", 6, "merchantDataScreenThread:");
     
     @Resource
     private EnterprisePackageService enterprisePackageService;
@@ -182,6 +164,12 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Resource
     private EnterpriseCloudBeanOrderMapper enterpriseCloudBeanOrderMapper;
+
+    @Resource
+    private MerchantJoinRecordMapper merchantJoinRecordMapper;
+
+    @Resource
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Resource
     private UserInfoService userInfoService;
@@ -1214,8 +1202,28 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("MERCHANT QUERY ERROR! query enterprise error!", e);
             return null;
         });
+
+        // 逾期用户数量
+        CompletableFuture<Void> overdueUserInfo = CompletableFuture.runAsync(() -> {
+            List<MerchantOverdueUserCountBO> merchantOverdueUserCountBOList = merchantJoinRecordService.listOverdueUserCount(merchantIdList, System.currentTimeMillis());
+            Map<Long, MerchantOverdueUserCountBO> merchantOverdueUserCountBOMap = new HashMap<>();
+            if (ObjectUtils.isNotEmpty(merchantOverdueUserCountBOList)) {
+                merchantOverdueUserCountBOMap = merchantOverdueUserCountBOList.stream().filter(item -> Objects.nonNull(item) && Objects.nonNull(item.getMerchantId()))
+                        .collect(Collectors.toMap(MerchantOverdueUserCountBO::getMerchantId, Function.identity(), (v1, v2) -> v2));
+            }
+
+            Map<Long, MerchantOverdueUserCountBO> finalMerchantOverdueUserCountBOMap = merchantOverdueUserCountBOMap;
+
+            resList.forEach(item -> {
+                MerchantOverdueUserCountBO merchantOverdueUserCountBO = finalMerchantOverdueUserCountBOMap.get(item.getId());
+                item.setOverdueUserCount(Objects.nonNull(merchantOverdueUserCountBO) ? merchantOverdueUserCountBO.getOverdueUserCount() : NumberConstant.ZERO);
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("MERCHANT QUERY ERROR! query enterprise error!", e);
+            return null;
+        });
         
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(placeInfo, channelUserInfo, merchantUserAmountInfo, merchantLevelInfo, enterpriseInfo);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(placeInfo, channelUserInfo, merchantUserAmountInfo, merchantLevelInfo, enterpriseInfo, overdueUserInfo);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -1651,7 +1659,57 @@ public class MerchantServiceImpl implements MerchantService {
     public List<Merchant> listByEnterpriseList(List<Long> enterpriseIdList) {
         return merchantMapper.listByEnterpriseList(enterpriseIdList);
     }
-    
+
+    @Override
+    @Slave
+    public Integer countOverdueUserTotal(MerchantJoinUserQueryMode merchantJoinUserQueryMode) {
+        merchantJoinUserQueryMode.setCurrentTime(System.currentTimeMillis());
+
+        return merchantJoinRecordMapper.countOverdueUserTotal(merchantJoinUserQueryMode);
+    }
+
+    @Override
+    @Slave
+    public List<MerchantJoinUserVO> listOverdueUserByPage(MerchantJoinUserQueryMode merchantJoinUserQueryMode) {
+        merchantJoinUserQueryMode.setCurrentTime(System.currentTimeMillis());
+
+        //获取当前商户下的用户列表信息
+        List<MerchantJoinUserVO> merchantJoinUserVOS = merchantJoinRecordMapper.selectJoinUserList(merchantJoinUserQueryMode);
+        if (CollectionUtils.isEmpty(merchantJoinUserVOS)) {
+            return Collections.emptyList();
+        }
+
+
+        merchantJoinUserVOS.forEach(merchantJoinUserVO -> {
+            Long packageId = merchantJoinUserVO.getPackageId();
+            if (Objects.nonNull(packageId) && packageId != 0) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+                if (Objects.nonNull(batteryMemberCard)) {
+                    merchantJoinUserVO.setPackageName(batteryMemberCard.getName());
+                }
+            }
+
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectLatestByUid(merchantJoinUserVO.getJoinUid());
+            if (Objects.nonNull(electricityMemberCardOrder)) {
+                merchantJoinUserVO.setPurchasedTime(electricityMemberCardOrder.getCreateTime());
+            }
+
+            ElectricityMemberCardOrder firstMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(merchantJoinUserVO.getJoinUid());
+            if (Objects.nonNull(firstMemberCardOrder)) {
+                merchantJoinUserVO.setFirstPurchasedTime(firstMemberCardOrder.getCreateTime());
+            }
+
+        });
+
+        return merchantJoinUserVOS;
+    }
+
+    @Override
+    @Slave
+    public List<Merchant> list(int offset, int size) {
+        return merchantMapper.selectList(offset, size);
+    }
+
     @Slave
     @Override
     public List<Merchant> queryListByUidList(Set<Long> uidList, Integer tenantId) {

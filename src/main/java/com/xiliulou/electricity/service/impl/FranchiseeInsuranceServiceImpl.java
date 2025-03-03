@@ -47,6 +47,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
+import com.xiliulou.electricity.vo.UserInsuranceInfoVO;
 import com.xiliulou.electricity.vo.insurance.FranchiseeInsuranceOrderIdsVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -697,5 +698,27 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(Collection<Long> ids) {
         return this.baseMapper.selectListCarModelAndBatteryTypeById(ids);
+    }
+
+    @Override
+    public FranchiseeInsurance querySameInsuranceType(Integer tenantId, Long franchiseeId, Integer type, String batteryType, Long carModelId) {
+        return baseMapper.selectByFranchiseeIdAndBatteryType(tenantId,franchiseeId, type, batteryType, carModelId);
+    }
+
+
+    @Override
+    public UserInsuranceInfoVO selectInsuranceByTypeV2(FranchiseeInsuranceQuery query) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig) || !Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            return null;
+        }
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceMapper.selectInsuranceByType(query);
+        if (Objects.isNull(franchiseeInsurance)) {
+            return null;
+        }
+        UserInsuranceInfoVO userInsuranceInfoVO = BeanUtil.copyProperties(franchiseeInsurance, UserInsuranceInfoVO.class);
+        InsuranceInstruction insuranceInstruction = insuranceInstructionService.queryByInsuranceId(Long.valueOf(franchiseeInsurance.getId()));
+        userInsuranceInfoVO.setInstruction(Objects.nonNull(insuranceInstruction) ? insuranceInstruction.getInstruction() : null);
+        return userInsuranceInfoVO;
     }
 }

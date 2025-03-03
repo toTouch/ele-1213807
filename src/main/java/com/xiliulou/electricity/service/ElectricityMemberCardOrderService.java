@@ -2,11 +2,11 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -35,8 +35,6 @@ public interface ElectricityMemberCardOrderService {
     List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId);
 
     R queryList(MemberCardOrderQuery memberCardOrderQuery);
-
-    void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
 
     R queryCount(MemberCardOrderQuery memberCardOrderQuery);
 
@@ -147,13 +145,15 @@ public interface ElectricityMemberCardOrderService {
     
     List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime);
     
+    boolean existNotFinishOrderByUid(Long uid);
+    
     Integer deleteById(Long id);
     
     /**
      * 生成分期换电套餐订单
      */
     Triple<Boolean, String, ElectricityMemberCardOrder> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
-            InstallmentRecord installmentRecord);
+            InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans);
     
     /**
      * 根据请求签约号及期次查询对应的套餐订单
@@ -166,8 +166,8 @@ public interface ElectricityMemberCardOrderService {
     /**
      * 后台续费套餐、分期套餐续费
      */
-    ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
-            UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source);
+    ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard,
+            BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source, List<InstallmentDeductionPlan> deductionPlans);
     
     /**
      * 查询分期套餐子套餐订单

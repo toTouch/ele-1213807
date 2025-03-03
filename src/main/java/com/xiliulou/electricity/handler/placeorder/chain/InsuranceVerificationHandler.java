@@ -2,16 +2,21 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.UserDelRecord;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_INSURANCE;
@@ -30,6 +35,7 @@ public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
     
     private final FranchiseeInsuranceService franchiseeInsuranceService;
     
+    private final UserDelRecordService userDelRecordService;
     
     @PostConstruct
     public void init() {
@@ -57,6 +63,15 @@ public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
             log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={},uid={}", insuranceId, uid);
             throw new BizException("100305", "未找到保险");
+        }
+    
+        if(Objects.equals(context.getPlaceOrderQuery().getPayType(), PlaceOrderConstant.OFFLINE_PAYMENT)) {
+            // 是否为"注销中"
+            UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+            if (Objects.nonNull(userDelRecord)) {
+                log.warn("CREATE INSURANCE_ORDER ERROR! userAccount is cancelling, uid={}", uid);
+                throw new BizException("120163", "账号处于注销缓冲期内，无法操作");
+            }
         }
         
         context.setFranchiseeInsurance(franchiseeInsurance);

@@ -284,7 +284,11 @@
     
     <select id="existsRefundOrderByUid" resultType="java.lang.Integer">
         select  1 from t_ele_refund_order  ero  left join t_ele_deposit_order edo on ero.order_id=edo.order_id
-        WHERE edo.uid = #{uid} and ero.status=4 limit 1
+        WHERE edo.uid = #{uid} and ero.status=4
+        <if test="lostUserFirstRebateTime != null">
+            and ero.create_time > #{lostUserFirstRebateTime}
+        </if>
+        limit 1
     </select>
     
     <select id="selectLastByOrderId" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
@@ -376,5 +380,14 @@
         <include refid="pageFilter"/>
         order by tero.update_time desc
         limit #{query.offset}, #{query.size}
+    </select>
+    
+    <select id="selectListByOrderIdList" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
+        select id, refund_order_no, order_id, pay_amount, refund_amount, status, err_msg, tenant_id, member_card_owe_number, refund_order_type, franchisee_id, store_id,
+        create_time, update_time
+        from t_ele_refund_order where order_id in
+        <foreach collection="orderIdList" item="orderId" index="index" open="(" close=")" separator=",">
+            #{orderId}
+        </foreach>
     </select>
 </mapper>

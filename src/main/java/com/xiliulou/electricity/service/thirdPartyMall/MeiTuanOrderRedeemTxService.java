@@ -25,7 +25,7 @@ public interface MeiTuanOrderRedeemTxService {
     
     Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> saveRenewalUserBatteryMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindBatteryMemberCard, MeiTuanRiderMallOrder meiTuanRiderMallOrder,
-            List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes);
+            List<String> userBindBatteryTypes);
     
     void rollback(MeiTuanOrderRedeemRollBackBO rollBackBO);
     

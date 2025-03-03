@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.DateFormatConstant;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ShareActivity;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
@@ -40,6 +43,7 @@ import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.request.merchant.MerchantScanCodeRecordPageRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -53,6 +57,7 @@ import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -71,14 +76,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -134,7 +132,13 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     private FranchiseeService franchiseeService;
     
     @Resource
+    private ElectricityConfigService electricityConfigService;
+    
+    @Resource
     private AssertPermissionService assertPermissionService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Override
     public R joinScanCode(MerchantJoinScanRequest request) {
@@ -167,11 +171,19 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 log.warn("MERCHANT JOIN WARN! Not found userInfoExtra, joinUid={}", joinUid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
-            
-            // 530活动互斥判断
-            R canJoinActivity = canJoinActivity(userInfo, userInfoExtra, null, null);
-            if (!canJoinActivity.isSuccess()) {
-                return canJoinActivity;
+    
+            // 530活动互斥判断: 老用户进行活动互斥的判断
+            if (!Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                R canJoinActivity = canJoinActivity(userInfo, userInfoExtra, null, null);
+                if (!canJoinActivity.isSuccess()) {
+                    return canJoinActivity;
+                }
+    
+                // 是否被删除过的老用户
+                if (userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), tenant.getId())) {
+                    log.warn("MERCHANT JOIN WARN! The user ever deleted, joinUid={}, phone={}", joinUid, userInfo.getPhone());
+                    return R.fail("120122", "此活动仅限新用户参加，您已是平台用户无法参与，感谢您的支持");
+                }
             }
             
             // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
@@ -285,6 +297,22 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             if (Objects.isNull(merchantAttr)) {
                 log.warn("MERCHANT JOIN WARN! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
+            }
+    
+            // 流失用户
+            if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 租户配置是否存在
+                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenant.getId());
+                if (Objects.isNull(electricityConfig)) {
+                    return R.fail("120126", "运营商系统设置不存在，请联系管理员");
+                }
+        
+                // 判断当前是否已参与活动且活动为商户活动, 不允许原邀请人重新邀请，新旧邀请人商户id一致
+                if (Objects.nonNull(userInfoExtra.getActivitySource()) && Objects.equals(userInfoExtra.getActivitySource(), UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())
+                        && Objects.equals(electricityConfig.getAllowOriginalInviter(), YesNoEnum.NO.getCode()) && Objects.equals(merchantId, userInfoExtra.getMerchantId())) {
+                    log.warn("MERCHANT JOIN WARN! inviter merchant is not allow same, inviterUid={}, joinUid={}", inviterUid, joinUid);
+                    return R.fail("120124", "无法再次被原邀请人邀请，感谢您的支持");
+                }
             }
             
             // 渠道员uid
@@ -724,12 +752,25 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.countScanCodeRecord(request);
     }
     
+    @Override
+    @Slave
+    public MerchantJoinRecord queryNotSuccessByJoinUid(Long uid) {
+        return merchantJoinRecordMapper.selectNotSuccessByJoinUid(uid);
+    }
+    
+    
     @Slave
     @Override
     public MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId) {
         return merchantJoinRecordMapper.selectRemoveSuccessRecord(joinUid, inviterUid, tenantId);
     }
-    
+
+    @Override
+    @Slave
+    public List<MerchantOverdueUserCountBO> listOverdueUserCount(Set<Long> merchantIdList, long currentTime) {
+        return merchantJoinRecordMapper.selectListOverdueCount(merchantIdList, currentTime);
+    }
+
     @Override
     public List<MerchantScanCodeRecordVO> listScanCodeRecordPage(MerchantScanCodeRecordPageRequest request) {
         if (StrUtil.isNotBlank(request.getPhone())) {

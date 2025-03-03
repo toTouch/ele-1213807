@@ -23,4 +23,16 @@ public interface UserInfoGroupConstant {
     int USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT = 1;
     
     String USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT_NAME = "用户退押";
+    
+    /**
+     * 用户分组记录来源:系统-重新注册后恢复的历史分组
+     */
+    int USER_GROUP_HISTORY_TYPE_SYSTEM = 2;
+    
+    String USER_GROUP_HISTORY_TYPE_SYSTEM_NAME = "系统";
+    
+    /**
+     * 用户分组操作者:系统
+     */
+    Long USER_GROUP_OPERATOR_SYSTEM = 0L;
 }

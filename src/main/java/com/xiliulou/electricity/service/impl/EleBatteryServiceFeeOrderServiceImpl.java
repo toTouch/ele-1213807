@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.query.BatteryServiceFeeOrderQuery;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
@@ -32,6 +34,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
@@ -44,8 +47,10 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 /**
@@ -94,6 +99,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     @Resource
     private ElectricityConfigService electricityConfigService;
     
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Override
     public Integer insert(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder) {
@@ -137,6 +144,13 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     @Override
     public R queryList(BatteryServiceFeeQuery batteryServiceFeeQuery) {
         List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryList(batteryServiceFeeQuery);
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = null;
+        if (CollectionUtils.isNotEmpty(eleBatteryServiceFeeOrders)) {
+            List<Long> uidList = eleBatteryServiceFeeOrders.stream().map(EleBatteryServiceFeeOrderVo::getUid).collect(Collectors.toList());
+            userStatusMap = userDelRecordService.listUserStatus(uidList, List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        }
         
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
@@ -153,7 +167,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             if (StringUtils.isNotBlank(eleBatteryServiceFeeOrderVo.getBatteryType())) {
                 eleBatteryServiceFeeOrderVo.setBatteryTypeList(JsonUtil.fromJsonArray(eleBatteryServiceFeeOrderVo.getBatteryType(), String.class));
             }
-            
+    
+            // 查询已删除/已注销
+            eleBatteryServiceFeeOrderVo.setUserStatus(userDelRecordService.getUserStatus(eleBatteryServiceFeeOrderVo.getUid(), userStatusMap));
         }
         return R.ok(eleBatteryServiceFeeOrders);
     }
@@ -200,21 +216,21 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     
     @Override
     public void membercardExpireGenerateServiceFeeOrder(String s) {
-        int offset = 0;
-        int size = 200;
-        
         List<Integer> tenantIds = null;
         if (StringUtils.isNotBlank(s)) {
             tenantIds = JsonUtil.fromJsonArray(s, Integer.class);
         }
-        
+
+        Long userBatteryMemberCardId = 0L;
+        int size = 200;
         while (true) {
-            //            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableList(offset, size);
-            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableListByTenantIds(offset, size, tenantIds);
+            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableListByTenantIds(userBatteryMemberCardId, size, tenantIds);
             if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
                 return;
             }
-            
+
+            userBatteryMemberCardId = userBatteryMemberCardList.get(userBatteryMemberCardList.size() - 1).getId();
+
             userBatteryMemberCardList.parallelStream().forEach(item -> {
                 
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
@@ -280,8 +296,6 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             });
-            
-            offset += size;
         }
     }
     

@@ -125,6 +125,11 @@ public interface InstallmentConstants {
     Integer TERMINATING_RECORD_STATUS_RELEASE = 2;
     
     /**
+     * 解约记录-已失效
+     */
+    Integer TERMINATING_RECORD_STATUS_EXPIRED = 3;
+    
+    /**
      * 解约记录来源-用户或后台解约
      */
     Integer TERMINATING_RECORD_SOURCE_CANCEL = 0;

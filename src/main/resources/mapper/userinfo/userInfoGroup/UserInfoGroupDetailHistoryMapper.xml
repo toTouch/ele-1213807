@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.userinfo.userInfoGroup.UserInfoGroupDetailHistoryMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, del_flag, create_time, update_time, type
+    </sql>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_info_group_detail_history(uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, create_time, update_time, type)
+        values
+        <foreach item="item" index="index" collection="detailList" separator=",">
+            (#{item.uid}, #{item.oldGroupIds}, #{item.newGroupIds}, #{item.operator}, #{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}, #{item.type})
+        </foreach>
+    </insert>
+    
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_info_group_detail_history(uid, old_group_Ids, new_group_Ids, operator, franchisee_id, tenant_id, create_time, update_time, type)
+        values (#{uid}, #{oldGroupIds}, #{newGroupIds}, #{operator}, #{franchiseeId}, #{tenantId}, #{createTime}, #{updateTime}, #{type})
+    </insert>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory">
+        select
+        <include refid="basic_field"/>
+        from t_user_info_group_detail_history
+        <where>
+            del_flag = 0 and tenant_id = #{tenantId} and uid = #{uid}
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1)
+        from t_user_info_group_detail_history
+        <where>
+            del_flag = 0 and tenant_id = #{tenantId} and uid = #{uid}
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListFranchiseeLatestHistory" resultType="com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory">
+        SELECT uid, franchisee_id, new_group_Ids
+        FROM t_user_info_group_detail_history
+        WHERE del_flag = 0
+          AND tenant_id = #{tenantId}
+          AND uid = #{uid}
+          AND type != 1
+	      AND id IN (SELECT MAX( id ) FROM t_user_info_group_detail_history WHERE del_flag = 0 AND tenant_id = #{tenantId} AND uid = #{uid} AND type != 1 GROUP BY franchisee_id)
+    </select>
+</mapper>
+
+
+
+

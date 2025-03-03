@@ -104,6 +104,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
 
     R bindFranchiseeForBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
+    
+    R<Object> bindFranchiseeForBatteryV2(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
     List<ElectricityBattery> selectByBatteryIds(List<Long> batteryIds);
 
@@ -177,4 +179,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<BatteryChangeInfoVO> getBatteryChangeOtherInfo(List<BatteryChangeInfo> list);
     
     Integer existsByBatteryType(String batteryType, Integer tenantId);
+    
+    Map<Long, ElectricityBattery> listUserBatteryByUidList(List<Long> uidList, Integer tenantId);
 }

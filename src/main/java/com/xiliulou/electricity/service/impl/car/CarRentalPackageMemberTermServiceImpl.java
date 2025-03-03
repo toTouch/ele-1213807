@@ -16,6 +16,7 @@ import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -228,9 +229,11 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         // 获取缓存
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
         String cacheStr = redisService.get(cacheKey);
-        CarRentalPackageMemberTermPo cacheEntity = JSON.parseObject(cacheStr, CarRentalPackageMemberTermPo.class);
-        if (ObjectUtils.isNotEmpty(cacheEntity)) {
-            return cacheEntity;
+        if (StringUtils.isNotBlank(cacheStr)) {
+            CarRentalPackageMemberTermPo cacheEntity = JsonUtil.fromJson(cacheStr, CarRentalPackageMemberTermPo.class);
+            if (ObjectUtils.isNotEmpty(cacheEntity)) {
+                return cacheEntity;
+            }
         }
         
         // 获取 DB
@@ -368,5 +371,21 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     @Override
     public List<CarRentalPackageMemberTermPo> queryListExpireByParam(CarRentalPackageMemberTermExpiredQryModel qryModel) {
         return carRentalPackageMemberTermMapper.selectListExpireByParam(qryModel);
+    }
+    
+    @Slave
+    @Override
+    public List<CarRentalPackageMemberTermPo> listByTenantIdAndUidList(Integer tenantId, List<Long> uidList) {
+        return carRentalPackageMemberTermMapper.selectListByTenantIdAndUidList(tenantId, uidList);
+    }
+    
+    @Override
+    public Integer removeByUid(Integer tenantId, Long uid) {
+        Integer remove = carRentalPackageMemberTermMapper.removeByUid(tenantId, uid);
+        if (remove > 0) {
+            deleteCache(tenantId, uid);
+        }
+        
+        return remove;
     }
 }

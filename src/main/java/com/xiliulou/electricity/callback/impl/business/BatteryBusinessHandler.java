@@ -4,6 +4,7 @@ package com.xiliulou.electricity.callback.impl.business;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.callback.BusinessHandler;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -140,9 +141,17 @@ public class BatteryBusinessHandler implements BusinessHandler {
             // 绑定加盟商、更新押金状态
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setUid(uid);
-            userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
             userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            Long boundFranchiseeId = userInfo.getFranchiseeId();
+            if (Objects.isNull(boundFranchiseeId) || Objects.equals(boundFranchiseeId, NumberConstant.ZERO_L)) {
+                userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+            }
+
+            Long boundStoreId = userInfo.getStoreId();
+            if (Objects.isNull(boundStoreId) || Objects.equals(boundStoreId, NumberConstant.ZERO_L)) {
+                userInfoUpdate.setStoreId(eleDepositOrder.getStoreId());
+            }
             userInfoService.updateByUid(userInfoUpdate);
             
 
@@ -237,6 +246,11 @@ public class BatteryBusinessHandler implements BusinessHandler {
                 
                 // 更新用户保险订单为已失效
                 insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+
+                InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(uid, FranchiseeInsurance.INSURANCE_TYPE_BATTERY, InsuranceOrder.NOT_EFFECTIVE);
+                if (Objects.nonNull(insuranceOrder)) {
+                    insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.INVALID);
+                }
             }
             
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());

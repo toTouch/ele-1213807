@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -8,14 +9,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponActivityPackage;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.NewUserActivity;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -23,27 +17,25 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.mapper.CouponMapper;
+import com.xiliulou.electricity.mapper.CouponPackageItemMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CouponActivityPackageService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.NewUserActivityService;
-import com.xiliulou.electricity.service.OldUserActivityService;
-import com.xiliulou.electricity.service.ShareActivityRuleService;
-import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +90,15 @@ public class CouponServiceImpl implements CouponService {
     
     @Resource
     private FranchiseeService franchiseeService;
-    
+
+    @Resource
+    private AssertPermissionService assertPermissionService;
+
+    @Resource
+    private CouponPackageItemService packageItemService;
+    @Autowired
+    private CouponPackageItemMapper couponPackageItemMapper;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -232,9 +232,9 @@ public class CouponServiceImpl implements CouponService {
     /**
      * 检查是否存在同名优惠券
      *
-     * @param couponName
-     * @param tenantId
-     * @return
+     * @param couponName couponName
+     * @param tenantId tenantId
+     * @return boolean
      */
     private boolean isExistCouponName(String couponName, Integer tenantId) {
         Coupon coupon = new Coupon();
@@ -344,12 +344,41 @@ public class CouponServiceImpl implements CouponService {
         }
         
         //检查优惠券是否已经绑定用户
-        List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(couponQuery.getId().longValue());
+        /*List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(couponQuery.getId().longValue());
         if (!CollectionUtils.isEmpty(userCoupons)) {
             log.warn("Update coupon WARN! this coupon already bound user ! couponId={} ", couponQuery.getId());
             return R.fail("000205", "优惠券已有用户领取");
+        }*/
+
+        Integer days = Integer.parseInt(couponQuery.getValidDays());
+        Integer incrementDays = 0;
+
+        //参数判断
+        if (Objects.equals(oldCoupon.getDiscountType(), Coupon.FULL_REDUCTION) || Objects.equals(oldCoupon.getDiscountType(), Coupon.DAY_VOUCHER)) {
+            if (days < oldCoupon.getDays()) {
+                // 检测有效期
+                return R.fail("120164", "有效期限只能增大不可减小");
+            }
+
+            if (days > oldCoupon.getDays()) {
+                incrementDays = days - oldCoupon.getDays();
+            }
         }
-        
+
+        couponQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        // 可叠加时不能指定套餐
+        if (!Objects.equals(oldCoupon.getDiscountType(), Coupon.DAY_VOUCHER)) {
+            //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
+            if (Coupon.SUPERPOSITION_NO.equals(oldCoupon.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
+                //获取页面传递进来的套餐信息
+                Triple<Boolean, String, Object> packagesResult = verifyPackages(couponQuery);
+                if (Boolean.FALSE.equals(packagesResult.getLeft())) {
+                    return R.fail("000076", (String) packagesResult.getRight());
+                }
+            }
+        }
+
         Coupon couponUpdate = new Coupon();
         couponUpdate.setId(couponQuery.getId());
        /* couponUpdate.setSuperposition(coupon.getSuperposition());
@@ -357,14 +386,38 @@ public class CouponServiceImpl implements CouponService {
         couponUpdate.setDelFlag(coupon.getDelFlag());*/
         couponUpdate.setDescription(couponQuery.getDescription());
         couponUpdate.setUpdateTime(System.currentTimeMillis());
+        couponUpdate.setDays(days);
+        couponUpdate.setSpecificPackages(couponQuery.getSpecificPackages());
         
         int update = couponMapper.updateById(couponUpdate);
-        
+
         if (update > 0) {
+            // 维护指定套餐新关系
+            if (!Objects.equals(oldCoupon.getDiscountType(), Coupon.DAY_VOUCHER)) {
+                if (Coupon.SUPERPOSITION_NO.equals(oldCoupon.getSuperposition())) {
+                    // 删除套餐与优惠券的关联关系
+                    couponActivityPackageService.deleteByCouponId(couponQuery.getId(), TenantContextHolder.getTenantId());
+
+                    if (SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode().equals(couponQuery.getSpecificPackages())) {
+                        List<CouponActivityPackage> couponActivityPackages = getPackagesFromCoupon(couponQuery.getId().longValue(), couponQuery);
+                        if (!CollectionUtils.isEmpty(couponActivityPackages)) {
+                            couponActivityPackageService.addCouponActivityPackages(couponActivityPackages);
+                        }
+                    }
+                }
+            }
+
+            if (incrementDays > 0) {
+                // 更新优惠券的时限
+                userCouponService.asyncBatchUpdateIncreaseDeadline(couponQuery.getId(), incrementDays, TenantContextHolder.getTenantId());
+            }
+
             //更新缓存
-            redisService.saveWithHash(CacheConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
+            redisService.delete(CacheConstant.COUPON_CACHE + oldCoupon.getId());
+
             return R.ok();
         }
+
         return R.fail("ELECTRICITY.0086", "操作失败");
         
     }
@@ -429,9 +482,9 @@ public class CouponServiceImpl implements CouponService {
                 couponActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 couponActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             } else {
-                couponActivityVO.setBatteryPackages(getAllBatteryPackages());
-                couponActivityVO.setCarRentalPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
-                couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+//                couponActivityVO.setBatteryPackages(getAllBatteryPackages());
+//                couponActivityVO.setCarRentalPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+//                couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
         }
         
@@ -587,7 +640,12 @@ public class CouponServiceImpl implements CouponService {
             log.warn("find the car rental packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
             return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
         }
-        
+        // 优惠券已绑定优惠券包
+        Integer existsCouponBindPackage = couponPackageItemMapper.existsCouponBindPackage(id);
+        if (Objects.nonNull(existsCouponBindPackage)) {
+            return Triple.of(false, "402019", "删除失败，优惠券已绑定优惠券包");
+        }
+
         Coupon couponUpdate = new Coupon();
         couponUpdate.setId(id.intValue());
         couponUpdate.setDelFlag(Coupon.DEL_DEL);
@@ -601,5 +659,73 @@ public class CouponServiceImpl implements CouponService {
         });
         operateRecordUtil.record(null, coupon);
         return Triple.of(true, "", "删除成功！");
+    }
+
+
+    @Override
+    public R editEnablesState(Long id, Integer enabledState) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+
+        Coupon coupon = queryByIdFromCache(id.intValue());
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("120124", "找不到优惠券");
+        }
+
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(user);
+        if (!pair.getLeft()) {
+            log.warn("editEnablesState WARN! Franchisees is null");
+            return R.ok();
+        }
+
+        Integer franchiseeId = coupon.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && CollUtil.isNotEmpty(pair.getRight()) && !pair.getRight().contains(franchiseeId.longValue())) {
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+
+        ShareActivityRule shareActivityRule = shareActivityRuleService.selectByCouponId(id);
+        if (Objects.nonNull(shareActivityRule)) {
+            return R.fail("402029", "禁用失败，优惠券已绑定用户邀请活动");
+        }
+
+        // 注册活动
+        NewUserActivity newUserActivity = newUserActivityService.selectByCouponId(id);
+        if (Objects.nonNull(newUserActivity)) {
+            return R.fail("402029", "禁用失败，优惠券已绑定用户邀请活动");
+        }
+
+        //检查是否绑定到换电套餐
+        List<BatteryMemberCard> batteryMemberCardList = batteryMemberCardService.selectListByCouponId(id);
+        if (CollUtil.isNotEmpty(batteryMemberCardList)) {
+            return R.fail("402017", "禁用失败，优惠券已绑定套餐");
+        }
+
+        //检查是否绑定到租车或车电一体套餐
+        List<CarRentalPackagePo> carRentalPackagePos = carRentalPackageService.findByCouponId(id);
+        if (CollUtil.isNotEmpty(carRentalPackagePos)) {
+            return R.fail("402017", "禁用失败，优惠券已绑定套餐");
+        }
+
+        // 已绑定优惠券包，提示“禁用失败，优惠券已绑定优惠券包
+        Integer existsCouponBindPackage = packageItemService.existsCouponBindPackage(id);
+        if (Objects.nonNull(existsCouponBindPackage)) {
+            return R.fail("402018", "禁用失败，优惠券已绑定优惠券包");
+        }
+
+
+        Coupon couponUpdate = new Coupon();
+        couponUpdate.setId(id.intValue());
+        couponUpdate.setEnabledState(enabledState);
+        couponUpdate.setUpdateTime(System.currentTimeMillis());
+        couponMapper.updateById(couponUpdate);
+
+        redisService.delete(CacheConstant.COUPON_CACHE + id);
+        return R.ok();
+
     }
 }

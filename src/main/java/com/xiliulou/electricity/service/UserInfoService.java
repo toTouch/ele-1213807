@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.user.UserInfoBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -12,6 +14,7 @@ import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.userinfo.UserAccountInfoVO;
+import com.xiliulou.electricity.vo.userinfo.UserDepositStatusVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +36,8 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 用户集
      */
     List<UserInfo> page(UserInfoQuery userInfoQuery);
+    
+    List<UserInfoBO> pageV2(UserInfoQuery userInfoQuery);
     
     /**
      * 查询总数
@@ -69,6 +74,8 @@ public interface UserInfoService extends IService<UserInfo> {
     R queryList(UserInfoQuery userInfoQuery);
     
     R queryCarRentalList(UserInfoQuery userInfoQuery);
+    
+    R queryCarRentalListForPro(UserInfoQuery userInfoQuery);
     
     R queryCarRentalCount(UserInfoQuery userInfoQuery);
     
@@ -150,6 +157,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryEleList(UserInfoQuery userInfoQuery);
     
+    R queryEleListForPro(UserInfoQuery userInfoQuery);
+    
     R queryEleListCount(UserInfoQuery userInfoQuery);
     
     void deleteCache(Long uid);
@@ -191,15 +200,35 @@ public interface UserInfoService extends IService<UserInfo> {
     
     /**
      * 检查用户与换电套餐的分组是否匹配
-     * @param userInfo 用户信息
+     *
+     * @param userInfo          用户信息
      * @param batteryMemberCard 套餐信息
+     * @param userInfoExtra
      * @return 校验结果
      */
-    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard);
+    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserInfoExtra userInfoExtra);
     
     R bindBattery(BindBatteryRequest bindBatteryRequest);
     
     Integer updatePayCountByUid(UserInfo userInfo);
 
     UserInfo queryByUidFromDB(Long uid);
+    
+    UserDepositStatusVO queryDepositStatus();
+    
+    R deleteAccountPreCheck();
+    
+    R deleteAccount();
+    
+    /**
+     * 0-正常,1-已删除, 2-已注销
+     */
+    Integer queryUserDelStatus(Long uid);
+    
+    /**
+     * 满足下面条件之一，即为老用户：
+     *  1、根据uid查询，payCount>0的用户
+     *  2、根据手机号查询，曾被删除后又重新注册的用户（删除前payCount>0）
+     */
+    Boolean isOldUser(UserInfo userInfo);
 }

@@ -81,12 +81,19 @@ public interface RentBatteryOrderService {
     
     Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo);
     
-    Integer existReturnOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell);
+    Integer existReturnRentOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell);
     
     String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee, Double fullyCharged);
     
     List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList);
-    
+
+    RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long scanTime, Long startTime, List<Integer> orderTypes);
+
+
+    R returnBatteryCheck(Integer electricityCabinetId);
+
+    R lessRentReturnSelfOpenCell(LessExchangeSelfOpenCellQuery query);
+
     /**
      * 根据订单号判断是否租退电订单
      */

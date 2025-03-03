@@ -28,18 +28,22 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserDataScope;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
+import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -61,9 +65,12 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
+import com.xiliulou.electricity.service.retrofit.AuxRetrofitService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -95,7 +102,6 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -105,9 +111,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.StringConstant.SPACE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 
 /**
  * (User)表服务实现类
@@ -200,6 +203,14 @@ public class UserServiceImpl implements UserService {
     @Resource
     private InstallmentSearchApiService installmentSearchApiService;
     
+    @Resource
+    private AuxRetrofitService auxRetrofitService;
+    
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     /**
      * 启用锁定用户
@@ -760,6 +771,9 @@ public class UserServiceImpl implements UserService {
                 // 删除用户对应的认证信息
                 userOauthBindService.deleteByUid(uid, tenantId);
             }
+    
+            // 删除运维小程序常用功能排序数据
+            auxRetrofitService.deleteFeatureSort(FeatureSortReq.builder().tenantId(tenantId).uid(uid).build());
             
         }
         return Pair.of(true, null);
@@ -1008,10 +1022,16 @@ public class UserServiceImpl implements UserService {
             return Triple.of(true, null, null);
         }
         
-        UserInfo userRentInfo = userInfoService.queryByUidFromCache(uid);
+        UserInfo userRentInfo = userInfoService.queryByUidFromDB(uid);
         if (Objects.isNull(userRentInfo)) {
             log.warn("ELE WARN! not found userInfo,uid={} ", uid);
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            return Triple.of(false, "402030", "请退还押金后，进行删除操作");
         }
         
         if (Objects.equals(userRentInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
@@ -1052,6 +1072,8 @@ public class UserServiceImpl implements UserService {
         userInfoService.deleteByUid(uid);
         
         userBatteryMemberCardService.deleteByUid(uid);
+    
+        carRentalPackageMemberTermService.removeByUid(tenantId, uid);
         
         userCarService.deleteByUid(uid);
         
@@ -1059,8 +1081,33 @@ public class UserServiceImpl implements UserService {
         
         // 删除用户分组信息
         userInfoGroupBizService.deleteGroupDetailByUid(uid, null);
+    
+        //给用户打删除标记
+        markDelUser(userRentInfo, tenantId, uid);
         
         return Triple.of(true, null, null);
+    }
+    
+    private void markDelUser(UserInfo userRentInfo, Integer tenantId, Long uid) {
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            // 更新为"已删除"
+            userDelRecordService.updateStatusById(userDelRecord.getId(), UserStatusEnum.USER_STATUS_DELETED.getCode(), System.currentTimeMillis());
+            return;
+        }
+        
+        String delPhone = StringUtils.EMPTY;
+        String delIdNumber = StringUtils.EMPTY;
+        // 注意：payCount=0时，delPhone=""、delIdNumber=""
+        UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userRentInfo, tenantId);
+        if (Objects.nonNull(remarkPhoneAndIdNumber)) {
+            delPhone = remarkPhoneAndIdNumber.getDelPhone();
+            delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+        }
+        
+        userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
+                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
     }
     
     @Override

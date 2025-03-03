@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityConfigExtra;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.entity.PxzConfig;
@@ -28,6 +29,7 @@ import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
+import com.xiliulou.electricity.service.ElectricityConfigExtraService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -45,18 +47,13 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -121,7 +118,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Autowired
     ServicePhoneService servicePhoneService;
     
-    
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
+
+
     @Override
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         // 用户
@@ -233,8 +233,14 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
             electricityConfig.setPackageFreezeDaysWithAssets(electricityConfigAddAndUpdateQuery.getPackageFreezeDaysWithAssets());
             electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
-            
+            electricityConfig.setIsBindBattery(electricityConfigAddAndUpdateQuery.getIsBindBattery());
+
+            electricityConfig.setAllowOriginalInviter(electricityConfigAddAndUpdateQuery.getAllowOriginalInviter());
+            electricityConfig.setLostUserDays(electricityConfigAddAndUpdateQuery.getLostUserDays());
+            electricityConfig.setLostUserFirst(electricityConfigAddAndUpdateQuery.getLostUserFirst());
             electricityConfigMapper.insert(electricityConfig);
+
+            editElectricityConfigExtra(electricityConfigAddAndUpdateQuery);
             return R.ok();
         }
         
@@ -281,9 +287,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
         electricityConfig.setPackageFreezeDaysWithAssets(electricityConfigAddAndUpdateQuery.getPackageFreezeDaysWithAssets());
         electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
-        
+        electricityConfig.setIsBindBattery(electricityConfigAddAndUpdateQuery.getIsBindBattery());
+
+        electricityConfig.setAllowOriginalInviter(electricityConfigAddAndUpdateQuery.getAllowOriginalInviter());
+        electricityConfig.setLostUserDays(electricityConfigAddAndUpdateQuery.getLostUserDays());
+        electricityConfig.setLostUserFirst(electricityConfigAddAndUpdateQuery.getLostUserFirst());
+
         electricityConfigMapper.update(electricityConfig);
-        
+        editElectricityConfigExtra(electricityConfigAddAndUpdateQuery);
+
         // 清理缓存
         redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         
@@ -291,6 +303,27 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         return R.ok();
     }
     
+    private void editElectricityConfigExtra(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
+        ElectricityConfigExtra oldElectricityConfigExtra = new ElectricityConfigExtra();
+        BeanUtil.copyProperties(electricityConfigExtra, oldElectricityConfigExtra, CopyOptions.create().ignoreNullValue().ignoreError());
+        
+        if (Objects.isNull(electricityConfigExtra)) {
+            electricityConfigExtraService.insert(
+                    ElectricityConfigExtra.builder().tenantId(tenantId).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
+        } else {
+            electricityConfigExtra.setAccountDelSwitch(electricityConfigAddAndUpdateQuery.getAccountDelSwitch());
+    
+            electricityConfigExtraService.update(electricityConfigExtra);
+        }
+
+        // 清理缓存
+        redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG_EXTRA + tenantId);
+
+        operateRecordUtil.record(oldElectricityConfigExtra, electricityConfigExtra);
+    }
+
     @Override
     public ElectricityConfig queryFromCacheByTenantId(Integer tenantId) {
         ElectricityConfig cache = redisService.getWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, ElectricityConfig.class);
@@ -329,6 +362,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         // 获取租户配置信息
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
+    
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfigExtra)) {
+            BeanUtils.copyProperties(electricityConfigExtra, tenantConfigVO);
+        }
         
         // 获取租户模板id
         List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, ChannelEnum.WECHAT.getCode());
@@ -375,6 +413,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
         
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfigExtra)) {
+            BeanUtils.copyProperties(electricityConfigExtra, tenantConfigVO);
+        }
+        
         // 获取租户模板id
         List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, channel);
         tenantConfigVO.setTemplateConfigList(templateConfigList);
@@ -393,17 +436,17 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     public Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid, boolean hasAssets, Integer source) throws BizException {
         Boolean autoReviewOrNot = Boolean.TRUE;
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(tenantId);
-        
+
         if (Objects.isNull(electricityConfig)) {
             throw new BizException("301031", "未找到租户配置信息");
         }
-        
+
         // 校验是否可以自动审核
         if (Objects.isNull(electricityConfig.getFreezeAutoReviewDays()) || electricityConfig.getFreezeAutoReviewDays() == 0 || electricityConfig.getFreezeAutoReviewDays() < days) {
             log.info("FREEZE AUTO REVIEW CHECK！can not auto review. uid={}", uid);
             autoReviewOrNot = Boolean.FALSE;
         }
-        
+
         // 校验申请冻结的天数是否合规
         Integer packageFreezeDays = hasAssets ? electricityConfig.getPackageFreezeDaysWithAssets() : electricityConfig.getPackageFreezeDays();
         if (Objects.isNull(packageFreezeDays) || Objects.isNull(electricityConfig.getPackageFreezeCount()) || Objects.equals(electricityConfig.getPackageFreezeCount(), 0)) {
@@ -418,10 +461,16 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                         : new BizException("301034", String.format("冻结天数最多为%d天", packageFreezeDays));
             }
         }
-        
+
         return autoReviewOrNot;
     }
-    
+
+    @Override
+    @Slave
+    public ElectricityConfig queryByTenantId(Integer tenantId) {
+        return electricityConfigMapper.selectByTenantId(tenantId);
+    }
+
     @Override
     public Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery) {
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(TenantContextHolder.getTenantId());

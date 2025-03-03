@@ -25,4 +25,6 @@ public class ElectricityCabinetMapVO {
     private Integer unusableCount;
     
     private Integer offLineCount;
+
+    private Integer reversePowerTypeCount;
 }

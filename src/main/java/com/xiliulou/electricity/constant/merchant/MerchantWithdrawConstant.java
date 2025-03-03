@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.constant.merchant;
 
+import java.math.BigDecimal;
+
 /**
  * @author BaoYu
  * @description:
@@ -51,6 +53,11 @@ public class MerchantWithdrawConstant {
      * 提现最大金额限制
      */
     public static final Integer WITHDRAW_MAX_AMOUNT = 500;
+
+    /**
+     * 提现最大金额限制: 新流程
+     */
+    public static final Integer WITHDRAW_MAX_AMOUNT_V2 = 200;
     
     public static final String WECHAT_BATCH_STATUS_FINISHED = "FINISHED";
     
@@ -65,5 +72,18 @@ public class MerchantWithdrawConstant {
     public static final String WECHAT_TRANSFER_BATCH_REMARK_SUFFIX = "推广费";
     
     public static final String WITHDRAW_FAILED_COMMON_REASON = "提现失败，请联系客服处理";
-    
+
+    public static final String WITHDRAW_TRANSFER_REMARK = "商户推广费";
+
+    public static final String WITHDRAW_TRANSFER_SCENE_JOB = "岗位类型";
+
+    public static final String WITHDRAW_TRANSFER_SCENE_JOB_CONTENT = "商户";
+
+    public static final String WITHDRAW_TRANSFER_SCENE_REWARD = "报酬说明";
+
+    public static final BigDecimal WITHDRAW_TRANSFER_DEFAULT = new BigDecimal("200");
+
+    public static final String PHRASE2 = "待确认收款";
+
+    public static final Object RECEIVE_REMARK = "提现审批已通过，请尽快确认收款";
 }

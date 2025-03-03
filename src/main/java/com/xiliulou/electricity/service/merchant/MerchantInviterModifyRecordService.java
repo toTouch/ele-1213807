@@ -18,4 +18,7 @@ public interface MerchantInviterModifyRecordService {
     List<MerchantInviterModifyRecordVO> listByPage(MerchantInviterModifyRecordRequest request);
     
     Integer countTotal(MerchantInviterModifyRecordRequest request);
+    
+    boolean existsModifyRecordByUid(Long uid);
+    
 }

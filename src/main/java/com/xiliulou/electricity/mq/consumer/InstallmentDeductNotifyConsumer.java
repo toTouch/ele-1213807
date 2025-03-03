@@ -10,6 +10,8 @@ import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.FyConfigService;
@@ -69,6 +71,9 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
     
     @Resource
     private FengYunConfig fengYunConfig;
+
+    @Resource
+    private LostUserActivityDealPublish lostUserActivityDealPublish;
     
     
     @Override
@@ -115,24 +120,32 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
             }
             
             // 已成功续费套餐，不需再执行后续逻辑
-            if (Objects.equals(installmentRecord.getPaidInstallment(), issue)) {
+            Integer paidInstallment = installmentRecord.getPaidInstallment();
+            if (Objects.isNull(paidInstallment)) {
+                log.error("INSTALLMENT RENEW CONSUMER. paidInstallment is null, Something has gone wrong and needs to be resolved immediately. externalAgreementNo={}", externalAgreementNo);
+                return;
+            }
+            
+            // 套餐续费成功之后才会修改已支付期数，出现如下场景代表本期已续费成功
+            if (paidInstallment >= issue) {
                 return;
             }
             
             // 加锁避免多续费，因为获取锁失败的处理不可重试，若重试会导致多续费套餐，只要有一个消息获取到锁走了后续处理套餐就能续费成功，若续费失败代表数据异常重试也是继续失败
             // 锁不可释放，重试间隔为5s，去间隔时间三倍加锁不释放可以极大程度避免同一期续费两次套餐
-            if (!redisService.setNx(String.format(CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK, uid), "1", 15 * 1000L, false)) {
+            if (!redisService.setNx(String.format(CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK, uid, issue), "1", 15 * 1000L, false)) {
                 return;
             }
             
             Triple<Boolean, String, Object> handlePackageTriple = null;
             if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
                 // 处理换电代扣成功的场景
-                handlePackageTriple = installmentBizService.handleBatteryMemberCard(installmentRecord, deductionPlanList.get(0), uid);
+                handlePackageTriple = installmentBizService.handleBatteryMemberCard(installmentRecord, deductionPlanList, uid);
             }
             
             // 代扣成功后其他记录的处理
             if (Objects.nonNull(handlePackageTriple) && handlePackageTriple.getLeft()) {
+
                 InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
                 installmentRecordUpdate.setId(installmentRecord.getId());
                 // 若全部代扣完，改为已完成，并且解约
@@ -140,9 +153,15 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
                     installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
                 }
                 installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-                installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
+                installmentRecordUpdate.setPaidInstallment(paidInstallment + 1);
                 installmentRecordService.update(installmentRecordUpdate);
-                
+
+                if (!Objects.equals(deductionPlanList.get(0).getIssue(), 1)) {
+                    String orderId = Objects.nonNull(handlePackageTriple.getRight()) ? (String) handlePackageTriple.getRight() : "";
+                    // 流失用户活动处理
+                    lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), installmentRecord.getTenantId(), orderId);
+                }
+
                 if (Objects.equals(installmentRecord.getInstallmentNo(), issue)) {
                     FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
                     if (Objects.isNull(config)) {
@@ -162,11 +181,11 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
     }
     
     private void retry(InstallmentMqCommonDTO commonDTO) {
-        if (Objects.nonNull(commonDTO) && commonDTO.getRetryCount() >= fengYunConfig.getRetryCount()) {
+        Integer retryCount = commonDTO.getRetryCount();
+        if (Objects.nonNull(retryCount) && retryCount >= fengYunConfig.getRetryCount()) {
             return;
         }
         
-        Integer retryCount = commonDTO.getRetryCount();
         commonDTO.setRetryCount(Objects.isNull(retryCount) ? 1 : retryCount + 1);
         
         // 延迟5s重试

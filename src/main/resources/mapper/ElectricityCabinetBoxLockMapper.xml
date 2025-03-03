@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetBoxLockMapper">
+
+    <sql id="baseSql">
+        id
+        ,product_key,device_name
+        ,sn,electricity_cabinet_id,cell_no,lock_type,lock_reason,lock_status_change_time,tenant_id,franchisee_id,store_id,create_time,update_time
+    </sql>
+
+    <insert id="insertEleLockBox">
+        INSERT INTO t_electricity_cabinet_box_lock
+        (id,
+         product_key,
+         device_name,
+         sn,
+         electricity_cabinet_id,
+         cell_no,
+         lock_type,
+         lock_reason,
+         lock_status_change_time,
+         tenant_id,
+         franchisee_id,
+         store_id,
+         create_time,
+         update_time)
+        VALUES (#{boxLock.id},
+                #{boxLock.productKey},
+                #{boxLock.deviceName},
+                #{boxLock.sn},
+                #{boxLock.electricityCabinetId},
+                #{boxLock.cellNo},
+                #{boxLock.lockType},
+                #{boxLock.lockReason},
+                #{boxLock.lockStatusChangeTime},
+                #{boxLock.tenantId},
+                #{boxLock.franchiseeId},
+                #{boxLock.storeId},
+                #{boxLock.createTime},
+                #{boxLock.updateTime})
+    </insert>
+
+    <update id="deleteEleLockBox">
+        delete
+        from t_electricity_cabinet_box_lock
+        where id = #{id}
+    </update>
+
+    <delete id="deleteElectricityCabinetBoxLock">
+        delete
+        from t_electricity_cabinet_box_lock
+        where electricity_cabinet_id = #{electricityCabinetId}
+    </delete>
+
+
+    <select id="selectBoxLockByEidAndCell"
+            resultType="com.xiliulou.electricity.entity.ElectricityCabinetBoxLock">
+        SELECT
+        <include refid="baseSql"/>
+        from t_electricity_cabinet_box_lock
+        where electricity_cabinet_id = #{eid}
+        and cell_no = #{cellNo}  limit 1
+    </select>
+
+    <select id="listCabinetBoxLock" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBoxLock">
+        select
+        <include refid="baseSql"/>
+        from t_electricity_cabinet_box_lock
+        where  tenant_id = #{tenantId}
+        <if test="idsByLikeName != null and idsByLikeName.size() > 0">
+            AND electricity_cabinet_id IN
+            <foreach collection="idsByLikeName" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+
+        <if test="sn != null and sn != ''">
+            and sn  like concat('%',#{sn},'%')
+        </if>
+
+        <if test="lockType != null">
+            and lock_type = #{lockType}
+        </if>
+
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            AND franchisee_id IN
+            <foreach collection="franchiseeIds" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="storeIds != null and storeIds.size() > 0">
+            AND store_id IN
+            <foreach collection="storeIds" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
+        <if test="lockStatusChangeTimeStart != null">
+            and lock_status_change_time &gt;=#{lockStatusChangeTimeStart}
+        </if>
+        <if test="lockStatusChangeTimeEnd != null">
+            and lock_status_change_time &lt;=#{lockStatusChangeTimeEnd}
+        </if>
+        order by id desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="countCabinetBoxLock" resultType="java.lang.Long">
+        select count(1)
+        from t_electricity_cabinet_box_lock
+        where tenant_id = #{tenantId}
+        <if test="idsByLikeName != null and idsByLikeName.size() > 0">
+            AND electricity_cabinet_id IN
+            <foreach collection="idsByLikeName" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="sn != null and sn != ''">
+            and sn like concat('%',#{sn},'%')
+        </if>
+
+        <if test="lockType != null">
+            and lock_type = #{lockType}
+        </if>
+
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            AND franchisee_id IN
+            <foreach collection="franchiseeIds" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="storeIds != null and storeIds.size() > 0">
+            AND store_id IN
+            <foreach collection="storeIds" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
+        <if test="lockStatusChangeTimeStart != null">
+            and lock_status_change_time &gt;=#{lockStatusChangeTimeStart}
+        </if>
+        <if test="lockStatusChangeTimeEnd != null">
+            and lock_status_change_time &lt;=#{lockStatusChangeTimeEnd}
+        </if>
+    </select>
+</mapper>

@@ -29,6 +29,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.battery.BindBatteryConstants;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
@@ -69,6 +70,8 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
+import com.xiliulou.electricity.vo.battery.BindBatteryFailReasonVO;
+import com.xiliulou.electricity.vo.battery.BindBatteryResultVO;
 import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import com.xiliulou.electricity.web.query.battery.BatteryLocationTrackQuery;
@@ -1342,6 +1345,85 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
+    public R<Object> bindFranchiseeForBatteryV2(BindElectricityBatteryQuery batteryQuery) {
+        if (CollectionUtils.isEmpty(batteryQuery.getElectricityBatterySnList())) {
+            return R.fail("300100", "请填写电池sn后再试");
+        }
+        
+        if (Objects.isNull(batteryQuery.getFranchiseeId())) {
+            return R.fail("000038", "未找到加盟商!");
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryQuery.getFranchiseeId().longValue());
+        if (Objects.isNull(franchisee)) {
+            log.error("Bind Franchisee For BatteryV2, Franchisee id is invalid! franchisee id = {}", batteryQuery.getFranchiseeId());
+            return R.fail("000038", "未找到加盟商!");
+        }
+        
+        // 校验加盟商是否正在进行资产盘点
+        Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchisee.getId(), AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+        if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+            return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+        }
+        
+        // 校验电池状态，生成各电池的失败结果
+        List<BindBatteryFailReasonVO> reasonVOList = new ArrayList<>();
+        List<ElectricityBattery> electricityBatteries = new ArrayList<>();
+        List<Long> idsWaitBind = new ArrayList<>();
+        batteryQuery.getElectricityBatterySnList().forEach(sn -> {
+            try {
+                ElectricityBattery electricityBattery = queryBySnFromDb(sn, TenantContextHolder.getTenantId());
+                if (Objects.isNull(electricityBattery)) {
+                    reasonVOList.add(new BindBatteryFailReasonVO(sn, BindBatteryConstants.FAIL_REASON_NOT_FOUND));
+                    return;
+                }
+                
+                if (Objects.equals(electricityBattery.getStockStatus(), StockStatusEnum.UN_STOCK.getCode())) {
+                    reasonVOList.add(new BindBatteryFailReasonVO(sn, BindBatteryConstants.FAIL_REASON_ALREADY_OUTBOUND));
+                    return;
+                }
+                
+                electricityBatteries.add(electricityBattery);
+                idsWaitBind.add(electricityBattery.getId());
+            } catch (Exception e) {
+                log.error("Bind Franchisee For BatteryV2, sn = {}", sn, e);
+                reasonVOList.add(new BindBatteryFailReasonVO(sn, BindBatteryConstants.FAIL_REASON_UNKNOWN));
+            }
+        });
+        
+        // 没有电池需要修改的时候直接返回结果
+        if (CollectionUtils.isEmpty(idsWaitBind)) {
+            return R.ok(BindBatteryResultVO.builder().successCount(0).failureCount(reasonVOList.size()).failReason(reasonVOList).build());
+        }
+        
+        Integer stockStatus = StockStatusEnum.UN_STOCK.getCode();
+        Map<String, Object> operateRecordMap = new HashMap<>();
+        operateRecordMap.put("outboundStatus", 0);
+        operateRecordMap.put("franchisee", franchisee.getName());
+        operateRecordUtil.record(null, operateRecordMap);
+        
+        // 根据id更新数据，将处理完成后的id集合设置到query对象中
+        batteryQuery.setElectricityBatteryIdList(idsWaitBind);
+        int count = electricitybatterymapper.bindFranchiseeId(batteryQuery, stockStatus);
+        
+        // 出库，需要异步记录
+        Integer operateType = batteryQuery.getType();
+        if (Objects.nonNull(operateType)) {
+            // 异步记录
+            if (CollectionUtils.isNotEmpty(electricityBatteries)) {
+                List<AssetSnWarehouseRequest> snWarehouseList = electricityBatteries.stream().filter(item -> Objects.nonNull(item.getWarehouseId()))
+                        .map(item -> AssetSnWarehouseRequest.builder().sn(item.getSn()).warehouseId(item.getWarehouseId()).build()).collect(Collectors.toList());
+                
+                Long uid = Objects.requireNonNull(SecurityUtils.getUserInfo()).getUid();
+                assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
+            }
+        }
+        
+        return R.ok(
+                BindBatteryResultVO.builder().successCount(count).failureCount(CollectionUtils.isEmpty(reasonVOList) ? 0 : reasonVOList.size()).failReason(reasonVOList).build());
+    }
+    
+    @Override
     public List<ElectricityBattery> selectByBatteryIds(List<Long> batteryIds) {
         return electricitybatterymapper.selectByBatteryIds(batteryIds);
     }
@@ -1847,6 +1929,37 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public Integer existsByBatteryType(String batteryType, Integer tenantId) {
         return electricitybatterymapper.existsByBatteryType(batteryType, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public Map<Long, ElectricityBattery> listUserBatteryByUidList(List<Long> uidList, Integer tenantId) {
+        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.selectLUserBatteryByUidList(uidList, tenantId);
+        if (CollectionUtils.isEmpty(electricityBatteryList)) {
+            return null;
+        }
+    
+        Map<Long, List<ElectricityBattery>> listMap = electricityBatteryList.stream().filter(item -> Objects.nonNull(item.getUid()))
+                .collect(Collectors.groupingBy(ElectricityBattery::getUid, Collectors.toList()));
+        if (MapUtil.isEmpty(listMap)) {
+            return null;
+        }
+    
+        Map<Long, ElectricityBattery> userBatteryMap = new HashMap<>(listMap.size());
+        listMap.forEach((uid, batteryList) -> {
+            if (CollectionUtils.isEmpty(batteryList)) {
+                return;
+            }
+        
+            // 按createTime降序排序
+            batteryList.sort(Comparator.comparing(ElectricityBattery::getCreateTime).reversed());
+            ElectricityBattery battery = batteryList.get(0);
+            if (Objects.nonNull(battery)) {
+                userBatteryMap.put(uid, battery);
+            }
+        });
+    
+        return userBatteryMap;
     }
     
     private Map<String, Long> handleExchangeOrder(Set<String> exchangeOrderSet) {

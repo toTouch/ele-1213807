@@ -191,6 +191,21 @@ public class ElectricityConfig {
     private Integer chargeRateType;
     
     /**
+     * 流失用户拉新 0 - 开启, 1 - 关闭
+     */
+    private Integer lostUserFirst;
+    
+    /**
+     * 流失用户转化条件
+     */
+    private Integer lostUserDays;
+    
+    /**
+     * 允许原邀请人重新邀请：0-允许, 1 - 不允许
+     */
+    private Integer allowOriginalInviter;
+    
+    /**
      * 是否舒适换电，默认0关闭，1是开启
      */
     private Integer isComfortExchange;
@@ -260,6 +275,11 @@ public class ElectricityConfig {
      * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
      */
     private Integer expiredProtectionTime;
+
+    /**
+     * 是否绑定电池
+     */
+    private Integer isBindBattery;
     
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
@@ -437,4 +457,12 @@ public class ElectricityConfig {
     public static Integer EXPIRED_PROTECTION_TIME_DEFAULT = 24;
     
     public static Integer FREEZE_COUNT_NOT_LIMIT = 0;
+
+
+    /**
+     * 是否绑定电池 0--开启，1--关闭
+     */
+    public static Integer IS_BIND_BATTERY = 0;
+
+    public static Integer NOT_IS_BIND_BATTERY = 1;
 }

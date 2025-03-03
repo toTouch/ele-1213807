@@ -18,6 +18,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -109,6 +110,9 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Autowired
     private NewUserActivityService newUserActivityService;
+
+    @Resource
+    private CouponPackageService couponPackageService;
 
     /**
      * 根据ID集查询用户优惠券信息
@@ -232,6 +236,10 @@ public class UserCouponServiceImpl implements UserCouponService {
             NewUserActivity newUserActivity = newUserActivityService.queryByIdFromCache(couponWay.intValue());
             vo.setCouponWayDetails(Objects.isNull(newUserActivity) ? null : newUserActivity.getName());
         }
+        if (Objects.equals(couponType, CouponTypeEnum.COUPON_PACKAGE.getCode())) {
+            User user = userService.queryByUidFromCache(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(user) ? null : user.getName());
+        }
     }
 
     @Override
@@ -344,10 +352,13 @@ public class UserCouponServiceImpl implements UserCouponService {
             log.warn("Coupon  ERROR! not found coupon ! couponId={} ", id);
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
+        if (Objects.equals(coupon.getEnabledState(), Coupon.COUPON_UNABLE_STATUS)) {
+            return R.fail("402028", "优惠券已禁用");
+        }
 
         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).couponId(coupon.getId())
                 .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(tenantId);
+                .tenantId(tenantId).couponType(CouponTypeEnum.BATCH_RELEASE.getCode()).couponWay(SecurityUtils.getUid());
 
         //优惠券过期时间
 
@@ -854,6 +865,9 @@ public class UserCouponServiceImpl implements UserCouponService {
             log.warn("Coupon  ERROR! not found coupon ! couponId={} ", request.getCouponId());
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
+        if (Objects.equals(coupon.getEnabledState(), Coupon.COUPON_UNABLE_STATUS)){
+            return R.fail("402028", "优惠券已禁用");
+        }
 
         ConcurrentHashSet<String> notExistsPhone = new ConcurrentHashSet<>();
         ConcurrentHashSet<User> existsPhone = new ConcurrentHashSet<>();
@@ -1045,6 +1059,22 @@ public class UserCouponServiceImpl implements UserCouponService {
         executorService.execute(() -> {
             //购买套餐后发送优惠券给用户
             sendCouponToUser(userCouponDTO);
+        });
+    }
+
+    @Override
+    public void batchInsert(List<UserCoupon> userCouponList) {
+        userCouponMapper.batchInsert(userCouponList);
+    }
+
+    @Override
+    public void asyncBatchUpdateIncreaseDeadline(Integer couponId, Integer days, Integer tenantId) {
+        executorService.execute(() -> {
+            // 批量修改优惠券与用户的时间
+            Long increaseTime = TimeConstant.DAY_MILLISECOND * days;
+            int count = userCouponMapper.increaseDeadlineByCouponId(couponId, increaseTime, tenantId);
+
+            log.info("update dead line success! couponId = {}, days = {}, count = {}", couponId, days, count);
         });
     }
 }

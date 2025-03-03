@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityConfigExtra;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.PermissionTemplate;
 import com.xiliulou.electricity.entity.Role;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.request.InitTenantSubscriptRequest;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
+import com.xiliulou.electricity.service.ElectricityConfigExtraService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.PermissionTemplateService;
@@ -40,20 +42,15 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
-import com.xiliulou.electricity.service.merchant.MerchantAttrService;
-import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.retrofit.MsgCenterRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
-import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.tuple.Triple;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +63,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -128,11 +124,10 @@ public class TenantServiceImpl implements TenantService {
     private FaqCategoryV2Service faqCategoryV2Service;
     
     @Resource
-    private CustomPasswordEncoder customPasswordEncoder;
-    
-    @Resource
     private MsgCenterRetrofitService msgCenterRetrofitService;
-    
+
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
     
@@ -258,11 +253,15 @@ public class TenantServiceImpl implements TenantService {
         
         //新增租户给租户添加的默认系统配置
         ElectricityConfig electricityConfig = ElectricityConfig.builder().name("").createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(tenant.getId()).isManualReview(ElectricityConfig.MANUAL_REVIEW).isWithdraw(ElectricityConfig.WITHDRAW)
+                .tenantId(tenant.getId()).isManualReview(ElectricityConfig.MANUAL_REVIEW).isWithdraw(ElectricityConfig.NON_WITHDRAW)
                 .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK).disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD).isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
                 .lowChargeRate(NumberConstant.TWENTY_FIVE_DB).fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
-        
+
+        // 给租户添加默认的系统配置扩展
+        electricityConfigExtraService.insert(
+                ElectricityConfigExtra.builder().tenantId(tenant.getId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
+
         //新增租户给租户增加渠道活动（产品提的需求）
         final ChannelActivity channelActivity = new ChannelActivity();
         channelActivity.setName("渠道活动");

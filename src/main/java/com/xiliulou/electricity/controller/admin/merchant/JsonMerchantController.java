@@ -3,14 +3,16 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
-import com.xiliulou.electricity.request.merchant.MerchantAttrRequest;
-import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
-import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
+import com.xiliulou.electricity.request.merchant.*;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -18,6 +20,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,6 +56,9 @@ public class JsonMerchantController extends BaseController {
     
     @Resource
     private UserDataScopeService userDataScopeService;
+    
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
     
     /**
      * 查询商户升级条件
@@ -314,6 +321,60 @@ public class JsonMerchantController extends BaseController {
                 .merchantGradeId(merchantGradeId).channelEmployeeUid(channelEmployeeUid).franchiseeId(franchiseeId).phone(phone).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(merchantService.listByPage(merchantPageRequest));
+    }
+
+    /**
+     * @param
+     * @description 列表数量统计
+     * @date 2023/12/15 18:17:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/merchant/overdueUser/pageCount")
+    public R pageOverdueUserCount(@RequestParam(value = "merchantId", required = true) Long merchantId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        MerchantJoinUserQueryMode merchantJoinUserQueryMode = MerchantJoinUserQueryMode.builder().type(MerchantConstant.MERCHANT_OVERDUE_USER_QUERY_TYPE).merchantId(merchantId)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        return R.ok(merchantService.countOverdueUserTotal(merchantJoinUserQueryMode));
+    }
+
+    /**
+     * @param
+     * @description 列表分页
+     * @date 2023/11/21 13:15:54
+     * @author maxiaodong
+     */
+    @GetMapping("/admin/merchant/overdueUser/page")
+    public R pageOverdueUser(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "merchantId", required = true) Long merchantId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        MerchantJoinUserQueryMode merchantJoinUserQueryMode = MerchantJoinUserQueryMode.builder().type(MerchantConstant.MERCHANT_OVERDUE_USER_QUERY_TYPE).merchantId(merchantId).offset(offset)
+                .size(size).tenantId(TenantContextHolder.getTenantId()).build();
+
+        return R.ok(merchantService.listOverdueUserByPage(merchantJoinUserQueryMode));
     }
     
     /**

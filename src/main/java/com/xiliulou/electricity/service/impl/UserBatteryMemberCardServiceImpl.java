@@ -18,7 +18,6 @@ import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
-import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -30,7 +29,6 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -269,8 +267,8 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     
     @Slave
     @Override
-    public List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds) {
-        return userBatteryMemberCardMapper.selectUseableListByTenantIds(offset, size, tenantIds);
+    public List<UserBatteryMemberCard> selectUseableListByTenantIds(Long userBatteryMemberCardId, int size, List<Integer> tenantIds) {
+        return userBatteryMemberCardMapper.selectUseableListByTenantIds(userBatteryMemberCardId, size, tenantIds);
     }
     
     @Slave

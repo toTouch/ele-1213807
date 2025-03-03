@@ -218,6 +218,7 @@ public class MerchantUpgradeConsumer implements RocketMQListener<String> {
         MerchantModify merchantModify = new MerchantModify();
         merchantModify.setMerchantId(merchant.getId());
         merchantModify.setUid(userInfoExtra.getUid());
+        merchantModify.setMessageId(IdUtil.fastSimpleUUID());
         rocketMqService.sendAsyncMsg(MqProducerConstant.MERCHANT_MODIFY_TOPIC, JsonUtil.toJson(merchantModify));
     }
 }

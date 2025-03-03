@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.query.merchant.MerchantAllPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryMode;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author HeYafeng
@@ -77,6 +79,8 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest request);
     
+    MerchantJoinRecord selectNotSuccessByJoinUid(@Param("joinUid") Long uid);
+    
     MerchantJoinRecord selectRemoveSuccessRecord(@Param("joinUid") Long joinUid, @Param("inviterUid") Long inviterUid, @Param("tenantId") Integer tenantId);
     
     List<MerchantStatisticsUserVO> selectListSuccessJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
@@ -88,4 +92,8 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     List<MerchantStatisticsUserVO> selectListEmployeeJoinNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);
+
+    List<MerchantOverdueUserCountBO> selectListOverdueCount(@Param("merchantIdList") Set<Long> merchantIdList,@Param("currentTime") long currentTime);
+
+    Integer countOverdueUserTotal(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
 }

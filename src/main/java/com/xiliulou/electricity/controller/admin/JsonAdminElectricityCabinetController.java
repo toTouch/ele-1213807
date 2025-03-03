@@ -158,7 +158,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
             @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "lockCellFlag", required = false) Integer lockCellFlag) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -217,6 +218,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .idList(idList)
                 .sn(sn)
                 .franchiseeId(franchiseeId)
+                .lockCellFlag(lockCellFlag)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -241,7 +243,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
             @RequestParam(value = "version", required = false) String version,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                        @RequestParam(value = "lockCellFlag", required = false) Integer lockCellFlag) {
 
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
@@ -291,9 +294,322 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .deviceName(deviceName)
                 .version(version)
                 .franchiseeId(franchiseeId)
+                .lockCellFlag(lockCellFlag)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
+    }
+
+
+    @GetMapping(value = "/admin/electricityCabinet/lowPower/list")
+    public R queryLowPowerList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "address", required = false) String address,
+                       @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                       @RequestParam(value = "powerType", required = false) Integer powerType,
+                       @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                       @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                       @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "id", required = false) Integer id,
+                       @RequestParam(value = "idList", required = false) List<Integer> idList,
+                       @RequestParam(value = "areaId", required = false) Long areaId,
+                       @RequestParam(value = "productKey", required = false) String productKey,
+                       @RequestParam(value = "deviceName", required = false) String deviceName,
+                       @RequestParam(value = "sn", required = false) String sn,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+
+        // 数据权校验
+        Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .address(address)
+                .powerType(powerType)
+                .usableStatus(usableStatus)
+                .onlineStatus(onlineStatus)
+                .stockStatus(stockStatus)
+                .warehouseId(warehouseId)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .id(id)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
+                .productKey(productKey)
+                .deviceName(deviceName)
+                .idList(idList)
+                .sn(sn)
+                .franchiseeId(franchiseeId)
+                .build();
+
+        return electricityCabinetService.listLowPowerByPage(electricityCabinetQuery);
+    }
+
+
+    //列表数量查询
+    @GetMapping(value = "/admin/electricityCabinet/lowPower/queryCount")
+    public R queryLowPowerCount(@RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "address", required = false) String address,
+                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                        @RequestParam(value = "powerType", required = false) Integer powerType,
+                        @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                        @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                        @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "areaId", required = false) Long areaId,
+                        @RequestParam(value = "idList", required = false) List<Integer> idList,
+                        @RequestParam(value = "modelId", required = false) Integer modelId,
+                        @RequestParam(value = "productKey", required = false) String productKey,
+                        @RequestParam(value = "deviceName", required = false) String deviceName,
+                        @RequestParam(value = "version", required = false) String version,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+
+        // 数据权校验
+        Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                .name(name)
+                .address(address)
+                .powerType(powerType)
+                .usableStatus(usableStatus)
+                .onlineStatus(onlineStatus)
+                .warehouseId(warehouseId)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .modelId(modelId)
+                .sn(sn)
+                .idList(idList)
+                .areaId(areaId)
+                .stockStatus(stockStatus)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .productKey(productKey)
+                .deviceName(deviceName)
+                .version(version)
+                .franchiseeId(franchiseeId)
+                .build();
+
+        return electricityCabinetService.countLowPowerTotal(electricityCabinetQuery);
+    }
+
+
+    @GetMapping(value = "/admin/electricityCabinet/fullPower/list")
+    public R queryFullPowerList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                               @RequestParam(value = "name", required = false) String name,
+                               @RequestParam(value = "address", required = false) String address,
+                               @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                               @RequestParam(value = "powerType", required = false) Integer powerType,
+                               @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                               @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                               @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+                               @RequestParam(value = "beginTime", required = false) Long beginTime,
+                               @RequestParam(value = "endTime", required = false) Long endTime,
+                               @RequestParam(value = "id", required = false) Integer id,
+                               @RequestParam(value = "idList", required = false) List<Integer> idList,
+                               @RequestParam(value = "areaId", required = false) Long areaId,
+                               @RequestParam(value = "productKey", required = false) String productKey,
+                               @RequestParam(value = "deviceName", required = false) String deviceName,
+                               @RequestParam(value = "sn", required = false) String sn,
+                               @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+
+        // 数据权校验
+        Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .address(address)
+                .powerType(powerType)
+                .usableStatus(usableStatus)
+                .onlineStatus(onlineStatus)
+                .stockStatus(stockStatus)
+                .warehouseId(warehouseId)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .id(id)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .areaId(areaId)
+                .productKey(productKey)
+                .deviceName(deviceName)
+                .idList(idList)
+                .sn(sn)
+                .franchiseeId(franchiseeId)
+                .build();
+
+        return electricityCabinetService.listFullPowerByPage(electricityCabinetQuery);
+    }
+
+
+    //列表数量查询
+    @GetMapping(value = "/admin/electricityCabinet/fullPower/queryCount")
+    public R queryFullPowerCount(@RequestParam(value = "name", required = false) String name,
+                                @RequestParam(value = "address", required = false) String address,
+                                @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                                @RequestParam(value = "powerType", required = false) Integer powerType,
+                                @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                                @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+                                @RequestParam(value = "warehouseId", required = false) Long warehouseId,
+                                @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                @RequestParam(value = "endTime", required = false) Long endTime,
+                                @RequestParam(value = "sn", required = false) String sn,
+                                @RequestParam(value = "areaId", required = false) Long areaId,
+                                @RequestParam(value = "idList", required = false) List<Integer> idList,
+                                @RequestParam(value = "modelId", required = false) Integer modelId,
+                                @RequestParam(value = "productKey", required = false) String productKey,
+                                @RequestParam(value = "deviceName", required = false) String deviceName,
+                                @RequestParam(value = "version", required = false) String version,
+                                @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+
+        // 数据权校验
+        Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                .name(name)
+                .address(address)
+                .powerType(powerType)
+                .usableStatus(usableStatus)
+                .onlineStatus(onlineStatus)
+                .warehouseId(warehouseId)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .modelId(modelId)
+                .sn(sn)
+                .idList(idList)
+                .areaId(areaId)
+                .stockStatus(stockStatus)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIdList(permissionTriple.getLeft())
+                .storeIdList(permissionTriple.getMiddle())
+                .productKey(productKey)
+                .deviceName(deviceName)
+                .version(version)
+                .franchiseeId(franchiseeId)
+                .build();
+
+        return electricityCabinetService.countFullPowerTotal(electricityCabinetQuery);
     }
     
     //列表查询
@@ -823,7 +1139,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value = "id", required = false) Integer id, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "status", required = false) Integer status) {
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "longitude", required = false) Double longitude,
+                                                        @RequestParam(value = "latitude", required = false) Double latitude, @RequestParam(value = "distance", required = false) Double distance) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -846,7 +1163,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
         
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().id(id).name(name).status(Objects.isNull(status) ? NumberConstant.ONE : status)
-                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).build();
+                .tenantId(TenantContextHolder.getTenantId()).eleIdList(eleIdList).latitude(latitude).longitude(longitude).distance(distance).build();
         
         return electricityCabinetService.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
     }

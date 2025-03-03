@@ -40,6 +40,33 @@
         ORDER BY `create_time` DESC
         LIMIT #{offset}, #{size}
     </select>
+    
+    <!-- 分页查询 -->
+    <select id="pageV2" resultType="com.xiliulou.electricity.bo.user.UserInfoBO">
+        SELECT tui.id, tui.uid, tui.phone, tui.user_name, tui.name, tui.id_number, tui.auth_status, tui.usable_status, tui.service_status, tui.del_flag, tui.create_time,
+        tui.update_time, tui.tenant_id, tui.battery_rent_status, tui.battery_deposit_status, tui.franchisee_id, tui.car_rent_status, tui.car_deposit_status,
+        tui.car_battery_deposit_status, tui.pay_count, tui.auth_type, tui.store_id, tudr.status
+        FROM t_user_info tui left join t_user_del_record tudr on tui.uid = tudr.uid
+        <where>
+            tui.tenant_id = #{tenantId}
+            <if test="authStatus != null ">AND tui.auth_status = #{authStatus}</if>
+            <if test="keywords != null and keywords != '' ">AND (tui.name LIKE CONCAT('%', #{keywords}, '%') OR tui.phone LIKE CONCAT('%', #{keywords}, '%'))</if>
+            <if test="franchiseeIds != null">
+                and tui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test=" storeIds != null">
+                and tui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY tui.create_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
 
     <!-- 查询总数 -->
     <select id="count" resultType="java.lang.Integer">
@@ -1086,16 +1113,22 @@
             tui.franchisee_id,
             tui.tenant_id,
             ubmc.remaining_number ,
-            tui.usable_status
+            tui.usable_status,
+            tui.del_flag,
+            tudr.status as userStatus
         FROM
             t_user_info tui
-            LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
-            AND ubmc.del_flag = 0
+            LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid AND ubmc.del_flag = 0
+            LEFT JOIN t_user_del_record tudr on tui.uid = tudr.uid
         WHERE
-            tui.del_flag = 0
-            AND tui.auth_status = 2
+            tui.auth_status = 2
             AND tui.tenant_id =#{query.tenantId}
-            
+            <if test="query.delFlag !=null">
+                and tui.del_flag = #{query.delFlag}
+            </if>
+            <if test="query.userStatus !=null">
+                and tudr.status = #{query.userStatus}
+            </if>
             <if test="query.memberCardExpireTimeBegin !=null">
                 and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
             </if>
@@ -1171,12 +1204,17 @@
             count(1)
         FROM
         t_user_info tui
-        LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid
-        AND ubmc.del_flag = 0
+        LEFT JOIN t_user_battery_member_card ubmc ON ubmc.uid = tui.uid AND ubmc.del_flag = 0
+        LEFT JOIN t_user_del_record tudr on tui.uid = tudr.uid
         WHERE
-        tui.del_flag = 0
-        AND tui.auth_status = 2
+        tui.auth_status = 2
         AND tui.tenant_id =#{query.tenantId}
+        <if test="query.delFlag !=null">
+            and tui.del_flag = #{query.delFlag}
+        </if>
+        <if test="query.userStatus !=null">
+            and tudr.status = #{query.userStatus}
+        </if>
         <if test="query.memberCardExpireTimeBegin !=null">
             and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
         </if>
@@ -1224,12 +1262,7 @@
         </if>
     </select>
     <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserInfo">
-        SELECT
-        name,
-        uid,
-        phone,
-        del_flag,
-        update_time
+        SELECT name, uid, phone, del_flag, update_time, battery_deposit_status, car_deposit_status, car_battery_deposit_status, battery_rent_status, car_rent_status, tenant_id, franchisee_id, store_id, create_time
         FROM
         t_user_info
         <where>
@@ -1314,4 +1347,5 @@
         <include refid="all_field"/>
         from t_user_info where phone =#{phone}
     </select>
+    
 </mapper>

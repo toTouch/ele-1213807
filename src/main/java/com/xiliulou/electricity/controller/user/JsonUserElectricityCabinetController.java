@@ -92,7 +92,24 @@ public class JsonUserElectricityCabinetController extends BaseController {
         
         return electricityCabinetService.showInfoByDistanceV2(electricityCabinetQuery);
     }
-    
+
+    @GetMapping(value = "/outer/electricityCabinet/showInfoByDistanceV3")
+    public R showInfoByDistanceV3(@RequestParam(value = "distance", required = false) Double distance, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                                  @RequestParam(value = "name", required = false) String name, @RequestParam("lon") Double lon, @RequestParam("lat") Double lat) {
+
+        if (Objects.isNull(lon) || lon <= 0.0 || Objects.isNull(lat) || lat <= 0.0) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().name(name).distance(distance).lon(lon).lat(lat).franchiseeId(franchiseeId)
+                .tenantId(tenantId).usableStatus(0).build();
+
+        return electricityCabinetService.showInfoByDistanceV3(electricityCabinetQuery);
+    }
+
+
     /**
      * 柜机电压容量适配修改
      *
@@ -240,8 +257,8 @@ public class JsonUserElectricityCabinetController extends BaseController {
     /**
      * 选仓换电查询格挡信息
      *
-     * @param electricityCabinetId
-     * @return
+     * @param electricityCabinetId electricityCabinetId
+     * @return R
      */
     @GetMapping("/user/selectionExchangeable/electricityCabinetBoxInfo/{electricityCabinetId}")
     public R queryElectricityCabinetBoxInfoByCabinetId(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {

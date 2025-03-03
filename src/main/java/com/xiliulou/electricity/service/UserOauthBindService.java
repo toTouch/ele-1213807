@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.query.UserOauthBindListQuery;
 import com.xiliulou.electricity.web.query.OauthBindQuery;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -167,4 +168,8 @@ public interface UserOauthBindService {
      * @date 2024/10/9 16:34
      */
     boolean checkExistBind(Long uid, Integer tenantId);
+    
+    List<UserOauthBind> listByUidAndPhoneList(List<UserOauthBindListQuery> queryList, Integer tenantId);
+
+    List<UserOauthBind> listByUidAndTenantAndSource(List<Long> uidList, Integer tenantId, Integer sourceWxPro);
 }

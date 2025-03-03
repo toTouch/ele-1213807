@@ -57,13 +57,13 @@ public class CouponQuery {
     /**
      * 有效天数
      */
-    @NotNull(message = "有效天数不能为空!", groups = {CreateGroup.class})
-    @Pattern(regexp = "^(\\+?[1-9]\\d{0,5})$", message="有效天数输入值不合法", groups = {CreateGroup.class})
+    @NotNull(message = "有效天数不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @Pattern(regexp = "^(\\+?[1-9]\\d{0,5})$", message="有效天数输入值不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String validDays;
     /**
      * 优惠券描述
      */
-    @NotEmpty(message = "优惠券描述不能为空!", groups = {CreateGroup.class})
+    @NotEmpty(message = "优惠券描述不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private String description;
 
     /**
@@ -136,4 +136,6 @@ public class CouponQuery {
      */
     private String userName;
 
+
+    private Integer enabledState;
 }

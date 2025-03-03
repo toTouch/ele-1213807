@@ -19,11 +19,13 @@
         <result property="receiptTime" column="receipt_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
-        
+        <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-       
+        <result property="packageInfo" column="package_info" jdbcType="VARCHAR"/>
+        <result property="wechatMerchantId" column="wechat_merchant_id" jdbcType="VARCHAR"/>
+
     </resultMap>
     
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
@@ -42,7 +44,8 @@
             create_time,
             update_time,
             tenant_id,
-            franchisee_id
+            franchisee_id,
+            type
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -58,7 +61,8 @@
             #{createTime},
             #{updateTime},
             #{tenantId},
-            #{franchiseeId}
+            #{franchiseeId},
+            #{type}
         </trim>
     </insert>
     
@@ -130,6 +134,15 @@
             <if test="wechatMerchantId != null">
                 wechat_merchant_id = #{wechatMerchantId},
             </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="state != null">
+                state = #{state},
+            </if>
+            <if test="packageInfo != null and packageInfo != ''">
+                package_info = #{packageInfo},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -166,6 +179,9 @@
             </if>
             <if test="merchantWithdrawApplication.wechatMerchantId != null">
                 wechat_merchant_id = #{merchantWithdrawApplication.wechatMerchantId},
+            </if>
+            <if test="merchantWithdrawApplication.type != null">
+                type = #{merchantWithdrawApplication.type},
             </if>
         </set>
         
@@ -284,7 +300,8 @@
         tmwa.del_flag,
         tmwa.create_time,
         tmwa.update_time,
-        tm.franchisee_id
+        tm.franchisee_id,
+        tmwa.state
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
         left join t_merchant tm on tm.uid = tmwa.uid
@@ -369,7 +386,9 @@
                tmwa.del_flag,
                tmwa.create_time,
                tmwa.update_time,
-               tmwa.franchisee_id
+               tmwa.franchisee_id,
+               tmwa.package_info,
+               tmwa.wechat_merchant_id
         from t_merchant_withdraw_application tmwa
         where tmwa.id = #{id}
         and tmwa.del_flag = 0
@@ -487,6 +506,7 @@
         where tmwa.del_flag = 0
           and tmwa.status = 4
           and tmwa.check_time <![CDATA[ <=  ]]> #{checkTime}
+          and tmwa.type = #{type}
         limit #{offset},#{size}
     </select>
     
@@ -541,7 +561,97 @@
         </where>
         
     </select>
-    
+
+    <select id="selectListAuditSuccess"
+            resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO">
+        SELECT
+                a.id 'applicationId',
+                r.id 'recordId',
+                a.amount 'amount',
+                r.batch_detail_no 'batchDetailNo',
+                a.batch_no 'batchNo',
+                a.uid,
+                a.franchisee_id 'franchiseeId',
+                a.tenant_id 'tenantId',
+                a.create_time 'createTime'
+        FROM
+            t_merchant_withdraw_application a
+                INNER JOIN t_merchant_withdraw_application_record r ON r.order_no = a.order_no and r.batch_no = a.batch_no
+        where
+            a.type = #{type}
+          and a.del_flag = 0
+          and a.`status` = 3
+          and a.id > #{startId}
+          <if test="tenantId != null">
+              and a.tenant_id = #{tenantId}
+          </if>
+        order by a.id
+            limit #{size}
+
+    </select>
+
+    <select id="selectListWithdrawingByMerchantId"
+            resultType="com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO">
+        SELECT
+            a.id 'applicationId',
+            r.id 'recordId',
+            a.amount 'amount',
+            r.batch_detail_no 'batchDetailNo',
+            a.batch_no 'batchNo',
+            a.uid,
+            a.franchisee_id 'franchiseeId',
+            a.tenant_id 'tenantId',
+            a.state,
+            a.`status`,
+            a.pay_config_type 'payConfigType',
+            a.wechat_merchant_id 'wechatMerchantId',
+            a.create_time 'createTime'
+        FROM
+        t_merchant_withdraw_application a
+        INNER JOIN t_merchant_withdraw_application_record r ON r.order_no = a.order_no and r.batch_no = a.batch_no
+        where
+            a.type = 1
+            and a.del_flag = 0
+            and a.`status` = 4
+            and a.uid = #{uid}
+            and a.id > #{startId}
+            and a.check_time <![CDATA[ <=  ]]> #{checkTime}
+        order by a.id
+        limit #{size}
+    </select>
+
+    <select id="selectByOrderNo"
+            resultType="com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication">
+        select id,
+               uid,
+               order_no,
+               batch_no,
+               amount,
+               remark,
+               status,
+               receipt_time,
+               tenant_id,
+               del_flag,
+               create_time,
+               update_time,
+               state,
+               type
+        from t_merchant_withdraw_application
+        where order_no = #{orderNo}
+          and batch_no = #{batchNo}
+          and del_flag = 0
+    </select>
+
+    <update id="batchUpdatePayConfigChangeByIdList">
+        update t_merchant_withdraw_application
+        set pay_config_whether_change = #{payConfigWhetherChange},
+            update_time = #{updateTime}
+        where id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
     <update id="updateApplicationStatusByBatchNo">
         update t_merchant_withdraw_application
         set status = #{status},
@@ -597,6 +707,13 @@
             update_time = #{updateTime}
         where batch_no = #{batchNo}
           and tenant_id = #{tenantId}
+    </update>
+
+    <update id="updateStateById">
+        update t_merchant_withdraw_application
+        set state = #{state},
+            update_time = #{updateTime}
+        where id = #{applicationId} and state &lt; #{state}
     </update>
 
 </mapper>

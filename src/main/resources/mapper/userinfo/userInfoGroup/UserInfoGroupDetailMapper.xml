@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.userinfo.userInfoGroup.UserInfoGroupDetailMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id
+        , group_no, uid, franchisee_id, tenant_id, del_flag, create_time, update_time, operator
+    </sql>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_info_group_detail(group_no, uid, franchisee_id, tenant_id, create_time, update_time, operator)
+        values
+        <foreach item="item" index="index" collection="detailList" separator=",">
+            (#{item.groupNo},#{item.uid},#{item.franchiseeId}, #{item.tenantId}, #{item.createTime}, #{item.updateTime}, #{item.operator})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteByUid">
+        delete from t_user_info_group_detail where uid = #{uid}
+        <if test="groupNoList != null and groupNoList.size() > 0">
+            and group_no in
+            <foreach item="item" index="index" collection="groupNoList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+    
+    <delete id="deleteByGroupNo">
+        delete from t_user_info_group_detail where tenant_id = #{tenantId} and group_no = #{groupNo}
+    </delete>
+    
+    <delete id="deleteForUpdate">
+        delete from t_user_info_group_detail where uid = #{uid}
+            <if test="tenantId != null">
+               and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+    </delete>
+    
+    <select id="selectPage" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailBO">
+        select
+        any_value(tuigd.id) as id,
+        any_value(tuigd.group_no) as groupno,
+        tuigd.uid as uid,
+        any_value(tuigd.franchisee_id) as franchiseeid,
+        any_value(tuigd.tenant_id) as tenantid,
+        any_value(tuigd.del_flag) as delflag,
+        min(tuigd.create_time) as createtime,
+        max(tuigd.update_time) as updatetime,
+        any_value(tuigd.operator) as operator,
+        any_value(tuig.id) as groupid,
+        any_value(tuig.name) as groupname
+        from t_user_info_group_detail tuigd
+        left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
+        <where>
+            tuigd.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tuigd.uid = #{uid}
+            </if>
+            <if test="groupId != null">
+                and tuig.id = #{groupId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tuigd.franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+        </where>
+        group by tuigd.uid
+        order by any_value(tuigd.id) desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(distinct(uid))
+        from t_user_info_group_detail tuigd
+        left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
+        <where>
+            tuigd.tenant_id = #{tenantId}
+            <if test="uid != null">
+                and tuigd.uid = #{uid}
+            </if>
+            <if test="groupId != null">
+                and tuig.id = #{groupId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tuigd.franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="countGroupByUid" resultType="java.lang.Integer">
+        select count(distinct (group_no))
+        from t_user_info_group_detail
+        where uid = #{uid}
+    </select>
+    
+    <select id="countGroupByUidAndFranchisee" resultType="java.lang.Integer">
+        select count(distinct (group_no))
+        from t_user_info_group_detail
+        where uid = #{uid}
+            and franchisee_id = #{franchiseeId}
+    </select>
+    
+    <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO">
+        select tuigd.uid as uid, tuigd.group_no as groupNo, tuigd.franchisee_id, tuig.id as groupId, tuig.name as groupName
+        from t_user_info_group_detail tuigd
+        left join t_user_info_group tuig on tuigd.group_no = tuig.group_no
+        <where>
+            tuig.del_flag = 0 and tuigd.uid = #{uid}
+            <if test="tenantId != null">
+                and tuigd.tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and tuigd.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tuigd.franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+        </where>
+        order by tuigd.update_time desc, tuigd.id asc
+        <if test="offset != null and size!= null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectListGroupByUidList" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO">
+        select tuigd.uid as uid, tuigd.franchisee_id as franchiseeId, tuigd.group_no as groupNo, tuig.id as groupId, tuig.name as groupName
+        from t_user_info_group_detail tuigd
+        left join t_user_info_group tuig on tuigd.group_no = tuig.group_no
+        <where>
+            tuig.del_flag = 0
+            <if test="uidList != null and uidList.size()>0">
+                and tuigd.uid in
+                <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
+                    #{uid}
+                </foreach>
+            </if>
+        </where>
+        order by tuigd.update_time, tuigd.id desc
+    </select>
+    
+    <select id="selectListFranchiseeForUpdate" resultType="java.lang.Long">
+        select franchisee_id
+        from t_user_info_group_detail
+        where uid = #{uid}
+            and del_flag = 0
+    </select>
+    
+    <select id="existsByUid" resultType="java.lang.Integer">
+        select 1
+        from t_user_info_group_detail
+        where uid = #{uid} limit 1;
+    </select>
+
+</mapper>
+
+
+
+

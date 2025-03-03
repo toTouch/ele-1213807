@@ -267,6 +267,7 @@ public interface CacheConstant {
      */
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
+    String CACHE_ELE_SET_CONFIG_EXTRA = "ele_set_config_extra:";
     String CACHE_ELE_APP_SET_CONFIG = "ele_app_set_config:";
     
     /**
@@ -737,6 +738,8 @@ public interface CacheConstant {
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
     
+    String CACHE_LOST_USER_CHECK_LOCK = "cache_lost_user_check_lock:";
+
     String FREE_DEPOSIT_PAY_LOCK = "free_deposit_pay_lock:";
     
     String CACHE_FY_CONFIG = "cache_fy_config:";
@@ -829,7 +832,7 @@ public interface CacheConstant {
     /**
      * 分期套餐代扣后处理逻辑锁
      */
-    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
+    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d:%d";
     
     /**
      * 设备信息缓存
@@ -916,6 +919,13 @@ public interface CacheConstant {
 
     String LOCK_USER_DAY_COUPON_USE_SCOPE = "lock_user_day_coupon_use_scope:%s:%s:%s";
 
+
+    /**
+     * 租电/退电允许自主开仓时间
+     */
+    String RENT_RETURN_ALLOW_SELF_OPEN_CELL_START_TIME_KEY = "rent_return_allow_self_open_cell_time:";
+
+
     /**
      * 故障告警处理LOCK
      */
@@ -930,6 +940,38 @@ public interface CacheConstant {
      * 标记电池缓存
      */
     String BATTERY_MARK_KEY= "battery_mark:%s:%s";
+
+    String CACHE_EMERGENCY_CONTACT_LIST = "cache_emergency_contact_list:";
+
+    /**
+     * 返利消费
+     */
+    String REBATE_CONSUMER_LOCK_KEY = "REBATE_CONSUMER_LOCK_KEY:%s";
+
+    /**
+     * 返利修改消费
+     */
+    String REBATE_CONSUMER_MODIFY_LOCK_KEY = "REBATE_CONSUMER_MODIFY_LOCK_KEY:%s";
+
+
+
+    String LOCK_CELL_ENABLE_KEY = "lock_cell_enable:";
+
+    /**
+     * 优惠券包下发结果缓存key
+     */
+    String COUPON_PACKAGE_BATCH_RELEASE_RESULT_KEY= "coupon_package_batch_release:%s";
+
+    /**
+     * 优惠券包缓存key
+     */
+    String COUPON_PACKAGE_CACHE_KEY = "coupon_package_cache:";
+
+    /**
+     * 商户提现微信回调处理
+     */
+    String  CACHE_MERCHANT_WITHDRAW_NOTIFY_LOCK = "cache_merchant_withdraw_notify_lock:%s";
+
 
     String CACHE_ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT = "ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT:%d:%s";
 }

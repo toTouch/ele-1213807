@@ -17,11 +17,13 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserHistory;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.InvitationWayEnum;
@@ -51,11 +53,11 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserCheckVO;
@@ -154,6 +156,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Resource
     private ElectricityCabinetOrderHistoryService electricityCabinetOrderHistoryService;
     
+    @Resource
+    private UserDelRecordService userDelRecordService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1337,6 +1341,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_USER_ADMIN_EXIT_LOCK + uid, "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(request.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            log.warn("channel user admin exit check warn, userAccount is cancelling, uid={}", request.getUid());
+            return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
+        }
         
         EnterpriseChannelUser channelUser = enterpriseChannelUserMapper.selectByUid(request.getUid());
         
@@ -1435,6 +1446,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Slave
     public int existsRenewCloseUser(Long id) {
         return enterpriseChannelUserMapper.existsRenewCloseUser(id);
+    }
+    
+    @Slave
+    @Override
+    public List<EnterpriseChannelUserVO> listByUidList(List<Long> uidList, Integer tenantId) {
+        return enterpriseChannelUserMapper.selectListByUidList(uidList, tenantId);
     }
     
     private Triple<Boolean, String, Object> channelUserAdminExitCheck(EnterpriseUserAdminExitCheckRequest request, EnterpriseChannelUser channelUser, Integer tenantId) {
