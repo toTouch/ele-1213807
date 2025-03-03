@@ -146,7 +146,7 @@
                     end as 'enableTime'
         from t_ele_disable_member_card_record td
                  left join t_enable_member_card_record te on td.disable_member_card_no = te.disable_member_card_no
-        where td.uid = #{query.uid} td.tenant_id = #{query.tenantId}
+        where td.uid = #{query.uid} and td.tenant_id = #{query.tenantId}
           and td.status = 1
         order by td.create_time desc
             limit #{query.offset}, #{query.size}
