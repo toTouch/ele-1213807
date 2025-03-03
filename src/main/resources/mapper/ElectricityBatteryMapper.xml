@@ -643,8 +643,7 @@
         update t_electricity_battery
         set
         franchisee_id=#{batteryQuery.franchiseeId},
-        stock_status = #{stockStatus},
-        label = 12
+        stock_status = #{stockStatus}
         where id in
         <foreach collection="batteryQuery.electricityBatteryIdList" item="id" index="index" open="(" close=")"
             separator=",">
