@@ -1100,7 +1100,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
 
         List<InstallmentDeductionPlan> plans = deductionPlans.stream().filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
                 .sorted(Comparator.comparing(InstallmentDeductionPlan::getIssue)).collect(Collectors.toList());
-        if (CollUtil.isNotEmpty(plans)){
+        if (CollUtil.isEmpty(plans)){
             return R.fail("402046", "代扣计划已完成，线下履约失败");
         }
 
