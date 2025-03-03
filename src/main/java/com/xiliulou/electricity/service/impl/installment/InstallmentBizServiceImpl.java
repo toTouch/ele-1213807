@@ -951,7 +951,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return Triple.of(false, "套餐不存在", null);
             }
             memberCardOrder = electricityMemberCardOrderService.saveRenewalUserBatteryMemberCardOrder(null, userInfo, batteryMemberCard, userBatteryMemberCard, batteryMemberCard, installmentRecord,
-                    Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT) ? null : memberCardOrder.getSource(), deductionPlans);
+                     memberCardOrder.getSource(), deductionPlans, type);
         }
         
         return Triple.of(true, null, Objects.nonNull(memberCardOrder) ? memberCardOrder.getOrderId() : "");
