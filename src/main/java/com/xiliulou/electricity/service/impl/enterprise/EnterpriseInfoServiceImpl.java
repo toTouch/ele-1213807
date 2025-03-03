@@ -677,6 +677,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         userCloudBeanDetailVO.setDistributableCloudBean(enterpriseCloudBeanDetail.getDistributableCloudBean().doubleValue());
         userCloudBeanDetailVO.setRecoveredCloudBean(enterpriseCloudBeanDetail.getRecoveredCloudBean().doubleValue());
         userCloudBeanDetailVO.setRecyclableCloudBean(enterpriseCloudBeanDetail.getRecyclableCloudBean().doubleValue());
+        userCloudBeanDetailVO.setUpdateTime(enterpriseCloudBeanDetail.getUpdateTime());
 
         return userCloudBeanDetailVO;
     }
@@ -723,6 +724,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanGeneralViewVO.setCanRecycleCloudBean(enterpriseCloudBeanOverview.getCanRecycleCloudBean().doubleValue());
         cloudBeanGeneralViewVO.setCanRecycleMembercard(enterpriseCloudBeanOverview.getCanPackageCount());
         cloudBeanGeneralViewVO.setCanRecycleUser(enterpriseCloudBeanOverview.getCanRecycleUserCount());
+
+        cloudBeanGeneralViewVO.setUpdateTime(enterpriseCloudBeanOverview.getUpdateTime());
 
         return Triple.of(true, null, cloudBeanGeneralViewVO);
     }

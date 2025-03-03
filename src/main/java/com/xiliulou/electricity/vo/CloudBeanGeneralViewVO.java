@@ -59,4 +59,9 @@ public class CloudBeanGeneralViewVO {
      * 已回收用户数
      */
     private long recycleUser;
+
+    /**
+     *  更新时间
+     */
+    private Long updateTime;
 }
