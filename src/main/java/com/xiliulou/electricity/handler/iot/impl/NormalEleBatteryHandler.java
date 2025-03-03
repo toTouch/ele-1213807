@@ -218,7 +218,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         // 修改电池标签为在仓
         BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
-        electricityBatteryService.modifyLabel(electricityBattery, eleBox, dto);
+        electricityBatteryService.asyncModifyLabel(electricityBattery, eleBox, dto);
     }
 
     private void handleBatteryTrackRecordWhenNameIsNull(String nowBatteryName, ElectricityCabinetBox eleBox,

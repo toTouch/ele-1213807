@@ -1604,6 +1604,12 @@
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
         </if>
+        <if test="query.labelsRuleOut != null">
+            and teb.label not in
+            <foreach collection="query.labelsRuleOut" item="labelRuleOut" index="index" open="(" close=")" separator=",">
+                #{labelRuleOut}
+            </foreach>
+        </if>
         order by teb.create_time desc
         limit #{query.offset}, #{query.size}
     </select>

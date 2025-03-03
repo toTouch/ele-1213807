@@ -226,12 +226,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             // 修改电池标签
             ElectricityBattery.ElectricityBatteryBuilder batteryBuilder = ElectricityBattery.builder().tenantId(electricityCabinetOrder.getTenantId());
             // 修改旧电池，即使电池已经还进去了，这次处理也不会出问题，标签会被保存到预修改标签的缓存内，下次如果有人换电取出，会把还没修改落库的闲置覆盖掉
-            electricityBatteryService.modifyLabel(batteryBuilder.sn(exchangeOrderRsp.getPlaceBatteryName()).build(), null,
+            electricityBatteryService.asyncModifyLabel(batteryBuilder.sn(exchangeOrderRsp.getPlaceBatteryName()).build(), null,
                     new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
             // 修改新电池
             ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .cellNo(electricityCabinetOrder.getNewCellNo().toString()).build();
-            electricityBatteryService.modifyLabel(batteryBuilder.sn(exchangeOrderRsp.getTakeBatteryName()).build(), box,
+            electricityBatteryService.asyncModifyLabel(batteryBuilder.sn(exchangeOrderRsp.getTakeBatteryName()).build(), box,
                     new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
         } catch (Exception e) {
             log.error("ELE EXCHANGE HANDLER ERROR!", e);

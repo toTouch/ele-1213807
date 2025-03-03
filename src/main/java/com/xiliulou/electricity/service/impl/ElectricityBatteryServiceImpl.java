@@ -52,6 +52,7 @@ import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
+import com.xiliulou.electricity.enums.battery.SearchBatteryTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -145,10 +146,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -831,7 +832,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             // 修改电池标签
             BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).newReceiverId(eleQuery.getReceiverId()).build();
-            modifyLabel(electricityBatteryDb, null, dto);
+            asyncModifyLabel(electricityBatteryDb, null, dto);
             
             return R.ok();
         } else {
@@ -1466,7 +1467,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer newLabel = isBind ? BatteryLabelEnum.UNUSED.getCode() : BatteryLabelEnum.INVENTORY.getCode();
         electricityBatteries.parallelStream().forEach(battery -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            modifyLabel(battery, null, new BatteryLabelModifyDTO(newLabel, operatorUid));
+            syncModifyLabel(battery, null, new BatteryLabelModifyDTO(newLabel, operatorUid));
         });
         return R.ok(count);
     }
@@ -1551,7 +1552,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Long operatorUid = SecurityUtils.getUid();
         electricityBatteries.parallelStream().forEach(battery -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            modifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), operatorUid));
+            syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), operatorUid));
         });
         
         return R.ok(
@@ -2104,148 +2105,159 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    public void modifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto) {
+    public boolean asyncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto) {
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        
+        AtomicBoolean result = new AtomicBoolean(false);
+        modifyBatteryLabelExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            
+            result.set(syncModifyLabel(electricityBattery, box, dto));
+            
+        });
+        return result.get();
+    }
+    
+    @Override
+    public boolean syncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto) {
         try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            modifyBatteryLabelExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
-                
-                if (Objects.isNull(electricityBattery) || Objects.isNull(dto) || Objects.isNull(dto.getNewLabel())) {
-                    log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or dto is null, battery={}, dto={}", electricityBattery, dto);
-                    return;
+            if (Objects.isNull(electricityBattery) || Objects.isNull(dto) || Objects.isNull(dto.getNewLabel())) {
+                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or dto is null, battery={}, dto={}", electricityBattery, dto);
+                return false;
+            }
+            
+            // 原本想减少数据库IO，电池从外部传入，但是存在外部传入参数与当前数据库内数据不一致的情况，还是在这里查询一次，减少业务异常
+            ElectricityBattery battery = queryBySnFromDb(electricityBattery.getSn(), electricityBattery.getTenantId());
+            ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.queryBySnAndTenantId(battery.getSn(), battery.getTenantId());
+            
+            Integer oldLabel = battery.getLabel();
+            Integer newLabel = dto.getNewLabel();
+            Long operatorUid = dto.getOperatorUid();
+            Long oldReceiverId = null;
+            
+            // 1.旧标签为领用的，获取旧领用人id
+            if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel)) {
+                oldReceiverId = Objects.isNull(batteryLabel) ? null : batteryLabel.getReceiverId();
+                dto.setOldReceiverId(oldReceiverId);
+            }
+            
+            // 2.新旧标签相同
+            if (Objects.equals(oldLabel, newLabel)) {
+                // 不是领用的不用修改
+                if (Objects.nonNull(newLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                    return false;
                 }
                 
-                // 原本想减少数据库IO，电池从外部传入，但是存在外部传入参数与当前数据库内数据不一致的情况，还是在这里查询一次，减少业务异常
-                ElectricityBattery battery = queryBySnFromDb(electricityBattery.getSn(), electricityBattery.getTenantId());
-                ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.queryBySnAndTenantId(battery.getSn(), battery.getTenantId());
-                
-                Integer oldLabel = battery.getLabel();
-                Integer newLabel = dto.getNewLabel();
-                Long operatorUid = dto.getOperatorUid();
-                Long oldReceiverId = null;
-                
-                // 1.旧标签为领用的，获取旧领用人id
-                if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel)) {
-                    oldReceiverId = Objects.isNull(batteryLabel) ? null : batteryLabel.getReceiverId();
-                    dto.setOldReceiverId(oldReceiverId);
+                // 领用的，校验其领用人是否相同
+                if (Objects.nonNull(batteryLabel) && Objects.equals(batteryLabel.getReceiverId(), dto.getNewReceiverId())) {
+                    return false;
                 }
-                
-                // 2.新旧标签相同
-                if (Objects.equals(oldLabel, newLabel)) {
-                    // 不是领用的不用修改
-                    if (Objects.nonNull(newLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
-                        return;
-                    }
-                    
-                    // 领用的，校验其领用人是否相同
-                    if (Objects.nonNull(batteryLabel) && Objects.equals(batteryLabel.getReceiverId(), dto.getNewReceiverId())) {
-                        return;
-                    }
-                }
-                
-                Long updateTime = System.currentTimeMillis();
-                ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).updateTime(updateTime).label(newLabel).build();
-                
-                // 3.旧标签是在仓，缓存预修改标签在离仓逻辑中处理修改
-                String sn = battery.getSn();
-                if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
-                    // 在仓修改为锁定在仓时，直接修改
-                    // 标签为在仓，电池已不在仓的直接修改
-                    if (Objects.equals(newLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()) || Objects.equals(battery.getPhysicsStatus(),
-                            ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)) {
-                        electricitybatterymapper.update(batteryUpdate);
-                        // 发送修改记录到mq，在batch项目中批量保存
-                        batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
-                        return;
-                    }
-                    
-                    // 优先使用从外部传入的，减少IO
-                    if (Objects.nonNull(box) && Objects.nonNull(box.getElectricityCabinetId()) && Objects.nonNull(box.getCellNo())) {
-                        electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), sn, dto);
-                        return;
-                    }
-                    
-                    // 若外部传入的数据不全，需要查询格挡
-                    List<ElectricityCabinetBox> searchBoxes = electricityCabinetBoxService.listBySnAndEid(sn, battery.getElectricityCabinetId());
-                    // 查询不到格挡，无柜机id与仓门号则无法处理
-                    if (CollectionUtils.isEmpty(searchBoxes)) {
-                        log.warn("BATTERY LABEL MODIFY LABEL WARN! searchBoxes is null, sn={}", sn);
-                        return;
-                    }
-                    
-                    // 从查询的格挡中获取参数
-                    for (ElectricityCabinetBox searchBox : searchBoxes) {
-                        electricityBatteryLabelService.setPreLabel(searchBox.getElectricityCabinetId(), searchBox.getCellNo(), sn, dto);
-                    }
-                    return;
-                }
-                
-                // 4.新标签是在仓的
-                if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
-                    // 旧标签不是锁定在仓的，直接修改就完事
-                    if (!Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
-                        electricitybatterymapper.update(batteryUpdate);
-                        batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
-                        return;
-                    }
-                    
-                    // 判断旧标签是锁定在仓的，需要校验仓门是否一致，若上报在仓的仓门不是当初锁定的仓门则需要修改为在仓
-                    List<ElectricityCabinetBox> lockedBoxes = electricityCabinetBoxService.listByLockSn(battery.getSn());
-                    if (CollectionUtils.isEmpty(lockedBoxes)) {
-                        // 没有格挡保存有锁定电池的sn，直接更新为在仓
-                        electricitybatterymapper.update(batteryUpdate);
-                        batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
-                        return;
-                    }
-                    // 只要有一个保存有改锁定电池sn的格挡的eid与仓门号与上报的格挡相同，就不更新了
-                    for (ElectricityCabinetBox lockedBox : lockedBoxes) {
-                        if (Objects.equals(lockedBox.getElectricityCabinetId(), box.getElectricityCabinetId()) && Objects.equals(lockedBox.getCellNo(), box.getCellNo())) {
-                            return;
-                        }
-                    }
-                    
-                    // 更新标签，全部清除
-                    electricitybatterymapper.update(batteryUpdate);
-                    electricityCabinetBoxService.deleteLockSn(battery.getSn());
-                    batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
-                    return;
-                }
-                
-                // 5.旧标签是租借，在修改时需要校验电池已和用户解绑
-                if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newLabel)) {
-                    if (Objects.nonNull(battery.getUid())) {
-                        log.warn("BATTERY LABEL MODIFY LABEL WARN! battery did not release, sn={}", sn);
-                        return;
-                    }
+            }
+            
+            Long updateTime = System.currentTimeMillis();
+            ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).updateTime(updateTime).label(newLabel).build();
+            
+            // 3.旧标签是在仓，缓存预修改标签在离仓逻辑中处理修改
+            String sn = battery.getSn();
+            if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                // 在仓修改为锁定在仓时，直接修改
+                // 标签为在仓，电池已不在仓的直接修改
+                if (Objects.equals(newLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()) || Objects.equals(battery.getPhysicsStatus(),
+                        ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)) {
                     electricitybatterymapper.update(batteryUpdate);
                     // 发送修改记录到mq，在batch项目中批量保存
                     batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
-                    return;
+                    return true;
                 }
                 
-                // 6.其他的不涉及优先级的标签修改
+                // 优先使用从外部传入的，减少IO
+                if (Objects.nonNull(box) && Objects.nonNull(box.getElectricityCabinetId()) && Objects.nonNull(box.getCellNo())) {
+                    electricityBatteryLabelService.setPreLabel(box.getElectricityCabinetId(), box.getCellNo(), sn, dto);
+                    return true;
+                }
+                
+                // 若外部传入的数据不全，需要查询格挡
+                List<ElectricityCabinetBox> searchBoxes = electricityCabinetBoxService.listBySnAndEid(sn, battery.getElectricityCabinetId());
+                // 查询不到格挡，无柜机id与仓门号则无法处理
+                if (CollectionUtils.isEmpty(searchBoxes)) {
+                    log.warn("BATTERY LABEL MODIFY LABEL WARN! searchBoxes is null, sn={}", sn);
+                    return false;
+                }
+                
+                // 从查询的格挡中获取参数
+                for (ElectricityCabinetBox searchBox : searchBoxes) {
+                    electricityBatteryLabelService.setPreLabel(searchBox.getElectricityCabinetId(), searchBox.getCellNo(), sn, dto);
+                }
+                return true;
+            }
+            
+            // 4.新标签是在仓的
+            if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
+                // 旧标签不是锁定在仓的，直接修改就完事
+                if (!Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                    electricitybatterymapper.update(batteryUpdate);
+                    batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
+                    return true;
+                }
+                
+                // 判断旧标签是锁定在仓的，需要校验仓门是否一致，若上报在仓的仓门不是当初锁定的仓门则需要修改为在仓
+                List<ElectricityCabinetBox> lockedBoxes = electricityCabinetBoxService.listByLockSn(battery.getSn());
+                if (CollectionUtils.isEmpty(lockedBoxes)) {
+                    // 没有格挡保存有锁定电池的sn，直接更新为在仓
+                    electricitybatterymapper.update(batteryUpdate);
+                    batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
+                    return true;
+                }
+                // 只要有一个保存有改锁定电池sn的格挡的eid与仓门号与上报的格挡相同，就不更新了
+                for (ElectricityCabinetBox lockedBox : lockedBoxes) {
+                    if (Objects.equals(lockedBox.getElectricityCabinetId(), box.getElectricityCabinetId()) && Objects.equals(lockedBox.getCellNo(), box.getCellNo())) {
+                        return false;
+                    }
+                }
+                
+                // 更新标签，全部清除
                 electricitybatterymapper.update(batteryUpdate);
-                
-                // 7.处理领用人的逻辑
-                if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
-                    ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
-                    batteryLabelUpdate.setReceiverId(dto.getNewReceiverId());
-                    electricityBatteryLabelBizService.updateOrInsertBatteryLabel(battery, batteryLabelUpdate);
+                electricityCabinetBoxService.deleteLockSn(battery.getSn());
+                batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
+                return true;
+            }
+            
+            // 5.旧标签是租借，在修改时需要校验电池已和用户解绑
+            if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newLabel)) {
+                if (Objects.nonNull(battery.getUid())) {
+                    log.warn("BATTERY LABEL MODIFY LABEL WARN! battery did not release, sn={}", sn);
+                    return false;
                 }
-                if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
-                    electricityBatteryLabelService.deleteReceivedData(battery.getSn());
-                }
-                
-                // 8.旧标签是锁定在仓的，清除掉格挡表的锁仓sn
-                if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
-                    electricityCabinetBoxService.deleteLockSn(battery.getSn());
-                }
-                
+                electricitybatterymapper.update(batteryUpdate);
                 // 发送修改记录到mq，在batch项目中批量保存
                 batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
-            });
+                return true;
+            }
+            
+            // 6.其他的不涉及优先级的标签修改
+            electricitybatterymapper.update(batteryUpdate);
+            
+            // 7.处理领用人的逻辑
+            if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
+                batteryLabelUpdate.setReceiverId(dto.getNewReceiverId());
+                electricityBatteryLabelBizService.updateOrInsertBatteryLabel(battery, batteryLabelUpdate);
+            }
+            if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+                electricityBatteryLabelService.deleteReceivedData(battery.getSn());
+            }
+            
+            // 8.旧标签是锁定在仓的，清除掉格挡表的锁仓sn
+            if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+                electricityCabinetBoxService.deleteLockSn(battery.getSn());
+            }
+            
+            // 发送修改记录到mq，在batch项目中批量保存
+            batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
+            return true;
         } catch (Exception e) {
             log.error("BATTERY LABEL MODIFY ERROR! sn={}", electricityBattery.getSn(), e);
+            return false;
         }
     }
     
@@ -2302,6 +2314,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Slave
     @Override
     public R listAllBatterySn(ElectricityBatteryQuery batteryQuery) {
+        if (Objects.equals(batteryQuery.getSearchType(), SearchBatteryTypeEnum.SEARCH_FOR_LOCK.getCode())) {
+            batteryQuery.setLabelsRuleOut(List.copyOf(BatteryLabelConstant.RENT_LABEL_SET));
+        }
+        
         return R.ok(electricitybatterymapper.selectListAllBatterySn(batteryQuery));
     }
     

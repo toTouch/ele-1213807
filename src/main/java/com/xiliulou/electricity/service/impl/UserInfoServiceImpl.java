@@ -1707,7 +1707,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrderService.insert(rentBatteryOrder);
                     
                     // 修改原绑定电池标签为闲置
-                    electricityBatteryService.modifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
+                    electricityBatteryService.asyncModifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
                 }
             }
             
@@ -1777,7 +1777,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
                 // 修改新绑定电池标签为租借正常
-                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode(), user.getUid()));
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode(), user.getUid()));
                 
                 try {
                     // 发送操作记录
@@ -1992,7 +1992,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         
         // 修改电池标签为闲置
-        electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
+        electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()));
         
         try {
             Map<String, Object> map = new HashMap<>();
@@ -4184,7 +4184,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
                 // 修改电池标签
-                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
                 
                 return null;
             });

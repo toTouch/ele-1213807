@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
@@ -8,11 +7,9 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
@@ -20,7 +17,6 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOfflineReportOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -60,7 +56,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -253,7 +248,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
             
             // 处理电池标签，离线换电上报数据时效性不强，若需要保存预修改标签，eid与cellNo在后续业务中查询
-            electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
+            electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
         }
         
         // 归还电池soc
@@ -321,7 +316,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 electricityBatteryService.updateBatteryUser(newBattery);
                 
                 // 处理电池标签，离线换电上报数据时效性不强，若需要保存预修改标签，eid与cellNo在后续业务中查询
-                electricityBatteryService.modifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
             }
         }
         
@@ -346,7 +341,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             OrderForBatteryUtil.save(electricityCabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, newElectricityBattery.getSn());
             
             // 处理电池标签，离线换电上报数据时效性不强，若需要保存预修改标签，eid与cellNo在后续业务中查询
-            electricityBatteryService.modifyLabel(newElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
+            electricityBatteryService.asyncModifyLabel(newElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
         }
         
     }

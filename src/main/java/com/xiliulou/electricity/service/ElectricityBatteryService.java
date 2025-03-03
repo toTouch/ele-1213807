@@ -189,7 +189,12 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     /**
      * 修改电池标签
      */
-    void modifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto);
+    boolean asyncModifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto);
+    
+    /**
+     * 修改电池标签，提供一个同步方法给已经开启异步操作的逻辑使用
+     */
+    boolean syncModifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto);
     
     /**
      * 电池标签修改特殊逻辑-处理电池离仓场景
