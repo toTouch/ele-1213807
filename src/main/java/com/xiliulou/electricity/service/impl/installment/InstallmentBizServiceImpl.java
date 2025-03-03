@@ -1109,8 +1109,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 .min();
 
         minIssue.ifPresent(issue -> {
-            List<InstallmentDeductionPlan> planList = plans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
-            log.info("offlineAgree Info! minIssue is {}, planList is {}", minIssue.getAsInt(), JSONUtil.toJsonStr(issue));
+            List<InstallmentDeductionPlan> planList = deductionPlans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
+            log.info("offlineAgree Info! minIssue is {}, planList is {}", minIssue.getAsInt(), JSONUtil.toJsonStr(planList));
             // 处理套餐购买记录
             handleDeductZero(installmentRecord, planList, null, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
         });
