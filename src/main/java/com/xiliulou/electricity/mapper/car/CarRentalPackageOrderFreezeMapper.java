@@ -127,5 +127,5 @@ public interface CarRentalPackageOrderFreezeMapper {
      */
     CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo);
 
-    List<CarDisableMemberCardRecordVO> selectDisableListByUid(UserDisableMemberQuery query);
+    List<CarDisableMemberCardRecordVO> selectDisableListByUid(@Param("query") UserDisableMemberQuery query);
 }
