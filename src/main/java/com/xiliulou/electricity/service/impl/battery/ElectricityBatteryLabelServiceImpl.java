@@ -269,7 +269,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                 // 禁用格挡保存lockSn，修改电池标签
                 if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), true) && StringUtils.isNotEmpty(lockSn) && StringUtils.isNotBlank(lockSn)) {
                     BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode()).operatorUid(operatorId).build();
-                    boolean result = electricityBatteryService.syncModifyLabel(battery, null, dto);
+                    boolean result = electricityBatteryService.syncModifyLabel(battery, null, dto, false);
                     if (!result){
                         return;
                     }
@@ -279,7 +279,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                 // 启用格挡清除lockSn，修改电池标签
                 if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
                     BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
-                    boolean result = electricityBatteryService.syncModifyLabel(battery, null, dto);
+                    boolean result = electricityBatteryService.syncModifyLabel(battery, null, dto, false);
                     if (!result) {
                         return;
                     }

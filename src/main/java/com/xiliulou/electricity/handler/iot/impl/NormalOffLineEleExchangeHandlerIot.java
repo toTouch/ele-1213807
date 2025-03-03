@@ -247,8 +247,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             
             electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
             
-            // 处理电池标签，离线换电上报数据时效性不强，若需要保存预修改标签，eid与cellNo在后续业务中查询
-            electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
+            // 处理电池标签，强制修改
+            electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), true);
         }
         
         // 归还电池soc
@@ -315,8 +315,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 newBattery.setBorrowExpireTime(null);
                 electricityBatteryService.updateBatteryUser(newBattery);
                 
-                // 处理电池标签，离线换电上报数据时效性不强，若需要保存预修改标签，eid与cellNo在后续业务中查询
-                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()));
+                // 处理电池标签，强制修改
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
             }
         }
         
@@ -340,8 +340,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             // 保存电池被取走对应的订单，供后台租借状态电池展示
             OrderForBatteryUtil.save(electricityCabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, newElectricityBattery.getSn());
             
-            // 处理电池标签，离线换电上报数据时效性不强，若需要保存预修改标签，eid与cellNo在后续业务中查询
-            electricityBatteryService.asyncModifyLabel(newElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
+            // 处理电池标签，强制修改
+            electricityBatteryService.asyncModifyLabel(newElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
         }
         
     }

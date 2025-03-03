@@ -832,7 +832,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             // 修改电池标签
             BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).newReceiverId(eleQuery.getReceiverId()).build();
-            asyncModifyLabel(electricityBatteryDb, null, dto);
+            asyncModifyLabel(electricityBatteryDb, null, dto, false);
             
             return R.ok();
         } else {
@@ -1467,7 +1467,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer newLabel = isBind ? BatteryLabelEnum.UNUSED.getCode() : BatteryLabelEnum.INVENTORY.getCode();
         electricityBatteries.parallelStream().forEach(battery -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            syncModifyLabel(battery, null, new BatteryLabelModifyDTO(newLabel, operatorUid));
+            syncModifyLabel(battery, null, new BatteryLabelModifyDTO(newLabel, operatorUid), false);
         });
         return R.ok(count);
     }
@@ -1552,7 +1552,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Long operatorUid = SecurityUtils.getUid();
         electricityBatteries.parallelStream().forEach(battery -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), operatorUid));
+            syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), operatorUid), false);
         });
         
         return R.ok(
@@ -2105,21 +2105,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    public boolean asyncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto) {
+    public boolean asyncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification) {
         String traceId = MDC.get(CommonConstant.TRACE_ID);
         
         AtomicBoolean result = new AtomicBoolean(false);
         modifyBatteryLabelExecutor.execute(() -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
             
-            result.set(syncModifyLabel(electricityBattery, box, dto));
+            result.set(syncModifyLabel(electricityBattery, box, dto, forcedModification));
             
         });
         return result.get();
     }
     
     @Override
-    public boolean syncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto) {
+    public boolean syncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification) {
         try {
             if (Objects.isNull(electricityBattery) || Objects.isNull(dto) || Objects.isNull(dto.getNewLabel())) {
                 log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or dto is null, battery={}, dto={}", electricityBattery, dto);
@@ -2157,7 +2157,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             Long updateTime = System.currentTimeMillis();
             ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).updateTime(updateTime).label(newLabel).build();
             
-            // 3.旧标签是在仓，缓存预修改标签在离仓逻辑中处理修改
+            // 3.离线换电专用，强制修改
+            if (forcedModification) {
+                electricitybatterymapper.update(batteryUpdate);
+                batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, updateTime, oldReceiverId, dto.getNewReceiverId());
+                return true;
+            }
+            
+            // 4.旧标签是在仓，缓存预修改标签在离仓逻辑中处理修改
             String sn = battery.getSn();
             if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
                 // 在仓修改为锁定在仓时，直接修改
@@ -2191,7 +2198,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return true;
             }
             
-            // 4.新标签是在仓的
+            // 5.新标签是在仓的
             if (Objects.equals(newLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
                 // 旧标签不是锁定在仓的，直接修改就完事
                 if (!Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
@@ -2222,7 +2229,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return true;
             }
             
-            // 5.旧标签是租借，在修改时需要校验电池已和用户解绑
+            // 6.旧标签是租借，在修改时需要校验电池已和用户解绑
             if (Objects.nonNull(oldLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newLabel)) {
                 if (Objects.nonNull(battery.getUid())) {
                     log.warn("BATTERY LABEL MODIFY LABEL WARN! battery did not release, sn={}", sn);
@@ -2234,10 +2241,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return true;
             }
             
-            // 6.其他的不涉及优先级的标签修改
+            // 7.其他的不涉及优先级的标签修改
             electricitybatterymapper.update(batteryUpdate);
             
-            // 7.处理领用人的逻辑
+            // 8.处理领用人的逻辑
             if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
                 ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
                 batteryLabelUpdate.setReceiverId(dto.getNewReceiverId());
@@ -2247,7 +2254,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryLabelService.deleteReceivedData(battery.getSn());
             }
             
-            // 8.旧标签是锁定在仓的，清除掉格挡表的锁仓sn
+            // 9.旧标签是锁定在仓的，清除掉格挡表的锁仓sn
             if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
                 electricityCabinetBoxService.deleteLockSn(battery.getSn());
             }

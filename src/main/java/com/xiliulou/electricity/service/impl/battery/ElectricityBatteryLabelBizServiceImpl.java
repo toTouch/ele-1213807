@@ -272,8 +272,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             batteriesNeedUpdate.parallelStream().forEach(battery -> {
                 MDC.put(CommonConstant.TRACE_ID, traceId);
                 
-                // TODO 修改电池标签，此处可能存在并发问题，在本接口执行时，电池不是在仓、租借、锁定在仓，当修改时是这三种状态了，此时会出现错乱，若要避免需要在modifyLabel方法中加锁，并实时查询数据
-                electricityBatteryService.syncModifyLabel(battery, null, modifyDto);
+                electricityBatteryService.syncModifyLabel(battery, null, modifyDto, false);
             });
             
             return R.ok(BatteryLabelBatchUpdateVO.builder().successCount(snList.size() - failureCount).failureCount(failureCount).failReasons(failReasons).build());
@@ -388,7 +387,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     // 判断租借逾期状态
                     Long dueTimeTotal = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getMemberCardExpireTime() : memberTermPo.getDueTimeTotal();
                     if (Objects.nonNull(dueTimeTotal) && dueTimeTotal <= System.currentTimeMillis()) {
-                        electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_OVERDUE.getCode()));
+                        electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_OVERDUE.getCode()), false);
                         return;
                     }
                     
@@ -415,7 +414,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                         }
                         
                         if (System.currentTimeMillis() - lastExchangeTime >= protectTime) {
-                            electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()));
+                            electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_LONG_TERM_UNUSED.getCode()), false);
                             return;
                         }
                     }
@@ -424,7 +423,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     if (Objects.equals(battery.getLabel(), BatteryLabelEnum.RENT_NORMAL.getCode())) {
                         return;
                     }
-                    electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()));
+                    electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
                 }
                 
             });
