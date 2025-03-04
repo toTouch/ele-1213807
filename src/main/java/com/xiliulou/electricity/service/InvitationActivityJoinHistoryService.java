@@ -110,8 +110,8 @@ public interface InvitationActivityJoinHistoryService {
     InvitationActivityJoinHistory queryModifiedInviterHistory(Long joinUid, Integer tenantId);
     
     /**
-     * 如果"退押后再次购买是否返现"为关闭状态，则需判断退押后再次购买是否给邀请人返现，判断逻辑：查询最后一笔退押成功的订单（电/车/车电），判断该笔订单退押时间是否在扫码之后，如果是，则不进行返现。
-     * 返回：true-可以返现，false-不可以返现
+     * 如果"退押后再次购买是否返现"为关闭状态，则需判断退押后再次购买是否给邀请人返现，判断逻辑：查询最后一笔退押成功的订单（电/车/车电），如果该笔订单退押时间是在扫码之后，则不返现。
+     * 返回：true-返现，false-不返现
      */
     Boolean isRebateAfterDepositRefund(Long uid, InvitationActivityJoinHistory invitationActivityJoinHistory);
 }

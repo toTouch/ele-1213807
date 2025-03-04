@@ -190,6 +190,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivity.setUpdateTime(System.currentTimeMillis());
         invitationActivity.setHours(Objects.isNull(query.getHours()) ? NumberConstant.ZERO : (query.getHours()));
         invitationActivity.setMinutes(Objects.isNull(query.getMinutes()) ? NumberConstant.ZERO : (query.getMinutes()));
+        invitationActivity.setDepositRefundRebateSwitch(query.getDepositRefundRebateSwitch());
         
         Integer insert = this.insert(invitationActivity);
         
@@ -271,7 +272,6 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             invitationActivityUpdate.setHours(NumberConstant.ZERO);
         }
         
-        // 默认开启
         invitationActivityUpdate.setDepositRefundRebateSwitch(query.getDepositRefundRebateSwitch());
         
         Integer update = this.update(invitationActivityUpdate);

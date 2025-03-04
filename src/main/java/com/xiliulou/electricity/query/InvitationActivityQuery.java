@@ -106,7 +106,7 @@ public class InvitationActivityQuery {
      *  退押后再次购买是否返现开关:0-开启,1-关闭
      */
     @Range(min = 0, max = 1, message = "退押后再次购买是否返现字段值不合法")
-    @NotNull(message = "退押后再次购买是否返现字段值不能为空", groups = {UpdateGroup.class})
+    @NotNull(message = "退押后再次购买是否返现字段值不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer depositRefundRebateSwitch;
     
 }
