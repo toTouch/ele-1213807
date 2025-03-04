@@ -831,29 +831,42 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     @Override
     public void handleDeductZero(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, InstallmentDeductionRecord deductionRecord, Integer type) {
         Triple<Boolean, String, Object> tripleResult = handleBatteryMemberCard(installmentRecord, deductionPlans, installmentRecord.getUid(), type);
-        
+
+        BigDecimal amount = installmentRecord.getPaidAmount();
+        Integer paidInstallment = installmentRecord.getPaidInstallment();
         for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
-            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+
             deductionPlanUpdate.setId(deductionPlan.getId());
             deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
             if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                 deductionPlanUpdate.setStatus(InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
                 // 已支付金额累加
-                installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(deductionPlan.getAmount()));
+                amount = amount.add(deductionPlan.getAmount());
             }else {
                 deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
                 deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
             }
             deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
             installmentDeductionPlanService.update(deductionPlanUpdate);
-            
 
-            installmentRecordUpdate.setId(installmentRecord.getId());
-            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
-            installmentRecordService.update(installmentRecordUpdate);
+            paidInstallment += 1;
+
         }
+        InstallmentRecord update = new InstallmentRecord();
+        update.setId(installmentRecord.getId());
+        update.setUpdateTime(System.currentTimeMillis());
+        update.setPaidInstallment(paidInstallment);
+        // 线下履约之后更新 已付金额
+        if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
+            update.setPaidAmount(amount);
+            //如果是最后一期，修改状态为已完成
+            if (Objects.equals(installmentRecord.getInstallmentNo(), update.getPaidInstallment())) {
+                update.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
+            }
+        }
+        installmentRecordService.update(update);
+
         if (Objects.isNull(tripleResult) || !tripleResult.getLeft()) {
             log.info("installment handle deduct info result is null! uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
             return;
