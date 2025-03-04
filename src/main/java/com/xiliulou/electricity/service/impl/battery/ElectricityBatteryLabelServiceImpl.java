@@ -143,6 +143,12 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             BatteryLabelModifyDTO oldDto = JsonUtil.fromJson(dtoStr, BatteryLabelModifyDTO.class);
             Integer oldPreLabel = oldDto.getNewLabel();
             Integer newPreLabel = labelModifyDto.getNewLabel();
+            
+            // 旧预修改标签是租借时，如果新预修改标签也属于租借则更新缓存，否则直接返回，租借的优先级更高
+            if (Objects.nonNull(oldPreLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldPreLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newPreLabel)) {
+                return;
+            }
+            
             // 新旧一样,判断是否刷新时间
             if (Objects.equals(oldPreLabel, newPreLabel)) {
                 // 不是领用的直接刷新时间
@@ -156,11 +162,6 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     redisService.expire(key, 30 * 60 * 1000L, false);
                     return;
                 }
-            }
-            
-            // 旧预修改标签是租借时，如果新预修改标签也属于租借则更新缓存，否则直接返回，租借的优先级更高
-            if (Objects.nonNull(oldPreLabel) && BatteryLabelConstant.RENT_LABEL_SET.contains(oldPreLabel) && !BatteryLabelConstant.RENT_LABEL_SET.contains(newPreLabel)) {
-                return;
             }
             
             redisService.saveWithString(key, labelModifyDto, 30L, TimeUnit.MINUTES);
@@ -276,14 +277,10 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     electricityCabinetBoxService.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
                 }
                 
-                // 启用格挡清除lockSn，修改电池标签
+                // 启用格挡，修改电池标签，清除lockSn置于柜机上报处
                 if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
                     BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
-                    boolean result = electricityBatteryService.syncModifyLabel(battery, null, dto, false);
-                    if (!result) {
-                        return;
-                    }
-                    electricityCabinetBoxService.updateLockSnByEidAndCellNo(eId, cellNo, null);
+                    electricityBatteryService.syncModifyLabel(battery, null, dto, false);
                 }
             });
         } catch (Exception e) {

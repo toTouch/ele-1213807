@@ -409,7 +409,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
     @Override
     public int updateLockSnByEidAndCellNo(Integer eId, String cellNo, String lockSn) {
-        return electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
+        try {
+            return electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
+        } catch (Exception e) {
+            log.error("UPDATE LOCK SN BY EID AND CELL NO ERROR!,eId={},cellNo={},lockSn={}", eId, cellNo, lockSn, e);
+        }
+        return 0;
     }
     
     @Slave
