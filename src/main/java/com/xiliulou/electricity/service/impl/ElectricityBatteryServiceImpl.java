@@ -1243,6 +1243,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.updateBatteryUser(electricityBattery);
     }
     
+    @Override
+    public Integer updateBatteryUserExceptEid(ElectricityBattery electricityBattery) {
+        return electricitybatterymapper.updateBatteryUserExceptEid(electricityBattery);
+    }
+    
     /**
      * 更新电池绑定的用户
      *

@@ -1762,7 +1762,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
                 electricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBattery.setBindTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(electricityBattery);
+                electricityBatteryService.updateBatteryUserExceptEid(electricityBattery);
                 
                 enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
                 

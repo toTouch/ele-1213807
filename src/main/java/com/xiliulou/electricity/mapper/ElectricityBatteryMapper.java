@@ -59,6 +59,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
     
+    Integer updateBatteryUserExceptEid(ElectricityBattery electricityBattery);
+    
     List<ElectricityBattery> selectListBatteryByGuessUid(@Param("guessUid") Long guessUid);
     
     List<ElectricityBattery> selectListBatteryBySnList(@Param("snList") List<String> snList);

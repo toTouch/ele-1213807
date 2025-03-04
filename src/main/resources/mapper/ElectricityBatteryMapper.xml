@@ -504,6 +504,48 @@
         where id=#{id}
     </update>
     
+    <update id="updateBatteryUserExceptEid">
+        update t_electricity_battery
+        set
+        <if test="chargeStatus != null">
+            charge_status =#{chargeStatus},
+        </if>
+        <if test="healthStatus != null">
+            health_status =#{healthStatus},
+        </if>
+        <if test="power != null">
+            power =#{power},
+        </if>
+        <if test="model != null">
+            model =#{model},
+        </if>
+        <if test="exchangeCount != null">
+            exchange_count =#{exchangeCount},
+        </if>
+        <if test="physicsStatus != null">
+            physics_status =#{physicsStatus},
+        </if>
+        <if test="businessStatus != null">
+            business_status=#{businessStatus},
+        </if>
+        <if test="borrowExpireTime != null">
+            borrow_expire_time=#{borrowExpireTime},
+        </if>
+        <if test="bindTime != null">
+            bind_time=#{bindTime},
+        </if>
+        <if test="electricityCabinetName != null">
+            electricity_cabinet_name=#{electricityCabinetName},
+        </if>
+        <if test="electricityCabinetId != null">
+            electricity_cabinet_id=#{electricityCabinetId},
+        </if>
+        uid=#{uid},
+        update_time=#{updateTime},
+        guess_uid=#{guessUid}
+        where id=#{id}
+    </update>
+    
     <select id="selectListBatteryByGuessUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         select id, sn, create_time, update_time, del_flag, uid, guess_uid
         from t_electricity_battery

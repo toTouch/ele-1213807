@@ -71,6 +71,11 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
     
+    /**
+     * 更新电池绑定的用户，不强制更新电池的柜机id及柜机名称
+     */
+    Integer updateBatteryUserExceptEid(ElectricityBattery electricityBattery);
+    
     List<ElectricityBattery> listBatteryByGuessUid(Long guessUid);
     
     List<ElectricityBattery> listBatteryBySnList(List<String> snList);
