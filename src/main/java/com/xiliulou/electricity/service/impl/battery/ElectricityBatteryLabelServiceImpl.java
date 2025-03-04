@@ -276,12 +276,6 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     }
                     electricityCabinetBoxService.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
                 }
-                
-                // 启用格挡，修改电池标签，清除lockSn置于柜机上报处
-                if (data.containsKey(isForbidden) && Objects.equals(data.get(isForbidden), false)) {
-                    BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).operatorUid(operatorId).build();
-                    electricityBatteryService.syncModifyLabel(battery, null, dto, false);
-                }
             });
         } catch (Exception e) {
             log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
