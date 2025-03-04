@@ -31,7 +31,8 @@
                bind_time,
                guess_uid,
                warehouse_id,
-               stock_status
+               stock_status,
+               label
         from t_electricity_battery
     </sql>
     
