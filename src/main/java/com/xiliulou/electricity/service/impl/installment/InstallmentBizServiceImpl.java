@@ -833,7 +833,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         Triple<Boolean, String, Object> tripleResult = handleBatteryMemberCard(installmentRecord, deductionPlans, installmentRecord.getUid(), type);
 
         BigDecimal amount = installmentRecord.getPaidAmount();
-        Integer paidInstallment = installmentRecord.getPaidInstallment();
         for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
 
@@ -849,14 +848,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             }
             deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
             installmentDeductionPlanService.update(deductionPlanUpdate);
-
-            paidInstallment += 1;
-
         }
         InstallmentRecord update = new InstallmentRecord();
         update.setId(installmentRecord.getId());
         update.setUpdateTime(System.currentTimeMillis());
-        update.setPaidInstallment(paidInstallment);
+        update.setPaidInstallment(installmentRecord.getPaidInstallment()+1);
         // 线下履约之后更新 已付金额
         if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
             update.setPaidAmount(amount);
