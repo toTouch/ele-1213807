@@ -23,7 +23,7 @@ public interface ElectricityBatteryLabelService {
     
     void batchInsert(List<ElectricityBattery> batteries, Long operatorUid);
     
-    ElectricityBatteryLabel queryBySnAndTenantId(String sn, Integer tenantId);
+    ElectricityBatteryLabel selectBySnAndTenantId(String sn, Integer tenantId);
     
     int updateById(ElectricityBatteryLabel batteryLabel);
     

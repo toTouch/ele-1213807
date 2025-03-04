@@ -66,6 +66,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryPartAttrBySnFromCache(String sn);
 
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
+    
+    ElectricityBattery selectBySnAndTenantId(String sn, Integer tenantId);
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
     

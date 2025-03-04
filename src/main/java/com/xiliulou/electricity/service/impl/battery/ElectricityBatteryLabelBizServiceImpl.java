@@ -107,7 +107,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         Integer tenantId = battery.getTenantId();
         String sn = battery.getSn();
         
-        ElectricityBatteryLabel batteryLabelFromDb = electricityBatteryLabelService.queryBySnAndTenantId(sn, tenantId);
+        ElectricityBatteryLabel batteryLabelFromDb = electricityBatteryLabelService.selectBySnAndTenantId(sn, tenantId);
         Long now = System.currentTimeMillis();
         
         if (Objects.isNull(batteryLabelFromDb)) {
@@ -315,7 +315,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
      *
      * @return true-有操作权限；false-无权限
      */
-    private boolean permissionVerificationForReceiver(ElectricityBattery battery, Long receiverId, Integer label, ElectricityBatteryLabel batteryLabel) {
+    public boolean permissionVerificationForReceiver(ElectricityBattery battery, Long receiverId, Integer label, ElectricityBatteryLabel batteryLabel) {
         if (Objects.equals(label, BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode())) {
             User user = userService.queryByUidFromCache(receiverId);
             if (Objects.isNull(user)) {

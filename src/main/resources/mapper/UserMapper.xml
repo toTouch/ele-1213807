@@ -341,22 +341,23 @@
 		select tu.uid,tu.name from t_user tu
 		left join t_user_data_scope uds on tu.uid = uds.uid
 		where uds.data_id in
-		<foreach collection="allDataIds" item="dataId" open="(" separator="," close=")">
+		<foreach collection="request.allDataIds" item="dataId" open="(" separator="," close=")">
 			#{dataId}
 		</foreach>
-		<if test="uid != null">
-			and tu.uid like concat('%', #{uid}, '%')
+		<if test="request.uid != null">
+			and tu.uid like concat('%', #{request.uid}, '%')
 		</if>
-		<if test="name != null and name != ''">
-			and tu.name like concat('%', #{name}, '%')
+		<if test="request.name != null and request.name != ''">
+			and tu.name like concat('%', #{request.name}, '%')
 		</if>
-		<if test="ruleOutUIds != null and ruleOutUIds.size() > 0">
-			and tu.uid not in
-			<foreach collection="ruleOutUIds" item="ruleOutUId" open="(" separator="," close=")">
-				#{ruleOutUId}
+		<if test="request.tenantUserUids != null and request.tenantUserUids.size() > 0">
+			or tu.uid not in
+			<foreach collection="request.tenantUserUids" item="tenantUserUid" open="(" separator="," close=")">
+				#{tenantUserUid}
 			</foreach>
 		</if>
-		limit #{offset}, #{size}
+		order by tu.uid
+		limit #{request.offset}, #{request.size}
 	</select>
 	
 	<update id="updatePhoneByUid">

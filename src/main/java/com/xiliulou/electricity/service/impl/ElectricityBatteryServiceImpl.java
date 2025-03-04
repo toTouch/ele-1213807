@@ -761,9 +761,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public R updateForAdmin(EleBatteryQuery eleQuery) {
-        ElectricityBattery electricityBatteryDb = electricitybatterymapper.selectOne(
-                new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, eleQuery.getId()).eq(ElectricityBattery::getTenantId, TenantContextHolder.getTenantId())
-                        .eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL));
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityBattery electricityBatteryDb = electricitybatterymapper.selectById(eleQuery.getId().longValue(), tenantId);
         if (Objects.isNull(electricityBatteryDb)) {
             log.error("ELE ERROR, not found electricity battery id={}", eleQuery.getId());
             return R.fail("ELECTRICITY.0020", "电池不存在!");
@@ -776,8 +775,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("电池编号已绑定其他电池!");
         }
         
-        if (!eleQuery.getSn().equalsIgnoreCase(electricityBatteryDb.getSn())) {
-            Pair<Boolean, String> result = callBatteryPlatModify(eleQuery.getSn(), electricityBatteryDb.getSn(), eleQuery.getIsNeedSync());
+        String sn = electricityBatteryDb.getSn();
+        if (!eleQuery.getSn().equalsIgnoreCase(sn)) {
+            Pair<Boolean, String> result = callBatteryPlatModify(eleQuery.getSn(), sn, eleQuery.getIsNeedSync());
             if (!result.getKey()) {
                 return R.fail("200005", result.getRight());
             }
@@ -797,6 +797,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
                 return R.fail("300157", "电池锁定在仓不支持此操作");
             }
+            
+            ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.selectBySnAndTenantId(sn, tenantId);
+            boolean permission = electricityBatteryLabelBizService.permissionVerificationForReceiver(electricityBatteryDb, eleQuery.getReceiverId(), eleQuery.getLabel(), batteryLabel);
+            if (!permission) {
+                return R.fail("300159", "领用人无权领用");
+            }
         }
         
         ElectricityBattery updateBattery = new ElectricityBattery();
@@ -812,12 +818,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         updateBattery.setModel(StringUtils.isBlank(model) ? StringUtils.EMPTY : model);
         updateBattery.setUpdateTime(System.currentTimeMillis());
-        updateBattery.setTenantId(TenantContextHolder.getTenantId());
+        updateBattery.setTenantId(tenantId);
         // 不可在此处直接更新电池标签，必须走通用方法
         updateBattery.setLabel(null);
         Integer rows = electricitybatterymapper.update(updateBattery);
         if (rows > 0) {
-            redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBatteryDb.getSn());
+            redisService.delete(CacheConstant.CACHE_BT_ATTR + sn);
             //            try {
             //                TokenUser userInfo = SecurityUtils.getUserInfo();
             //                Map<String, Object> map = BeanUtil.beanToMap(updateBattery, false, true);
@@ -1207,6 +1213,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId) {
         return electricitybatterymapper
                 .selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, oldElectricityBatterySn).eq(ElectricityBattery::getTenantId, tenantId));
+    }
+    
+    @Slave
+    @Override
+    public ElectricityBattery selectBySnAndTenantId(String sn, Integer tenantId) {
+        return electricitybatterymapper.selectBySnAndTenantId(sn, tenantId);
     }
     
     @Override
@@ -2127,8 +2139,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
             
             // 原本想减少数据库IO，电池从外部传入，但是存在外部传入参数与当前数据库内数据不一致的情况，还是在这里查询一次，减少业务异常
-            ElectricityBattery battery = queryBySnFromDb(electricityBattery.getSn(), electricityBattery.getTenantId());
-            ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.queryBySnAndTenantId(battery.getSn(), battery.getTenantId());
+            ElectricityBattery battery = selectBySnAndTenantId(electricityBattery.getSn(), electricityBattery.getTenantId());
+            ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.selectBySnAndTenantId(battery.getSn(), battery.getTenantId());
             
             Integer oldLabel = battery.getLabel();
             Integer newLabel = dto.getNewLabel();

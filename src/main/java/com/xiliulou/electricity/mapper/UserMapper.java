@@ -55,5 +55,5 @@ public interface UserMapper extends BaseMapper<User> {
     
     List<UserSearchVO> selectListTenantUsers(Integer tenantId);
     
-    List<UserSearchVO> selectListAdministrator(UserRequest request);
+    List<UserSearchVO> selectListAdministrator(@Param("request") UserRequest request);
 }

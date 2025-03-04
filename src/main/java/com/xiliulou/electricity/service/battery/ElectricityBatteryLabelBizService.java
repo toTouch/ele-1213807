@@ -27,6 +27,8 @@ public interface ElectricityBatteryLabelBizService {
     
     R batchUpdate(BatteryLabelBatchUpdateRequest request);
     
+    boolean permissionVerificationForReceiver(ElectricityBattery battery, Long receiverId, Integer label, ElectricityBatteryLabel batteryLabel);
+    
     List<ElectricityBatteryLabelVO> listLabelVOByBatteries(List<String> sns, List<ElectricityBattery> electricityBatteryList);
     
     List<ElectricityBatteryLabelVO> listLabelVOByDataVOs(List<String> sns, List<ElectricityBatteryDataVO> electricityBatteries);

@@ -16,6 +16,7 @@
                electricity_cabinet_id,
                electricity_cabinet_name,
                uid,
+               user_name,
                create_time,
                update_time,
                charge_status,
@@ -25,8 +26,11 @@
                iot_card_number,
                exchange_count,
                franchisee_id,
-               business_status,
                physics_status,
+               business_status,
+               bind_time,
+               guess_uid,
+               warehouse_id,
                stock_status
         from t_electricity_battery
     </sql>
@@ -1611,6 +1615,11 @@
         </if>
         order by teb.create_time desc
         limit #{query.offset}, #{query.size}
+    </select>
+    
+    <select id="selectBySnAndTenantId" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        <include refid="selectElectricityBattery"/>
+        where sn = #{sn} and tenant_id = #{tenantId}
     </select>
 
 

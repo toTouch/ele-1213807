@@ -115,7 +115,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     
     @Slave
     @Override
-    public ElectricityBatteryLabel queryBySnAndTenantId(String sn, Integer tenantId) {
+    public ElectricityBatteryLabel selectBySnAndTenantId(String sn, Integer tenantId) {
         return electricityBatteryLabelMapper.queryBySnAndTenantId(sn, tenantId);
     }
     
@@ -248,7 +248,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                 }
                 
                 // 获取cellNo
-                String cellNo = null;
+                String cellNo;
                 Object value = data.get(cellNoKey);
                 if (!(value instanceof List)) {
                     log.warn("UPDATE LOCK SN WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
@@ -311,7 +311,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     String cellNoKey = "cell_list";
                     
                     // 获取cellNo
-                    Integer cellNo = null;
+                    String cellNo;
                     Object value = data.get(cellNoKey);
                     if (!(value instanceof List)) {
                         log.warn("UPDATE OPEN CELL WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
@@ -325,8 +325,8 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     }
                     
                     for (Object o : list) {
-                        cellNo = Integer.valueOf(o.toString());
-                        ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo.toString());
+                        cellNo = o.toString();
+                        ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
                         if (Objects.isNull(box) || Objects.isNull(box.getSn())) {
                             continue;
                         }

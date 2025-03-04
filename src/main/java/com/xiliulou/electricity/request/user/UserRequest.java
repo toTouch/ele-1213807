@@ -24,6 +24,6 @@ public class UserRequest {
     // 租户、加盟商、门店的id都会收集到这个集合中用于查询user
     private List<Long> allDataIds;
     
-    // 需要排除掉的uid，数据权限可以交叉绑定，需要排除掉已经查询过的租户
-    private List<Long> ruleOutUIds;
+    // 为了分页需要把租户管理员的uid传回去一起查询
+    private List<Long> tenantUserUids;
 }
