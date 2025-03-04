@@ -76,9 +76,10 @@ public class MerchantBizServiceImpl implements MerchantBizService {
         Long size = (request.getSize() < 0 || request.getSize() > 50) ? 10L : request.getSize();
         Long offset = request.getOffset() < 0 ? 0L : request.getOffset();
         
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(request.getSn())
-                .sns(request.getSns()).franchiseeId(request.getFranchiseeId()).label(List.of(BatteryLabelEnum.RECEIVED_MERCHANT.getCode())).receiverId(merchant.getId()).size(size)
-                .offset(offset).build();
-        return electricityBatteryDataService.selectAllBatteryPageData(electricityBatteryQuery);
+        request.setSize(size);
+        request.setOffset(offset);
+        request.setLabel(List.of(BatteryLabelEnum.RECEIVED_MERCHANT.getCode()));
+        request.setReceiverId(merchant.getId());
+        return electricityBatteryDataService.selectAllBatteryPageData(request);
     }
 }
