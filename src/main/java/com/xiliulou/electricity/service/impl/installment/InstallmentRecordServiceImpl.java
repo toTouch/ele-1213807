@@ -264,16 +264,14 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             
             // 根据代扣计划计算签约总金额与未支付金额
             Pair<BigDecimal, BigDecimal> pair = installmentTerminatingRecordService.queryRentPriceAndUnpaidAmount(installmentRecord.getExternalAgreementNo());
-            installmentRecordVO.setRentPrice(pair.getLeft());
-            installmentRecordVO.setUnpaidAmount(pair.getRight());
             
-            if (Objects.isNull(batteryMemberCard)) {
-                return;
+            if (Objects.nonNull(batteryMemberCard)) {
+                installmentRecordVO.setPackageName(batteryMemberCard.getName());
+                installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
+                installmentRecordVO.setRentPrice(pair.getLeft());
+                installmentRecordVO.setUnpaidAmount(pair.getRight());
+                installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
             }
-            
-            installmentRecordVO.setPackageName(batteryMemberCard.getName());
-            installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
-            installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
 
             if (Objects.equals(installmentRecordVO.getInstallmentNo(), 1)) {
                 return;
