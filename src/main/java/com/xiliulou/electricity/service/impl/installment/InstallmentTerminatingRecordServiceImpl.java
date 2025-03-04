@@ -33,10 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_SOURCE_CANCEL;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_SOURCE_COMPLETED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.*;
 
 /**
  * @Description ...
@@ -190,7 +187,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(deductionPlans)) {
             for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
                 rentPrice = rentPrice.add(deductionPlan.getAmount());
-                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
+                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID) || Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                     continue;
                 }
                 unpaidPrice = unpaidPrice.add(deductionPlan.getAmount());

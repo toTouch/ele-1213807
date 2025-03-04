@@ -834,10 +834,13 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
             deductionPlanUpdate.setId(deductionPlan.getId());
             deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
             if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                 deductionPlanUpdate.setStatus(InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+                // 已支付金额累加
+                installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(deductionPlanUpdate.getAmount()));
             }else {
                 deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
                 deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
@@ -845,7 +848,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
             installmentDeductionPlanService.update(deductionPlanUpdate);
             
-            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+
             installmentRecordUpdate.setId(installmentRecord.getId());
             installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
             installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
