@@ -340,22 +340,24 @@
 	<select id="selectListAdministrator" resultType="com.xiliulou.electricity.vo.UserSearchVO">
 		select tu.uid,tu.name from t_user tu
 		left join t_user_data_scope uds on tu.uid = uds.uid
-		where uds.data_id in
-		<foreach collection="request.allDataIds" item="dataId" open="(" separator="," close=")">
-			#{dataId}
-		</foreach>
+		where (uds.data_id in
+			<foreach collection="request.allDataIds" item="dataId" open="(" separator="," close=")">
+				#{dataId}
+			</foreach>
+			<if test="request.tenantUserUids != null and request.tenantUserUids.size() > 0">
+		    	or tu.uid not in
+				<foreach collection="request.tenantUserUids" item="tenantUserUid" open="(" separator="," close=")">
+					#{tenantUserUid}
+				</foreach>
+			</if>
+	   	)
 		<if test="request.uid != null">
 			and tu.uid like concat('%', #{request.uid}, '%')
 		</if>
 		<if test="request.name != null and request.name != ''">
 			and tu.name like concat('%', #{request.name}, '%')
 		</if>
-		<if test="request.tenantUserUids != null and request.tenantUserUids.size() > 0">
-			or tu.uid not in
-			<foreach collection="request.tenantUserUids" item="tenantUserUid" open="(" separator="," close=")">
-				#{tenantUserUid}
-			</foreach>
-		</if>
+		
 		order by tu.uid
 		limit #{request.offset}, #{request.size}
 	</select>
