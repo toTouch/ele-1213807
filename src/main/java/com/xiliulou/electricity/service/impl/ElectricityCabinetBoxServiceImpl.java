@@ -408,7 +408,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
     
     @Override
-    public int updateLockSnByEidAndCellNo(Integer eId, Integer cellNo, String lockSn) {
+    public int updateLockSnByEidAndCellNo(Integer eId, String cellNo, String lockSn) {
         return electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
     }
     

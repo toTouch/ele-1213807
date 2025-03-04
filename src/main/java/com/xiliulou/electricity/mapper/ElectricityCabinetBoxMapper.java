@@ -66,7 +66,7 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     
     List<ElectricityCabinetBox> selectListNotUsableBySn(@Param("sn") String sn,@Param("cabinetId") Integer cabinetId,@Param("cellNo") String cellNo);
     
-    int updateLockSnByEidAndCellNo(@Param("eid") Integer eId, @Param("cellNo") Integer cellNo, @Param("lockSn") String lockSn);
+    int updateLockSnByEidAndCellNo(@Param("eid") Integer eId, @Param("cellNo") String cellNo, @Param("lockSn") String lockSn);
     
     List<ElectricityCabinetBox> selectListBySnAndEid(@Param("sn") String sn, @Param("eid") Integer eid);
     

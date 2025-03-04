@@ -247,7 +247,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                 }
                 
                 // 获取cellNo
-                Integer cellNo = null;
+                String cellNo = null;
                 Object value = data.get(cellNoKey);
                 if (!(value instanceof List)) {
                     log.warn("UPDATE LOCK SN WARN! cell_list type is wrong, eleOuterCommandQuery={}", eleOuterCommandQuery);
@@ -255,12 +255,12 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                 }
                 // 值是 List 类型，继续转换
                 List<?> list = (List<?>) value;
-                if (CollectionUtils.isEmpty(list) || !(list.get(0) instanceof Integer)) {
+                if (CollectionUtils.isEmpty(list) || Objects.isNull(list.get(0))) {
                     // 列表中的元素是 Integer 类型，安全转换
                     log.warn("UPDATE LOCK SN WARN! can not get cellNo, eleOuterCommandQuery={}, list={}", eleOuterCommandQuery, list);
                     return;
                 }
-                cellNo = (Integer) list.get(0);
+                cellNo = list.get(0).toString();
                 
                 String lockSn = eleOuterCommandQuery.getLockSn();
                 Integer eId = electricityCabinet.getId();
