@@ -1759,8 +1759,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 ElectricityBattery electricityBattery = new ElectricityBattery();
                 electricityBattery.setId(oldElectricityBattery.getId());
                 electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
-                electricityBattery.setElectricityCabinetId(null);
-                electricityBattery.setElectricityCabinetName(null);
                 electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
                 electricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBattery.setBindTime(System.currentTimeMillis());
