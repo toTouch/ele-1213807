@@ -78,6 +78,7 @@ public class MerchantBizServiceImpl implements MerchantBizService {
         
         request.setSize(size);
         request.setOffset(offset);
+        request.setTenantId(TenantContextHolder.getTenantId());
         request.setLabel(List.of(BatteryLabelEnum.RECEIVED_MERCHANT.getCode()));
         request.setReceiverId(merchant.getId());
         return electricityBatteryDataService.selectAllBatteryPageData(request);
