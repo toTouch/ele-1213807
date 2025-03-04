@@ -345,7 +345,7 @@
 				#{dataId}
 			</foreach>
 			<if test="request.tenantUserUids != null and request.tenantUserUids.size() > 0">
-		    	or tu.uid not in
+		    	or tu.uid in
 				<foreach collection="request.tenantUserUids" item="tenantUserUid" open="(" separator="," close=")">
 					#{tenantUserUid}
 				</foreach>
