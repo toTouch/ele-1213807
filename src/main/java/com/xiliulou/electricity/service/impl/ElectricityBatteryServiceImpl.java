@@ -2145,6 +2145,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             // 原本想减少数据库IO，电池从外部传入，但是存在外部传入参数与当前数据库内数据不一致的情况，还是在这里查询一次，减少业务异常
             ElectricityBattery battery = selectBySnAndTenantId(electricityBattery.getSn(), electricityBattery.getTenantId());
+            if (Objects.isNull(battery)) {
+                log.warn("BATTERY LABEL MODIFY LABEL WARN! battery is null, battery={}, dto={}", electricityBattery, dto);
+                return false;
+            }
             ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.selectBySnAndTenantId(battery.getSn(), battery.getTenantId());
             
             Integer oldLabel = battery.getLabel();
@@ -2297,9 +2301,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
                 
                 String labelModifyDtoStr = redisService.get(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), battery.getSn()));
-                // 没有获取到预修改标签的时候直接结束
+                // 没有获取到预修改标签的时候修改为闲置
                 if (StringUtils.isEmpty(labelModifyDtoStr) || StringUtils.isBlank(labelModifyDtoStr)) {
-                    log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! labelModifyDtoStr is null, sn={}", battery.getSn());
+                    Long updateTime = System.currentTimeMillis();
+                    ElectricityBattery batteryUpdate = ElectricityBattery.builder().id(battery.getId()).tenantId(battery.getTenantId()).label(BatteryLabelEnum.UNUSED.getCode())
+                            .updateTime(updateTime).build();
+                    electricitybatterymapper.update(batteryUpdate);
+                    batteryLabelRecordService.sendRecord(battery, null, BatteryLabelEnum.UNUSED.getCode(), updateTime, null, null);
                     return;
                 }
                 
