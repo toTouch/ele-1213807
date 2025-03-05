@@ -937,14 +937,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         InstallmentDeductionPlan deductionPlan = deductionPlans.get(0);
         ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.queryOrderByAgreementNoAndIssue(deductionPlan.getExternalAgreementNo(), 1);
 
-        // 如果是线下履约，则修改支付渠道为空
-        if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT) && Objects.nonNull(memberCardOrder)){
-            ElectricityMemberCardOrder update = new ElectricityMemberCardOrder();
-            update.setId(memberCardOrder.getId());
-            update.setPaymentChannel(null);
-            update.setUpdateTime(System.currentTimeMillis());
-            electricityMemberCardOrderService.updateByID(update);
-        }
 
         // 给用户绑定套餐
         if (Objects.equals(deductionPlan.getIssue(), 1)) {
@@ -954,7 +946,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             memberCardOrderUpdate.setCreateTime(System.currentTimeMillis());
             memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)){
-                memberCardOrderUpdate.setPaymentChannel(null);
+                // 由于mybatisPlus无法更新为空的字段，所以这里要单独更新
+                ElectricityMemberCardOrder update = new ElectricityMemberCardOrder();
+                update.setId(memberCardOrder.getId());
+                update.setUpdateTime(System.currentTimeMillis());
+                update.setPaymentChannel(null);
+                electricityMemberCardOrderService.updatePayChannelById(update);
             }
             electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
             

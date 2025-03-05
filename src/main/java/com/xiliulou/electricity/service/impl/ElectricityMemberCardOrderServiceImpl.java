@@ -4039,4 +4039,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         return validDays;
     }
+
+    @Override
+    public void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder){
+        baseMapper.updatePayChannelById(memberCardOrder);
+    }
+
 }
