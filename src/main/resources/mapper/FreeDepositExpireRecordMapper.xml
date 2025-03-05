@@ -48,7 +48,13 @@
                 #{franchiseeId}
             </foreach>
         </if>
-        order by id desc
+
+        <if test="status != null and status == 3">
+            order by tui.update_time desc
+        </if>
+        <if test="status != null and (status == 1 or status == 2) ">
+            order by id desc
+        </if>
         limit #{offset},#{size}
     </select>
 
