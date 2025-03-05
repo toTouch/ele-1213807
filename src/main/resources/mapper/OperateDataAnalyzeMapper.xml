@@ -9,5 +9,11 @@
         order by date desc
         limit 1
     </select>
+    <select id="selectListByBatch" resultType="com.xiliulou.electricity.entity.OperateDataAnalyze">
+        select tenant_id,
+               tenant_name, date, batchNo, sum_cabinet_count, normal_cabinet_count, cabinet_use_rate, sum_cell_count, normal_cell_count, cell_use_rate, sum_battery_count, rent_battery_count, battery_rent_rate, total_real_count, total_buy_member_count, total_buy_rate, only_buy_member_count, total_churn_rate, current_use_member_count, people_cell_rate, last_week_add_real_count, last_week_add_buy_count, last_week_add_buy_rate, last_week_repurchase_rate, loyal_user_rate
+        from t_operate_data_analyze
+        where batchNo = #{batchNo}
+    </select>
 
 </mapper>

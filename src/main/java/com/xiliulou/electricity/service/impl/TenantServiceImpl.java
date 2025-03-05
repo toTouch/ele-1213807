@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
@@ -21,23 +23,13 @@ import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
 import com.xiliulou.electricity.request.InitTenantSubscriptRequest;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.ChannelActivityService;
-import com.xiliulou.electricity.service.EleAuthEntryService;
-import com.xiliulou.electricity.service.ElectricityConfigExtraService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.FreeDepositDataService;
-import com.xiliulou.electricity.service.PermissionTemplateService;
-import com.xiliulou.electricity.service.RolePermissionService;
-import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.TenantNoteService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserRoleService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.service.retrofit.MsgCenterRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.OperateDataAnalyzeExcelVO;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.security.bean.TokenUser;
@@ -49,6 +41,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,7 +118,10 @@ public class TenantServiceImpl implements TenantService {
 
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
-    
+
+    @Resource
+    private OperateDataAnalyzeService operateDataAnalyzeService;
+
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
     
     ExecutorService initOtherExecutorService = XllThreadPoolExecutors.newFixedThreadPool("initTenantOther", 2, "INIT_TENANT_OTHER");
@@ -440,12 +440,29 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public List<OperateDataAnalyze> dataAnalyze(String passWord) {
+    public void dataAnalyze(String passWord, HttpServletResponse response) {
         String password = redisService.get(String.format(CacheConstant.ADMIN_DATA_ANALYZE_PASSWORD_KEY, passWord));
         if (StrUtil.isEmpty(password)) {
             throw new BizException("0001", "密码错误");
         }
+        // 每次获取最新一批的数据
+        String batch = operateDataAnalyzeService.queryLatestBatch();
 
+        List<OperateDataAnalyze> list = operateDataAnalyzeService.queryList(batch);
+        if (CollUtil.isEmpty(list)){
+            return;
+        }
+
+        String fileName = "运营数据统计分析.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            EasyExcel.write(outputStream, OperateDataAnalyzeExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
+                    .doWrite(list);
+        } catch (IOException e) {
+            log.error("运营数据统计分析！", e);
+        }
     }
 
     /**

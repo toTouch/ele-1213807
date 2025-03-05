@@ -14,5 +14,5 @@ public interface OperateDataAnalyzeService {
 
     String queryLatestBatch();
 
-    List<OperateDataAnalyze> queryList();
+    List<OperateDataAnalyze> queryList(String batch);
 }

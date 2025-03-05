@@ -26,7 +26,9 @@ public class OperateDataAnalyzeServiceImpl implements OperateDataAnalyzeService 
     }
 
     @Override
-    public List<OperateDataAnalyze> queryList() {
-        return List.of();
+    public List<OperateDataAnalyze> queryList(String batch) {
+        return operateDataAnalyzeMapper.selectListByBatch(batch);
     }
+
+
 }
