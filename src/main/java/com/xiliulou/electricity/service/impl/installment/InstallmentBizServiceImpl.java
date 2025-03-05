@@ -839,7 +839,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             deductionPlanUpdate.setId(deductionPlan.getId());
             deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
             if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
-                deductionPlanUpdate.setStatus(InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+                // 如果是已支付不做修改支付状态
+                if (!Objects.equals(deductionPlan.getStatus(), InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID)) {
+                    deductionPlanUpdate.setStatus(InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+                }
                 // 已支付金额累加
                 amount = amount.add(deductionPlan.getAmount());
             }else {
