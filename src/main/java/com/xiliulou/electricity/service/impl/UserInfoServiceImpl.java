@@ -2997,7 +2997,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     private void queryUserBatteryMemberCard(DetailsBatteryInfoVo vo, UserInfo userInfo) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(
                 userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
+        if (Objects.isNull(userBatteryMemberCard) || userBatteryMemberCard.getMemberCardExpireTime() <= System.currentTimeMillis()
+        ) {
+            InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(userInfo.getUid(),
+                    CollUtil.newArrayList(InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN));
+            vo.setIsViewOffLineAgree(Objects.nonNull(installmentRecord) ? DetailsBatteryInfoVo.IS_VIEW_OFF_LINE_AGREE : DetailsBatteryInfoVo.NOT_IS_VIEW_OFF_LINE_AGREE);
             return;
         }
         
@@ -3013,22 +3017,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userBatteryMemberCard.getMemberCardId());
         vo.setCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
         vo.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
-        vo.setDownPayment(Objects.isNull(batteryMemberCard) ? BigDecimal.valueOf(0.0) : batteryMemberCard.getDownPayment());
-        vo.setValidDays(Objects.isNull(batteryMemberCard) ? 0 : batteryMemberCard.getValidDays());
-        vo.setBusinessType(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getBusinessType());
-        vo.setRentPrice(Objects.isNull(batteryMemberCard) ? BigDecimal.valueOf(0.0) : batteryMemberCard.getRentPrice());
+//        vo.setDownPayment(Objects.isNull(batteryMemberCard) ? BigDecimal.valueOf(0.0) : batteryMemberCard.getDownPayment());
+//        vo.setValidDays(Objects.isNull(batteryMemberCard) ? 0 : batteryMemberCard.getValidDays());
+//        vo.setBusinessType(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getBusinessType());
+//        vo.setRentPrice(Objects.isNull(batteryMemberCard) ? BigDecimal.valueOf(0.0) : batteryMemberCard.getRentPrice());
 
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(
                 userBatteryMemberCard.getOrderId());
         vo.setMemberCardCreateTime(
                 Objects.isNull(electricityMemberCardOrder) ? null : electricityMemberCardOrder.getCreateTime());
 
-        if (Objects.isNull(userBatteryMemberCard) || userBatteryMemberCard.getMemberCardExpireTime() <= System.currentTimeMillis()
-        ) {
-            InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(userInfo.getUid(),
-                    CollUtil.newArrayList(InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN));
-            vo.setIsViewOffLineAgree(Objects.nonNull(installmentRecord) ? DetailsBatteryInfoVo.IS_VIEW_OFF_LINE_AGREE : DetailsBatteryInfoVo.NOT_IS_VIEW_OFF_LINE_AGREE);
-        }
+
 
 /*
         //开始时间
