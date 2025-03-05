@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface OperateDataAnalyzeService {
 
-    List<OperateDataAnalyze> queryList();
+    String queryLatestBatch();
 
+    List<OperateDataAnalyze> queryList();
 }
