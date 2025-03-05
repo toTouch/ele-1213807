@@ -223,6 +223,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
             
+            // ！！！在换电流程结束的最后一次上报时再修改电池标签
+            if (!exchangeOrderRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+                return;
+            }
             // 修改电池标签
             ElectricityBattery.ElectricityBatteryBuilder batteryBuilder = ElectricityBattery.builder().tenantId(electricityCabinetOrder.getTenantId());
             // 修改旧电池，即使电池已经还进去了，这次处理也不会出问题，标签会被保存到预修改标签的缓存内，下次如果有人换电取出，会把还没修改落库的闲置覆盖掉
