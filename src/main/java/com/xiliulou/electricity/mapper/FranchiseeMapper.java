@@ -39,4 +39,6 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
     Integer checkBatteryModelIsUse(@Param("batteryModel") Integer batteryModel, @Param("tenantId") Integer tenantId);
     
     List<Franchisee> selectByIdsAndTenantId(@Param("ids") List<Long> ids, @Param("tenantId") Integer tenantId);
+    
+    List<Long> selectListFranchiseeIdsByTenantId(@Param("tenantId") Integer tenantId);
 }

@@ -14,6 +14,7 @@ import com.xiliulou.electricity.query.asset.ElectricityBatteryBatchUpdateFranchi
 import com.xiliulou.electricity.query.asset.ElectricityBatteryEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.battery.BatterySnVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -47,6 +48,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
      */
     List<ElectricityBattery> selectListBySnList(@Param("tenantId") Integer tenantId, @Param("batterySns") List<String> batterySns,@Param("franchiseeIdList") List<Long> bindFranchiseeIdList);
     
+    List<ElectricityBattery> selectListByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+    
     List<ElectricityBattery> queryList(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
             @Param("offset") Long offset, @Param("size") Long size);
     
@@ -55,6 +58,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
     
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
+    
+    Integer updateBatteryUserExceptEid(ElectricityBattery electricityBattery);
     
     List<ElectricityBattery> selectListBatteryByGuessUid(@Param("guessUid") Long guessUid);
     
@@ -208,4 +213,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     Integer existsByBatteryType(@Param("batteryType") String batteryType, @Param("tenantId") Integer tenantId);
     
     List<ElectricityBattery> selectLUserBatteryByUidList(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
+    
+    List<BatterySnVO> selectListAllBatterySn(@Param("query") ElectricityBatteryQuery batteryQuery);
+    
+    ElectricityBattery selectBySnAndTenantId(@Param("sn") String sn, @Param("tenantId") Integer tenantId);
 }

@@ -89,4 +89,6 @@ public interface FranchiseeService {
     Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId);
     
     Triple<Boolean, String, Object> selectById(Long id);
+    
+    List<Long> listFranchiseeIdsByTenantId(Integer tenantId);
 }
