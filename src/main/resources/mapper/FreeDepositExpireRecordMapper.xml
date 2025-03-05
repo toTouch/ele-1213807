@@ -23,7 +23,7 @@
     <update id="updateRemark">
         update t_free_deposit_expire_record
         set remark    = #{remark},
-            create_time = UNIX_TIMESTAMP() * 1000
+            update_time = UNIX_TIMESTAMP() * 1000
         where id = #{id}
     </update>
 
