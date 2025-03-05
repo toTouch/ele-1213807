@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
@@ -64,8 +66,15 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryPartAttrBySnFromCache(String sn);
 
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
+    
+    ElectricityBattery selectBySnAndTenantId(String sn, Integer tenantId);
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
+    
+    /**
+     * 更新电池绑定的用户，不强制更新电池的柜机id及柜机名称
+     */
+    Integer updateBatteryUserExceptEid(ElectricityBattery electricityBattery);
     
     List<ElectricityBattery> listBatteryByGuessUid(Long guessUid);
     
@@ -171,6 +180,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<ElectricityBattery> listBySnList(List<String> item, Integer tenantId, List<Long> bindFranchiseeIdList);
     
+    List<ElectricityBattery> listByUid(Long uid, Integer tenantId);
+    
     R deleteBatteryByExcel(DelBatteryReq delBatteryReq);
 
 
@@ -181,4 +192,21 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer existsByBatteryType(String batteryType, Integer tenantId);
     
     Map<Long, ElectricityBattery> listUserBatteryByUidList(List<Long> uidList, Integer tenantId);
+    
+    /**
+     * 修改电池标签
+     */
+    boolean asyncModifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification);
+    
+    /**
+     * 修改电池标签，提供一个同步方法给已经开启异步操作的逻辑使用
+     */
+    boolean syncModifyLabel(ElectricityBattery battery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification);
+    
+    /**
+     * 电池标签修改特殊逻辑-处理电池离仓场景
+     */
+    void modifyLabelWhenBatteryExitCabin(ElectricityBattery battery, ElectricityCabinetBox box);
+    
+    R listAllBatterySn(ElectricityBatteryQuery batteryQuery);
 }

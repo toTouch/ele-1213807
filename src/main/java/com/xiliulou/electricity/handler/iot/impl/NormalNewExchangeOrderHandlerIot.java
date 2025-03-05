@@ -16,18 +16,18 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -222,6 +222,21 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
+            
+            // ！！！在换电流程结束的最后一次上报时再修改电池标签
+            if (!exchangeOrderRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+                return;
+            }
+            // 修改电池标签
+            ElectricityBattery.ElectricityBatteryBuilder batteryBuilder = ElectricityBattery.builder().tenantId(electricityCabinetOrder.getTenantId());
+            // 修改旧电池，即使电池已经还进去了，这次处理也不会出问题，标签会被保存到预修改标签的缓存内，下次如果有人换电取出，会把还没修改落库的闲置覆盖掉
+            electricityBatteryService.asyncModifyLabel(batteryBuilder.sn(exchangeOrderRsp.getPlaceBatteryName()).build(), null,
+                    new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
+            // 修改新电池
+            ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
+                    .cellNo(electricityCabinetOrder.getNewCellNo().toString()).build();
+            electricityBatteryService.asyncModifyLabel(batteryBuilder.sn(exchangeOrderRsp.getTakeBatteryName()).build(), box,
+                    new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
         } catch (Exception e) {
             log.error("ELE EXCHANGE HANDLER ERROR!", e);
         } finally {

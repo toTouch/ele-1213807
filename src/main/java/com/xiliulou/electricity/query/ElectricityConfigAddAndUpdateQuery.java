@@ -264,6 +264,12 @@ public class ElectricityConfigAddAndUpdateQuery {
     @Range(min = 1, max = 99, message = "套餐过期滞纳金起算时间设置范围为1-99", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer expiredProtectionTime;
     
+    /**
+     * 长时间未换电时间间隔，单位天
+     */
+    @Range(min = 1, max = 99, message = "长时间未换电时间间隔设置范围为1-99", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer notExchangeProtectionTime;
+    
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;

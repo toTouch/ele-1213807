@@ -41,6 +41,7 @@
         <result property="packageFreezeDaysWithAssets" column="package_freeze_days_with_assets" jdbcType="INTEGER"/>
         <result property="expiredProtectionTime" column="expired_protection_time" jdbcType="INTEGER"/>
         <result property="isBindBattery" column="is_bind_battery" jdbcType="INTEGER"/>
+        <result property="notExchangeProtectionTime" column="not_exchange_protection_time" jdbcType="INTEGER"/>
     </resultMap>
     
     <!-- 基础字段 -->
@@ -82,10 +83,11 @@
                package_freeze_days,
                package_freeze_days_with_assets,
                expired_protection_time,
-               is_bind_battery
+               is_bind_battery,
                lost_user_first,
                lost_user_days,
-               allow_original_inviter
+               allow_original_inviter,
+               not_exchange_protection_time
         from t_electricity_config
     </sql>
     
@@ -99,7 +101,7 @@
         full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,alipay_customer,is_comfort_exchange,priority_exchange_norm,
         is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count,is_enable_flexible_renewal,is_enable_separate_deposit,is_swap_exchange,
         freeze_auto_review_days,package_freeze_count,package_freeze_days,package_freeze_days_with_assets,expired_protection_time,is_bind_battery,lost_user_first,
-       	lost_user_days,allow_original_inviter
+       	lost_user_days,allow_original_inviter,not_exchange_protection_time
     </sql>
     <!--通过主键修改数据-->
     <update id="update">
@@ -243,6 +245,9 @@
             <if test="isBindBattery != null">
                 is_bind_battery = #{isBindBattery},
             </if>
+            <if test="notExchangeProtectionTime != null">
+                not_exchange_protection_time = #{notExchangeProtectionTime},
+            </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
         where id = #{id} and tenant_id = #{tenantId}
@@ -306,7 +311,8 @@
        `is_bind_battery` ,
        `lost_user_first` ,
        `lost_user_days` ,
-       `allow_original_inviter`
+       `allow_original_inviter`,
+       `not_exchange_protection_time`
     </sql>
 
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.ElectricityConfig">

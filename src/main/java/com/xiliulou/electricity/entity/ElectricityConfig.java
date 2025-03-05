@@ -281,6 +281,11 @@ public class ElectricityConfig {
      */
     private Integer isBindBattery;
     
+    /**
+     * 长时间未换电时间间隔，单位天
+     */
+    private Integer notExchangeProtectionTime;
+    
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     
