@@ -262,22 +262,16 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         if (Objects.equals(installmentRecordVO.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecordVO.getPackageId());
             
-            // 根据代扣计划计算签约总金额与未支付金额
-            Pair<BigDecimal, BigDecimal> pair = installmentTerminatingRecordService.queryRentPriceAndUnpaidAmount(installmentRecord.getExternalAgreementNo());
+            // 根据代扣计划计算签约总金额、未支付金额、首期金额、剩余每期金额
+            Pair<BigDecimal, BigDecimal> pair = installmentTerminatingRecordService.queryRentPriceAndUnpaidAmount(installmentRecord.getExternalAgreementNo(), installmentRecordVO);
             
-            if (Objects.nonNull(batteryMemberCard)) {
-                installmentRecordVO.setPackageName(batteryMemberCard.getName());
-                installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
-                installmentRecordVO.setRentPrice(pair.getLeft());
-                installmentRecordVO.setUnpaidAmount(pair.getRight());
-                installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
-            }
-
-            if (Objects.equals(installmentRecordVO.getInstallmentNo(), 1)) {
+            if (Objects.isNull(batteryMemberCard)) {
                 return;
             }
-            // 计算剩余每期金额
-            installmentRecordVO.setRemainingPrice(InstallmentUtil.calculateSuborderAmount(2, installmentRecord, batteryMemberCard));
+            
+            installmentRecordVO.setPackageName(batteryMemberCard.getName());
+            installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
+            installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
         } else {
             CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentRecordVO.getPackageId());
             installmentRecordVO.setPackageName(carRentalPackagePo.getName());

@@ -19,6 +19,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
+import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,13 +87,13 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             // 设置电或者车的套餐名称，设置总金额和未支付金额
             if (Objects.equals(installmentTerminatingRecord.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
                 // 根据代扣计划计算签约总金额与未支付金额
-                Pair<BigDecimal, BigDecimal> pair = queryRentPriceAndUnpaidAmount(installmentTerminatingRecord.getExternalAgreementNo());
+                Pair<BigDecimal, BigDecimal> pair = queryRentPriceAndUnpaidAmount(installmentTerminatingRecord.getExternalAgreementNo(), null);
+                vo.setAmount(pair.getLeft());
+                vo.setUnpaidAmount(pair.getRight());
                 
                 BatteryMemberCard memberCard = batteryMemberCardService.queryByIdFromCache(installmentTerminatingRecord.getPackageId());
                 if (Objects.nonNull(memberCard)) {
                     vo.setPackageName(memberCard.getName());
-                    vo.setAmount(pair.getLeft());
-                    vo.setUnpaidAmount(pair.getRight());
                 }
             } else {
                 CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentTerminatingRecord.getPackageId());
@@ -178,14 +179,26 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     }
     
     @Override
-    public Pair<BigDecimal, BigDecimal> queryRentPriceAndUnpaidAmount(String externalAgreementNo) {
+    public Pair<BigDecimal, BigDecimal> queryRentPriceAndUnpaidAmount(String externalAgreementNo, InstallmentRecordVO installmentRecordVO) {
         InstallmentDeductionPlanQuery planQuery = new InstallmentDeductionPlanQuery();
         planQuery.setExternalAgreementNo(externalAgreementNo);
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(planQuery).getData();
         BigDecimal rentPrice = BigDecimal.ZERO;
         BigDecimal unpaidPrice = BigDecimal.ZERO;
+        BigDecimal downPayment = BigDecimal.ZERO;
+        BigDecimal remainingPrice = BigDecimal.ZERO;
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(deductionPlans)) {
             for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+                // 计算首期金额
+                if (Objects.equals(deductionPlan.getIssue(), 1)) {
+                    downPayment = downPayment.add(deductionPlan.getAmount());
+                }
+                
+                // 计算剩余每期金额，取第二期的总金额就可以了
+                if (Objects.equals(deductionPlan.getIssue(), 2)) {
+                    remainingPrice = remainingPrice.add(deductionPlan.getAmount());
+                }
+                
                 rentPrice = rentPrice.add(deductionPlan.getAmount());
                 if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID) || Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                     continue;
@@ -194,6 +207,14 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             }
         }
         
+        if (Objects.isNull(installmentRecordVO)) {
+            return Pair.of(rentPrice, unpaidPrice);
+        }
+        
+        installmentRecordVO.setDownPayment(downPayment);
+        installmentRecordVO.setRemainingPrice(remainingPrice);
+        installmentRecordVO.setRentPrice(rentPrice);
+        installmentRecordVO.setUnpaidAmount(unpaidPrice);
         return Pair.of(rentPrice, unpaidPrice);
     }
     
