@@ -974,6 +974,6 @@ public interface CacheConstant {
 
 
 
-    String ADMIN_DATA_ANALYZE_PASSWORD_KEY = "admin_data_analyze_password:%s";
+    String ADMIN_DATA_ANALYZE_PASSWORD_KEY = "admin_data_analyze_password";
 }
 

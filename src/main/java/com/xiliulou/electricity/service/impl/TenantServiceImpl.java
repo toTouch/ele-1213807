@@ -441,8 +441,8 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public void dataAnalyze(String passWord, HttpServletResponse response) {
-        String password = redisService.get(String.format(CacheConstant.ADMIN_DATA_ANALYZE_PASSWORD_KEY, passWord));
-        if (StrUtil.isEmpty(password)) {
+        String redisPassWord = redisService.get(CacheConstant.ADMIN_DATA_ANALYZE_PASSWORD_KEY);
+        if (StrUtil.isEmpty(redisPassWord) || !Objects.equals(redisPassWord, passWord)) {
             throw new BizException("0001", "密码错误");
         }
         // 每次获取最新一批的数据
