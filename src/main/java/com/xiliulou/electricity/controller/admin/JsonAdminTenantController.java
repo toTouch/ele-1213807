@@ -101,4 +101,12 @@ public class JsonAdminTenantController extends BaseController {
     public R addTenant(@PathVariable("id") Integer id) {
         return R.ok(tenantService.queryByIdFromCache(id));
     }
+
+
+
+    @GetMapping(value = "/admin/tenant/dataAnalyze")
+    public R dataAnalyze(@RequestParam("passWord") String passWord) {
+        return R.ok(tenantService.dataAnalyze(passWord));
+    }
+
 }

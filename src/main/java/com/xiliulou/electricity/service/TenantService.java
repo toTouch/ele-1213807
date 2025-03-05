@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.OperateDataAnalyze;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
@@ -35,4 +36,6 @@ public interface TenantService {
     
     
     List<Integer> queryIdListByStartId(Integer startId, Integer size);
+
+    List<OperateDataAnalyze> dataAnalyze(String passWord);
 }

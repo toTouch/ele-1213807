@@ -972,5 +972,8 @@ public interface CacheConstant {
      */
     String  CACHE_MERCHANT_WITHDRAW_NOTIFY_LOCK = "cache_merchant_withdraw_notify_lock:%s";
 
+
+
+    String ADMIN_DATA_ANALYZE_PASSWORD_KEY = "admin_data_analyze_password:%s";
 }
 

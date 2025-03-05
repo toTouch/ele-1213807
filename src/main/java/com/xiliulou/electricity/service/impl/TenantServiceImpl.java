@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
@@ -12,16 +13,8 @@ import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.ChannelActivity;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityConfigExtra;
-import com.xiliulou.electricity.entity.FreeDepositData;
-import com.xiliulou.electricity.entity.PermissionTemplate;
-import com.xiliulou.electricity.entity.Role;
-import com.xiliulou.electricity.entity.RolePermission;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.TenantNote;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
@@ -445,7 +438,16 @@ public class TenantServiceImpl implements TenantService {
     public List<Integer> queryIdListByStartId(Integer startId, Integer size) {
         return tenantMapper.selectIdListByStartId(startId, size);
     }
-    
+
+    @Override
+    public List<OperateDataAnalyze> dataAnalyze(String passWord) {
+        String password = redisService.get(String.format(CacheConstant.ADMIN_DATA_ANALYZE_PASSWORD_KEY, passWord));
+        if (StrUtil.isEmpty(password)) {
+            throw new BizException("0001", "密码错误");
+        }
+
+    }
+
     /**
      * 生成新的租户code
      */
