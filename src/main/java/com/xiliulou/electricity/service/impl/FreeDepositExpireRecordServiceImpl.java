@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FreeDepositExpireRecord;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositExpireRecordVO;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +49,7 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
 
     @Override
     public List<FreeDepositExpireRecordVO> selectByPage(FreeDepositExpireRecordQuery query) {
+        checkPermission();
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
             return new ArrayList<>();
@@ -70,6 +73,7 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
 
     @Override
     public Integer queryCount(FreeDepositExpireRecordQuery query) {
+        checkPermission();
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
             return NumberConstant.ZERO;
@@ -80,6 +84,7 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
 
     @Override
     public void offLineDeal(List<Long> ids) {
+        checkPermission();
         Integer count = freeDepositExpireRecordMapper.selectByIds(ids);
         if (!Objects.equals(count, ids.size())) {
             throw new BizException("402040", "不存在的免押到期记录,请检查");
@@ -89,10 +94,23 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
 
     @Override
     public void editRemark(Long id, String remark) {
+        checkPermission();
         Integer count = freeDepositExpireRecordMapper.selectByIds(CollUtil.newArrayList(id));
         if (!Objects.equals(count, NumberConstant.ONE)) {
             throw new BizException("402040", "不存在的免押到期记录,请检查");
         }
         freeDepositExpireRecordMapper.updateRemark(id, remark);
+    }
+
+
+    private void checkPermission() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            throw new BizException("ELECTRICITY.0066", "用户权限不足");
+        }
     }
 }
