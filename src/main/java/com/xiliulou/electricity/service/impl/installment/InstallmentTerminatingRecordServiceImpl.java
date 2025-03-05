@@ -187,23 +187,38 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         BigDecimal unpaidPrice = BigDecimal.ZERO;
         BigDecimal downPayment = BigDecimal.ZERO;
         BigDecimal remainingPrice = BigDecimal.ZERO;
+        int validDays = 0;
+        int calculatedIssue = 0;
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(deductionPlans)) {
             for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
-                // 计算首期金额
-                if (Objects.equals(deductionPlan.getIssue(), 1)) {
-                    downPayment = downPayment.add(deductionPlan.getAmount());
-                }
-                
-                // 计算剩余每期金额，取第二期的总金额就可以了
-                if (Objects.equals(deductionPlan.getIssue(), 2)) {
-                    remainingPrice = remainingPrice.add(deductionPlan.getAmount());
-                }
-                
                 rentPrice = rentPrice.add(deductionPlan.getAmount());
                 if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID) || Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                     continue;
                 }
                 unpaidPrice = unpaidPrice.add(deductionPlan.getAmount());
+                
+                // 如果没传installmentRecordVO下面的就不用算了
+                if (Objects.isNull(installmentRecordVO)) {
+                    continue;
+                }
+                
+                // 当初觉得已经有了没在签约记录内快照保存
+                Integer planIssue = deductionPlan.getIssue();
+                // 计算首期金额
+                if (Objects.equals(planIssue, 1)) {
+                    downPayment = downPayment.add(deductionPlan.getAmount());
+                }
+                
+                // 计算剩余每期金额，取第二期的总金额就可以了
+                if (Objects.equals(planIssue, 2)) {
+                    remainingPrice = remainingPrice.add(deductionPlan.getAmount());
+                }
+                
+                // 计算全部天数
+                Integer planRentTime = deductionPlan.getRentTime();
+                if (Objects.nonNull(planIssue) && Objects.nonNull(planRentTime) && planIssue > calculatedIssue) {
+                    validDays = validDays + planRentTime;
+                }
             }
         }
         
@@ -215,6 +230,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         installmentRecordVO.setRemainingPrice(remainingPrice);
         installmentRecordVO.setRentPrice(rentPrice);
         installmentRecordVO.setUnpaidAmount(unpaidPrice);
+        installmentRecordVO.setValidDays(validDays);
         return Pair.of(rentPrice, unpaidPrice);
     }
     

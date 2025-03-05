@@ -263,15 +263,12 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecordVO.getPackageId());
             
             // 根据代扣计划计算签约总金额、未支付金额、首期金额、剩余每期金额
-            Pair<BigDecimal, BigDecimal> pair = installmentTerminatingRecordService.queryRentPriceAndUnpaidAmount(installmentRecord.getExternalAgreementNo(), installmentRecordVO);
+            installmentTerminatingRecordService.queryRentPriceAndUnpaidAmount(installmentRecord.getExternalAgreementNo(), installmentRecordVO);
             
             if (Objects.isNull(batteryMemberCard)) {
                 return;
             }
-            
             installmentRecordVO.setPackageName(batteryMemberCard.getName());
-            installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
-            installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
         } else {
             CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentRecordVO.getPackageId());
             installmentRecordVO.setPackageName(carRentalPackagePo.getName());
