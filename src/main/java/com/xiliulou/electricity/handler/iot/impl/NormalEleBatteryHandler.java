@@ -113,8 +113,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
         String sessionId = receiverMessage.getSessionId();
-
-        log.info("电池在仓上报， receiverMessage={}", receiverMessage);
         
         EleBatteryVO eleBatteryVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVO.class);
         if (Objects.isNull(eleBatteryVO)) {
