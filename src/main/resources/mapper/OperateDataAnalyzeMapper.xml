@@ -10,8 +10,30 @@
         limit 1
     </select>
     <select id="selectListByBatch" resultType="com.xiliulou.electricity.entity.OperateDataAnalyze">
-        select tenant_id,
-               tenant_name, date, batchNo, sum_cabinet_count, normal_cabinet_count, cabinet_use_rate, sum_cell_count, normal_cell_count, cell_use_rate, sum_battery_count, rent_battery_count, battery_rent_rate, total_real_count, total_buy_member_count, total_buy_rate, only_buy_member_count, total_churn_rate, current_use_member_count, people_cell_rate, last_week_add_real_count, last_week_add_buy_count, last_week_add_buy_rate, last_week_repurchase_rate, loyal_user_rate
+        select tenant_id                 AS tenantId,
+               tenant_name               AS tenantName,
+               batchNo,
+               sum_cabinet_count         AS sumCabinetCount,
+               normal_cabinet_count      AS normalCabinetCount,
+               cabinet_use_rate          AS cabinetUseRate,
+               sum_cell_count            AS sumCellCount,
+               normal_cell_count         AS normalCellCount,
+               cell_use_rate             AS cellUseRate,
+               sum_battery_count         AS sumBatteryCount,
+               rent_battery_count        AS rentBatteryCount,
+               battery_rent_rate         AS batteryRentRate,
+               total_real_count          AS totalRealCount,
+               total_buy_member_count    AS totalBuyMemberCount,
+               total_buy_rate            AS totalBuyRate,
+               only_buy_member_count     AS onlyBuyMemberCount,
+               total_churn_rate          AS totalChurnRate,
+               current_use_member_count  AS currentUseMemberCount,
+               people_cell_rate          AS peopleCellRate,
+               last_week_add_real_count  AS lastWeekAddRealCount,
+               last_week_add_buy_count   AS lastWeekAddBuyCount,
+               last_week_add_buy_rate    AS lastWeekAddBuyRate,
+               last_week_repurchase_rate AS lastWeekRepurchaseRate,
+               loyal_user_rate           AS loyalUserRate
         from t_operate_data_analyze
         where batchNo = #{batchNo}
     </select>
