@@ -6,12 +6,14 @@
     <sql id="baseSql">
         id
         , uid, real_name, phone, deposit_type, trans_amt, tenant_id, franchisee_id, store_id,
-          deposit_time, remark, status, create_time, update_time
+          deposit_time, remark, status,operate_uid,operate_time, create_time, update_time
     </sql>
 
     <update id="updateStatus">
         update t_free_deposit_expire_record
-        set status = 3,create_time = UNIX_TIMESTAMP() * 1000
+        set status = 3,update_time = UNIX_TIMESTAMP() * 1000
+        , operate_time = UNIX_TIMESTAMP() * 1000
+        , operate_uid = #{operateUid}
         where id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}

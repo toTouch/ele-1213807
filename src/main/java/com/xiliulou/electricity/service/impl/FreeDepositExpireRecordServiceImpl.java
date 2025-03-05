@@ -5,11 +5,13 @@ import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FreeDepositExpireRecord;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeDepositExpireRecordMapper;
 import com.xiliulou.electricity.query.FreeDepositExpireRecordQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FreeDepositExpireRecordService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositExpireRecordVO;
@@ -40,6 +42,9 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
     @Resource
     private FranchiseeService franchiseeService;
 
+    @Resource
+    private UserService userService;
+
     @Override
     public List<FreeDepositExpireRecordVO> selectByPage(FreeDepositExpireRecordQuery query) {
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
@@ -53,11 +58,12 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
             return CollUtil.newArrayList();
         }
 
-
         return records.stream().map(record -> {
             FreeDepositExpireRecordVO freeDepositExpireRecordVO = BeanUtil.copyProperties(record, FreeDepositExpireRecordVO.class);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(record.getFranchiseeId());
             freeDepositExpireRecordVO.setFranchiseeName(Optional.ofNullable(franchisee).map(Franchisee::getName).orElse(null));
+            User user = userService.queryByUidFromCache(record.getOperateUid());
+            freeDepositExpireRecordVO.setOperateName(Optional.ofNullable(user).map(User::getName).orElse(null));
             return freeDepositExpireRecordVO;
         }).collect(Collectors.toList());
     }
@@ -78,7 +84,7 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
         if (!Objects.equals(count, ids.size())) {
             throw new BizException("402040", "不存在的免押到期记录,请检查");
         }
-        freeDepositExpireRecordMapper.updateStatus(ids);
+        freeDepositExpireRecordMapper.updateStatus(ids, SecurityUtils.getUid());
     }
 
     @Override

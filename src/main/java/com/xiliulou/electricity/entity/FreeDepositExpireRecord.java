@@ -72,6 +72,16 @@ public class FreeDepositExpireRecord {
     private String remark;
 
     /**
+     * 处理人
+     */
+    private Long operateUid;
+
+    /**
+     * 处理时间
+     */
+    private Long operateTime;
+
+    /**
      * 状态: 1:即将到期 2:已到期 3:已处理
      */
     private Integer status;
