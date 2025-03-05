@@ -936,7 +936,16 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         InstallmentDeductionPlan deductionPlan = deductionPlans.get(0);
         ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.queryOrderByAgreementNoAndIssue(deductionPlan.getExternalAgreementNo(), 1);
-        
+
+        // 如果是线下履约，则修改支付渠道为空
+        if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT) && Objects.nonNull(memberCardOrder)){
+            ElectricityMemberCardOrder update = new ElectricityMemberCardOrder();
+            update.setId(memberCardOrder.getId());
+            update.setPaymentChannel(null);
+            update.setUpdateTime(System.currentTimeMillis());
+            electricityMemberCardOrderService.updateByID(update);
+        }
+
         // 给用户绑定套餐
         if (Objects.equals(deductionPlan.getIssue(), 1)) {
             ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -1068,31 +1077,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
 
     @Override
     public R offlineAgree(Long uid) {
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(uid);
-        // 存在套餐拦截条件
-        if (Objects.nonNull(userBatteryMemberCard)) {
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)
-                    || Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                return R.fail("402041", "套餐冻结审核中");
-            }
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            return R.fail("100247", "用户信息不存在");
+        }
 
-            //校验是否有退租审核中的订单
-            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(
-                    userBatteryMemberCard.getOrderId());
-            if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(
-                    batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
-                return R.fail("402042", "租金退款审核中");
-            }
-
-            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-            if (Objects.isNull(userBatteryDeposit)) {
-                return R.fail("100247", "用户信息不存在");
-            }
-
-            Integer isExistStatusInitOrder = refundOrderService.existByOrderIdAndStatus(userBatteryDeposit.getOrderId(), CollUtil.newArrayList(EleRefundOrder.STATUS_INIT));
-            if (Objects.nonNull(isExistStatusInitOrder)) {
-                return R.fail("402043", "押金退款审核中");
-            }
+        Integer isExistStatusInitOrder = refundOrderService.existByOrderIdAndStatus(userBatteryDeposit.getOrderId(), CollUtil.newArrayList(EleRefundOrder.STATUS_INIT));
+        if (Objects.nonNull(isExistStatusInitOrder)) {
+            return R.fail("402043", "押金退款审核中");
         }
 
         InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
