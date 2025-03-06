@@ -11,6 +11,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.OperateDataAnalyzeBO;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -448,7 +449,7 @@ public class TenantServiceImpl implements TenantService {
         // 每次获取最新一批的数据
         String batch = operateDataAnalyzeService.queryLatestBatch();
 
-        List<OperateDataAnalyze> list = operateDataAnalyzeService.queryList(batch);
+        List<OperateDataAnalyzeBO> list = operateDataAnalyzeService.queryList(batch);
         if (CollUtil.isEmpty(list)){
             return;
         }

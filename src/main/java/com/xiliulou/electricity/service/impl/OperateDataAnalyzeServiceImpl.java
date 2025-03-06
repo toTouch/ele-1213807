@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
 
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.OperateDataAnalyzeBO;
 import com.xiliulou.electricity.entity.OperateDataAnalyze;
 import com.xiliulou.electricity.mapper.OperateDataAnalyzeMapper;
 import com.xiliulou.electricity.service.OperateDataAnalyzeService;
@@ -26,7 +28,8 @@ public class OperateDataAnalyzeServiceImpl implements OperateDataAnalyzeService 
     }
 
     @Override
-    public List<OperateDataAnalyze> queryList(String batch) {
+    @Slave
+    public List<OperateDataAnalyzeBO> queryList(String batch) {
         return operateDataAnalyzeMapper.selectListByBatch(batch);
     }
 

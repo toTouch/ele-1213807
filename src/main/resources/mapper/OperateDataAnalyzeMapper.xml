@@ -9,7 +9,7 @@
         order by date desc
         limit 1
     </select>
-    <select id="selectListByBatch" resultType="com.xiliulou.electricity.entity.OperateDataAnalyze">
+    <select id="selectListByBatch" resultType="com.xiliulou.electricity.bo.OperateDataAnalyzeBO">
         select tenant_id                 AS tenantId,
                tenant_name               AS tenantName,
                batchNo,

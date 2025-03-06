@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.OperateDataAnalyze;
+import com.xiliulou.electricity.bo.OperateDataAnalyzeBO;
 
 import java.util.List;
 
@@ -14,5 +14,5 @@ public interface OperateDataAnalyzeService {
 
     String queryLatestBatch();
 
-    List<OperateDataAnalyze> queryList(String batch);
+    List<OperateDataAnalyzeBO> queryList(String batch);
 }

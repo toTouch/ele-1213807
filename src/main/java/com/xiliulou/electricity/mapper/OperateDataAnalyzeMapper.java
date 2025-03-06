@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.OperateDataAnalyze;
+import com.xiliulou.electricity.bo.OperateDataAnalyzeBO;
 
 import java.util.List;
 
@@ -14,5 +14,5 @@ public interface OperateDataAnalyzeMapper {
 
     String selectLatestBatch();
 
-    List<OperateDataAnalyze> selectListByBatch(String batch);
+    List<OperateDataAnalyzeBO> selectListByBatch(String batch);
 }
