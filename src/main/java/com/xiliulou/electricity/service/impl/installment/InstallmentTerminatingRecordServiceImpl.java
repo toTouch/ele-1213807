@@ -130,7 +130,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     public InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason, Boolean completedOrNot) {
         InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
         query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        query.setStatuses(List.of(DEDUCTION_PLAN_STATUS_PAID));
+        query.setStatuses(List.of(DEDUCTION_PLAN_STATUS_PAID,DEDUCTION_PLAN_OFFLINE_AGREEMENT));
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(query).getData();
         
         BigDecimal paidAmount = new BigDecimal("0");
