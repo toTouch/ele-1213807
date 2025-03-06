@@ -77,29 +77,7 @@ import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_CANCEL_LOCK;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.AGREEMENT_PAY_QUERY_STATUS_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_CANCEL;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_DEDUCTING;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_CANCEL;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_EXPIRED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_RELEASE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.*;
 
 /**
  * @Description ...
@@ -575,7 +553,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                     plansNeedCancel.add(deductionPlan);
                 }
                 
-                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
+                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID) || Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                     paidAmount = paidAmount.add(deductionPlan.getAmount());
                 }
             }
@@ -838,10 +816,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
 
             deductionPlanUpdate.setId(deductionPlan.getId());
             deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
-            if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
+            if (Objects.equals(type, DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                 // 如果是已支付不做修改支付状态
                 if (!Objects.equals(deductionPlan.getStatus(), InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID)) {
-                    deductionPlanUpdate.setStatus(InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+                    deductionPlanUpdate.setStatus(DEDUCTION_PLAN_OFFLINE_AGREEMENT);
                 }
                 // 已支付金额累加
                 amount = amount.add(deductionPlan.getAmount());
@@ -857,7 +835,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         update.setUpdateTime(System.currentTimeMillis());
         update.setPaidInstallment(installmentRecord.getPaidInstallment()+1);
         // 线下履约之后更新 已付金额
-        if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
+        if (Objects.equals(type, DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
             update.setPaidAmount(amount);
             //如果是最后一期，修改状态为已完成
             if (Objects.equals(installmentRecord.getInstallmentNo(), update.getPaidInstallment())) {
@@ -948,7 +926,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             memberCardOrderUpdate.setValidDays(deductionPlan.getRentTime());
             memberCardOrderUpdate.setCreateTime(System.currentTimeMillis());
             memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)){
+            if (Objects.equals(type, DEDUCTION_PLAN_OFFLINE_AGREEMENT)){
                 // 由于mybatisPlus无法更新为空的字段，所以这里要单独更新
                 ElectricityMemberCardOrder update = new ElectricityMemberCardOrder();
                 update.setId(memberCardOrder.getId());
@@ -1118,7 +1096,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             List<InstallmentDeductionPlan> planList = deductionPlans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
             log.info("offlineAgree Info! minIssue is {}, planList is {}", minIssue.getAsInt(), JSONUtil.toJsonStr(planList));
             // 处理套餐购买记录
-            handleDeductZero(installmentRecord, planList, null, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+            handleDeductZero(installmentRecord, planList, null, DEDUCTION_PLAN_OFFLINE_AGREEMENT);
         });
         return R.ok();
     }
