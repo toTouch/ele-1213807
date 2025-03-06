@@ -1099,6 +1099,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         if (CollUtil.isEmpty(deductionPlans)) {
             return R.fail("402045", "用户不存在代扣计划");
         }
+        List<InstallmentDeductionPlan> planingList = deductionPlans.stream().filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_DEDUCTING)).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(planingList)){
+            return R.fail("402047", "代扣计划正执行中，线下履约请稍后再试");
+        }
 
         List<InstallmentDeductionPlan> plans = deductionPlans.stream().filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
                 .sorted(Comparator.comparing(InstallmentDeductionPlan::getIssue)).collect(Collectors.toList());
