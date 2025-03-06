@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -15,10 +13,11 @@ import java.util.Date;
  * @Date: 2025/02/27
  */
 
-@Getter
-@Setter
+@Data
 @TableName("t_operate_data_analyze")
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class OperateDataAnalyze implements Serializable {
 
     /** 主键ID */
