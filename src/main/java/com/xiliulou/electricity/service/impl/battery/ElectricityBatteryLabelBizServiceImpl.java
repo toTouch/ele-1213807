@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -347,6 +348,14 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     @Override
     public List<ElectricityBatteryLabelVO> listLabelVOByDataVOs(List<String> sns, List<ElectricityBatteryDataVO> electricityBatteries) {
+        if (CollectionUtils.isEmpty(electricityBatteries)) {
+            return Collections.emptyList();
+        }
+        
+        if (CollectionUtils.isEmpty(sns)) {
+            sns = electricityBatteries.stream().map(ElectricityBatteryDataVO::getSn).collect(Collectors.toList());
+        }
+        
         Map<String, Integer> snAndLabel = electricityBatteries.parallelStream()
                 .collect(Collectors.toMap(ElectricityBatteryDataVO::getSn, ElectricityBatteryDataVO::getLabel, (a, b) -> b));
         return electricityBatteryLabelService.listLabelVOBySns(sns, snAndLabel);

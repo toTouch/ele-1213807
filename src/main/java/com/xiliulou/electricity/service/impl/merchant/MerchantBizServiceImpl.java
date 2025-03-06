@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryDataService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantBizService;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,6 +38,8 @@ public class MerchantBizServiceImpl implements MerchantBizService {
     private final ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
     
     private final ElectricityBatteryDataService electricityBatteryDataService;
+    
+    private final TenantService tenantService;
     
     
     @Override
@@ -73,12 +78,20 @@ public class MerchantBizServiceImpl implements MerchantBizService {
             return R.fail("120212", "商户不存在");
         }
         
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.isNull(tenant)) {
+            log.error("MERCHANT RECEIVE BATTERY WARN! tenant is null id={}", tenantId);
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         Long size = (request.getSize() < 0 || request.getSize() > 50) ? 10L : request.getSize();
         Long offset = request.getOffset() < 0 ? 0L : request.getOffset();
         
         request.setSize(size);
         request.setOffset(offset);
-        request.setTenantId(TenantContextHolder.getTenantId());
+        request.setTenantId(tenantId);
+        request.setTenant(tenant);
         request.setLabel(List.of(BatteryLabelEnum.RECEIVED_MERCHANT.getCode()));
         request.setReceiverId(merchant.getId());
         return electricityBatteryDataService.selectAllBatteryPageData(request);

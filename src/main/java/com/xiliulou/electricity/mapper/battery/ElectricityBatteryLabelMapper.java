@@ -29,4 +29,6 @@ public interface ElectricityBatteryLabelMapper {
     List<ElectricityBatteryLabel> selectListBySns(@Param("list") List<String> sns);
     
     Integer countReceived(@Param("receiverId") Long receiverId);
+    
+    Integer batchDeleteBySnList(@Param("tenantId") Integer tenantId, @Param("batterySnList") List<String> batterySnList);
 }
