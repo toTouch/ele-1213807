@@ -300,6 +300,7 @@
                 #{uid}
             </foreach>
           and e.del_flag = 0
+          and m.del_flag = 0
     </select>
 
     <select id="selectMerchantAndEmployeeInfoByUid"
@@ -322,6 +323,7 @@
         WHERE
         e.uid = #{uid}
         and e.del_flag = 0
+        and m.del_flag = 0
     </select>
 
 </mapper>
