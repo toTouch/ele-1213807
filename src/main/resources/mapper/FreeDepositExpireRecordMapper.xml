@@ -53,7 +53,7 @@
             order by update_time desc
         </if>
         <if test="status != null and (status == 1 or status == 2) ">
-            order by id desc
+            order by deposit_time
         </if>
         limit #{offset},#{size}
     </select>
