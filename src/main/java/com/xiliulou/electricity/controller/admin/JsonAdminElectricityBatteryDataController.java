@@ -622,7 +622,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
                 .offset(electricityBatteryRequest.getOffset()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
                 .franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).sort(electricityBatteryRequest.getSort()).businessStatus(electricityBatteryRequest.getBusinessStatus())
-                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).label(electricityBatteryRequest.getLabel()).receiverId(electricityBatteryRequest.getReceiverId())
+                .build();
         return electricityBatteryDataService.selectOverdueCarBatteryPageData(electricityBatteryQuery);
     }
     
@@ -655,9 +656,10 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
-                .franchiseeIds(franchiseeIds).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
-                .currentTimeMillis(System.currentTimeMillis()).uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .businessStatus(electricityBatteryRequest.getBusinessStatus()).physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
+                .franchiseeIds(franchiseeIds).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId()).currentTimeMillis(System.currentTimeMillis())
+                .uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).label(electricityBatteryRequest.getLabel()).receiverId(electricityBatteryRequest.getReceiverId())
+                .build();
         return electricityBatteryDataService.selectOverdueCarBatteryDataCount(electricityBatteryQuery);
     }
     
