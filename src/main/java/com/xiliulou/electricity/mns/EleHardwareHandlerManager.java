@@ -13,7 +13,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.UserEleOnlineLog;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.enums.thirdParth.ThirdPartyChannelEnum;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.request.CabinetCommandRequest;
@@ -22,7 +22,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserEleOnlineLogService;
-import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.Ipv4Util;
 import com.xiliulou.feishu.config.FeishuConfig;
@@ -221,7 +221,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             rocketMqService.sendAsyncMsg(MqProducerConstant.USER_DEVICE_STATUS_TOPIC, JsonUtil.toJson(eleOnlineLog), null, null, delayType);
             
             // 给第三方推送柜机上下线状态
-            pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), tenantId,
+            pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyChannelEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), tenantId,
                     electricityCabinet.getId().longValue(), delayType);
         }
         

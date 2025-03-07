@@ -83,7 +83,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.notify.AbnormalAlarmExceptionTypeEnum;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.enums.thirdParth.ThirdPartyChannelEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -104,7 +104,7 @@ import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
 import com.xiliulou.electricity.service.pipeline.ProcessController;
-import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.AssertUtil;
@@ -620,7 +620,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyChannelEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
                 electricityCabinet.getId().longValue());
         
         return R.ok();
@@ -1396,7 +1396,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyChannelEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
                 electricityCabinet.getId().longValue());
         
         return R.ok();

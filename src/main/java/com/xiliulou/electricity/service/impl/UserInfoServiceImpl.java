@@ -152,7 +152,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
-import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.thirdParty.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;

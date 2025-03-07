@@ -186,18 +186,6 @@
             <artifactId>metrics-core</artifactId>
             <version>4.2.23</version>
         </dependency>
-        <dependency>
-            <groupId>com.xiliulou</groupId>
-            <artifactId>xiliulou-common-thirdmall</artifactId>
-            <version>${xiliulou.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.xiliulou</groupId>
-            <artifactId>xiliulou-common-thirdmall</artifactId>
-            <version>${xiliulou.version}</version>
-            <scope>compile</scope>
-        </dependency>
     
         <dependency>
             <groupId>org.bouncycastle</groupId>

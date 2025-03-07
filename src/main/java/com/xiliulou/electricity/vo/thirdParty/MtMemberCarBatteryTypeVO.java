@@ -1,0 +1,25 @@
+package com.xiliulou.electricity.vo.thirdParty;
+
+import lombok.Data;
+
+import java.util.List;
+
+/**
+ * @author HeYafeng
+ * @description 套餐电池型号
+ * @date 2024/8/29 14:26:38
+ */
+@Data
+public class MtMemberCarBatteryTypeVO {
+    
+    /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
+     * 套餐电池型号
+     */
+    private List<String> batteryTypes;
+    
+}
