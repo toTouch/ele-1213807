@@ -1100,6 +1100,10 @@ public class EleOperateQueueHandler {
     }
     
     private void handleBatteryLabel(EleOpenDTO finalOpenDTO, RentBatteryOrder rentBatteryOrder) {
+        if (!Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) && !Objects.equals(finalOpenDTO.getOrderStatus(),
+                RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+            return;
+        }
         String sn = Objects.nonNull(finalOpenDTO.getBatterySn()) ? finalOpenDTO.getBatterySn() : rentBatteryOrder.getElectricityBatterySn();
         if (Objects.isNull(sn)) {
             log.error("HANDLE BATTERY LABEL ERROR! can not find battery sn, rentOrderRsp={}", finalOpenDTO);
@@ -1113,7 +1117,7 @@ public class EleOperateQueueHandler {
             electricityBatteryService.asyncModifyLabel(battery, box, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
         }
         
-        // 处理租电成功的
+        // 处理退电成功的
         if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
             electricityBatteryService.asyncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
         }
