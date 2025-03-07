@@ -305,14 +305,18 @@ public class ElectricityCabinetServerServiceImpl
             return R.fail("", "租户信息不能为空");
         }
 
+        Long maxId = 0L;
+        Integer size = 200;
+        long updateTime = System.currentTimeMillis();
+
         while (true) {
             // 查询柜机的服务时间
-            List<ElectricityCabinetServer> electricityCabinetServerList = electricityCabinetServerMapper.listByTenantId(request.getTenantId(), request.getCabinetSnList());
+            List<ElectricityCabinetServer> electricityCabinetServerList = electricityCabinetServerMapper.listByTenantId(request.getTenantId(), request.getCabinetSnList(), maxId, size);
             if (ObjectUtils.isEmpty(electricityCabinetServerList)) {
                 break;
             }
 
-            long updateTime = System.currentTimeMillis();
+            maxId = electricityCabinetServerList.get(electricityCabinetServerList.size() - 1).getId();
 
             electricityCabinetServerList.parallelStream().forEach(item -> {
                 if (Objects.isNull(item.getServerEndTime())) {

@@ -251,6 +251,7 @@
         <where>
             c.del_flag = 0
             and c.tenant_id = #{tenantId}
+            and s.id > #{maxId}
             <if test="cabinetSnList != null and cabinetSnList.size() > 0">
                 and c.sn in
                 <foreach collection="cabinetSnList" close=")" open="(" item="sn" separator=",">
@@ -258,9 +259,7 @@
                 </foreach>
             </if>
         </where>
-
-
-
+        limit #{size}
     </select>
 
 </mapper>
