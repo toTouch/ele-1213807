@@ -1,11 +1,11 @@
-package com.xiliulou.electricity.constant.thirdPartyMallConstant;
+package com.xiliulou.electricity.constant.thirdParty;
 
 /**
  * @author HeYafeng
  * @description
  * @date 2024/9/19 18:38:01
  */
-public interface MeiTuanRiderMallConstant {
+public interface ThirdPartyMsgTypeConstant {
     
     String ORDER_ID = "orderId";
     String ORDER_TYPE = "orderType";
