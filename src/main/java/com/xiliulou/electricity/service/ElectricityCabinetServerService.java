@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
+import com.xiliulou.electricity.request.cabinet.ElectricityCabinetServerUpdateRequest;
+
 import java.util.List;
 
 /**
@@ -81,4 +83,6 @@ public interface ElectricityCabinetServerService {
     Integer logicalDeleteByEid(Integer id);
     
     List<ElectricityCabinetServer> listCabinetServerByEids(List<Integer> electricityCabinetIdList);
+
+    R addServerEndTime(ElectricityCabinetServerUpdateRequest request);
 }

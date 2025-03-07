@@ -5,6 +5,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * (ElectricityCabinetServer)表数据库访问层
  *
@@ -80,4 +82,8 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
     Integer updateByEid(ElectricityCabinetServer electricityCabinetServer);
     
     List<ElectricityCabinetServer> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
+
+    List<ElectricityCabinetServer> listByTenantId(@Param("tenantId") Integer tenantId,@Param("cabinetSnList") List<String> cabinetSnList);
+
+    Integer updateServerEndTime(@Param("id") Long id,@Param("serverEndTime") long serverEndTime, @Param("updateTime") Long updateTime);
 }

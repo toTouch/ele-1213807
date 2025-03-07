@@ -10,11 +10,13 @@ import com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.ElectricityCabinetServerMapper;
+import com.xiliulou.electricity.request.cabinet.ElectricityCabinetServerUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetServerOperRecordService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetServerVo;
@@ -23,6 +25,8 @@ import com.xiliulou.electricity.vo.PageDataAndCountVo;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -292,7 +296,38 @@ public class ElectricityCabinetServerServiceImpl
     public List<ElectricityCabinetServer> listCabinetServerByEids(List<Integer> electricityCabinetIdList) {
         return this.electricityCabinetServerMapper.selectListByEids(electricityCabinetIdList);
     }
-    
+
+    @Override
+    public R addServerEndTime(ElectricityCabinetServerUpdateRequest request) {
+        // 判断租户是否存在
+        Tenant tenant = tenantService.queryByIdFromCache(request.getTenantId());
+        if (Objects.isNull(tenant)) {
+            return R.fail("", "租户信息不能为空");
+        }
+
+        while (true) {
+            // 查询柜机的服务时间
+            List<ElectricityCabinetServer> electricityCabinetServerList = electricityCabinetServerMapper.listByTenantId(request.getTenantId(), request.getCabinetSnList());
+            if (ObjectUtils.isEmpty(electricityCabinetServerList)) {
+                break;
+            }
+
+            long updateTime = System.currentTimeMillis();
+
+            electricityCabinetServerList.parallelStream().forEach(item -> {
+                if (Objects.isNull(item.getServerEndTime())) {
+                    return;
+                }
+
+                long serverEndTime = DateUtils.getAfterYear(item.getServerEndTime(), request.getYearNum());
+
+                electricityCabinetServerMapper.updateServerEndTime(item.getId(), serverEndTime, updateTime);
+            });
+        }
+
+        return R.ok();
+    }
+
     @Override
     public Integer deleteByEid(Integer eid) {
         return this.electricityCabinetServerMapper.deleteByEid(eid);
