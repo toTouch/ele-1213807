@@ -64,7 +64,7 @@ public class JsonAdminElectricityCabinetServerController {
 
     @PostMapping("/admin/super/electricityCabinetServer/addServerEndTime")
     @Log(title = "修改电柜服务")
-    public R addServerEndTime(@Validated ElectricityCabinetServerUpdateRequest request) {
+    public R addServerEndTime(@RequestBody @Validated ElectricityCabinetServerUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
