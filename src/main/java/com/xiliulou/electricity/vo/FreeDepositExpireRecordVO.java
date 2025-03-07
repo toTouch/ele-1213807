@@ -13,6 +13,8 @@ public class FreeDepositExpireRecordVO {
 
     private Long id;
 
+    private Long uid;
+
     private String realName;
 
     private String phone;
