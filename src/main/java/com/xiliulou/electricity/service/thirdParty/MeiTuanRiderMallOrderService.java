@@ -3,8 +3,8 @@ package com.xiliulou.electricity.service.thirdParty;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.meituan.BatteryDepositBO;
 import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
-import com.xiliulou.electricity.thirdparty.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.thirdParty.OrderQuery;
+import com.xiliulou.electricity.thirdparty.MeiTuanRiderMallOrder;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -27,8 +27,6 @@ public interface MeiTuanRiderMallOrderService {
     Triple<Boolean, String, Object> createBatteryMemberCardOrder(OrderQuery query);
     
     Integer updateStatusByOrderId(MeiTuanRiderMallOrder meiTuanRiderMallOrder);
-    
-    Boolean isMtOrder(Long uid);
     
     void updatePhone(String oldPhone, String newPhone, Integer tenantId);
     

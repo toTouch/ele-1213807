@@ -83,7 +83,6 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.notify.AbnormalAlarmExceptionTypeEnum;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
-import com.xiliulou.electricity.enums.thirdParth.ThirdPartyChannelEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -620,8 +619,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyChannelEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
-                electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinetToThird(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
         
         return R.ok();
     }
@@ -1396,8 +1394,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyChannelEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
-                electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinetToThird(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
         
         return R.ok();
     }

@@ -24,8 +24,6 @@ public class ThirdPartyEvent implements Serializable {
     
     private Integer tenantId;
     
-    private Integer channel;
-    
     private ThirdPartyDataType type;
     
     private final Map<String, Object> context;
@@ -40,7 +38,6 @@ public class ThirdPartyEvent implements Serializable {
         ThirdPartyDataDTO messageDTO = new ThirdPartyDataDTO();
         messageDTO.setTraceId(this.traceId);
         messageDTO.setTenantId(this.tenantId);
-        messageDTO.setChannel(this.channel);
         messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyDataType::getCode).orElse(null));
         messageDTO.setContext(this.context);
         return messageDTO;
@@ -65,11 +62,6 @@ public class ThirdPartyEvent implements Serializable {
         
         public ThirdPartyEvent.Builder type(ThirdPartyDataType type) {
             this.event.type = type;
-            return this;
-        }
-        
-        public ThirdPartyEvent.Builder channel(Integer channel) {
-            this.event.channel = channel;
             return this;
         }
         

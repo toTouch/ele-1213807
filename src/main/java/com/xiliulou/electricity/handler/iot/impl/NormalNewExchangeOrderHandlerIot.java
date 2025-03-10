@@ -14,7 +14,7 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMsgTypeConstant;
+import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMsgContentConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -28,7 +28,6 @@ import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
-import com.xiliulou.electricity.enums.thirdParth.ThirdPartyChannelEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -415,8 +414,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
         
         // 给第三方推送换电记录/用户信息/电池信息
-        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyChannelEnum.MEI_TUAN_RIDER_MALL.getCode(), exchangeOrderRsp.getSessionId(),
-                electricityCabinet.getTenantId(), electricityCabinetOrder.getOrderId(), ThirdPartyMsgTypeConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(exchangeOrderRsp.getSessionId(), electricityCabinet.getTenantId(), electricityCabinetOrder.getOrderId(),
+                ThirdPartyMsgContentConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
     }
     
     /**

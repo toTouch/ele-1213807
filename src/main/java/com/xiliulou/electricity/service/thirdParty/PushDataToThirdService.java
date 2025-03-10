@@ -6,19 +6,19 @@ package com.xiliulou.electricity.service.thirdParty;
  */
 public interface PushDataToThirdService {
     
-    void asyncPushExchangeAndUserAndBatteryToThird(Integer channel, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid);
+    void asyncPushExchangeAndUserAndBatteryToThird(String traceId, Integer tenantId, String orderId, Integer orderType, Long uid);
     
-    void asyncPushUserAndBatteryToThird(Integer channel, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid);
+    void asyncPushUserAndBatteryToThird(String traceId, Integer tenantId, String orderId, Integer orderType, Long uid);
     
-    void asyncPushExchangeToThird(Integer channel, String traceId, Integer tenantId, String orderId, Integer orderType);
+    void asyncPushExchangeToThird(String traceId, Integer tenantId, String orderId, Integer orderType);
     
-    void asyncPushUserToThird(Integer channel, String traceId, Integer tenantId, String orderId, Integer orderType);
+    void asyncPushUserToThird(String traceId, Integer tenantId, String orderId, Integer orderType);
     
-    void asyncPushBatteryToThird(Integer channel, String traceId, Integer tenantId, String orderId, Integer orderType);
+    void asyncPushBatteryToThird(String traceId, Integer tenantId, String orderId, Integer orderType);
     
-    void asyncPushCabinetToThird(Integer channel, String traceId, Integer tenantId, Long eid);
+    void asyncPushCabinetToThird(String traceId, Integer tenantId, Long eid);
     
-    void asyncPushCabinetStatusToThird(Integer channel, String traceId, Integer tenantId, Long eid, Integer delayLevel);
+    void asyncPushCabinetStatusToThird(String traceId, Integer tenantId, Long eid, Integer delayLevel);
     
-    void asyncPushUserMemberCardToThird(Integer channel, String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType);
+    void asyncPushUserMemberCardToThird(String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType);
 }

@@ -22,10 +22,5 @@ public class ThirdPartyDataDTO implements Serializable {
     
     private Integer tenantId;
     
-    /**
-     * 第三方渠道
-     */
-    private Integer channel;
-    
     private Map<String, Object> context;
 }

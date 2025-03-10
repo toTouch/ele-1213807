@@ -14,7 +14,7 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMsgTypeConstant;
+import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMsgContentConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
@@ -36,7 +36,6 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
-import com.xiliulou.electricity.enums.thirdParth.ThirdPartyChannelEnum;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
@@ -754,8 +753,8 @@ public class EleOperateQueueHandler {
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
             
             // 给第三方推送用户电池信息和用户信息
-            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyChannelEnum.MEI_TUAN_RIDER_MALL.getCode(), finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(),
-                    rentBatteryOrder.getOrderId(), ThirdPartyMsgTypeConstant.RENT_ORDER, rentBatteryOrder.getUid());
+            pushDataToThirdService.asyncPushUserAndBatteryToThird(finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(), rentBatteryOrder.getOrderId(),
+                    ThirdPartyMsgContentConstant.RENT_ORDER, rentBatteryOrder.getUid());
         }
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),

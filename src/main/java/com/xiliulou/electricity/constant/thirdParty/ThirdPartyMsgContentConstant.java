@@ -5,7 +5,7 @@ package com.xiliulou.electricity.constant.thirdParty;
  * @description
  * @date 2024/9/19 18:38:01
  */
-public interface ThirdPartyMsgTypeConstant {
+public interface ThirdPartyMsgContentConstant {
     
     String ORDER_ID = "orderId";
     String ORDER_TYPE = "orderType";
