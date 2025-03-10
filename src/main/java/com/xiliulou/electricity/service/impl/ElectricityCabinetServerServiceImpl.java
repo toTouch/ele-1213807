@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -389,6 +390,7 @@ public class ElectricityCabinetServerServiceImpl
         }
 
         Map<String, ElectricityCabinetServerBO> existsMap = existsCabinetList.stream().collect(Collectors.toMap(ElectricityCabinetServerBO::getSn, Function.identity(), (v1, v2) -> v1));
+        AtomicReference<Integer> successNum = new AtomicReference<>(0);
 
         cabinetSnList.stream().forEach(sn -> {
             // 过滤掉不存在的
@@ -402,13 +404,15 @@ public class ElectricityCabinetServerServiceImpl
                 return;
             }
 
-            threadPool.execute(() -> {
-                // 过滤服务时间为空的
-                ElectricityCabinetServerBO electricityCabinetServerBO = existsMap.get(sn);
-                if (Objects.isNull(electricityCabinetServerBO.getServerEndTime())) {
-                    return;
-                }
+            // 过滤服务时间为空的
+            ElectricityCabinetServerBO electricityCabinetServerBO = existsMap.get(sn);
+            if (Objects.isNull(electricityCabinetServerBO.getServerEndTime())) {
+                return;
+            }
 
+            successNum.set(successNum.get() + 1);
+
+            threadPool.execute(() -> {
                 // 修改柜机的服务时间
                 long serverEndTime = DateUtils.getAfterYear(electricityCabinetServerBO.getServerEndTime(), request.getYearNum());
                 electricityCabinetServerMapper.updateServerEndTime(electricityCabinetServerBO.getCabinetServerId(), serverEndTime, updateTime);
@@ -416,7 +420,7 @@ public class ElectricityCabinetServerServiceImpl
 
         });
 
-        ElectricityCabinetServerTimeAddResultVO resultVO = ElectricityCabinetServerTimeAddResultVO.builder().successNum(existsMap.size()).failNum(repeatSnList.size() + existsMap.size())
+        ElectricityCabinetServerTimeAddResultVO resultVO = ElectricityCabinetServerTimeAddResultVO.builder().successNum(successNum.get()).failNum(repeatSnList.size() + notFindSnList.size())
                 .notFoundSnList(notFindSnList).repeatSnList(repeatSnList).build();
 
         log.info("add cabinet server end time success! request:{}", request);
