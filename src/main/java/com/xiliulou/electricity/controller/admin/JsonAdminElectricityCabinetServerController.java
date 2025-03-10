@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.common.sentinel.annotation.IdempotentCheck;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
@@ -63,6 +64,7 @@ public class JsonAdminElectricityCabinetServerController {
     }
 
     @PostMapping("/admin/super/electricityCabinetServer/addServerEndTime")
+    @IdempotentCheck(requestIntervalMilliseconds = 10000)
     public R addServerEndTime(@RequestBody @Validated ElectricityCabinetServerUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

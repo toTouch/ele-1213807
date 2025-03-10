@@ -4,13 +4,13 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class ElectricityCabinetServerUpdateRequest {
     /**
      * 租户id
      */
-    @NotNull(message = "[租户id]不能为空")
     private Integer tenantId;
 
     /**
@@ -19,5 +19,5 @@ public class ElectricityCabinetServerUpdateRequest {
     @NotNull(message = "[延长期限]不能为空")
     private Integer yearNum;
 
-    private List<String> cabinetSnList;
+    private Set<String> cabinetSnList;
 }

@@ -241,17 +241,24 @@
         </foreach>
     </select>
 
-    <select id="listByTenantId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetServer">
+    <select id="listByTenantId" resultType="com.xiliulou.electricity.bo.cabinet.ElectricityCabinetServerBO">
         SELECT
-            s.id,
-            s.server_end_time
+        s.id 'cabinetServerId',
+        s.server_end_time 'serverEndTime',
+        c.id 'cabinetId',
+        c.sn
         FROM
-            t_electricity_cabinet_server s
-                left join t_electricity_cabinet c on c.id = s.electricity_cabinet_id
+        t_electricity_cabinet c
+        inner JOIN t_electricity_cabinet_server s ON c.id = s.electricity_cabinet_id
+
         <where>
             c.del_flag = 0
-            and c.tenant_id = #{tenantId}
-            and s.id > #{maxId}
+            and s.del_flag = 0
+            and c.id > #{maxId}
+            <if test="tenantId != null">
+                and c.tenant_id = #{tenantId}
+            </if>
+
             <if test="cabinetSnList != null and cabinetSnList.size() > 0">
                 and c.sn in
                 <foreach collection="cabinetSnList" close=")" open="(" item="sn" separator=",">

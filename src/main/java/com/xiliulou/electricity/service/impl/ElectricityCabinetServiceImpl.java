@@ -5827,6 +5827,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetList);
     }
 
+    @Override
+    @Slave
+    public List<ElectricityCabinet> listBySnList(List<String> snList) {
+        return electricityCabinetMapper.selectListBySns(snList);
+    }
+
     private void setCabinetInfo(List<ElectricityCabinetVO> electricityCabinetList) {
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             // 获取库房名称列表 根据库房id查询库房名称，不需要过滤库房状态是已删除的

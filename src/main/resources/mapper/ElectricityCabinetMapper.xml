@@ -1816,4 +1816,15 @@
             and area_id = #{areaId}
         </if>
     </select>
+
+    <select id="selectListBySns" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+        select sn,id from t_electricity_cabinet
+        where
+        del_flag = 0
+        sn in
+        <foreach collection="snList" item="sn" close=")" open="(" separator=",">
+            #{sn}
+        </foreach>
+
+    </select>
 </mapper>
