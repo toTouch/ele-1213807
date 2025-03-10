@@ -23,4 +23,8 @@ public interface FreeDepositExpireRecordMapper {
     void updateStatus(@Param("ids") List<Long> ids,@Param("operateUid") Long operateUid);
 
     void updateRemark(@Param("id") Long id, @Param("remark") String remark);
+
+    FreeDepositExpireRecord selectByOrderId(@Param("orderId") String orderId);
+
+    void deleteById(@Param("id") Long id);
 }

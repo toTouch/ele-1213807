@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FreeDepositExpireRecord;
@@ -17,7 +19,9 @@ import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositExpireRecordVO;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,6 +37,7 @@ import java.util.stream.Collectors;
  * @date : 2025-02-25 14:03
  **/
 @Service
+@Slf4j
 public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireRecordService {
 
     @Resource
@@ -46,6 +51,9 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private ApplicationContext applicationContext;
 
     @Override
     public List<FreeDepositExpireRecordVO> selectByPage(FreeDepositExpireRecordQuery query) {
@@ -102,6 +110,31 @@ public class FreeDepositExpireRecordServiceImpl implements FreeDepositExpireReco
         freeDepositExpireRecordMapper.updateRemark(id, remark);
     }
 
+
+    @Override
+    @Slave
+    public FreeDepositExpireRecord queryByOrderId(String orderId) {
+        return freeDepositExpireRecordMapper.selectByOrderId(orderId);
+    }
+
+
+    @Override
+    public void deleteById(Long id) {
+        freeDepositExpireRecordMapper.deleteById(id);
+    }
+
+    @Override
+    public void unfreeAfterDel(String orderId) {
+        if (StrUtil.isEmpty(orderId)) {
+            log.warn("FreeDepositExpireRecordService.unfreeAfterDel.orderId is null");
+            return;
+        }
+        FreeDepositExpireRecordService recordService = applicationContext.getBean(FreeDepositExpireRecordService.class);
+        FreeDepositExpireRecord expireRecord = recordService.queryByOrderId(orderId);
+        if (Objects.nonNull(expireRecord)) {
+            this.deleteById(expireRecord.getId());
+        }
+    }
 
     private void checkPermission() {
         TokenUser user = SecurityUtils.getUserInfo();

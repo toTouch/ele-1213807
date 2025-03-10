@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.electricity.entity.FreeDepositExpireRecord;
 import com.xiliulou.electricity.query.FreeDepositExpireRecordQuery;
 import com.xiliulou.electricity.vo.FreeDepositExpireRecordVO;
 
@@ -50,4 +51,31 @@ public interface FreeDepositExpireRecordService {
      */
 
     void editRemark(Long id, String remark);
+
+    /**
+     * queryByOrderId
+     *
+     * @param orderId orderId
+     * @return: @return {@link FreeDepositExpireRecord }
+     */
+
+    FreeDepositExpireRecord queryByOrderId(String orderId);
+
+    /**
+     * deleteById
+     *
+     * @param id id
+     * @return:
+     */
+
+    void deleteById(Long id);
+
+    /**
+     * 解冻后移除
+     *
+     * @param orderId orderId
+     * @return:
+     */
+
+    void unfreeAfterDel(String orderId);
 }
