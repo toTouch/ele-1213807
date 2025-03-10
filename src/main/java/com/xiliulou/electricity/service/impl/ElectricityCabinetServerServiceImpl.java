@@ -311,6 +311,7 @@ public class ElectricityCabinetServerServiceImpl
     @Override
     public R addServerEndTime(ElectricityCabinetServerUpdateRequest request) {
         log.info("add cabinet server end time info! request:{}", request);
+
         if (Objects.isNull(request.getTenantId()) && ObjectUtils.isEmpty(request.getCabinetSnList())) {
             return R.fail("请求参数错误!");
         }
