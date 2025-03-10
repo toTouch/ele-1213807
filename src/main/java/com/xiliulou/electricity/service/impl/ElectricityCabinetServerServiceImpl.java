@@ -311,6 +311,8 @@ public class ElectricityCabinetServerServiceImpl
 
     @Override
     public R addServerEndTime(ElectricityCabinetServerUpdateRequest request) {
+        TtlTraceIdSupport.set();
+
         log.info("add cabinet server end time info! request:{}", request);
 
         if (Objects.isNull(request.getTenantId()) && ObjectUtils.isEmpty(request.getCabinetSnList())) {
@@ -324,8 +326,6 @@ public class ElectricityCabinetServerServiceImpl
                 return R.fail("ELECTRICITY.00101", "找不到租户!");
             }
         }
-
-        TtlTraceIdSupport.set();
 
         try {
             // 根据柜机sn处理服务时间
