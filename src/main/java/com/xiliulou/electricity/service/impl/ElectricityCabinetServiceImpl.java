@@ -619,7 +619,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
         
         return R.ok();
     }
@@ -1394,7 +1394,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
         
         return R.ok();
     }

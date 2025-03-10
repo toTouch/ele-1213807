@@ -10,7 +10,7 @@ import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMsgContentConstant;
+import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMqContentConstant;
 import com.xiliulou.electricity.dto.thirdParty.MtDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -335,9 +335,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             electricityMemberCardOrderService.sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
             // 流失用户活动处理
             lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
-            // 给第三方推送用户套餐信息
-            pushDataToThirdService.asyncPushUserMemberCardToThird(TtlTraceIdSupport.get(), tenantId, uid, meiTuanRiderMallOrder.getMeiTuanOrderId(),
-                    ThirdPartyMsgContentConstant.MEI_TUAN_ORDER);
+            // 给第三方推送用户套餐订单
+            pushDataToThirdService.asyncPushUserMemberCardOrder(TtlTraceIdSupport.get(), tenantId, uid, meiTuanRiderMallOrder.getMeiTuanOrderId(),
+                    ThirdPartyMqContentConstant.MEI_TUAN_ORDER);
             
             return Triple.of(true, "", null);
         } catch (Exception e) {

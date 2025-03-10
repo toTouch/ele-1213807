@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.event;
 
 import com.xiliulou.electricity.dto.message.ThirdPartyDataDTO;
-import com.xiliulou.electricity.enums.thirdParth.ThirdPartyDataType;
+import com.xiliulou.electricity.enums.thirdParth.ThirdPartyDataTypeEnum;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -24,7 +24,7 @@ public class ThirdPartyEvent implements Serializable {
     
     private Integer tenantId;
     
-    private ThirdPartyDataType type;
+    private ThirdPartyDataTypeEnum type;
     
     private final Map<String, Object> context;
     
@@ -38,7 +38,7 @@ public class ThirdPartyEvent implements Serializable {
         ThirdPartyDataDTO messageDTO = new ThirdPartyDataDTO();
         messageDTO.setTraceId(this.traceId);
         messageDTO.setTenantId(this.tenantId);
-        messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyDataType::getCode).orElse(null));
+        messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyDataTypeEnum::getCode).orElse(null));
         messageDTO.setContext(this.context);
         return messageDTO;
     }
@@ -60,7 +60,7 @@ public class ThirdPartyEvent implements Serializable {
             return this;
         }
         
-        public ThirdPartyEvent.Builder type(ThirdPartyDataType type) {
+        public ThirdPartyEvent.Builder type(ThirdPartyDataTypeEnum type) {
             this.event.type = type;
             return this;
         }

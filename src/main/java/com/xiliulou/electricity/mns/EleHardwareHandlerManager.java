@@ -220,7 +220,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             rocketMqService.sendAsyncMsg(MqProducerConstant.USER_DEVICE_STATUS_TOPIC, JsonUtil.toJson(eleOnlineLog), null, null, delayType);
             
             // 给第三方推送柜机上下线状态
-            pushDataToThirdService.asyncPushCabinetStatusToThird(receiverMessage.getSessionId(), tenantId, electricityCabinet.getId().longValue(), delayType);
+            pushDataToThirdService.asyncPushCabinetStatus(receiverMessage.getSessionId(), tenantId, electricityCabinet.getId().longValue(), delayType);
         }
         
         // 发送MQ通知
