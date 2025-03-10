@@ -63,7 +63,6 @@ public class JsonAdminElectricityCabinetServerController {
     }
 
     @PostMapping("/admin/super/electricityCabinetServer/addServerEndTime")
-    @Log(title = "修改电柜服务")
     public R addServerEndTime(@RequestBody @Validated ElectricityCabinetServerUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
