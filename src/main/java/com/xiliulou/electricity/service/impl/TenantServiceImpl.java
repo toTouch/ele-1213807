@@ -16,6 +16,7 @@ import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.OperateDataAnalyzeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.TenantMapper;
@@ -454,13 +455,27 @@ public class TenantServiceImpl implements TenantService {
             return;
         }
 
+        List<OperateDataAnalyzeDTO> dataAnalyzeDTOS = list.parallelStream().map(item -> {
+            OperateDataAnalyzeDTO dto = BeanUtil.copyProperties(item, OperateDataAnalyzeDTO.class);
+            dto.setCabinetUseRate(item.getCabinetUseRate() + "%");
+            dto.setCellUseRate(item.getCellUseRate() + "%");
+            dto.setBatteryRentRate(item.getBatteryRentRate() + "%");
+            dto.setTotalBuyRate(item.getTotalBuyRate() + "%");
+            dto.setTotalChurnRate(item.getTotalChurnRate() + "%");
+            dto.setLastWeekAddBuyRate(item.getLastWeekAddBuyRate() + "%");
+            dto.setLastWeekRepurchaseRate(item.getLastWeekRepurchaseRate() + "%");
+            dto.setLoyalUserRate(item.getLoyalUserRate() + "%");
+            dto.setPeopleCellRate(item.getPeopleCellRate() + "%");
+            return dto;
+        }).collect(Collectors.toList());
+
         String fileName = "运营数据统计分析.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             response.setHeader("content-Type", "application/vnd.ms-excel");
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
             EasyExcel.write(outputStream, OperateDataAnalyzeExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
-                    .doWrite(list);
+                    .doWrite(dataAnalyzeDTOS);
         } catch (IOException e) {
             log.error("运营数据统计分析！", e);
         }

@@ -4,8 +4,6 @@ package com.xiliulou.electricity.vo;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * @author : renhang
  * @description OperateDataAnalyzeExcelVO
@@ -34,7 +32,7 @@ public class OperateDataAnalyzeExcelVO {
 
     @ExcelProperty("柜机使用率")
     /** 柜机使用率 */
-    private BigDecimal cabinetUseRate;
+    private String cabinetUseRate;
 
     @ExcelProperty("总仓门数")
     /** 仓门数 */
@@ -46,7 +44,7 @@ public class OperateDataAnalyzeExcelVO {
 
     @ExcelProperty("仓门使用率")
     /** 仓门使用率 */
-    private BigDecimal cellUseRate;
+    private String cellUseRate;
 
     @ExcelProperty("电池总数")
     /** 电池总数 */
@@ -58,7 +56,7 @@ public class OperateDataAnalyzeExcelVO {
 
     @ExcelProperty("电池出租率")
     /** 电池出租率 */
-    private BigDecimal batteryRentRate;
+    private String batteryRentRate;
 
     @ExcelProperty("累计实名人数")
     /** 累计实名人数 */
@@ -70,7 +68,7 @@ public class OperateDataAnalyzeExcelVO {
 
     @ExcelProperty("累计购买率")
     /** 累计购买率（累计购买套餐人数/累计实名人数） */
-    private BigDecimal totalBuyRate;
+    private String totalBuyRate;
 
     @ExcelProperty("仅购买过一次的用户")
     /** 仅购买过一次的人数 */
@@ -78,7 +76,7 @@ public class OperateDataAnalyzeExcelVO {
 
     @ExcelProperty("累计流失率")
     /** 累计流失率（仅购买过一次的人数/累计购买人数） */
-    private BigDecimal totalChurnRate;
+    private String totalChurnRate;
 
     @ExcelProperty("当前在使用套餐人数")
     /** 当前在使用的套餐人数 */
@@ -86,7 +84,7 @@ public class OperateDataAnalyzeExcelVO {
 
     @ExcelProperty("人仓比")
     /** 人仓比（上月套餐人数/总仓门数） */
-    private BigDecimal peopleCellRate;
+    private String peopleCellRate;
 
     @ExcelProperty("上周新增实名认证人数")
     /** 上周新增实名认证数 */
@@ -98,13 +96,13 @@ public class OperateDataAnalyzeExcelVO {
 
     @ExcelProperty("上周购买套餐转化率")
     /** 上周购买套餐转化率 */
-    private BigDecimal lastWeekAddBuyRate;
+    private String lastWeekAddBuyRate;
 
     @ExcelProperty("上周复购率")
     /** 上周复购率（上周复购人数/上周到期人数） */
-    private BigDecimal lastWeekRepurchaseRate;
+    private String lastWeekRepurchaseRate;
 
     @ExcelProperty("上周忠实用户占比")
     /**上周忠实用户占比（使用超过3个月的用户/当前总套餐人数） */
-    private BigDecimal loyalUserRate;
+    private String loyalUserRate;
 }
