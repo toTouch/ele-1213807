@@ -320,7 +320,7 @@ public class ElectricityCabinetServerServiceImpl
         if (Objects.nonNull(request.getTenantId())) {
             Tenant tenant = tenantService.queryByIdFromCache(request.getTenantId());
             if (Objects.isNull(tenant)) {
-                return R.fail("", "租户信息不能为空");
+                return R.fail("ELECTRICITY.00101", "找不到租户!");
             }
         }
 
