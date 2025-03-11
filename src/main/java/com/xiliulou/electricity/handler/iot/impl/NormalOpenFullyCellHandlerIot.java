@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.QuickExchangeResultDTO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -292,6 +294,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
                 openFullBatteryExchangeBatterSocThreadPool.execute(
                         () -> handlerUserTakeBatterySoc(cabinetOrder.getUid(), openFullCellRsp.getTakeBatteryName(), openFullCellRsp.getTakeBatterySoc()));
                 
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.RENT_NORMAL.getCode()).build();
+                electricityBatteryService.asyncModifyLabel(electricityBattery, null, dto, false);
             }
             
             //保存取走电池格挡
@@ -353,6 +358,10 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
         
         electricityBatteryService.updateBatteryUser(newElectricityBattery);
+        
+        // 修改电池标签并保存修改记录
+        BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+        electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
     }
     
     private void returnBattery(ElectricityBattery placeBattery, Long uid) {
@@ -386,6 +395,10 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            
+            // 修改电池标签并保存修改记录
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+            electricityBatteryService.asyncModifyLabel(placeBattery, null, dto, false);
         }
     }
     

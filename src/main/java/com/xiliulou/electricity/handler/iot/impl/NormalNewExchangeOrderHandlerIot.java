@@ -349,6 +349,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
                 
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
+                
                 if (Objects.nonNull(placeBattery)) {
                     returnBattery(placeBattery, electricityCabinetOrder.getUid());
                 }
@@ -389,6 +393,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 lineExchangeBatterSocThreadPool.execute(
                         () -> handlerUserTakeBatterySoc(electricityCabinetOrder.getUid(), exchangeOrderRsp.getTakeBatteryName(), exchangeOrderRsp.getTakeBatterySoc()));
                 
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.RENT_NORMAL.getCode()).build();
+                electricityBatteryService.asyncModifyLabel(electricityBattery, null, dto, false);
             }
             
             //保存取走电池格挡
@@ -518,6 +525,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            
+            // 修改电池标签并保存修改记录
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+            electricityBatteryService.asyncModifyLabel(placeBattery, null, dto, false);
         }
     }
     
