@@ -13,6 +13,7 @@ import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -227,7 +228,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
                 
                 // 修改电池标签并保存修改记录
                 BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.RENT_NORMAL.getCode()).build();
-                electricityBatteryService.asyncModifyLabel(electricityBattery, null, dto, false);
+                ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(cabinetOrder.getElectricityCabinetId())
+                        .cellNo(cabinetOrder.getNewCellNo().toString()).build();
+                electricityBatteryService.asyncModifyLabel(electricityBattery, box, dto, false);
             }
             
             //保存取走电池格挡
