@@ -47,5 +47,8 @@ public class FreeDepositExpireRecordVO {
      */
     private Long operateTime;
 
-
+    /**
+     * 订单id
+     */
+    private String orderId;
 }
