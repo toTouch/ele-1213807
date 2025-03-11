@@ -8,6 +8,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表数据库访问层
@@ -64,4 +65,14 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     List<ElectricityCabinetBox> selectListBySnList(@Param("snList") List<String> snList);
     
     List<ElectricityCabinetBox> selectListNotUsableBySn(@Param("sn") String sn,@Param("cabinetId") Integer cabinetId,@Param("cellNo") String cellNo);
+    
+    int updateLockSnByEidAndCellNo(@Param("eid") Integer eId, @Param("cellNo") String cellNo, @Param("lockSn") String lockSn);
+    
+    List<ElectricityCabinetBox> selectListBySnAndEid(@Param("sn") String sn, @Param("eid") Integer eid);
+    
+    List<ElectricityCabinetBox> selectListByLockSn(@Param("lockSn") String lockSn);
+    
+    int deleteLockSn(@Param("lockSn") String lockSn);
+    
+    List<ElectricityCabinetBox> selectListLockSnsByEidAndCellNo(@Param("eidAndCellNo") Map<Integer, List<String>> eidAndCellNo);
 }

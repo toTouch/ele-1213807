@@ -45,6 +45,7 @@ import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.request.user.ResetPasswordRequest;
+import com.xiliulou.electricity.request.user.UserRequest;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -102,6 +103,7 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -612,6 +614,86 @@ public class UserServiceImpl implements UserService {
         Integer update = this.updateUser(updateUser, oldUser);
         
         return update > 0 ? R.ok() : R.fail("修改密码失败!");
+    }
+    
+    @Override
+    public R listAdministrator(UserRequest request, TokenUser user) {
+        // 首先需要逐级获取到全部的DateId
+        Integer tenantId = null;
+        List<Long> franchiseeIds = new ArrayList<>();
+        List<Long> storeIds = new ArrayList<>();
+        
+        // 租户
+        final int DATA_TYPE_OPERATE = 1;
+        // 加盟商
+        final int DATA_TYPE_FRANCHISEE =2;
+        // 门店
+        final int DATA_TYPE_STORE=3;
+        List<Long> dataIds;
+        switch (user.getDataType()) {
+            case DATA_TYPE_OPERATE:
+                tenantId = TenantContextHolder.getTenantId();
+                break;
+            case DATA_TYPE_FRANCHISEE:
+                dataIds = userDataScopeService.selectDataIdByUid(user.getUid());
+                if (CollectionUtils.isNotEmpty(dataIds)) {
+                    franchiseeIds = dataIds;
+                }
+                break;
+            case DATA_TYPE_STORE:
+                dataIds = userDataScopeService.selectDataIdByUid(user.getUid());
+                if (CollectionUtils.isNotEmpty(dataIds)) {
+                    storeIds = dataIds;
+                }
+                break;
+        }
+        
+        // 最终租户、加盟商、门店的id都会收集到这个集合中用于查询user
+        List<Long> allDataIds = new ArrayList<>();
+        
+        // 不是同一个表内的数据，只能自己级联查询
+        // 收集租户id并查询关联的加盟商
+        
+        List<Long> tenantUserUids = new ArrayList<>();
+        if (Objects.nonNull(tenantId)) {
+            // 查询租户下运营商级别的管理员
+            List<UserSearchVO> tenantUsers = listTenantUsers(tenantId);
+            if (CollectionUtils.isNotEmpty(tenantUsers)) {
+                // 为了分页需要把租户管理员的uid传回去一起查询
+                tenantUserUids = tenantUsers.stream().map(UserSearchVO::getUid).collect(Collectors.toList());
+            }
+            
+            // 查询租户下属的加盟商
+            List<Long> franchiseeIdsSearch = franchiseeService.listFranchiseeIdsByTenantId(tenantId);
+            if (CollectionUtils.isNotEmpty(franchiseeIdsSearch)) {
+                franchiseeIds.addAll(franchiseeIdsSearch);
+            }
+            allDataIds.add(Long.valueOf(tenantId));
+        }
+        
+        // 收集加盟商id并查询关联的门店
+        if (CollectionUtils.isNotEmpty(franchiseeIds)) {
+            List<Store> stores = storeService.selectByFranchiseeIds(franchiseeIds);
+            if (CollectionUtils.isNotEmpty(stores)) {
+                // 此处直接收集根据加盟商查到的门店id
+                allDataIds.addAll(stores.stream().map(Store::getId).collect(Collectors.toList()));
+            }
+            allDataIds.addAll(franchiseeIds);
+        }
+        
+        // 收集登录用户为门店时的权限id
+        if (CollectionUtils.isNotEmpty(storeIds)) {
+            allDataIds.addAll(storeIds);
+        }
+        
+        if (CollectionUtils.isEmpty(allDataIds) && CollectionUtils.isEmpty(tenantUserUids)) {
+            return R.ok();
+        }
+        
+        request.setAllDataIds(allDataIds);
+        request.setTenantUserUids(tenantUserUids);
+        
+        return R.ok(userMapper.selectListAdministrator(request));
     }
     
     @Override

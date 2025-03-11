@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.dto.VoltageCurrentChangeDTO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -20,8 +21,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
-import com.xiliulou.electricity.entity.NotExistSn;
-import com.xiliulou.electricity.entity.VoltageCurrentChange;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.queue.MessageDelayQueueService;
@@ -39,7 +39,6 @@ import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -115,7 +113,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
         String sessionId = receiverMessage.getSessionId();
-
+        
         EleBatteryVO eleBatteryVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVO.class);
         if (Objects.isNull(eleBatteryVO)) {
             log.warn("ELE BATTERY REPORT WARN! eleBatteryVO is null,sessionId={}", sessionId);
@@ -187,7 +185,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             return;
         }
 
-        handleBatteryTrackRecordWhenNameIsNotNull(batteryName, eleBox, electricityCabinet, eleBatteryVO);
+        handleBatteryTrackRecordWhenNameIsNotNull(batteryName, eleBox, electricityCabinet, eleBatteryVO, electricityBattery);
 
         //保存电池电压电流&充电器电压电流
         this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
@@ -215,6 +213,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //检查柜机电池是否满仓
         this.checkElectricityCabinetBatteryFull(electricityCabinet);
+        
+        // 修改电池标签为在仓
+        BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.IN_THE_CABIN.getCode()).build();
+        electricityBatteryService.asyncModifyLabel(electricityBattery, eleBox, dto, false);
     }
 
     private void handleBatteryTrackRecordWhenNameIsNull(String nowBatteryName, ElectricityCabinetBox eleBox,
@@ -232,12 +234,16 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
+            
+            // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
+            ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, electricityCabinet.getTenantId());
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
         }
     }
 
 
     private void handleBatteryTrackRecordWhenNameIsNotNull(String nowBatteryName, ElectricityCabinetBox eleBox,
-                                                           ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO) {
+                                                           ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, ElectricityBattery battery) {
         String boxBatteryName = eleBox.getSn();
         if (StringUtils.isNotEmpty(eleBox.getSn())) {
             if (boxBatteryName.contains("UNKNOW")) {
@@ -266,6 +272,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
+            
+            // 修改电池标签，旧电池触发出库逻辑，新电池修改为在仓
+            Integer tenantId = eleBox.getTenantId();
+            // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
+            ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, tenantId);
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
         }
     }
 
@@ -291,7 +303,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //获取电池型号
         String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
         battery.setModel(batteryModel);
-    
+        
         return battery;
     }
 

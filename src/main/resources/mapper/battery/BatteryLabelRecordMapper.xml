@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.battery.BatteryLabelRecordMapper">
+    <sql id="columns">
+        sn,old_label,new_label,operator_uid,operator_name,old_receiver_id,old_receiver_name,new_receiver_id,new_receiver_name,tenant_id,franchisee_id,
+        franchisee_name,exchange_time,create_time
+    </sql>
+    
+    <sql id="queryCondition">
+        <if test="sn != null and sn != ''">
+            and sn = #{sn}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeIdFromList" open="(" separator="," close=")">
+                #{franchiseeIdFromList}
+            </foreach>
+        </if>
+        <if test="startTimeStr != null and startTimeStr != ''">
+            and exchange_time &gt;= #{startTimeStr}
+        </if>
+        <if test="endTimeStr != null and endTimeStr != ''">
+            and exchange_time &lt;= #{endTimeStr}
+        </if>
+        <if test="operatorUid != null">
+            and operator_uid = #{operatorUid}
+        </if>
+    </sql>
+    
+    <select id="listPage" resultType="com.xiliulou.electricity.entity.battery.BatteryLabelRecord">
+        select <include refid="columns"/> from t_battery_label_record
+        where tenant_id = #{tenantId}
+        <include refid="queryCondition"/>
+        order by exchange_time desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countAll" resultType="java.lang.Long">
+        select count(1) from t_battery_label_record
+        where tenant_id = #{tenantId}
+        <include refid="queryCondition"/>
+    </select>
+</mapper>

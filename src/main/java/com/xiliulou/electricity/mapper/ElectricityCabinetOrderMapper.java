@@ -51,6 +51,8 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     
     ElectricityCabinetOrder selectLatestByUidV2(Long uid);
     
+    ElectricityCabinetOrder selectLatestBySn(@Param("sn") String sn);
+    
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
     
     List<ElectricityCabinetOrderVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
