@@ -446,14 +446,7 @@ public class TenantServiceImpl implements TenantService {
     public void dataAnalyze(String passWord, HttpServletResponse response) {
         String redisPassWord = redisService.get(CacheConstant.ADMIN_DATA_ANALYZE_PASSWORD_KEY);
         if (StrUtil.isEmpty(redisPassWord) || !Objects.equals(redisPassWord, passWord)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType("application/json");
-            try (PrintWriter writer = response.getWriter()) {
-                writer.write("密码错误");
-            } catch (IOException ioException) {
-                log.error("dataAnalyze fail", ioException);
-            }
-            return;
+            throw new BizException("0001", "密码错误");
         }
         // 每次获取最新一批的数据
         String batch = operateDataAnalyzeService.queryLatestBatch();
