@@ -70,8 +70,6 @@ import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
 import com.xiliulou.electricity.vo.activity.ShareMoneyAndShareActivityVO;
 import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -125,12 +123,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
     
-    @Autowired
-    StorageConfig storageConfig;
-    
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
     
     @Autowired
     ShareActivityRecordService shareActivityRecordService;

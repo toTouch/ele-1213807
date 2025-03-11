@@ -57,7 +57,8 @@ public class JsonAdminStoreGoodsController {
 		return storeGoodsService.delete(id);
 	}
 
-	//列表查询
+	//列表查询 过期 接口
+	@Deprecated
 	@GetMapping(value = "/admin/storeShops/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
