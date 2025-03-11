@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
@@ -9,18 +11,21 @@ import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderFreezeMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
-import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.vo.CarDisableMemberCardRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 租车套餐订单冻结表 ServiceImpl
@@ -32,6 +37,9 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
 
     @Resource
     private CarRentalPackageOrderFreezeMapper carRentalPackageOrderFreezeMapper;
+
+    @Resource
+    private UserInfoService userInfoService;
 
     /**
      * 根据用户UID查询最后一笔冻结订单
@@ -315,5 +323,18 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
     @Override
     public CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo) {
         return carRentalPackageOrderFreezeMapper.selectLatestFreezeOrder(purchaseOrderNo);
+    }
+
+    @Override
+    @Slave
+    public List<CarDisableMemberCardRecordVO> queryMemberDisableList(UserDisableMemberQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("QueryMemberDisableList Warn! not found user,uid is {} ", query.getUid());
+            throw new BizException("ELECTRICITY.0019", "未找到用户");
+        }
+        query.setTenantId(userInfo.getTenantId());
+
+        return carRentalPackageOrderFreezeMapper.selectDisableListByUid(query);
     }
 }
