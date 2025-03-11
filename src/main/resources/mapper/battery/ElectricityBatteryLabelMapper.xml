@@ -73,6 +73,13 @@
         delete from t_electricity_battery_label where sn = #{sn} and tenant_id = #{tenantId}
     </delete>
     
+    <delete id="batchDeleteBySnList">
+        delete from t_electricity_battery_label where tenant_id = #{tenantId} and sn in
+            <foreach collection="batterySnList" item="sn" open="(" close=")" separator=",">
+                #{sn}
+            </foreach>
+    </delete>
+    
     <select id="selectListBySns" resultType="com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel">
         select id,<include refid="columnsWithoutId"/> from t_electricity_battery_label where sn in
         <foreach collection="list" open="(" separator="," close=")" item="sn">
