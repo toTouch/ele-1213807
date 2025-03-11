@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.battery.ElectricityBatteryLabelMapper">
+    
+    <sql id="columnsWithoutId">
+        sn,remark,receiver_id,tenant_id,franchisee_id,create_time,update_time
+    </sql>
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_electricity_battery_label (sn,tenant_id,create_time,update_time
+            <if test="remark != null and remark != ''">
+                ,remark
+            </if>
+            <if test="receiverId != null">
+                ,receiver_id
+            </if>
+            <if test="franchiseeId != null">
+                ,franchisee_id
+            </if>
+        )
+        values (#{sn}, #{tenantId}, #{createTime}, #{updateTime}
+            <if test="remark != null and remark != ''">
+                ,#{remark}
+            </if>
+            <if test="receiverId != null">
+                ,#{receiverId}
+            </if>
+            <if test="franchiseeId != null">
+                ,#{franchiseeId}
+            </if>
+        )
+    </insert>
+    
+    <insert id="batchInsert">
+        insert into t_electricity_battery_label (sn,tenant_id,franchisee_id,create_time,update_time) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.sn}, #{item.tenantId}, #{item.franchiseeId}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+    
+    <update id="updateById">
+        update t_electricity_battery_label
+        <set>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="receiverId != null">
+                receiver_id = #{receiverId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            remark = #{remark}
+        </set>
+        where id = #{id}
+    </update>
+    
+    <update id="updateReceivedData">
+        update t_electricity_battery_label set receiver_id = null, update_time = #{updateTime}
+        where sn = #{sn}
+    </update>
+    
+    <delete id="deleteBySnAndTenantId">
+        delete from t_electricity_battery_label where sn = #{sn} and tenant_id = #{tenantId}
+    </delete>
+    
+    <delete id="batchDeleteBySnList">
+        delete from t_electricity_battery_label where tenant_id = #{tenantId} and sn in
+            <foreach collection="batterySnList" item="sn" open="(" close=")" separator=",">
+                #{sn}
+            </foreach>
+    </delete>
+    
+    <select id="selectListBySns" resultType="com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel">
+        select id,<include refid="columnsWithoutId"/> from t_electricity_battery_label where sn in
+        <foreach collection="list" open="(" separator="," close=")" item="sn">
+            #{sn}
+        </foreach>
+    </select>
+    
+    <select id="queryBySnAndTenantId"
+            resultType="com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel">
+        select id,<include refid="columnsWithoutId"/> from t_electricity_battery_label
+        where sn = #{sn} and tenant_id = #{tenantId}
+    </select>
+    
+    <select id="countReceived" resultType="java.lang.Integer">
+        select count(1) from t_electricity_battery teb
+            left join t_electricity_battery_label ebl on teb.sn = ebl.sn
+        where ebl.receiver_id = #{receiverId}
+    </select>
+</mapper>

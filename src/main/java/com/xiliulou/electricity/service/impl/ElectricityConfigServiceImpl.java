@@ -234,6 +234,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setPackageFreezeDaysWithAssets(electricityConfigAddAndUpdateQuery.getPackageFreezeDaysWithAssets());
             electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
             electricityConfig.setIsBindBattery(electricityConfigAddAndUpdateQuery.getIsBindBattery());
+            electricityConfig.setNotExchangeProtectionTime(electricityConfigAddAndUpdateQuery.getNotExchangeProtectionTime());
 
             electricityConfig.setAllowOriginalInviter(electricityConfigAddAndUpdateQuery.getAllowOriginalInviter());
             electricityConfig.setLostUserDays(electricityConfigAddAndUpdateQuery.getLostUserDays());
@@ -288,11 +289,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setPackageFreezeDaysWithAssets(electricityConfigAddAndUpdateQuery.getPackageFreezeDaysWithAssets());
         electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
         electricityConfig.setIsBindBattery(electricityConfigAddAndUpdateQuery.getIsBindBattery());
-
         electricityConfig.setAllowOriginalInviter(electricityConfigAddAndUpdateQuery.getAllowOriginalInviter());
         electricityConfig.setLostUserDays(electricityConfigAddAndUpdateQuery.getLostUserDays());
         electricityConfig.setLostUserFirst(electricityConfigAddAndUpdateQuery.getLostUserFirst());
-
+        electricityConfig.setNotExchangeProtectionTime(electricityConfigAddAndUpdateQuery.getNotExchangeProtectionTime());
+        
         electricityConfigMapper.update(electricityConfig);
         editElectricityConfigExtra(electricityConfigAddAndUpdateQuery);
 

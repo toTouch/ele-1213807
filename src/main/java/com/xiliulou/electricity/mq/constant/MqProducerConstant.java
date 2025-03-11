@@ -190,6 +190,11 @@ public interface MqProducerConstant {
      * 分期代扣续费套餐tag
      */
     String INSTALLMENT_DEDUCT_NOTIFY_TAG = "installment_deduct_notify_tag";
+    
+    /**
+     * 电池标签修改记录topic
+     */
+    String BATTERY_LABEL_RECORD_TOPIC = "battery_label_record_topic";
 
     /**
      * 标记电池topic

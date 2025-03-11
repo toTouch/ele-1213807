@@ -25,7 +25,7 @@
         select
         ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,ecb.is_battery_exit ,
         ecb.status,ecb.is_lock,ecb.is_fan,ecb.temperature,ecb.is_heat,ecb.is_light, ecb.create_time,
-        ecb.update_time, ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,
+        ecb.update_time, ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,ecb.lock_sn,
         bop.lock_reason,bop.remark,bop.lock_status_change_time,empty_grid_start_time
         from t_electricity_cabinet_box as ecb
         left join t_box_other_properties bop on ecb.electricity_cabinet_id=bop.electricity_cabinet_id and ecb.cell_no=bop.cell_no and ecb.usable_status=1
@@ -223,7 +223,15 @@
           and cell_no = #{cellNo}
           and del_flag = 0
     </update>
-
+    
+    <update id="updateLockSnByEidAndCellNo">
+        update t_electricity_cabinet_box set lock_sn = #{lockSn} where electricity_cabinet_id = #{eid} and cell_no = #{cellNo}
+    </update>
+    
+    <update id="deleteLockSn">
+        update t_electricity_cabinet_box set lock_sn = null where lock_sn = #{lockSn}
+    </update>
+    
     <select id="queryBoxCount" resultType="integer">
         select count(1) from t_electricity_cabinet_box
         where del_flag=0
@@ -335,5 +343,32 @@
             and del_flag = 0
             and usable_status = 1
         </where>
+    </select>
+    
+    <select id="selectListBySnAndEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        <include refid="column"/>
+        from t_electricity_cabinet_box
+        <where>
+            sn = #{sn}
+            and electricity_cabinet_id = #{eid}
+            and del_flag = 0
+        </where>
+    </select>
+    
+    <select id="selectListByLockSn" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select electricity_cabinet_id,cell_no from t_electricity_cabinet_box where lock_sn = #{lockSn}
+    </select>
+    
+    <select id="selectListLockSnsByEidAndCellNo"
+            resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        <foreach collection="eidAndCellNo" index="eid" item="callNos" separator="union all">
+            select electricity_cabinet_id,cell_no,lock_sn from t_electricity_cabinet_box
+                where electricity_cabinet_id = #{eid}
+                    and cell_no in
+                    <foreach collection="callNos" item="cellNo" open="(" separator="," close=")">
+                        #{cellNo}
+                    </foreach>
+        </foreach>
     </select>
 </mapper>
