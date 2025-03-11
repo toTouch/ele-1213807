@@ -116,4 +116,9 @@ public class WechatConfig implements BasePayCallBackConfig{
      */
     private String notifyUserInfoSecret;
 
+    /**
+     * 商户提现转账回调
+     */
+    private String merchantWithdrawCallBackUrl;
+
 }

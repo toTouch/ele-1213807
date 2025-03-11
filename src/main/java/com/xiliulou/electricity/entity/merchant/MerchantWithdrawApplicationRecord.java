@@ -64,4 +64,9 @@ public class MerchantWithdrawApplicationRecord {
      */
     private Long franchiseeId;
 
+    /**
+     * 业务类型：0-旧，1-新
+     */
+    private Integer type;
+
 }

@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.PhoneUtils;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.merchant.MerchantOverdueUserCountBO;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -27,6 +28,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.entity.merchant.MerchantUserAmount;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanOrderMapper;
@@ -35,9 +37,11 @@ import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.query.merchant.*;
+import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
@@ -176,6 +180,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
+    
     
     /**
      * 商户保存
@@ -1702,6 +1707,12 @@ public class MerchantServiceImpl implements MerchantService {
         });
 
         return merchantJoinUserVOS;
+    }
+
+    @Override
+    @Slave
+    public List<Merchant> list(int offset, int size) {
+        return merchantMapper.selectList(offset, size);
     }
 
     @Slave

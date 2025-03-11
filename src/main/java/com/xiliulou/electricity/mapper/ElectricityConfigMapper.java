@@ -16,4 +16,6 @@ public interface ElectricityConfigMapper extends BaseMapper<ElectricityConfig>{
     ElectricityConfig selectElectricityConfigByTenantId(Integer tenantId);
     
     Integer updateWxCuStatusByTenantId(ElectricityConfig electricityConfig);
+
+    ElectricityConfig selectByTenantId(@Param("tenantId") Integer tenantId);
 }

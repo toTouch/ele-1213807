@@ -323,7 +323,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
     }
     
-    private UserInfoGroupDetailHistory assembleDetailHistory(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId, Integer type) {
+    @Override
+    public UserInfoGroupDetailHistory assembleDetailHistory(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId, Integer type) {
         long nowTime = System.currentTimeMillis();
         
         return UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId)
@@ -688,5 +689,11 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
         return UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId)
                 .createTime(nowTime).updateTime(nowTime).type(UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER).build();
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByUid(Long uid) {
+        return userInfoGroupDetailMapper.existsByUid(uid);
     }
 }

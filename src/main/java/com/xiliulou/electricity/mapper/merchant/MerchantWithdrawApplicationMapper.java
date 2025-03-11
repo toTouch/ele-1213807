@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.merchant;
 
 import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationBO;
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawSendBO;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplication;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantWithdrawApplicationVO;
@@ -40,7 +41,7 @@ public interface MerchantWithdrawApplicationMapper {
     
     BigDecimal sumByStatus(@Param("tenantId") Integer tenantId,@Param("status") Integer status,@Param("uid") Long uid);
     
-    List<MerchantWithdrawApplication> selectListForWithdrawInProgress(@Param("checkTime") Long checkTime, @Param("offset") int offset, @Param("size") int size);
+    List<MerchantWithdrawApplication> selectListForWithdrawInProgress(@Param("checkTime") Long checkTime, @Param("offset") int offset, @Param("size") int size,@Param("type") Integer type);
     
     List<MerchantWithdrawApplication> selectListByBatchNo(@Param("batchNo") String batchNo, @Param("tenantId") Integer tenantId);
     
@@ -67,4 +68,14 @@ public interface MerchantWithdrawApplicationMapper {
     List<MerchantWithdrawApplicationBO> selectListByBatchNoList(@Param("batchNoList") List<String> batchNoList);
     
     Integer updatePayConfigWhetherChangeByBatchNo(MerchantWithdrawApplication updateWithdrawApplicationUpdate);
+
+    List<MerchantWithdrawSendBO> selectListAuditSuccess(@Param("tenantId") Integer tenantId,@Param("size") Long size,@Param("startId") Long startId,@Param("type") Integer type);
+
+    List<MerchantWithdrawSendBO> selectListWithdrawingByMerchantId(@Param("uid") Long uid,@Param("size") Long size,@Param("startId") Long startId,@Param("checkTime") Long checkTime);
+
+    Integer batchUpdatePayConfigChangeByIdList(@Param("idList") List<Long> idList,@Param("payConfigWhetherChange") Integer payConfigWhetherChange, @Param("updateTime") long updateTime);
+
+    Integer updateStateById(@Param("applicationId") Long applicationId,@Param("state") Integer state,@Param("updateTime") long updateTime);
+
+    MerchantWithdrawApplication selectByOrderNo(@Param("orderNo") String orderNo,@Param("batchNo") String batchNo);
 }

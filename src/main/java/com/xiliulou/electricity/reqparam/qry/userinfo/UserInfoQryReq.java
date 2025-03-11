@@ -32,4 +32,9 @@ public class UserInfoQryReq implements Serializable {
      * 审核状态 0--等待审核中,1--审核被拒绝,2--审核通过
      */
     private Integer authStatus;
+
+    /**
+     * 手机号是否脱敏 0：是，null/1 否
+     */
+    private Integer phoneHideFlag;
 }

@@ -155,6 +155,12 @@
         where uid = #{uid}
             and del_flag = 0
     </select>
+    
+    <select id="existsByUid" resultType="java.lang.Integer">
+        select 1
+        from t_user_info_group_detail
+        where uid = #{uid} limit 1;
+    </select>
 
 </mapper>
 

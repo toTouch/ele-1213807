@@ -145,6 +145,8 @@ public interface ElectricityMemberCardOrderService {
     
     List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime);
     
+    boolean existNotFinishOrderByUid(Long uid);
+    
     Integer deleteById(Long id);
     
     /**

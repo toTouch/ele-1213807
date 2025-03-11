@@ -58,6 +58,8 @@ public interface RentBatteryOrderService {
 
 
     RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId, String status);
+    
+    RentBatteryOrder selectLatestBySn(Integer tenantId, String sn);
 
     List<EleCabinetUsedRecordVO> findEleCabinetUsedRecords(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
 

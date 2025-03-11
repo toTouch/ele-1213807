@@ -56,4 +56,6 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId);
     
     List<MerchantStatisticsUserVO> selectListRenewal(MerchantPromotionRenewalQueryModel renewalQueryModel);
+
+    Integer existsRebateRecord(@Param("messageId") String messageId);
 }

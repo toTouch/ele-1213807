@@ -18,7 +18,6 @@ import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
-import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -26,11 +25,11 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -88,6 +87,10 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     
     @Resource
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
+    
+    @Resource
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
+    
     
     private final ScheduledThreadPoolExecutor scheduledExecutor = ThreadUtil.createScheduledExecutor(2);
     
@@ -152,6 +155,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
             clearCache(userBatteryMemberCard.getUid());
         });
+        
+        // 异步处理电池标签
+        electricityBatteryLabelBizService.checkRentStatusForLabel(userBatteryMemberCard, null);
         
         return update;
     }

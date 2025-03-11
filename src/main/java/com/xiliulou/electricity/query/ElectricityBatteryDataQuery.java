@@ -97,7 +97,17 @@ public class ElectricityBatteryDataQuery {
     private Tenant tenant;
     
     /**
+     * 电池标签
+     */
+    private List<Integer> label;
+    
+    /**
+     * 领用人，管理员uid或者商户id
+     */
+    private Long receiverId;
+    
+    /**
      *  默认为0降序，1为升序
      */
-    private Integer sort ;
+    private Integer sort;
 }

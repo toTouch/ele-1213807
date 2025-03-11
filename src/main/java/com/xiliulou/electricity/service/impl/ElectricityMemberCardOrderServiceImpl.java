@@ -6,15 +6,12 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.base.enums.ChannelEnum;
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
@@ -28,6 +25,7 @@ import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.dto.UserCouponDTO;
+import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMemberCardOrderCoupon;
@@ -61,6 +59,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
@@ -73,6 +72,7 @@ import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
@@ -157,6 +157,7 @@ import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizSer
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
@@ -167,7 +168,6 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponSearchVo;
-import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
@@ -186,11 +186,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -447,6 +443,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     private UserInfoExtraService userInfoExtraService;
     
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
     /**
      * 根据用户ID查询对应状态的记录
      *
@@ -579,8 +578,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         for (UserInfo userInfo : userInfos) {
             userInfoMap.put(userInfo.getUid(), userInfo);
         }
+    
+        // 查询已删除/已注销
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(new ArrayList<>(uidSet),
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
 
-        List<ElectricityMemberCardOrderVO> ElectricityMemberCardOrderVOs = new ArrayList<>();
+        List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOs = new ArrayList<>();
         for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
             
             if (Objects.equals(electricityMemberCardOrderVO.getIsBindActivity(), ElectricityMemberCardOrder.BIND_ACTIVITY) && Objects.nonNull(
@@ -659,11 +662,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 electricityMemberCardOrderVO.setUserName(userInfo.getName());
                 electricityMemberCardOrderVO.setPhone(userInfo.getPhone());
             }
+    
+            // 查询已删除/已注销
+            electricityMemberCardOrderVO.setUserStatus(userDelRecordService.getUserStatus(electricityMemberCardOrderVO.getUid(), userStatusMap));
 
-            ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
+            electricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
         
-        return R.ok(ElectricityMemberCardOrderVOs);
+        return R.ok(electricityMemberCardOrderVOs);
     }
     
     @Slave
@@ -1195,6 +1201,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            return R.fail("120163", "账号处于注销缓冲期内，无法操作");
         }
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
@@ -2361,6 +2373,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
+        }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0042", "用户已缴纳押金");
@@ -2764,6 +2782,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
+    
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(userInfo.getUid(), List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            return Triple.of(false, "120163", "账号处于注销缓冲期内，无法操作");
+        }
         
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
@@ -2962,7 +2986,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source,
             List<InstallmentDeductionPlan> deductionPlans) {
@@ -3903,6 +3926,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Slave
     public List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime) {
         return baseMapper.selectListByCreateTime(buyStartTime, buyEndTime);
+    }
+    
+    /**
+     * 检测用户是否存在使用中，未使用的套餐
+     * @param uid
+     * @return
+     */
+    @Override
+    @Slave
+    public boolean existNotFinishOrderByUid(Long uid) {
+        Integer count = baseMapper.existNotFinishOrderByUid(uid);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
     }
     
     @Override

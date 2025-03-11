@@ -42,6 +42,14 @@ public class EleBatteryQuery {
     private String iotCardNumber;
 
     private Integer isNeedSync;
-
-
+    
+    /**
+     * 电池标签
+     */
+    private Integer label;
+    
+    /**
+     * 领用人，管理员uid或者商户id
+     */
+    private Long receiverId;
 }

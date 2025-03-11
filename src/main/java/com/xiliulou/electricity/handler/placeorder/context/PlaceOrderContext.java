@@ -1,15 +1,7 @@
 package com.xiliulou.electricity.handler.placeorder.context;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.AllArgsConstructor;
@@ -57,6 +49,11 @@ public class PlaceOrderContext {
      * 购买下单的用户
      */
     private UserInfo userInfo;
+
+    /**
+     * 购买下单的用户扩展信息
+     */
+    private UserInfoExtra userInfoExtra;
     
     /**
      * 登录用户的用户信息

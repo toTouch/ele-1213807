@@ -826,13 +826,21 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (Objects.nonNull(user)) {
             employeeDetailVO.setEmployeeName(user.getName());
             employeeDetailVO.setUid(user.getUid());
+            BigDecimal todayInCome = BigDecimal.ZERO;
+            BigDecimal todayInReturnCome = BigDecimal.ZERO;
             
             // 今日预估收入：“返现日期” = 今日，“结算状态” = 未结算；
             MerchantPromotionFeeQueryModel incomeQueryModel = MerchantPromotionFeeQueryModel.builder().status(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE)
                     .type(PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode()).uid(uid).tenantId(TenantContextHolder.getTenantId())
                     .rebateStartTime(DateUtils.getTodayStartTimeStamp()).rebateEndTime(System.currentTimeMillis()).build();
-            BigDecimal todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
-            employeeDetailVO.setTodayIncome(todayInCome);
+            todayInCome = rebateRecordService.sumByStatus(incomeQueryModel);
+            
+            // 计算今天已退回
+            incomeQueryModel.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_RETURNED);
+    
+            todayInReturnCome = rebateRecordService.sumByStatus(incomeQueryModel);
+    
+            employeeDetailVO.setTodayIncome(todayInCome.subtract(todayInReturnCome));
             
             // 本月预估收入：本月1号0点～当前时间，“结算状态” = 未结算+已结算-已退回；
             employeeDetailVO.setCurrentMonthIncome(getCurrentMonthIncome(uid, PromotionFeeQueryTypeEnum.MERCHANT_EMPLOYEE.getCode(), null));

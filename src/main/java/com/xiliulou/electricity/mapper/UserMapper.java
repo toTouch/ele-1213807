@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
+import com.xiliulou.electricity.request.user.UserRequest;
 import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import org.apache.ibatis.annotations.Param;
@@ -53,4 +54,6 @@ public interface UserMapper extends BaseMapper<User> {
     List<User> selectListByPhones(@Param("phoneList") List<String> phoneList, @Param("tenantId") Integer tenantId, @Param("type") Integer type);
     
     List<UserSearchVO> selectListTenantUsers(Integer tenantId);
+    
+    List<UserSearchVO> selectListAdministrator(@Param("request") UserRequest request);
 }

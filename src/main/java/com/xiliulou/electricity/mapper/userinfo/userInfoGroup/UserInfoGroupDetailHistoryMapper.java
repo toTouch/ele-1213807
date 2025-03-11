@@ -20,4 +20,6 @@ public interface UserInfoGroupDetailHistoryMapper {
     Integer countTotal(UserInfoGroupDetailHistoryQuery query);
     
     Integer insertOne(UserInfoGroupDetailHistory detail);
+    
+    List<UserInfoGroupDetailHistory> selectListFranchiseeLatestHistory(@Param("uid")Long uid, @Param("tenantId")Integer tenantId);
 }

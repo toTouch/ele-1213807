@@ -6,6 +6,7 @@ package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -15,9 +16,10 @@ import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantWithdrawApplicationBizService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.dto.WechatTransferOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.query.WechatCallBackResouceData;
 import com.xiliulou.pay.weixinv3.util.AesUtil;
 import com.xiliulou.pay.weixinv3.v2.handler.WechatV3PostProcessExecuteHandler;
@@ -30,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
@@ -58,6 +61,9 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
     
     @Autowired
     UnionTradeOrderService unionTradeOrderService;
+
+    @Resource
+    private MerchantWithdrawApplicationBizService merchantWithdrawApplicationBizService;
     
     @Override
     public void postProcessBeforeWechatPay(WechatV3OrderRequest request) {
@@ -163,8 +169,42 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
         
         eleRefundOrderService.notifyDepositRefundOrder(callBackResource);
     }
-    
-    
+
+    @Override
+    public void postProcessAfterMerchantWithdraw(WechatV3OrderCallBackRequest wechatV3OrderCallBackQuery) {
+        WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
+        if (Objects.isNull(resource)) {
+            log.error("MERCHANT WITHDRAW NOTIFY ERROR! no wechat's info ! msg={}", wechatV3OrderCallBackQuery);
+            return;
+        }
+
+        String apiV3Key = this.getApiV3Key(wechatV3OrderCallBackQuery.getTenantId(), wechatV3OrderCallBackQuery.getFranchiseeId());
+
+        String decryptJson = null;
+        try {
+            decryptJson = AesUtil
+                    .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
+                            apiV3Key.getBytes(StandardCharsets.UTF_8));
+
+        } catch (Exception e) {
+            log.error("MERCHANT WITHDRAW NOTIFY ERROR! wechat decrypt error! msg={}", wechatV3OrderCallBackQuery, e);
+            return;
+        }
+
+        WechatTransferOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatTransferOrderCallBackResource.class);
+
+        //幂等加锁
+        String outBillNo = callBackResource.getOutBillNo();
+        if (!redisService.setNx(CacheConstant.CACHE_MERCHANT_WITHDRAW_NOTIFY_LOCK + outBillNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            log.info("MERCHANT WITHDRAW NOTIFY INFO! order in process outBillNo={}", outBillNo);
+            return;
+        }
+
+        merchantWithdrawApplicationBizService.handleNotify(callBackResource);
+
+    }
+
+
     private String getApiV3Key(Integer tenantId, Long franchiseeId) {
         try {
             ElectricityPayParams payParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);

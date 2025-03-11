@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
+import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.vo.merchant.*;
@@ -71,4 +73,6 @@ public interface MerchantService {
     Integer countOverdueUserTotal(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
 
     List<MerchantJoinUserVO> listOverdueUserByPage(MerchantJoinUserQueryMode merchantJoinUserQueryMode);
+
+    List<Merchant> list(int offset, int size);
 }

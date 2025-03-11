@@ -17,6 +17,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.EleOpenDTO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -33,6 +34,7 @@ import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -330,6 +332,9 @@ public class EleOperateQueueHandler {
                 rentBatteryOrderService.update(rentBatteryOrder);
                 
                 handleRentOrder(rentBatteryOrder, finalOpenDTO, electricityCabinet);
+                
+                // 处理电池标签
+                handleBatteryLabel(finalOpenDTO, rentBatteryOrder);
             } catch (Exception e) {
                 log.error("RENT BATTERY HANDLER ERROR!", e);
             } finally {
@@ -1092,5 +1097,29 @@ public class EleOperateQueueHandler {
                 log.error("call battery sn error! sn={},result={}", electricityBattery.getSn(), null == r ? "" : r.getErrMsg());
             }
         });
+    }
+    
+    private void handleBatteryLabel(EleOpenDTO finalOpenDTO, RentBatteryOrder rentBatteryOrder) {
+        if (!Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) && !Objects.equals(finalOpenDTO.getOrderStatus(),
+                RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+            return;
+        }
+        String sn = Objects.nonNull(finalOpenDTO.getBatterySn()) ? finalOpenDTO.getBatterySn() : rentBatteryOrder.getElectricityBatterySn();
+        if (Objects.isNull(sn)) {
+            log.error("HANDLE BATTERY LABEL ERROR! can not find battery sn, rentOrderRsp={}", finalOpenDTO);
+            return;
+        }
+        ElectricityBattery battery = ElectricityBattery.builder().tenantId(rentBatteryOrder.getTenantId()).sn(sn).build();
+        
+        // 处理租电成功的
+        if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
+            ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(rentBatteryOrder.getElectricityCabinetId()).cellNo(rentBatteryOrder.getCellNo().toString()).build();
+            electricityBatteryService.asyncModifyLabel(battery, box, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
+        }
+        
+        // 处理退电成功的
+        if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+            electricityBatteryService.asyncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
+        }
     }
 }

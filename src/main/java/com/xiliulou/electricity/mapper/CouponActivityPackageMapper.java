@@ -24,4 +24,5 @@ public interface CouponActivityPackageMapper extends BaseMapper<CouponActivityPa
     List<CouponActivityPackage> selectPackagesByCouponIdAndPackageType(@Param("couponId") Long couponId, @Param("packageType") Integer packageType);
     CouponActivityPackage selectCouponPackageByCondition(@Param("couponId") Long couponId, @Param("packageId") Long packageId, @Param("packageType") Integer packageType);
 
+    void deleteByCouponId(@Param("couponId") Integer couponId, @Param("tenantId") Integer tenantId);
 }

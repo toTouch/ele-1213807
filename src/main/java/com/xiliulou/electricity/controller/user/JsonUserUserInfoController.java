@@ -121,4 +121,19 @@ public class JsonUserUserInfoController extends BaseController {
     public R queryDepositStatus() {
         return R.ok(userInfoService.queryDepositStatus());
     }
+    /**
+     * 注销账号前置校验
+     */
+    @GetMapping("/user/account/del/preCheck")
+    public R deleteAccountPreCheck() {
+        return userInfoService.deleteAccountPreCheck();
+    }
+    
+    /**
+     * 注销账号
+     */
+    @PostMapping("/user/account/del")
+    public R deleteAccount() {
+        return userInfoService.deleteAccount();
+    }
 }

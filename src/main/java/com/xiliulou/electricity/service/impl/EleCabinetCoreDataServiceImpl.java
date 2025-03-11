@@ -28,7 +28,13 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     
     @Override
     public int insertOrUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
-        return eleCabinetCoreDataMapper.insertOrUpdateCabinetCoreData(cabinetCoreData);
+        // 核心板数据上报有误，出现大量无用error日志
+        try {
+            return eleCabinetCoreDataMapper.insertOrUpdateCabinetCoreData(cabinetCoreData);
+        } catch (Exception e) {
+            log.warn("INSERT OR UPDATE CABINET CORE DATA WARN!", e);
+        }
+        return 0;
     }
     
     @Override

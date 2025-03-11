@@ -205,7 +205,7 @@ public interface CarRentalPackageOrderMapper {
      * @return 用户购买的套餐订单
      */
     Long sumConfineNumByUid(@Param("uid") Long uid);
-    
+
     /**
      * 根据租户id+订单号批量查询
      *
@@ -215,6 +215,8 @@ public interface CarRentalPackageOrderMapper {
      * @date 2024/11/26 13:51
      */
     List<CarRentalPackageOrderPo> selectListByOrderNos(@Param("tenantId") Integer tenantId, @Param("orderNos") List<String> orderNos);
-    
+
     List<CarRentalPackageOrderPo> selectListByUidAndUseStatus(@Param("uidList")List<Long> uidList, @Param("useStatus")Integer useStatus);
+
+    Integer existNotFinishOrderByUid(@Param("uid") Long uid);
 }
