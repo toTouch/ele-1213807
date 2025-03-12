@@ -18,11 +18,7 @@ import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
@@ -86,6 +82,8 @@ public class CarBusinessHandler implements BusinessHandler {
     private final CarRenalPackageDepositV2BizService carRenalPackageDepositV2BizService;
     
     private final CarRentalPackageService carRentalPackageService;
+
+    private final FreeDepositExpireRecordService freeDepositExpireRecordService;
     
     @Override
     public boolean support(Integer type) {
@@ -219,6 +217,8 @@ public class CarBusinessHandler implements BusinessHandler {
                 userBatteryTypeService.deleteByUid(depositRefundEntity.getUid());
                 userBatteryDepositService.deleteByUid(depositRefundEntity.getUid());
             }
+
+            freeDepositExpireRecordService.unfreeAfterDel(order.getOrderId());
             
             redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
             log.info("Car/car electronics order no unfree deposit callback completed, order number: {}",order.getOrderId());
