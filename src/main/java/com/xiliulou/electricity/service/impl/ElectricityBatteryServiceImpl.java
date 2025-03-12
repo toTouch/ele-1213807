@@ -784,6 +784,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         // 编辑标签时需要校验旧标签
+        ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.selectBySnAndTenantId(sn, tenantId);
         if (Objects.nonNull(eleQuery.getLabel())) {
             Integer oldLabel = electricityBatteryDb.getLabel();
             if (Objects.equals(oldLabel, BatteryLabelEnum.IN_THE_CABIN.getCode())) {
@@ -798,7 +799,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return R.fail("300157", "电池锁定在仓不支持此操作");
             }
             
-            ElectricityBatteryLabel batteryLabel = electricityBatteryLabelService.selectBySnAndTenantId(sn, tenantId);
             boolean permission = electricityBatteryLabelBizService.permissionVerificationForReceiver(electricityBatteryDb, eleQuery.getReceiverId(), eleQuery.getLabel(), batteryLabel);
             if (!permission) {
                 return R.fail("300159", "领用人无权领用");
@@ -836,7 +836,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             //                log.warn("Recording user operation records failed because:{}",e.getMessage());
             //            }
             
-            // 修改电池标签
+            // 由于后续电池标签修改逻辑较为复杂，在修改电池sn时，如果将sn的修改逻辑融合到标签修改之中，逻辑编排起来极为麻烦，一旦出现问题也会难以排查
+            // 这里做一次多余的更新操作，直接提前将标签关联数据的sn修改掉
+            String newSn = eleQuery.getSn();
+            if (StringUtils.isNotBlank(newSn) && StringUtils.isNotEmpty(newSn) && Objects.nonNull(batteryLabel)) {
+                ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
+                batteryLabelUpdate.setId(batteryLabel.getId());
+                batteryLabelUpdate.setSn(newSn);
+                electricityBatteryLabelService.updateById(batteryLabelUpdate);
+            }
+            
+            // 修改电池标签，注意传递的电池中，sn是修改前还是修改后的
             BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).newReceiverId(eleQuery.getReceiverId()).build();
             asyncModifyLabel(electricityBatteryDb, null, dto, false);
             
@@ -2121,13 +2131,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public boolean asyncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification) {
+        return asyncModifyLabel(electricityBattery, box, dto, forcedModification, null);
+    }
+    
+    @Override
+    public boolean asyncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification, String newSn) {
         String traceId = MDC.get(CommonConstant.TRACE_ID);
         
         AtomicBoolean result = new AtomicBoolean(false);
         modifyBatteryLabelExecutor.execute(() -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
             
-            result.set(syncModifyLabel(electricityBattery, box, dto, forcedModification));
+            result.set(syncModifyLabel(electricityBattery, box, dto, forcedModification, newSn));
             
         });
         return result.get();
@@ -2135,14 +2150,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public boolean syncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification) {
+        return syncModifyLabel(electricityBattery, box, dto, forcedModification, null);
+    }
+    
+    @Override
+    public boolean syncModifyLabel(ElectricityBattery electricityBattery, ElectricityCabinetBox box, BatteryLabelModifyDTO dto, boolean forcedModification, String newSn) {
         try {
             if (Objects.isNull(electricityBattery) || Objects.isNull(dto) || Objects.isNull(dto.getNewLabel())) {
                 log.warn("BATTERY LABEL MODIFY LABEL WARN! battery or dto is null, battery={}, dto={}", electricityBattery, dto);
                 return false;
             }
             
-            // 原本想减少数据库IO，电池从外部传入，但是存在外部传入参数与当前数据库内数据不一致的情况，还是在这里查询一次，减少业务异常
-            ElectricityBattery battery = selectBySnAndTenantId(electricityBattery.getSn(), electricityBattery.getTenantId());
+            // 原本想减少数据库IO，电池从外部传入，但是出现了外部传入参数与当前数据库内数据不一致的情况，还是在这里查询一次，减少业务异常
+            // 此处需要注意在编辑电池修改sn的同时修改标签，查询数据时，应当使用哪个sn查询，这里可以使用新sn查询标签关联数据，为了逻辑简单在编辑电池方法中修改了关联数据的sn
+            String snForSearch = StringUtils.isBlank(newSn) || StringUtils.isEmpty(newSn) ? electricityBattery.getSn() : newSn;
+            ElectricityBattery battery = selectBySnAndTenantId(snForSearch, electricityBattery.getTenantId());
             if (Objects.isNull(battery)) {
                 log.warn("BATTERY LABEL MODIFY LABEL WARN! battery is null, battery={}, dto={}", electricityBattery, dto);
                 return false;
