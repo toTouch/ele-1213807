@@ -21,9 +21,9 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -71,25 +71,15 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     @Resource
     private ElectricityBatteryService electricityBatteryService;
     
+    @Resource
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
+    
     private final ExecutorService dealBatteryLabelWhenSendCommandExecutor = XllThreadPoolExecutors.newFixedThreadPool("dealBatteryLabelWhenSendCommand", 3, "DEAL_BATTERY_LABEL_WHEN_SEND_COMMAND_THREAD");
     
     
     @Override
     public void insert(ElectricityBatteryLabel batteryLabel) {
         electricityBatteryLabelMapper.insert(batteryLabel);
-    }
-    
-    @Override
-    public void insertWithBattery(ElectricityBattery battery) {
-        Long now = System.currentTimeMillis();
-        ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().sn(battery.getSn()).tenantId(battery.getTenantId()).franchiseeId(battery.getFranchiseeId())
-                .createTime(now).updateTime(now).build();
-        electricityBatteryLabelMapper.insert(batteryLabel);
-        
-        // 旧标签会从电池中取，所以把要把电池中的清除掉
-        Integer newLabel = battery.getLabel();
-        battery.setLabel(null);
-        batteryLabelRecordService.sendRecord(battery, SecurityUtils.getUid(), newLabel, now, null, null);
     }
     
     @Override
@@ -107,7 +97,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             
             Integer newLabel = battery.getLabel();
             battery.setLabel(null);
-            batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, now, null, null);
+            electricityBatteryLabelBizService.sendRecordAndGeneralHandling(battery, operatorUid, newLabel, null, now, null, null);
         }
         
         electricityBatteryLabelMapper.batchInsert(batteryLabels);

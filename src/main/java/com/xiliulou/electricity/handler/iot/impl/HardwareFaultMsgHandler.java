@@ -95,6 +95,7 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
             msg.setTenantName(tenantName);
             msg.setCabinetName(electricityCabinet.getName());
             msg.setDeviceName(electricityCabinet.getDeviceName());
+            msg.setFranchiseeId(electricityCabinet.getFranchiseeId());
             list.add(msg);
         });
         return list;
@@ -297,4 +298,9 @@ class HardwareFaultWarnMqMsg {
      * 租退订单id
      */
     private String orderId;
+
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 }

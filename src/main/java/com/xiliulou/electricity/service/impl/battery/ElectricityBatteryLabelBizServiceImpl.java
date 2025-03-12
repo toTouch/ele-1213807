@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.battery;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
@@ -12,6 +14,7 @@ import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.battery.BatteryLabelRecord;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -19,6 +22,7 @@ import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
@@ -33,6 +37,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.BatteryLabelBatchUpdateVO;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -50,6 +55,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.mq.constant.MqProducerConstant.BATTERY_LABEL_RECORD_TOPIC;
 
 /**
  * @author SJP
@@ -85,6 +92,12 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     @Resource
     private MerchantService merchantService;
+    
+    @Resource
+    private RocketMqService rocketMqService;
+    
+    @Resource
+    private ElectricityCabinetBoxService electricityCabinetBoxService;
     
     private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 1, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
     
@@ -440,5 +453,50 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         } catch (Exception e) {
             log.error("CHECK RENT STATUS FOR LABEL error! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
         }
+    }
+    
+    @Override
+    public void sendRecordAndGeneralHandling(ElectricityBattery battery, Long operatorUid, Integer newLabel, Integer oldLabel, Long updateTime, Long oldReceiverId, Long newReceiverId) {
+        BatteryLabelRecord record = new BatteryLabelRecord();
+        record.setSn(battery.getSn());
+        record.setOldLabel(battery.getLabel());
+        record.setNewLabel(newLabel);
+        record.setOperatorUid(operatorUid);
+        record.setOldReceiverId(oldReceiverId);
+        record.setNewReceiverId(newReceiverId);
+        record.setTenantId(battery.getTenantId());
+        record.setFranchiseeId(battery.getFranchiseeId());
+        record.setExchangeTime(TimeUtils.convertToStandardFormatTime(updateTime));
+        
+        rocketMqService.sendAsyncMsg(BATTERY_LABEL_RECORD_TOPIC, JsonUtil.toJson(record));
+        
+        // 8.处理领用人的逻辑
+        if (Objects.nonNull(newLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+            ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
+            batteryLabelUpdate.setReceiverId(newReceiverId);
+            updateOrInsertBatteryLabel(battery, batteryLabelUpdate);
+        }
+        if (Objects.nonNull(newLabel) && Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel)
+                && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+            electricityBatteryLabelService.deleteReceivedData(battery.getSn());
+        }
+        
+        // 9.旧标签是锁定在仓的，清除掉格挡表的锁仓sn
+        if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
+            electricityCabinetBoxService.deleteLockSn(battery.getSn());
+        }
+    }
+    
+    @Override
+    public void insertWithBattery(ElectricityBattery battery) {
+        Long now = System.currentTimeMillis();
+        ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().sn(battery.getSn()).tenantId(battery.getTenantId()).franchiseeId(battery.getFranchiseeId())
+                .createTime(now).updateTime(now).build();
+        electricityBatteryLabelService.insert(batteryLabel);
+        
+        // 旧标签会从电池中取，所以把要把电池中的清除掉
+        Integer newLabel = battery.getLabel();
+        battery.setLabel(null);
+        sendRecordAndGeneralHandling(battery, SecurityUtils.getUid(), newLabel, null, now, null, null);
     }
 }

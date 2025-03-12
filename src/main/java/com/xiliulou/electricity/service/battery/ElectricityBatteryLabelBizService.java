@@ -38,4 +38,8 @@ public interface ElectricityBatteryLabelBizService {
      * 根据UserBatteryMemberCard与CarRentalPackageMemberTermPo判断是电套餐还是车电一体，传递参数需注意
      */
     void checkRentStatusForLabel(UserBatteryMemberCard userBatteryMemberCard, CarRentalPackageMemberTermPo memberTermPo);
+    
+    void sendRecordAndGeneralHandling(ElectricityBattery battery, Long operatorUid, Integer newLabel, Integer oldLabel, Long updateTime, Long oldReceiverId, Long newReceiverId);
+    
+    void insertWithBattery(ElectricityBattery battery);
 }
