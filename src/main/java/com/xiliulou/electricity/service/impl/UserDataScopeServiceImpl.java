@@ -4,6 +4,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.UserDataScope;
 import com.xiliulou.electricity.mapper.UserDataScopeMapper;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,5 +131,12 @@ public class UserDataScopeServiceImpl implements UserDataScopeService {
     @Override
     public List<Long> selectDataIdByUid(Long uid) {
         return this.userDataScopeMapper.selectDataIdByUid(uid);
+    }
+    
+    @Override
+    public List<Long> listDataIdByTokenUser(TokenUser user) {
+        
+        
+        return List.of();
     }
 }

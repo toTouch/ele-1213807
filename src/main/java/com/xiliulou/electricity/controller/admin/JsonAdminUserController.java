@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.request.user.ResetPasswordRequest;
+import com.xiliulou.electricity.request.user.UserRequest;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
@@ -294,4 +295,24 @@ public class JsonAdminUserController extends BaseController {
         return userService.updateTenantPassword(request);
     }
     
+    /**
+     * 修改租户登录密码
+     */
+    @PostMapping(value = "/user/listAdministrator")
+    public R listAdministrator(@RequestBody UserRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (request.getSize() < 0 || request.getSize() > 50) {
+            request.setSize(10L);
+        }
+        
+        if (request.getOffset() < 0) {
+            request.setOffset(0L);
+        }
+        
+        return userService.listAdministrator(request, user);
+    }
 }

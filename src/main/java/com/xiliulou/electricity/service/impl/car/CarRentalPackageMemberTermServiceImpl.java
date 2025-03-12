@@ -13,6 +13,7 @@ import com.xiliulou.electricity.mapper.car.CarRentalPackageMemberTermMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermExpiredQryModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -37,6 +38,10 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     
     @Resource
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
+    
+    @Resource
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
+    
     
     /**
      * 根据用户UID查询套餐购买次数<br /> p.s：不区分删除与否，不走缓存
@@ -208,6 +213,10 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
         redisService.delete(cacheKey);
+        
+        // 异步处理电池标签，不确定外层有没有携带套餐类型，每一次修改都处理
+        entity.setUid(uid);
+        electricityBatteryLabelBizService.checkRentStatusForLabel(null, entity);
         
         return num >= 0;
     }

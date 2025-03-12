@@ -6,10 +6,12 @@ import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.request.user.ResetPasswordRequest;
+import com.xiliulou.electricity.request.user.UserRequest;
 import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -156,4 +158,6 @@ public interface UserService {
     List<UserSearchVO> listTenantUsers(Integer tenantId);
     
     R updateTenantPassword(ResetPasswordRequest request);
+    
+    R listAdministrator(UserRequest request, TokenUser user);
 }

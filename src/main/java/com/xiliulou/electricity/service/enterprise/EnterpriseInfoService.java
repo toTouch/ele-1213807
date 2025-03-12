@@ -125,4 +125,12 @@ public interface EnterpriseInfoService {
     void deleteCacheByEnterpriseId(Long enterpriseId);
     
     Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid, Long operateUid);
+
+    UserCloudBeanDetailVO cloudBeanDetailV2();
+
+    Triple<Boolean, String, Object> cloudBeanGeneralViewV2();
+
+    Triple<Boolean, String, Object> refresh(Integer type);
+
+    Triple<Boolean, String, Object> queryRefresh(String sessionId);
 }

@@ -70,6 +70,8 @@ public interface MqProducerConstant {
 
     String ENTERPRISE_USER_COST_RECORD_TOPIC = "ENTERPRISE_USER_COST_RECORD_TOPIC";
 
+    String ENTERPRISE_CLOUD_BEAN_REFRESH_TOPIC = "ENTERPRISE_CLOUD_BEAN_REFRESH_TOPIC";
+
     /**
      * 商户升级topic
      */
@@ -188,6 +190,11 @@ public interface MqProducerConstant {
      * 分期代扣续费套餐tag
      */
     String INSTALLMENT_DEDUCT_NOTIFY_TAG = "installment_deduct_notify_tag";
+    
+    /**
+     * 电池标签修改记录topic
+     */
+    String BATTERY_LABEL_RECORD_TOPIC = "battery_label_record_topic";
 
     /**
      * 标记电池topic

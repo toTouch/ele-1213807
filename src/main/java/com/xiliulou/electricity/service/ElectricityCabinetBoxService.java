@@ -4,11 +4,14 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -86,4 +89,14 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> listBySnList(List<String> snList);
     
     List<ElectricityCabinetBox> listNotUsableBySn(String sn, Integer cabinetId, String cellNo);
+    
+    int updateLockSnByEidAndCellNo(Integer eId, String cellNo, String lockSn);
+    
+    List<ElectricityCabinetBox> listBySnAndEid(String sn, Integer eid);
+    
+    List<ElectricityCabinetBox> listByLockSn(String lockSn);
+    
+    int deleteLockSn(String lockSn);
+    
+    Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, List<String>> eidAndCellNo);
 }

@@ -159,6 +159,11 @@ public class ElectricityCabinetBoxVO {
      */
     private Integer isBatteryRentInCell;
     
+    /**
+     * 锁定在仓的电池sn
+     */
+    private String lockSn;
+    
     public static final Integer EXCHANGE_YES = 0;
     
     public static final Integer EXCHANGE_NO = 1;

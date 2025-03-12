@@ -25,15 +25,18 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
+import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -81,6 +84,9 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     @Autowired
     private RedisService redisService;
     
+    @Autowired
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
+    
     @Override
     @Slave
     public R selectAllBatteryPageData(ElectricityBatteryDataQuery electricityBatteryQuery) {
@@ -103,6 +109,15 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 otherPropertiesMap = otherPropertiesList.stream()
                         .collect(Collectors.toMap(BatteryOtherProperties::getBatteryName, BatteryOtherProperties::getBatteryV, (value1, value2) -> value1));
             }
+        }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(snList, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
         }
         
         Map<String, Double> finalOtherPropertiesMap = otherPropertiesMap;
@@ -166,6 +181,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setDbCapacity(batteryModel.getCapacity());
                 }
             }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
+            }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
     }
@@ -190,6 +210,16 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(null, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
+        
         electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
@@ -211,6 +241,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
             if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
+            }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
             }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
@@ -233,6 +268,16 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(null, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
+        
         electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
@@ -254,6 +299,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
             if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
+            }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
             }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
@@ -276,6 +326,16 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(null, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
+        
         electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
@@ -297,6 +357,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
             if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
+            }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
             }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
@@ -319,6 +384,16 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(null, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
+        
         electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
@@ -340,6 +415,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             String batteryShortType = batteryModelService.acquireBatteryShortType(item.getModel(), electricityBatteryQuery.getTenantId());
             if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
+            }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
             }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
@@ -362,6 +442,16 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(null, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
+        
         electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
@@ -384,6 +474,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
             if (StringUtils.isNotEmpty(batteryShortType)) {
                 item.setModel(batteryShortType);
             }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
+            }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
         
@@ -405,6 +500,16 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
+        
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(null, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
+        
         electricityBatteries.parallelStream().forEach(item -> {
             Long userId = item.getUid();
             Long fId = item.getFranchiseeId();
@@ -421,6 +526,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 if (Objects.nonNull(franchisee)) {
                     item.setFranchiseeName(franchisee.getName());
                 }
+            }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
             }
         });
         return R.ok(queryDataFromBMS(electricityBatteries, electricityBatteryQuery.getTenant()));
@@ -513,7 +623,16 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryStockBatteryList(electricityBatteryQuery, electricityBatteryQuery.getOffset(),
                 electricityBatteryQuery.getSize());
         
-        return R.ok(buildEleBatteryDataVOList(electricityBatteries, electricityBatteryQuery.getTenant()));
+        // 获取电池标签表的备注
+        List<ElectricityBatteryLabelVO> batteryLabelVOs = electricityBatteryLabelBizService.listLabelVOByDataVOs(null, electricityBatteries);
+        Map<String, ElectricityBatteryLabelVO> labelVOMap;
+        if (CollectionUtils.isNotEmpty(batteryLabelVOs)) {
+            labelVOMap = batteryLabelVOs.stream().collect(Collectors.toMap(ElectricityBatteryLabelVO::getSn, Function.identity(), (item1, item2) -> item2));
+        } else {
+            labelVOMap = null;
+        }
+        
+        return R.ok(buildEleBatteryDataVOList(electricityBatteries, electricityBatteryQuery.getTenant(), labelVOMap));
     }
     
     
@@ -526,7 +645,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     
     
     // 组装EleBatteryDataVO
-    private List<EleBatteryDataVO> buildEleBatteryDataVOList(List<ElectricityBatteryDataVO> electricityBatteries, Tenant tenant) {
+    private List<EleBatteryDataVO> buildEleBatteryDataVOList(List<ElectricityBatteryDataVO> electricityBatteries, Tenant tenant, Map<String, ElectricityBatteryLabelVO> labelVOMap) {
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return Lists.newArrayList();
         }
@@ -548,6 +667,11 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                         item.setFranchiseeName(franchisee.getName());
                     }
                 }
+            }
+            
+            if (MapUtils.isNotEmpty(labelVOMap) && labelVOMap.containsKey(item.getSn())) {
+                // 设置电池标签的其他关联数据
+                item.setLabelVO(labelVOMap.get(item.getSn()));
             }
         });
         return queryDataFromBMS(electricityBatteries, tenant);

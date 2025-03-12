@@ -1,12 +1,12 @@
 package com.xiliulou.electricity.controller.admin;
 
-import cn.hutool.core.lang.Pair;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -20,7 +20,6 @@ import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.BatteryExcelListenerV2;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.vo.supper.DelBatteryVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -88,6 +87,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @DeleteMapping(value = "/admin/battery/{id}")
     @Log(title = "删除电池")
     public R delete(@PathVariable("id") Long id, @RequestParam(value = "isNeedSync", required = false) Integer isNeedSync) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
         return electricityBatteryService.deleteElectricityBattery(id, isNeedSync);
     }
     
@@ -107,6 +115,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @param
      * @return
      */
+    @Deprecated
     @GetMapping(value = "/admin/battery/page")
     public R getElectricityBatteryPage(@RequestParam(value = "offset") Long offset,
             @RequestParam(value = "size") Long size,
@@ -173,6 +182,95 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     }
     
     /**
+     * 电池分页
+     *
+     * @param
+     * @return
+     */
+    @PostMapping(value = "/admin/battery/page")
+    public R getElectricityBatteryPage(@RequestBody ElectricityBatteryQuery query) {
+        Long size = query.getSize();
+        Long offset = query.getOffset();
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            // 门店登陆按管理员领用查询
+            query.setLabel(List.of(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode()));
+            query.setReceiverId(user.getUid());
+        }
+        
+
+        query.setTenantId(TenantContextHolder.getTenantId());
+        query.setFranchiseeIds(franchiseeIds);
+        
+        // 当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
+        if(Objects.nonNull(query.getFranchiseeId()) || !CollectionUtils.isEmpty(franchiseeIds)){
+            query.setBindStatus(null);
+        }
+        
+        return electricityBatteryService.queryList(query, offset, size);
+    }
+    
+    /**
+     * 电池分页数量
+     *
+     * @param
+     * @return
+     */
+    @PostMapping(value = "/admin/battery/queryCount")
+    public R queryCount(@RequestBody ElectricityBatteryQuery query) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            // 门店登陆按管理员领用查询
+            query.setLabel(List.of(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode()));
+            query.setReceiverId(user.getUid());
+        }
+        
+        
+        query.setTenantId(TenantContextHolder.getTenantId());
+        query.setFranchiseeIds(franchiseeIds);
+        
+        // 当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
+        if(Objects.nonNull(query.getFranchiseeId()) || !CollectionUtils.isEmpty(franchiseeIds)){
+            query.setBindStatus(null);
+        }
+        return electricityBatteryService.queryCount(query);
+    }
+    
+    /**
      * 获取当前加盟商的电池+未绑定加盟商的电池
      *
      * @param offset
@@ -192,6 +290,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @param
      * @return
      */
+    @Deprecated
     @GetMapping(value = "/admin/battery/queryCount")
     public R queryCount(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
@@ -246,6 +345,73 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
     
+    /**
+     * 加盟商电池数量
+     *
+     * @param
+     * @return
+     */
+    @PostMapping(value = "/admin/battery/pageByFranchisee")
+    public R pageByFranchisee(@RequestBody ElectricityBatteryQuery query) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            // 门店登陆按管理员领用查询
+            query.setLabel(List.of(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode()));
+            query.setReceiverId(user.getUid());
+        }
+
+        query.setFranchiseeIds(franchiseeIds);
+        query.setTenantId(TenantContextHolder.getTenantId());
+        return electricityBatteryService.queryList(query, query.getOffset(), query.getSize());
+    }
+    
+    /**
+     * 加盟商电池
+     *
+     * @param
+     * @return
+     */
+    @PostMapping(value = "/admin/battery/queryCountByFranchisee")
+    public R queryCountByFranchisee(@RequestBody ElectricityBatteryQuery query) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            // 门店登陆按管理员领用查询
+            query.setLabel(List.of(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode()));
+            query.setReceiverId(user.getUid());
+        }
+        
+        query.setFranchiseeIds(franchiseeIds);
+        query.setTenantId(TenantContextHolder.getTenantId());
+        return electricityBatteryService.queryCount(query);
+    }
     
     /**
      * 加盟商电池数量
@@ -253,6 +419,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @param
      * @return
      */
+    @Deprecated
     @GetMapping(value = "/admin/battery/pageByFranchisee")
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
@@ -304,6 +471,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @param
      * @return
      */
+    @Deprecated
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
     public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
@@ -676,6 +844,51 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/del")
     public R deleteBatteryByExcel(@RequestBody DelBatteryReq delBatteryReq) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
         return electricityBatteryService.deleteBatteryByExcel(delBatteryReq);
+    }
+    
+    @PostMapping(value = "/admin/battery/allSn/page")
+    public R getAllBatterySnPage(@RequestBody ElectricityBatteryQuery batteryQuery) {
+        if (batteryQuery.getSize() < 0 || batteryQuery.getSize() > 50) {
+            batteryQuery.setSize(10L);
+        }
+        
+        if (batteryQuery.getOffset() < 0) {
+            batteryQuery.setOffset(0L);
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            // 门店登陆按管理员领用查询
+            batteryQuery.setLabel(List.of(BatteryLabelEnum.RECEIVED_ADMINISTRATORS.getCode()));
+            batteryQuery.setReceiverId(user.getUid());
+        }
+        
+        batteryQuery.setTenantId(TenantContextHolder.getTenantId());
+        batteryQuery.setFranchiseeIds(franchiseeIds);
+        
+        return electricityBatteryService.listAllBatterySn(batteryQuery);
     }
 }

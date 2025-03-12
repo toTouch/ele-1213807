@@ -16,6 +16,7 @@
                electricity_cabinet_id,
                electricity_cabinet_name,
                uid,
+               user_name,
                create_time,
                update_time,
                charge_status,
@@ -25,9 +26,13 @@
                iot_card_number,
                exchange_count,
                franchisee_id,
-               business_status,
                physics_status,
-               stock_status
+               business_status,
+               bind_time,
+               guess_uid,
+               warehouse_id,
+               stock_status,
+               label
         from t_electricity_battery
     </sql>
     
@@ -57,6 +62,15 @@
                     #{franchiseeId}
                 </foreach>
             </if>
+        </where>
+    </select>
+    
+    <select id="selectListByUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        SELECT `id`, `sn`, `uid`, `tenant_id`, `franchisee_id`, `label` FROM `t_electricity_battery`
+        <where>
+            del_flag = 0
+            <if test=" uid != null "> AND `uid` = #{uid} </if>
+            <if test=" tenantId != null "> AND `tenant_id` = #{tenantId} </if>
         </where>
     </select>
     
@@ -121,63 +135,74 @@
             limit #{offset}, #{size}
         </select>-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select id, sn,power, voltage, capacity, physics_status , business_status, create_time, update_time, del_flag,
-        tenant_id, electricity_cabinet_id,
-        model, charge_status, iot_card_number, franchisee_id,uid,warehouse_id,stock_status
-        from t_electricity_battery
-        where del_flag = 0 and tenant_id = #{query.tenantId}
+        select teb.id, teb.sn,teb.power, teb.voltage, teb.capacity, teb.physics_status , teb.business_status, teb.create_time, teb.update_time,
+               teb.del_flag,teb.tenant_id, teb.electricity_cabinet_id,teb.model, teb.charge_status, teb.iot_card_number, teb.franchisee_id,
+               teb.uid,teb.warehouse_id,teb.stock_status,teb.label
+        from t_electricity_battery teb
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
+        where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
-            and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+            and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
         <if test="query.physicsStatus != null">
-            and physics_status =#{query.physicsStatus}
+            and teb.physics_status =#{query.physicsStatus}
         </if>
         <if test="query.businessStatus != null">
-            and business_status =#{query.businessStatus}
+            and teb.business_status =#{query.businessStatus}
         </if>
         <if test="query.stockStatus != null">
-            and stock_status =#{query.stockStatus}
+            and teb.stock_status =#{query.stockStatus}
         </if>
         <if test="query.warehouseId != null">
-            and warehouse_id =#{query.warehouseId}
+            and teb.warehouse_id =#{query.warehouseId}
         </if>
         <if test="query.chargeStatus != null">
-            and charge_status =#{query.chargeStatus}
+            and teb.charge_status =#{query.chargeStatus}
         </if>
         <if test="query.tenantId != null">
-            and tenant_id = #{query.tenantId}
+            and teb.tenant_id = #{query.tenantId}
         </if>
         <if test="query.power != null">
-            and power = #{query.power}
+            and teb.power = #{query.power}
         </if>
         <if test="query.electricityCabinetName != null">
-            and electricity_cabinet_name like concat('%',#{query.electricityCabinetName},'%')
+            and teb.electricity_cabinet_name like concat('%',#{query.electricityCabinetName},'%')
         </if>
         <if test="query.franchiseeId != null">
-            and franchisee_id =#{query.franchiseeId}
+            and teb.franchisee_id =#{query.franchiseeId}
         </if>
         <if test="query.franchiseeName != null and '' != query.franchiseeName">
-            and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
+            and teb.franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
         </if>
         <if test="query.model != null and '' != query.model">
-            and model like concat('%',#{query.model},'%')
+            and teb.model like concat('%',#{query.model},'%')
         </if>
         <if test="query.franchiseeIds != null">
-            and franchisee_id in
+            and teb.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         
         <if test="query.bindStatus != null and query.bindStatus == 0">
-            and (franchisee_id is null or franchisee_id = 0)
+            and (teb.franchisee_id is null or teb.franchisee_id = 0)
         </if>
         
         <if test="query.bindStatus != null and query.bindStatus == 1">
-            and franchisee_id is not null and franchisee_id != 0
+            and teb.franchisee_id is not null and teb.franchisee_id != 0
         </if>
-        
-        order by create_time desc
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
+        </if>
+        order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
     
@@ -278,59 +303,70 @@
         </select>-->
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
-        from t_electricity_battery
-        where del_flag = 0
-        <if test="query.tenantId != null">
-            and tenant_id =#{query.tenantId}
+        from t_electricity_battery teb
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
         </if>
+        where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
-            and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+            and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
         <if test="query.physicsStatus != null">
-            and physics_status =#{query.physicsStatus}
+            and teb.physics_status =#{query.physicsStatus}
         </if>
         <if test="query.businessStatus != null">
-            and business_status =#{query.businessStatus}
-        </if>
-        <if test="query.chargeStatus != null">
-            and charge_status =#{query.chargeStatus}
+            and teb.business_status =#{query.businessStatus}
         </if>
         <if test="query.stockStatus != null">
-            and stock_status =#{query.stockStatus}
+            and teb.stock_status =#{query.stockStatus}
         </if>
         <if test="query.warehouseId != null">
-            and warehouse_id =#{query.warehouseId}
+            and teb.warehouse_id =#{query.warehouseId}
+        </if>
+        <if test="query.chargeStatus != null">
+            and teb.charge_status =#{query.chargeStatus}
+        </if>
+        <if test="query.tenantId != null">
+            and teb.tenant_id = #{query.tenantId}
         </if>
         <if test="query.power != null">
-            and power = #{query.power}
+            and teb.power = #{query.power}
         </if>
         <if test="query.electricityCabinetName != null">
-            and electricity_cabinet_name like concat('%',#{query.electricityCabinetName},'%')
+            and teb.electricity_cabinet_name like concat('%',#{query.electricityCabinetName},'%')
         </if>
         <if test="query.franchiseeId != null">
-            and franchisee_id =#{query.franchiseeId}
+            and teb.franchisee_id =#{query.franchiseeId}
         </if>
         <if test="query.franchiseeName != null and '' != query.franchiseeName">
-            and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
+            and teb.franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
         </if>
         <if test="query.model != null and '' != query.model">
-            and model like concat('%',#{query.model},'%')
+            and teb.model like concat('%',#{query.model},'%')
         </if>
         <if test="query.franchiseeIds != null">
-            and franchisee_id in
+            and teb.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
         
         <if test="query.bindStatus != null and query.bindStatus == 0">
-            and (franchisee_id is null or franchisee_id = 0)
+            and (teb.franchisee_id is null or teb.franchisee_id = 0)
         </if>
         
         <if test="query.bindStatus != null and query.bindStatus == 1">
-            and franchisee_id is not null and franchisee_id != 0
+            and teb.franchisee_id is not null and teb.franchisee_id != 0
         </if>
-    
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
+        </if>
     </select>
     
     <select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
@@ -421,6 +457,7 @@
                update_time,
                bind_time,
                electricity_cabinet_id,
+               tenant_id,
                franchisee_id,
                uid
         FROM t_electricity_battery as teb
@@ -467,6 +504,48 @@
         where id=#{id}
     </update>
     
+    <update id="updateBatteryUserExceptEid">
+        update t_electricity_battery
+        set
+        <if test="chargeStatus != null">
+            charge_status =#{chargeStatus},
+        </if>
+        <if test="healthStatus != null">
+            health_status =#{healthStatus},
+        </if>
+        <if test="power != null">
+            power =#{power},
+        </if>
+        <if test="model != null">
+            model =#{model},
+        </if>
+        <if test="exchangeCount != null">
+            exchange_count =#{exchangeCount},
+        </if>
+        <if test="physicsStatus != null">
+            physics_status =#{physicsStatus},
+        </if>
+        <if test="businessStatus != null">
+            business_status=#{businessStatus},
+        </if>
+        <if test="borrowExpireTime != null">
+            borrow_expire_time=#{borrowExpireTime},
+        </if>
+        <if test="bindTime != null">
+            bind_time=#{bindTime},
+        </if>
+        <if test="electricityCabinetName != null">
+            electricity_cabinet_name=#{electricityCabinetName},
+        </if>
+        <if test="electricityCabinetId != null">
+            electricity_cabinet_id=#{electricityCabinetId},
+        </if>
+        uid=#{uid},
+        update_time=#{updateTime},
+        guess_uid=#{guessUid}
+        where id=#{id}
+    </update>
+    
     <select id="selectListBatteryByGuessUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         select id, sn, create_time, update_time, del_flag, uid, guess_uid
         from t_electricity_battery
@@ -499,7 +578,8 @@
         franchisee_id,
         business_status,
         physics_status,
-        stock_status
+        stock_status,
+        label
         from t_electricity_battery
         where del_flag = 0 and sn in
         <foreach collection="snList" item="sn" open="(" close=")" separator=",">
@@ -622,7 +702,7 @@
     <select id="selectByBatteryIds" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         select id, sn,power, voltage, capacity, physics_status , business_status, create_time, update_time, del_flag,
         tenant_id, electricity_cabinet_id,
-        model, charge_status, iot_card_number, franchisee_id, warehouse_id
+        model, charge_status, iot_card_number, franchisee_id, warehouse_id, label
         from t_electricity_battery
         where del_flag = 0
         and id in
@@ -763,6 +843,9 @@
             <if test="physicsStatus != null">
                 physics_status = #{physicsStatus},
             </if>
+            <if test="label != null">
+                label = #{label},
+            </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}
     </update>
@@ -793,12 +876,12 @@
         insert into t_electricity_battery(sn, longitude, latitude, power, voltage, capacity, model, status,
         electricity_cabinet_id, electricity_cabinet_name, uid, create_time, update_time, del_flag,
         charge_status, health_status, tenant_id, borrow_expire_time, iot_card_number, exchange_count, franchisee_id,
-        physics_status, business_status,stock_status,warehouse_id) values
+        physics_status, business_status,stock_status,warehouse_id,label) values
         <foreach item="c" index="index" collection="list" separator=",">
             (#{c.sn}, #{c.longitude}, #{c.latitude}, #{c.power}, #{c.voltage}, #{c.capacity}, #{c.model}, #{c.status},
             #{c.electricityCabinetId}, #{c.electricityCabinetName}, #{c.uid}, #{c.createTime}, #{c.updateTime},
             #{c.delFlag}, #{c.chargeStatus}, #{c.healthStatus}, #{c.tenantId}, #{c.borrowExpireTime}, #{c.iotCardNumber},
-            #{c.exchangeCount}, #{c.franchiseeId}, #{c.physicsStatus}, #{c.businessStatus}, #{c.stockStatus},#{c.warehouseId})
+            #{c.exchangeCount}, #{c.franchiseeId}, #{c.physicsStatus}, #{c.businessStatus}, #{c.stockStatus},#{c.warehouseId},#{c.label})
         
         </foreach>
     </insert>
@@ -820,8 +903,11 @@
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as
         dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
         teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,
-        teb.iot_card_number,teb.exchange_count,teb.uid,teb.guess_uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.guess_uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,teb.label
         from t_electricity_battery teb left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
@@ -869,6 +955,15 @@
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
         </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
@@ -877,6 +972,9 @@
         select count(1)
         from t_electricity_battery teb left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
@@ -924,6 +1022,15 @@
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
         </if>
     </select>
     
@@ -937,9 +1044,12 @@
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as
         dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
         teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,tbop.battery_v as boxVoltage,
-        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,teb.label
         from t_electricity_battery teb left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
@@ -975,7 +1085,15 @@
                 #{item}
             </foreach>
         </if>
-        
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
+        </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -983,6 +1101,9 @@
         select count(1)
         from t_electricity_battery teb left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
@@ -1018,16 +1139,28 @@
                 #{item}
             </foreach>
         </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
+        </if>
     </select>
     
     <select id="queryOverdueBatteryList" resultType="com.xiliulou.electricity.vo.ElectricityBatteryDataVO">
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as
         dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
         teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,tbop.battery_v as boxVoltage,
-        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,temc.member_card_expire_time
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,temc.member_card_expire_time,teb.label
         from t_electricity_battery teb left join t_user_battery_member_card temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.member_card_expire_time>0 and temc.del_flag=0
         and teb.business_status =2
         <if test="query.physicsStatus != null">
@@ -1065,6 +1198,15 @@
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.sort == 0">
             order by temc.member_card_expire_time desc
@@ -1079,6 +1221,9 @@
         from t_electricity_battery teb left join t_user_battery_member_card temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.member_card_expire_time>0 and temc.del_flag=0
         and teb.business_status =2
         <if test="query.physicsStatus != null">
@@ -1117,15 +1262,27 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
+        </if>
     </select>
     <select id="queryOverdueCarBatteryList" resultType="com.xiliulou.electricity.vo.ElectricityBatteryDataVO">
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as
         dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
         teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,tbop.battery_v as boxVoltage,
-        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,temc.due_time_total as 'memberCardExpireTime'
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,temc.due_time_total as 'memberCardExpireTime', teb.label
         from t_electricity_battery teb left join t_car_rental_package_member_term temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.del_flag=0 and temc.due_time_total >0 and temc.rental_package_type=2
         and teb.business_status =2
         <if test="query.physicsStatus != null">
@@ -1163,6 +1320,15 @@
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.sort == 0">
             order by temc.due_time_total desc
@@ -1177,6 +1343,9 @@
         from t_electricity_battery teb left join t_car_rental_package_member_term temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId} and teb.uid is not null and temc.del_flag=0 and temc.due_time_total >0 and temc.rental_package_type=2
         and teb.business_status =2
         <if test="query.physicsStatus != null">
@@ -1215,15 +1384,27 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
+        </if>
     </select>
     <select id="queryStockBatteryList" resultType="com.xiliulou.electricity.vo.ElectricityBatteryDataVO">
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as
         dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
         teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,tbop.battery_v as boxVoltage,
-        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no,teb.label
         from t_electricity_battery teb left join t_user_battery_member_card temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         and teb.physics_status =1 and teb.business_status =1
         <if test="query.physicsStatus != null">
@@ -1259,6 +1440,15 @@
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
         </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
@@ -1268,6 +1458,9 @@
         from t_electricity_battery teb left join t_user_battery_member_card temc on teb.uid=temc.uid
         left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
         left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         and teb.physics_status =1 and teb.business_status =1
         <if test="query.physicsStatus != null">
@@ -1303,6 +1496,15 @@
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="query.label != null and query.label.size() > 0">
+            and teb.label in
+            <foreach collection="query.label" item="label" index="index" open="(" close=")" separator=",">
+                #{label}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
         </if>
         order by teb.create_time desc
     </select>
@@ -1522,6 +1724,40 @@
         <foreach collection="uidList" item="uid" open="(" close=")" separator=",">
             #{uid}
         </foreach>
+    </select>
+    
+    <select id="selectListAllBatterySn" resultType="com.xiliulou.electricity.vo.battery.BatterySnVO">
+        select teb.sn
+        from t_electricity_battery teb left join t_electricity_cabinet_box tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
+        <if test="query.receiverId != null">
+            left join t_electricity_battery_label ebl on teb.sn=ebl.sn
+        </if>
+        where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
+        <if test="query.sn != null and query.sn !=''">
+            and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.franchiseeIds != null">
+            and teb.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.receiverId != null">
+            and ebl.receiver_id = #{query.receiverId}
+        </if>
+        <if test="query.labelsRuleOut != null">
+            and teb.label not in
+            <foreach collection="query.labelsRuleOut" item="labelRuleOut" index="index" open="(" close=")" separator=",">
+                #{labelRuleOut}
+            </foreach>
+        </if>
+        order by teb.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+    
+    <select id="selectBySnAndTenantId" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        <include refid="selectElectricityBattery"/>
+        where sn = #{sn} and tenant_id = #{tenantId}
     </select>
 
 

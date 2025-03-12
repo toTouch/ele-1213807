@@ -64,4 +64,25 @@ public class ElectricityBatteryQuery {
      * 库房id
      */
     private Long warehouseId;
+    
+    /**
+     * 电池标签
+     */
+    private List<Integer> label;
+    
+    /**
+     * 领用人，管理员uid或者商户id
+     */
+    private Long receiverId;
+    
+    /**
+     * 查询电池业务类型
+     *
+     */
+    private Integer searchType;
+    
+    /**
+     *
+     */
+    private List<Integer> labelsRuleOut;
 }

@@ -31,12 +31,51 @@ import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
+import com.xiliulou.electricity.entity.EleUserOperateHistory;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserAuthMessage;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.OverdueType;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.SignStatusEnum;
+import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageStatusVOEnum;
@@ -46,7 +85,6 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -397,6 +435,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Resource
     private EmergencyContactService emergencyContactService;
+    
 
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
@@ -1666,6 +1705,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
                     rentBatteryOrder.setOrderType(orderType);
                     rentBatteryOrderService.insert(rentBatteryOrder);
+                    
+                    // 修改原绑定电池标签为闲置
+                    electricityBatteryService.asyncModifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
                 }
             }
             
@@ -1717,12 +1759,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 ElectricityBattery electricityBattery = new ElectricityBattery();
                 electricityBattery.setId(oldElectricityBattery.getId());
                 electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
-                electricityBattery.setElectricityCabinetId(null);
-                electricityBattery.setElectricityCabinetName(null);
                 electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
                 electricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBattery.setBindTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(electricityBattery);
+                electricityBatteryService.updateBatteryUserExceptEid(electricityBattery);
                 
                 enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
                 
@@ -1733,6 +1773,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 // 保存电池被取走对应的订单，供后台租借状态电池展示
                 OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(),
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
+                
+                // 修改新绑定电池标签为租借正常
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode(), user.getUid()), false);
                 
                 try {
                     // 发送操作记录
@@ -1945,6 +1988,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         // 清除逾期用户备注
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
+        
+        // 修改电池标签为闲置
+        electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
         
         try {
             Map<String, Object> map = new HashMap<>();
@@ -4135,6 +4181,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(),
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
+                // 修改电池标签
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
+                
                 return null;
             });
             return R.ok();
@@ -4184,7 +4233,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 UserInfoGroupDetailQuery.builder().uid(userInfo.getUid())
                         .franchiseeId(batteryMemberCard.getFranchiseeId()).build());
         
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userInfoGroupNamesBos)) {
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBos)) {
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
@@ -4199,23 +4248,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
-
+    
+            Boolean everDel = userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
             if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
                 // 流失用户不允许购买续租类型的套餐
                 if (Objects.equals(batteryMemberCard.getRentType(), ApplicableTypeEnum.OLD.getCode())) {
                     log.warn("INTEGRATED PAYMENT WARN. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", userInfo.getUid(), batteryMemberCard.getId());
                     return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
                 }
-            } else  if (isOldUser(userInfo) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+            } else  if ((userInfo.getPayCount() > 0 || everDel) && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                 // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
                 log.warn(
                         "INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}",
                         userInfo.getUid(), batteryMemberCard.getId());
                 return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }
-
-            // 新用户无法购买续费套餐
-            if (userInfo.getPayCount() == 0 && BatteryMemberCard.RENT_TYPE_OLD.equals(
+    
+            // 新用户且未被打过删除标记，无法购买续费套餐
+            if (userInfo.getPayCount() == 0 && !everDel && BatteryMemberCard.RENT_TYPE_OLD.equals(
                     batteryMemberCard.getRentType())) {
                 log.warn(
                         "INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}",
@@ -4226,6 +4276,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         return Triple.of(true, null, null);
     }
+    
+    
     
 
     /**

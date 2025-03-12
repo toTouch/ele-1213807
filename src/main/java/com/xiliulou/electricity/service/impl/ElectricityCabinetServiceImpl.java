@@ -96,10 +96,10 @@ import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
-import com.xiliulou.electricity.service.exchange.AbstractOrderHandler;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
@@ -421,6 +421,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Resource
     private ElectricityCabinetBoxLockService electricityCabinetBoxLockService;
+    
+    @Resource
+    private ElectricityBatteryLabelService electricityBatteryLabelService;
 
 
     /**
@@ -482,7 +485,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Transactional
     public R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -519,6 +521,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         // 换电柜
         ElectricityCabinet electricityCabinet = new ElectricityCabinet();
         BeanUtil.copyProperties(electricityCabinetAddAndUpdate, electricityCabinet);
+        electricityCabinet.setPattern(null);
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());
         if (Objects.isNull(oldElectricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
@@ -1720,6 +1723,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             dataMap.put("cell_list", cellList);
             
+            // 处理开仓门，修改电池标签
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), electricityCabinetBoxList);
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
@@ -1730,6 +1735,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        
+        // 处理锁仓和启用时的电池标签、锁仓电池sn
+        if (Objects.equals(eleOuterCommandQuery.getCommand(), ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)) {
+            electricityBatteryLabelService.updateLockSnAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid());
+        }
+        
+        // 处理开仓门，修改电池标签
+        if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), null);
+        }
+        
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
         map.put("operateType", 1);
         map.put("deviceName", StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());
@@ -1832,6 +1848,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             dataMap.put("cell_list", cellList);
             eleOuterCommandQuery.setData(dataMap);
+            
+            // 处理开仓门，修改电池标签
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), electricityCabinetBoxList);
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
@@ -1842,6 +1861,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
+        
+        // 处理锁仓和启用时的电池标签、锁仓电池sn
+        if (Objects.equals(eleOuterCommandQuery.getCommand(), ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)) {
+            electricityBatteryLabelService.updateLockSnAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid());
+        }
+        
+        // 处理开仓门，修改电池标签
+        if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
+            electricityBatteryLabelService.updateOpenCellAndBatteryLabel(eleOuterCommandQuery, electricityCabinet, SecurityUtils.getUid(), null);
+        }
+        
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
         map.put("operateType", 1);
         map.put("deviceName", StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());
