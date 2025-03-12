@@ -9,6 +9,7 @@ import com.xiliulou.electricity.bo.meituan.MeiTuanOrderRedeemRollBackBO;
 import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMqContentConstant;
 import com.xiliulou.electricity.dto.thirdParty.MtDTO;
@@ -65,6 +66,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -336,7 +338,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             // 流失用户活动处理
             lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
             // 给第三方推送用户套餐订单
-            pushDataToThirdService.asyncPushUserMemberCardOrder(TtlTraceIdSupport.get(), tenantId, uid, meiTuanRiderMallOrder.getMeiTuanOrderId(),
+            pushDataToThirdService.asyncPushUserMemberCardOrder(MDC.get(CommonConstant.TRACE_ID), tenantId, uid, meiTuanRiderMallOrder.getMeiTuanOrderId(),
                     ThirdPartyMqContentConstant.MEI_TUAN_ORDER);
             
             return Triple.of(true, "", null);
