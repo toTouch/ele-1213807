@@ -670,7 +670,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public UserCloudBeanDetailVO cloudBeanDetailV2() {
-        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        Long merchantUid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
+        EnterpriseInfo enterpriseInfo = this.selectByUid(merchantUid);
         if (Objects.isNull(enterpriseInfo)) {
             log.error("USER CLOUD BEAN DETAIL ERROR!not found enterpriseInfo,uid={}", SecurityUtils.getUid());
             return null;
@@ -700,7 +701,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     @Slave
     public Triple<Boolean, String, Object> cloudBeanGeneralViewV2() {
-        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = this.selectByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
         if (Objects.isNull(enterpriseInfo)) {
             log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
             return Triple.of(true, null, null);
@@ -747,7 +748,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Override
     public Triple<Boolean, String, Object> refresh(Integer type) {
-        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "300074", "未找到企业信息");
         }
@@ -768,7 +769,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Override
     public Triple<Boolean, String, Object> queryRefresh(String sessionId) {
-        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "300074", "未找到企业信息");
         }
