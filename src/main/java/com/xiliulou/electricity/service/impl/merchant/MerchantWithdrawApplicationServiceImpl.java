@@ -275,7 +275,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationUpdate.setCheckTime(System.currentTimeMillis());
             merchantWithdrawApplicationUpdate.setUpdateTime(System.currentTimeMillis());
             merchantWithdrawApplicationUpdate.setOperator(user.getUid());
-            merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_SUCCESS);
+            merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.OFF_LINE_TRANSFER);
             merchantWithdrawApplicationUpdate.setRemark(reviewWithdrawApplicationRequest.getRemark());
 
             Integer result = merchantWithdrawApplicationMapper.updateOne(merchantWithdrawApplicationUpdate);
