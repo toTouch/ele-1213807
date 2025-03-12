@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user.enterprise;
 
+import com.xiliulou.common.sentinel.annotation.IdempotentCheck;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
@@ -11,11 +12,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +46,14 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     public R cloudBeanDetail() {
         return R.ok(enterpriseInfoService.cloudBeanDetail());
     }
+
+    /**
+     * 获取用户云豆详情
+     */
+    @GetMapping("/merchant/cloudBean/detailV2")
+    public R cloudBeanDetailV2() {
+        return R.ok(enterpriseInfoService.cloudBeanDetailV2());
+    }
     
     /**
      * 根据UID查询企业详情
@@ -59,7 +64,20 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     public R queryEnterpriseInfo() {
         return R.ok(enterpriseInfoService.selectDetailByUid(SecurityUtils.getUid()));
     }
-    
+
+    @GetMapping("/merchant/enterpriseInfo/cloudBean/refresh")
+    @IdempotentCheck(requestIntervalMilliseconds = 5000L)
+    public R refresh(@RequestParam(value = "type") Integer type) {
+
+        return returnTripleResult(enterpriseInfoService.refresh(type));
+    }
+
+    @GetMapping("/merchant/enterpriseInfo/cloudBean/queryRefresh")
+    public R queryRefresh(@RequestParam(value = "sessionId") String sessionId) {
+
+        return returnTripleResult(enterpriseInfoService.queryRefresh(sessionId));
+    }
+
     /**
      * 云豆充值
      */
@@ -74,6 +92,11 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     @GetMapping({"/user/enterpriseInfo/cloudBean/generalView", "/merchant/enterpriseInfo/cloudBean/generalView"})
     public R cloudBeanGeneralView() {
         return returnTripleResult(enterpriseInfoService.cloudBeanGeneralView());
+    }
+
+    @GetMapping("/merchant/enterpriseInfo/cloudBean/generalViewV2")
+    public R cloudBeanGeneralViewV2() {
+        return returnTripleResult(enterpriseInfoService.cloudBeanGeneralViewV2());
     }
     
     /**
