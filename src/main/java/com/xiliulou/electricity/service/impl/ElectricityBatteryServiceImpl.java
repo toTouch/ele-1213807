@@ -843,12 +843,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
                 batteryLabelUpdate.setId(batteryLabel.getId());
                 batteryLabelUpdate.setSn(newSn);
+                batteryLabelUpdate.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryLabelService.updateById(batteryLabelUpdate);
             }
             
             // 修改电池标签，注意传递的电池中，sn是修改前还是修改后的
             BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).newReceiverId(eleQuery.getReceiverId()).build();
-            asyncModifyLabel(electricityBatteryDb, null, dto, false);
+            asyncModifyLabel(electricityBatteryDb, null, dto, false, newSn);
             
             return R.ok();
         } else {
