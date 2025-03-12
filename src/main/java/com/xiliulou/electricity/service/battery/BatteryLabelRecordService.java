@@ -11,8 +11,6 @@ import java.util.List;
  * @create: 2025-02-14 15:41
  **/
 public interface BatteryLabelRecordService {
-
-    void sendRecord(ElectricityBattery battery, Long operatorUid, Integer newLabel, Long updateTime, Long oldReceiverId, Long newReceiverId);
     
     List<BatteryLabelRecord> listPage(BatteryLabelRecordRequest request);
     
