@@ -979,5 +979,8 @@ public interface CacheConstant {
 
 
     String CACHE_ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT = "ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT:%d:%s";
+
+
+    String ADMIN_DATA_ANALYZE_PASSWORD_KEY = "admin_data_analyze_password";
 }
 
