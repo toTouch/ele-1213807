@@ -108,4 +108,6 @@ public interface CarRentalPackageDepositPayMapper {
     List<UserDepositPayTypeDO> selectPayTypeByOrders(@Param("list") Collection<String> ordersOn);
     
     List<CarRentalPackageDepositPayPo> selectListByOrders(@Param("tenantId") Integer tenantId, @Param("orderNoList") List<String> orderNoList);
+
+    CarRentalPackageDepositPayPo selectDepositOrderByUid(@Param("uid") Long uid);
 }

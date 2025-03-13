@@ -1213,4 +1213,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         return Pair.of(Boolean.FALSE, null);
     }
+
+    @Override
+    @Slave
+    public EleDepositOrder queryDepositOrderByUid(Long uid) {
+        return eleDepositOrderMapper.selectDepositOrderByUid(uid);
+    }
 }

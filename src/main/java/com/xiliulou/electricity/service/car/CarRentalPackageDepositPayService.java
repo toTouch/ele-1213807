@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -133,4 +134,6 @@ public interface CarRentalPackageDepositPayService {
     Map<String, Integer> selectPayTypeByOrders(Collection<String> ordersOn);
     
     List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList);
+
+    CarRentalPackageDepositPayPo queryDepositOrderByUid(Long uid);
 }

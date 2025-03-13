@@ -17,21 +17,8 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Province;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
-import com.xiliulou.electricity.entity.UserDataScope;
-import com.xiliulou.electricity.entity.UserDelRecord;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
-import com.xiliulou.electricity.entity.UserRole;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -46,26 +33,8 @@ import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.request.user.UserRequest;
-import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.ProvinceService;
-import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.ServicePhoneService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserCarService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.UserRoleService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
@@ -102,6 +71,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -213,7 +183,13 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private UserDelRecordService userDelRecordService;
-    
+
+    @Resource
+    private EleDepositOrderService eleDepositOrderService;
+
+    @Resource
+    private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
+
     /**
      * 启用锁定用户
      *
@@ -1110,10 +1086,19 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
-        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
-                || Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
-                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            return Triple.of(false, "402030", "请退还押金后，进行删除操作");
+        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryDepositOrderByUid(uid);
+            if (Objects.nonNull(eleDepositOrder) && !Objects.equals(eleDepositOrder.getPayAmount(), BigDecimal.ZERO)) {
+                return Triple.of(false, "402030", "请退还押金后，进行删除操作");
+            }
+        }
+
+        if( Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())){
+            CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = carRentalPackageDepositPayService.queryDepositOrderByUid(uid);
+            if (Objects.nonNull(carRentalPackageDepositPayPo) && !Objects.equals(carRentalPackageDepositPayPo.getDeposit(), BigDecimal.ZERO)) {
+                return Triple.of(false, "402030", "请退还押金后，进行删除操作");
+            }
         }
         
         if (Objects.equals(userRentInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {

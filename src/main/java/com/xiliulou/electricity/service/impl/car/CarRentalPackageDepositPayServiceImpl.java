@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -252,5 +253,12 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     @Override
     public List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList) {
         return carRentalPackageDepositPayMapper.selectListByOrders(tenantId, orderNoList);
+    }
+
+
+    @Override
+    @Slave
+    public CarRentalPackageDepositPayPo queryDepositOrderByUid(Long uid) {
+        return carRentalPackageDepositPayMapper.selectDepositOrderByUid(uid);
     }
 }
