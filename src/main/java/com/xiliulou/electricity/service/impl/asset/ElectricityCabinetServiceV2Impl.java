@@ -184,10 +184,6 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                     assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), uid, warehouseId, sn, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
                             WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_IN.getCode());
                 }
-    
-                // 给第三方推送柜机信息
-                pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
-                        ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
             });
             
             return Triple.of(true, null, electricityCabinet.getId());

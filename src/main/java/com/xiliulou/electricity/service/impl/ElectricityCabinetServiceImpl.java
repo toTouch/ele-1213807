@@ -1396,7 +1396,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+        pushDataToThirdService.asyncPushCabinetStatus(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null,
                 ThirdPartyOperatorTypeEnum.ELE_CABINET_STATUS.getType());
         
         return R.ok();
@@ -4659,10 +4659,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         .returnTabType(RentReturnNormEnum.MIN_RETURN.getCode()).tenantId(electricityCabinet.getTenantId()).delFlag(electricityCabinet.getDelFlag())
                         .createTime(electricityCabinet.getCreateTime()).updateTime(electricityCabinet.getUpdateTime()).build();
                 electricityCabinetExtraService.insertOne(electricityCabinetExtra);
-    
-                // 给第三方推送柜机信息
-                pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
-                        ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
             });
         }
         
