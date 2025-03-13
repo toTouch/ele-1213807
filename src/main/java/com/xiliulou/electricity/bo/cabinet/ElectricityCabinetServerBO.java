@@ -10,5 +10,7 @@ public class ElectricityCabinetServerBO {
 
     private Long serverEndTime;
 
+    private Long serverBeginTime;
+
     private String sn;
 }

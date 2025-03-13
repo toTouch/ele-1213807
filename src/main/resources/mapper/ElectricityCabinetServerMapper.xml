@@ -245,6 +245,7 @@
         SELECT
         s.id 'cabinetServerId',
         s.server_end_time 'serverEndTime',
+        s.server_begin_time 'serverBeginTime',
         c.id 'cabinetId',
         c.sn
         FROM

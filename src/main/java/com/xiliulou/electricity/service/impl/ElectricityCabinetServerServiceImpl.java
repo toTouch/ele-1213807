@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -319,6 +318,8 @@ public class ElectricityCabinetServerServiceImpl
             return R.fail("请求参数错误!");
         }
 
+        Long uid = SecurityUtils.getUid();
+
         // 判断租户是否存在
         if (Objects.nonNull(request.getTenantId())) {
             Tenant tenant = tenantService.queryByIdFromCache(request.getTenantId());
@@ -330,11 +331,11 @@ public class ElectricityCabinetServerServiceImpl
         try {
             // 根据柜机sn处理服务时间
             if (ObjectUtils.isNotEmpty(request.getCabinetSnList())) {
-                return dealWithCabinetSnList(request);
+                return dealWithCabinetSnList(request, uid);
             }
 
             // 根据租户id处理柜机服务时间
-            dealWithTenantId(request);
+            dealWithTenantId(request, uid);
         } catch (Exception e) {
             log.error("add cabinet server end time error!", e);
         } finally {
@@ -344,7 +345,7 @@ public class ElectricityCabinetServerServiceImpl
         return R.ok();
     }
 
-    private void dealWithTenantId(ElectricityCabinetServerUpdateRequest request) {
+    private void dealWithTenantId(ElectricityCabinetServerUpdateRequest request, Long uid) {
         Long maxId = 0L;
         Integer size = 500;
         long updateTime = System.currentTimeMillis();
@@ -367,6 +368,16 @@ public class ElectricityCabinetServerServiceImpl
                     long serverEndTime = DateUtils.getAfterYear(item.getServerEndTime(), request.getYearNum());
                     // 修改柜机的服务时间
                     electricityCabinetServerMapper.updateServerEndTime(item.getCabinetServerId(), serverEndTime, updateTime);
+
+                    ElectricityCabinetServerOperRecord insert = new ElectricityCabinetServerOperRecord();
+                    insert.setCreateUid(uid);
+                    insert.setEleServerId(item.getCabinetServerId());
+                    insert.setOldServerBeginTime(item.getServerBeginTime());
+                    insert.setOldServerEndTime(item.getServerEndTime());
+                    insert.setNewServerBeginTime(item.getServerBeginTime());
+                    insert.setNewServerEndTime(serverEndTime);
+                    insert.setCreateTime(System.currentTimeMillis());
+                    electricityCabinetServerOperRecordService.insert(insert);
                 });
             });
         }
@@ -374,7 +385,7 @@ public class ElectricityCabinetServerServiceImpl
         log.info("add cabinet server end time success! tenantId:{}", request.getTenantId());
     }
 
-    private R dealWithCabinetSnList(ElectricityCabinetServerUpdateRequest request) {
+    private R dealWithCabinetSnList(ElectricityCabinetServerUpdateRequest request, Long uid) {
         List<String> cabinetSnList = new ArrayList<>(request.getCabinetSnList());
         List<String> repeatSnList = new ArrayList<>();
         List<String> notFindSnList = new ArrayList<>();
@@ -416,6 +427,16 @@ public class ElectricityCabinetServerServiceImpl
                 // 修改柜机的服务时间
                 long serverEndTime = DateUtils.getAfterYear(electricityCabinetServerBO.getServerEndTime(), request.getYearNum());
                 electricityCabinetServerMapper.updateServerEndTime(electricityCabinetServerBO.getCabinetServerId(), serverEndTime, updateTime);
+
+                ElectricityCabinetServerOperRecord insert = new ElectricityCabinetServerOperRecord();
+                insert.setCreateUid(uid);
+                insert.setEleServerId(electricityCabinetServerBO.getCabinetServerId());
+                insert.setOldServerBeginTime(electricityCabinetServerBO.getServerBeginTime());
+                insert.setOldServerEndTime(electricityCabinetServerBO.getServerEndTime());
+                insert.setNewServerBeginTime(electricityCabinetServerBO.getServerBeginTime());
+                insert.setNewServerEndTime(serverEndTime);
+                insert.setCreateTime(System.currentTimeMillis());
+                electricityCabinetServerOperRecordService.insert(insert);
             });
 
         });
