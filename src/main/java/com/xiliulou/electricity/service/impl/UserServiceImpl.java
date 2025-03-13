@@ -19,6 +19,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfigExtra;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Province;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.enums.ElectricityConfigExtraEnum;
 import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
@@ -50,6 +52,7 @@ import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigExtraService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ProvinceService;
@@ -213,6 +216,9 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private UserDelRecordService userDelRecordService;
+    
+    @Resource
+    private ElectricityConfigExtraService electricityConfigExtraService;
     
     /**
      * 启用锁定用户
@@ -1181,11 +1187,15 @@ public class UserServiceImpl implements UserService {
         
         String delPhone = StringUtils.EMPTY;
         String delIdNumber = StringUtils.EMPTY;
-        // 注意：payCount=0时，delPhone=""、delIdNumber=""
-        UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userRentInfo, tenantId);
-        if (Objects.nonNull(remarkPhoneAndIdNumber)) {
-            delPhone = remarkPhoneAndIdNumber.getDelPhone();
-            delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+    
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantIdFromCache(tenantId);
+        if (Objects.nonNull(electricityConfigExtra) && Objects.equals(ElectricityConfigExtraEnum.SWITCH_ON.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
+            // 注意：payCount=0时，delPhone=""、delIdNumber=""
+            UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userRentInfo, tenantId);
+            if (Objects.nonNull(remarkPhoneAndIdNumber)) {
+                delPhone = remarkPhoneAndIdNumber.getDelPhone();
+                delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+            }
         }
         
         userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,

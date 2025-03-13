@@ -4463,11 +4463,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Integer tenantId = userInfo.getTenantId();
         String delPhone = StringUtils.EMPTY;
         String delIdNumber = StringUtils.EMPTY;
-        // 注意：payCount=0时，delPhone=""、delIdNumber=""
-        UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userInfo, tenantId);
-        if (Objects.nonNull(remarkPhoneAndIdNumber)) {
-            delPhone = remarkPhoneAndIdNumber.getDelPhone();
-            delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+    
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantIdFromCache(tenantId);
+        if (Objects.nonNull(electricityConfigExtra) && Objects.equals(ElectricityConfigExtraEnum.SWITCH_ON.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
+            // 注意：payCount=0时，delPhone=""、delIdNumber=""
+            UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userInfo, tenantId);
+            if (Objects.nonNull(remarkPhoneAndIdNumber)) {
+                delPhone = remarkPhoneAndIdNumber.getDelPhone();
+                delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+            }
         }
 
         //给用户打注销中标记
