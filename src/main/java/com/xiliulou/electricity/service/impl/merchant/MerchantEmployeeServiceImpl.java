@@ -32,6 +32,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +99,12 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         if (Objects.nonNull(existNameUser)) {
             log.info("The user name has been used by other one for add merchant employee, name = {}, tenant id = {}", name, merchantEmployeeRequest.getTenantId());
             throw new BizException("120009", "用户姓名已存在");
+        }
+
+        // 判断邀请权限和站点代付权限是否都没有选中
+        if (Objects.equals(merchantEmployeeRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantEmployeeRequest.getEnterprisePackageAuth(),
+                MerchantConstant.DISABLE)) {
+            throw new BizException("120202", "推广权限，站点代付权限，必须选一个");
         }
         
         User existUser = userService.queryByUserPhoneFromDB(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
@@ -195,6 +202,12 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             if (Objects.nonNull(existUser)) {
                 throw new BizException("120002", "当前手机号已注册");
             }
+        }
+
+        // 判断邀请权限和站点代付权限是否都没有选中
+        if (Objects.equals(merchantEmployeeRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantEmployeeRequest.getEnterprisePackageAuth(),
+                MerchantConstant.DISABLE)) {
+            throw new BizException("120202", "推广权限，站点代付权限，必须选一个");
         }
 
         String oldPhone = user.getPhone();
