@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
 
 public interface EleDisableMemberCardRecordService {
     
@@ -52,4 +53,13 @@ public interface EleDisableMemberCardRecordService {
      */
     R<Object> handleDisableMemberCard(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, EleDisableMemberCardRecord eleDisableMemberCardRecord, Franchisee franchisee,
             BatteryMemberCard batteryMemberCard, Boolean sendOperateRecordOrNot);
+
+    /**
+     * 查询电的冻结纪录
+     *
+     * @param query uid
+     * @return: @return {@link R }
+     */
+
+    R queryMemberDisableList(UserDisableMemberQuery query);
 }

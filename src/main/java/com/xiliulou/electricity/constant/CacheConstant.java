@@ -739,7 +739,7 @@ public interface CacheConstant {
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
     
     String CACHE_LOST_USER_CHECK_LOCK = "cache_lost_user_check_lock:";
-    
+
     String FREE_DEPOSIT_PAY_LOCK = "free_deposit_pay_lock:";
     
     String CACHE_FY_CONFIG = "cache_fy_config:";
@@ -977,5 +977,10 @@ public interface CacheConstant {
      */
     String  CACHE_MERCHANT_WITHDRAW_NOTIFY_LOCK = "cache_merchant_withdraw_notify_lock:%s";
 
+
+    String CACHE_ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT = "ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT:%d:%s";
+
+
+    String ADMIN_DATA_ANALYZE_PASSWORD_KEY = "admin_data_analyze_password";
 }
 
