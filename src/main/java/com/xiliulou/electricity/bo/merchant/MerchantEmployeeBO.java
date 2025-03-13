@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.bo.merchant;
 
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -85,5 +86,9 @@ public class MerchantEmployeeBO {
         }
 
         return YesNoEnum.NO.getCode();
+    }
+
+    public boolean isMerchantLock() {
+        return this.merchantUserLockFlag.equals(User.USER_LOCK);
     }
 }
