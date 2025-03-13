@@ -24,6 +24,7 @@ import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -212,7 +213,7 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     @Slave
     @Override
     public Integer countReceived(Long receiverId) {
-        return electricityBatteryLabelMapper.countReceived(receiverId);
+        return electricityBatteryLabelMapper.countReceived(receiverId, TenantContextHolder.getTenantId());
     }
     
     @Override
