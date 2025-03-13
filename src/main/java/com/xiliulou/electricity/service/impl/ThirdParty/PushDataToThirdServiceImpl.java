@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -38,6 +39,12 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     public void asyncPushCabinet(String traceId, Integer tenantId, Long eid, String operateType) {
         thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_ELE_CABINET).operateType(operateType)
                 .addContext(ThirdPartyMqContentConstant.EID, eid).build());
+    }
+    
+    @Override
+    public void asyncPushCabinetList(String traceId, Integer tenantId, List<Long> eidList, String operateType) {
+        thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_ELE_CABINET).operateType(operateType)
+                .addContext(ThirdPartyMqContentConstant.EID_LIST, eidList).build());
     }
     
     @Override

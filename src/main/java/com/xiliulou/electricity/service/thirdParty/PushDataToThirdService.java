@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.thirdParty;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @date 2024/10/12 09:08:33
@@ -11,6 +13,8 @@ public interface PushDataToThirdService {
     void asyncPushRentOrder(String traceId, Integer tenantId, String orderId, Integer orderType);
     
     void asyncPushCabinet(String traceId, Integer tenantId, Long eid, String operateType);
+    
+    void asyncPushCabinetList(String traceId, Integer tenantId, List<Long> eidList, String operateType);
     
     void asyncPushCabinetStatus(String traceId, Integer tenantId, Long eid, Integer delayLevel, String operateType);
     

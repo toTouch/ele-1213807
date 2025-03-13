@@ -11,6 +11,8 @@ public interface ThirdPartyMqContentConstant {
     String ORDER_TYPE = "orderType";
     String EID = "eid";
     
+    String EID_LIST = "eidList";
+    
     String UID = "uid";
     
     Integer EXCHANGE_ORDER = 1;

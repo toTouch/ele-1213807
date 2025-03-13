@@ -68,7 +68,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -303,6 +302,10 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
                 merchantPlaceFeeRecordService.asyncInsertOne(finalMerchantPlaceFeeRecord);
             }
+    
+            // 给第三方推送柜机信息
+            pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                    ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
         });
         
         return Triple.of(true, null, null);
@@ -454,6 +457,11 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
         }
+    
+        // 给第三方推送柜机信息
+        pushDataToThirdService.asyncPushCabinetList(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(),
+                electricityCabinetList.stream().map(ElectricityCabinet::getId).map(Long::valueOf).collect(Collectors.toList()),
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
         
         return Triple.of(true, null, null);
     }
