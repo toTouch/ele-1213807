@@ -22,5 +22,7 @@ public class ThirdPartyDataDTO implements Serializable {
     
     private Integer tenantId;
     
+    private String operateType;
+    
     private Map<String, Object> context;
 }

@@ -10,9 +10,9 @@ public interface PushDataToThirdService {
     
     void asyncPushRentOrder(String traceId, Integer tenantId, String orderId, Integer orderType);
     
-    void asyncPushCabinet(String traceId, Integer tenantId, Long eid);
+    void asyncPushCabinet(String traceId, Integer tenantId, Long eid, String operateType);
     
-    void asyncPushCabinetStatus(String traceId, Integer tenantId, Long eid, Integer delayLevel);
+    void asyncPushCabinetStatus(String traceId, Integer tenantId, Long eid, Integer delayLevel, String operateType);
     
     void asyncPushUserMemberCardOrder(String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType);
 }

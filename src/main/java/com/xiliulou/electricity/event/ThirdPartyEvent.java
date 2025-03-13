@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.event;
 
 import com.xiliulou.electricity.dto.message.ThirdPartyDataDTO;
-import com.xiliulou.electricity.enums.thirdParth.ThirdPartyDataTypeEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyDataTypeEnum;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -30,6 +30,8 @@ public class ThirdPartyEvent implements Serializable {
     
     private Integer delayLevel;
     
+    private String operateType;
+    
     public ThirdPartyEvent(Map<String, Object> context) {
         this.context = context;
     }
@@ -40,6 +42,7 @@ public class ThirdPartyEvent implements Serializable {
         messageDTO.setTenantId(this.tenantId);
         messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyDataTypeEnum::getCode).orElse(null));
         messageDTO.setContext(this.context);
+        messageDTO.setOperateType(this.operateType);
         return messageDTO;
     }
     
@@ -78,6 +81,11 @@ public class ThirdPartyEvent implements Serializable {
         
         public ThirdPartyEvent.Builder delayLevel(Integer delayLevel) {
             this.event.delayLevel = delayLevel;
+            return this;
+        }
+    
+        public ThirdPartyEvent.Builder operateType(String operateType) {
+            this.event.operateType = operateType;
             return this;
         }
         

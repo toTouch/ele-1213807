@@ -16,7 +16,7 @@ import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.thirdparty.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.thirdParth.MeiTuanRiderMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;

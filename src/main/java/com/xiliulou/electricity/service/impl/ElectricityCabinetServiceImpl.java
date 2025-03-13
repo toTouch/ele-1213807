@@ -83,6 +83,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.notify.AbnormalAlarmExceptionTypeEnum;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -617,9 +618,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
-        
+    
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_EDIT.getType());
         
         return R.ok();
     }
@@ -1394,7 +1396,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_STATUS.getType());
         
         return R.ok();
     }
@@ -4656,6 +4659,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         .returnTabType(RentReturnNormEnum.MIN_RETURN.getCode()).tenantId(electricityCabinet.getTenantId()).delFlag(electricityCabinet.getDelFlag())
                         .createTime(electricityCabinet.getCreateTime()).updateTime(electricityCabinet.getUpdateTime()).build();
                 electricityCabinetExtraService.insertOne(electricityCabinetExtra);
+    
+                // 给第三方推送柜机信息
+                pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                        ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
             });
         }
         

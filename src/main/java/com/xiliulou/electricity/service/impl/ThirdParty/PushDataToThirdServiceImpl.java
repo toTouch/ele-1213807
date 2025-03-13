@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl.ThirdParty;
 
 import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMqContentConstant;
-import com.xiliulou.electricity.enums.thirdParth.ThirdPartyDataTypeEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyDataTypeEnum;
 import com.xiliulou.electricity.event.ThirdPartyEvent;
 import com.xiliulou.electricity.event.publish.ThirdPartyPublish;
 import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
@@ -35,16 +35,16 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     }
     
     @Override
-    public void asyncPushCabinet(String traceId, Integer tenantId, Long eid) {
-        thirdPartyPublish.publish(
-                ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_ELE_CABINET).addContext(ThirdPartyMqContentConstant.EID, eid)
-                        .build());
+    public void asyncPushCabinet(String traceId, Integer tenantId, Long eid, String operateType) {
+        thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_ELE_CABINET).operateType(operateType)
+                .addContext(ThirdPartyMqContentConstant.EID, eid).build());
     }
     
     @Override
-    public void asyncPushCabinetStatus(String traceId, Integer tenantId, Long eid, Integer delayLevel) {
-        thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_ELE_CABINET).delayLevel(delayLevel)
-                .addContext(ThirdPartyMqContentConstant.EID, eid).build());
+    public void asyncPushCabinetStatus(String traceId, Integer tenantId, Long eid, Integer delayLevel, String operateType) {
+        thirdPartyPublish.publish(
+                ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_ELE_CABINET).delayLevel(delayLevel).operateType(operateType)
+                        .addContext(ThirdPartyMqContentConstant.EID, eid).build());
     }
     
     @Override

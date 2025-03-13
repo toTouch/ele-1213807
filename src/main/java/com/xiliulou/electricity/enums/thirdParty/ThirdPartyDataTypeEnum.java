@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.enums.thirdParth;
+package com.xiliulou.electricity.enums.thirdParty;
 
 import lombok.Getter;
 

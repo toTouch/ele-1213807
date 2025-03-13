@@ -21,7 +21,7 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.thirdparty.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.enums.CheckFreezeDaysSourceEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
-import com.xiliulou.electricity.enums.thirdParth.MeiTuanRiderMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;

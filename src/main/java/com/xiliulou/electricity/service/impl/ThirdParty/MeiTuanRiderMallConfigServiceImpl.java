@@ -6,7 +6,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.thirdparty.MeiTuanRiderMallConfig;
-import com.xiliulou.electricity.enums.thirdParth.MeiTuanRiderMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.mapper.thirdPartyMall.MeiTuanRiderMallConfigMapper;
 import com.xiliulou.electricity.request.thirdParty.MeiTuanRiderMallConfigRequest;
 import com.xiliulou.electricity.service.ElectricityConfigService;

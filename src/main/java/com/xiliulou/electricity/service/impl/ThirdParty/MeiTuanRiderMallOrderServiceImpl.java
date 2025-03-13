@@ -26,7 +26,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
-import com.xiliulou.electricity.enums.thirdParth.MeiTuanRiderMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
 import com.xiliulou.electricity.mapper.thirdPartyMall.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.thirdParty.OrderQuery;
