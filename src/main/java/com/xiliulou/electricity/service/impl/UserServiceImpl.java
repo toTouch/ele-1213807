@@ -1089,7 +1089,7 @@ public class UserServiceImpl implements UserService {
         if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryDepositOrderByUid(uid);
             if (Objects.nonNull(eleDepositOrder) && !Objects.equals(eleDepositOrder.getPayAmount(), BigDecimal.ZERO)) {
-                return Triple.of(false, "402030", "请退还押金后，进行删除操作");
+                return Triple.of(false, "402030", "请退还换电押金后，进行删除操作");
             }
         }
 
@@ -1097,7 +1097,7 @@ public class UserServiceImpl implements UserService {
                 || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())){
             CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = carRentalPackageDepositPayService.queryDepositOrderByUid(uid);
             if (Objects.nonNull(carRentalPackageDepositPayPo) && !Objects.equals(carRentalPackageDepositPayPo.getDeposit(), BigDecimal.ZERO)) {
-                return Triple.of(false, "402030", "请退还押金后，进行删除操作");
+                return Triple.of(false, "402030", "请退还租车押金后，进行删除操作");
             }
         }
         
