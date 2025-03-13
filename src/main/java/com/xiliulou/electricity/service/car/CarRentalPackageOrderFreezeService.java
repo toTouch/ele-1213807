@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.car;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
-import org.apache.commons.lang3.tuple.Pair;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
+import com.xiliulou.electricity.vo.CarDisableMemberCardRecordVO;
 
 import java.util.List;
 
@@ -119,4 +121,13 @@ public interface CarRentalPackageOrderFreezeService {
      */
     CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo);
 
+
+    /**
+     * 查询电的冻结纪录
+     *
+     * @param query uid
+     * @return: @return {@link R }
+     */
+
+    List<CarDisableMemberCardRecordVO> queryMemberDisableList(UserDisableMemberQuery query);
 }
