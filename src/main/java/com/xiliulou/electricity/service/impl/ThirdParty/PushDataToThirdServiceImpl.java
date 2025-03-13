@@ -61,4 +61,10 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
                 .addContext(ThirdPartyMqContentConstant.ORDER_TYPE, orderType).build());
     }
     
+    @Override
+    public void asyncPushStore(String traceId, Integer tenantId, Long storeId, String operateType) {
+        thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_STORE).operateType(operateType)
+                .addContext(ThirdPartyMqContentConstant.STORE_ID, storeId).build());
+    }
+    
 }
