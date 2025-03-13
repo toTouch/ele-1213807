@@ -738,7 +738,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
-            enterpriseChannelUser.setInviterId(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
+            enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
             enterpriseChannelUser.setCloudBeanStatus(EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT);
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
@@ -784,7 +784,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
             enterpriseChannelUser.setCloudBeanStatus(EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT);
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
-            enterpriseChannelUser.setInviterId(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
+            enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setUid(query.getUid());
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
@@ -1732,7 +1732,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
             enterpriseChannelUser.setCloudBeanStatus(EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT);
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
-            enterpriseChannelUser.setInviterId(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
+            enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setUid(query.getUid());
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
@@ -1800,7 +1800,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             // 免押用户 不存在代付记录 则单独进行押金回收
             if (!isEnterpriseFreeDepositNoPay) {
-                Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(userInfo.getUid(), SecurityUtils.getUid());
+                Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(userInfo.getUid(), getSwitchOldEnterpriseUid(channelUser));
                 if (!tripleRecycle.getLeft()) {
                     log.warn("enterprise channel switch user recycle cloud bean warn,uid={}, msg={}", userInfo.getUid(), tripleRecycle.getRight());
                     return tripleRecycle;
@@ -1816,7 +1816,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 // 未回收的云豆的情况进行云豆回收
                 if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
                     // 回收云豆
-                    Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid(), SecurityUtils.getUid());
+                    Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid(), getSwitchOldEnterpriseUid(channelUser));
                     if (!triple.getLeft()) {
                         log.warn("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
                         return triple;
@@ -1834,7 +1834,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
             enterpriseChannelUser.setCloudBeanStatus(EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT);
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
-            enterpriseChannelUser.setInviterId(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
+            enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
             enterpriseChannelUser.setUid(query.getUid());
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
@@ -1866,7 +1866,18 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         return Triple.of(true, null, null);
     }
-    
+
+    private Long getSwitchOldEnterpriseUid(EnterpriseChannelUser channelUser) {
+        Long enterpriseId = channelUser.getEnterpriseId();
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        if (Objects.isNull(enterpriseInfo)) {
+            log.warn("query enterprise info failed by query franchisee, enterpriseId = {}", enterpriseId);
+            return 0L;
+        }
+
+        return enterpriseInfo.getUid();
+    }
+
     private Triple<Boolean, String, Object> checkUserEnableExit(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         

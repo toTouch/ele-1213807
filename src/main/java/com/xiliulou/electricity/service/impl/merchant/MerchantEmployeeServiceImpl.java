@@ -104,7 +104,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         // 判断邀请权限和站点代付权限是否都没有选中
         if (Objects.equals(merchantEmployeeRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantEmployeeRequest.getEnterprisePackageAuth(),
                 MerchantConstant.DISABLE)) {
-            throw new BizException("120202", "推广权限，站点代付权限，必须选一个");
+            throw new BizException("120202", "邀请和代付权限员工至少需要开启一个");
         }
         
         User existUser = userService.queryByUserPhoneFromDB(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
@@ -207,7 +207,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         // 判断邀请权限和站点代付权限是否都没有选中
         if (Objects.equals(merchantEmployeeRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantEmployeeRequest.getEnterprisePackageAuth(),
                 MerchantConstant.DISABLE)) {
-            throw new BizException("120202", "推广权限，站点代付权限，必须选一个");
+            throw new BizException("120202", "邀请和代付权限员工至少需要开启一个");
         }
 
         String oldPhone = user.getPhone();
