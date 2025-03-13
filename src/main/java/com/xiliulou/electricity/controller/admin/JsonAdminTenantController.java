@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -101,4 +102,12 @@ public class JsonAdminTenantController extends BaseController {
     public R addTenant(@PathVariable("id") Integer id) {
         return R.ok(tenantService.queryByIdFromCache(id));
     }
+
+
+    @GetMapping(value = "/admin/tenant/dataAnalyze")
+    public R dataAnalyze(@RequestParam("passWord") String passWord, HttpServletResponse response) {
+        tenantService.dataAnalyze(passWord, response);
+        return R.ok();
+    }
+
 }

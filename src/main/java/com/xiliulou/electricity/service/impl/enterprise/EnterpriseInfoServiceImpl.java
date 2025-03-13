@@ -10,6 +10,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.dto.enterprise.CloudBeanRefreshDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -36,24 +38,15 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
-import com.xiliulou.electricity.entity.enterprise.AnotherPayMembercardRecord;
-import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
-import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecordDetail;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
-import com.xiliulou.electricity.entity.enterprise.EnterprisePackage;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecordDetail;
+import com.xiliulou.electricity.entity.enterprise.*;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
-import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
-import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
-import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
-import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.enums.enterprise.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
@@ -82,16 +75,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
-import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
-import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordDetailService;
-import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordDetailService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
+import com.xiliulou.electricity.service.enterprise.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -102,6 +86,7 @@ import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoPackageVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
 import com.xiliulou.electricity.vo.enterprise.EnterprisePurchasedPackageResultVO;
 import com.xiliulou.electricity.vo.enterprise.UserCloudBeanDetailVO;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
@@ -126,17 +111,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -271,6 +246,15 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     private FreeDepositService freeDepositService;
+
+    @Resource
+    private EnterpriseCloudBeanDetailService enterpriseCloudBeanDetailService;
+
+    @Resource
+    private EnterpriseCloudBeanOverviewService enterpriseCloudBeanOverviewService;
+
+    @Resource
+    private RocketMqService rocketMqService;
     
     
     static XllThreadPoolExecutorService handleQueryCloudBeanPool = XllThreadPoolExecutors.newFixedThreadPool("HandleQueryCloudBeanPool", 6, "handle-query-cloud-bean-pool-thread");
@@ -667,7 +651,122 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         
         return Triple.of(true, null, null);
     }
-    
+
+    @Slave
+    @Override
+    public UserCloudBeanDetailVO cloudBeanDetailV2() {
+        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("USER CLOUD BEAN DETAIL ERROR!not found enterpriseInfo,uid={}", SecurityUtils.getUid());
+            return null;
+        }
+
+        UserCloudBeanDetailVO userCloudBeanDetailVO = new UserCloudBeanDetailVO();
+        userCloudBeanDetailVO.setTotalCloudBean(enterpriseInfo.getTotalBeanAmount());
+
+        EnterpriseCloudBeanDetail enterpriseCloudBeanDetail = enterpriseCloudBeanDetailService.queryByEnterpriseId(enterpriseInfo.getId());
+        if (Objects.isNull(enterpriseCloudBeanDetail)) {
+            log.info("USER CLOUD BEAN DETAIL ERROR!not found enterpriseCloudBeanDetail,enterpriseId={}", enterpriseInfo.getId());
+            userCloudBeanDetailVO.setDistributableCloudBean(NumberConstant.ZERO_D);
+            userCloudBeanDetailVO.setRecoveredCloudBean(NumberConstant.ZERO_D);
+            userCloudBeanDetailVO.setRecyclableCloudBean(NumberConstant.ZERO_D);
+
+            return userCloudBeanDetailVO;
+        }
+
+        userCloudBeanDetailVO.setDistributableCloudBean(enterpriseCloudBeanDetail.getDistributableCloudBean().doubleValue());
+        userCloudBeanDetailVO.setRecoveredCloudBean(enterpriseCloudBeanDetail.getRecoveredCloudBean().doubleValue());
+        userCloudBeanDetailVO.setRecyclableCloudBean(enterpriseCloudBeanDetail.getRecyclableCloudBean().doubleValue());
+        userCloudBeanDetailVO.setUpdateTime(enterpriseCloudBeanDetail.getUpdateTime());
+
+        return userCloudBeanDetailVO;
+    }
+
+    @Override
+    @Slave
+    public Triple<Boolean, String, Object> cloudBeanGeneralViewV2() {
+        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
+            return Triple.of(true, null, null);
+        }
+
+        CloudBeanGeneralViewVO cloudBeanGeneralViewVO = new CloudBeanGeneralViewVO();
+        cloudBeanGeneralViewVO.setCanAllocationCloudBean(enterpriseInfo.getTotalBeanAmount().doubleValue());
+
+        EnterpriseCloudBeanOverview enterpriseCloudBeanOverview = enterpriseCloudBeanOverviewService.queryByEnterpriseId(enterpriseInfo.getId());
+        if (Objects.isNull(enterpriseCloudBeanOverview)) {
+            log.info("ENTERPRISE ERROR! not found enterpriseCloudBeanOverview,enterpriseId={}", enterpriseInfo.getId());
+
+            cloudBeanGeneralViewVO.setAllocationCloudBean(0D);
+            cloudBeanGeneralViewVO.setAllocationMembercard(0);
+            cloudBeanGeneralViewVO.setAllocationUser(0L);
+
+            cloudBeanGeneralViewVO.setRecycleCloudBean(0D);
+            cloudBeanGeneralViewVO.setRecycleMembercard(0);
+            cloudBeanGeneralViewVO.setRecycleUser(0L);
+
+            cloudBeanGeneralViewVO.setCanRecycleCloudBean(0D);
+            cloudBeanGeneralViewVO.setCanRecycleMembercard(0);
+            cloudBeanGeneralViewVO.setCanRecycleUser(0L);
+
+            return Triple.of(true, null, cloudBeanGeneralViewVO);
+        }
+
+        cloudBeanGeneralViewVO.setAllocationCloudBean(enterpriseCloudBeanOverview.getAllocationCloudBean().doubleValue());
+        cloudBeanGeneralViewVO.setAllocationMembercard(enterpriseCloudBeanOverview.getAllocationPackageCount());
+        cloudBeanGeneralViewVO.setAllocationUser(enterpriseCloudBeanOverview.getAllocationUserCount());
+
+        cloudBeanGeneralViewVO.setRecycleCloudBean(enterpriseCloudBeanOverview.getRecycleCloudBean().doubleValue());
+        cloudBeanGeneralViewVO.setRecycleMembercard(enterpriseCloudBeanOverview.getRecyclePackageCount());
+        cloudBeanGeneralViewVO.setRecycleUser(enterpriseCloudBeanOverview.getRecycleUserCount());
+
+        cloudBeanGeneralViewVO.setCanRecycleCloudBean(enterpriseCloudBeanOverview.getCanRecycleCloudBean().doubleValue());
+        cloudBeanGeneralViewVO.setCanRecycleMembercard(enterpriseCloudBeanOverview.getCanPackageCount());
+        cloudBeanGeneralViewVO.setCanRecycleUser(enterpriseCloudBeanOverview.getCanRecycleUserCount());
+
+        cloudBeanGeneralViewVO.setUpdateTime(enterpriseCloudBeanOverview.getUpdateTime());
+
+        return Triple.of(true, null, cloudBeanGeneralViewVO);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> refresh(Integer type) {
+        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            return Triple.of(false, "300074", "未找到企业信息");
+        }
+
+        if (!BasicEnum.isExist(type, CloudBeanRefreshTypeEnum.class)) {
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+        }
+
+
+        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+
+        CloudBeanRefreshDTO cloudBeanRefreshDTO = CloudBeanRefreshDTO.builder().type(type).enterpriseId(enterpriseInfo.getId()).sessionId(sessionId).build();
+
+        rocketMqService.sendSyncMsg(MqProducerConstant.ENTERPRISE_CLOUD_BEAN_REFRESH_TOPIC, JsonUtil.toJson(cloudBeanRefreshDTO));
+
+        return Triple.of(true, null, sessionId);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> queryRefresh(String sessionId) {
+        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(SecurityUtils.getUid());
+        if (Objects.isNull(enterpriseInfo)) {
+            return Triple.of(false, "300074", "未找到企业信息");
+        }
+
+        String key = String.format(CacheConstant.CACHE_ENTERPRISE_CLOUD_BEAN_REFRESH_RESULT, enterpriseInfo.getId(), sessionId);
+        String result = redisService.get(key);
+        if (StringUtils.isNotBlank(result)) {
+            return Triple.of(true, null, YesNoEnum.YES.getCode());
+        } else {
+            return Triple.of(true, null, YesNoEnum.NO.getCode());
+        }
+    }
+
     private void unbindUserDataForFreeDeposit(UserInfo userInfo, EnterpriseChannelUser enterpriseChannelUser) {
         //清除用户租退电、购买套餐记录
         anotherPayMembercardRecordService.deleteByUid(userInfo.getUid());
