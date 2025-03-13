@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.ElectricityCabinetCardInfoBO;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
@@ -289,4 +290,6 @@ public interface ElectricityCabinetService {
     R countFullPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
 
     R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    List<ElectricityCabinetCardInfoBO> queryEleCardInfoByTenant(List<Integer> list);
 }

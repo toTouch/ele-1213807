@@ -1816,4 +1816,20 @@
             and area_id = #{areaId}
         </if>
     </select>
+    <select id="selectEleCardInfoByTenant"
+            resultType="com.xiliulou.electricity.bo.ElectricityCabinetCardInfoBO">
+        select tt.name as 'tenantName', cab.name as 'cabinetName', con.card_number as 'cardNumber', ts.server_begin_time
+        as 'createTime', ts.server_end_time as 'expireTime'
+        from t_electricity_cabinet cab
+        left join t_ele_other_config con on cab.id = con.eid
+        left join t_tenant tt on tt.id = cab.tenant_id
+        left join t_electricity_cabinet_server ts on ts.electricity_cabinet_id = cab.id
+        where cab.usable_status = 0
+        and cab.del_flag = 0
+        and cab.tenant_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by cab.id
+    </select>
 </mapper>
