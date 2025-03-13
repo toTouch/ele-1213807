@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper.car;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
+import com.xiliulou.electricity.vo.CarDisableMemberCardRecordVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -125,4 +127,5 @@ public interface CarRentalPackageOrderFreezeMapper {
      */
     CarRentalPackageOrderFreezePo selectLatestFreezeOrder(String purchaseOrderNo);
 
+    List<CarDisableMemberCardRecordVO> selectDisableListByUid(@Param("query") UserDisableMemberQuery query);
 }

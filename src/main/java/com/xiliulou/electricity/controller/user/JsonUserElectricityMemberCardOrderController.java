@@ -3,10 +3,9 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
-import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -14,7 +13,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -237,4 +235,28 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
         
         return returnTripleResult(electricityMemberCardOrderService.endOrder(orderNo, uid));
     }
+
+
+    /**
+     * 查询用户冻结纪录
+     *
+     * @return R
+     */
+    @GetMapping("user/memberCard/disable/list")
+    public R queryMemberDisableList(@RequestParam("offset") Long offset, @RequestParam("size") Long size) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+
+        return eleDisableMemberCardRecordService.queryMemberDisableList(UserDisableMemberQuery.builder().uid(uid).offset(offset).size(size).build());
+    }
+
 }

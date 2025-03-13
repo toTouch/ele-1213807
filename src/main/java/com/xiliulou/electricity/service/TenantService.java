@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.OperateDataAnalyze;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -35,4 +37,6 @@ public interface TenantService {
     
     
     List<Integer> queryIdListByStartId(Integer startId, Integer size);
+
+    void dataAnalyze(String passWord, HttpServletResponse response);
 }

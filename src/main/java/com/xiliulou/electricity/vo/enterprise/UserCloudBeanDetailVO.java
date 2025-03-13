@@ -16,16 +16,24 @@ public class UserCloudBeanDetailVO {
      * 云豆总数
      */
     private BigDecimal totalCloudBean;
+
     /**
      * 已分配云豆
      */
     private Double distributableCloudBean;
+
     /**
      * 已回收云豆
      */
     private Double recoveredCloudBean;
+
     /**
      * 可回收云豆
      */
     private Double recyclableCloudBean;
+
+    /**
+     *  更新时间
+     */
+    private Long updateTime;
 }

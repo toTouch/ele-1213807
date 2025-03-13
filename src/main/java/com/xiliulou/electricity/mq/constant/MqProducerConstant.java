@@ -70,6 +70,8 @@ public interface MqProducerConstant {
 
     String ENTERPRISE_USER_COST_RECORD_TOPIC = "ENTERPRISE_USER_COST_RECORD_TOPIC";
 
+    String ENTERPRISE_CLOUD_BEAN_REFRESH_TOPIC = "ENTERPRISE_CLOUD_BEAN_REFRESH_TOPIC";
+
     /**
      * 商户升级topic
      */

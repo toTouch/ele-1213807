@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FreeDepositExpireRecordMapper">
+
+
+    <sql id="baseSql">
+        id
+        , uid,order_id, real_name, phone, deposit_type, trans_amt, tenant_id, franchisee_id, store_id,
+          deposit_time, remark, status,operate_uid,operate_time, create_time, update_time
+    </sql>
+
+    <update id="updateStatus">
+        update t_free_deposit_expire_record
+        set status = 3,update_time = UNIX_TIMESTAMP() * 1000
+        , operate_time = UNIX_TIMESTAMP() * 1000
+        , operate_uid = #{operateUid}
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateRemark">
+        update t_free_deposit_expire_record
+        set remark    = #{remark},
+            update_time = UNIX_TIMESTAMP() * 1000
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from t_free_deposit_expire_record
+        where id = #{id}
+    </delete>
+
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.FreeDepositExpireRecord">
+        select
+        <include refid="baseSql"/>
+        from t_free_deposit_expire_record
+        where tenant_id = #{tenantId}
+        and status = #{status}
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+
+        <if test="status != null and status == 3">
+            order by update_time desc
+        </if>
+        <if test="status != null and (status == 1 or status == 2) ">
+            order by deposit_time
+        </if>
+        limit #{offset},#{size}
+    </select>
+
+    <select id="selectByCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_free_deposit_expire_record
+        where tenant_id = #{tenantId}
+        and status = #{status}
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+    </select>
+    <select id="selectByIds" resultType="integer">
+        select
+        count(1)
+        from t_free_deposit_expire_record
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.FreeDepositExpireRecord">
+        select
+        <include refid="baseSql"/>
+        from t_free_deposit_expire_record
+        where order_id = #{orderId}
+        and status in (1,2)
+    </select>
+</mapper>
