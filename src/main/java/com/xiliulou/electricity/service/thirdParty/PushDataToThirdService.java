@@ -26,4 +26,6 @@ public interface PushDataToThirdService {
     
     void asyncPushBatteryList(String traceId, Integer tenantId, List<String> snList, String operateType);
     
+    void asyncPushUserInfo(String traceId, Integer tenantId, Long uid, String operateType);
+    
 }

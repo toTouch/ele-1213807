@@ -15,6 +15,9 @@ public enum ThirdPartyOperatorTypeEnum {
     BATTERY_ADD("BATTERY_ADD", "新增电池"),
     BATTERY_EDIT("BATTERY_EDIT", "编辑电池"),
     BATTERY_STATUS("BATTERY_STATUS", "电池状态"),
+    USER_ADD("USER_ADD", "用户新增"),
+    USER_EDIT("USER_EDIT", "用户编辑"),
+    USER_STATUS("USER_STATUS", "用户状态"),
     STORE_ADD("STORE_ADD", "新增门店"),
     STORE_EDIT("STORE_EDIT", "编辑门店"),
     STORE_STATUS("STORE_STATUS", "禁启用门店");

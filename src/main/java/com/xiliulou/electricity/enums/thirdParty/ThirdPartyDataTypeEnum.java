@@ -13,8 +13,9 @@ public enum ThirdPartyDataTypeEnum {
     PUSH_BATTERY_EXCHANGE_ORDER("PUSH_BATTERY_EXCHANGE_ORDER", "换电订单"),
     PUSH_BATTERY_RENT_ORDER("PUSH_BATTERY_RENT_ORDER", "租电订单"),
     PUSH_ELE_CABINET("PUSH_ELE_CABINET", "换电柜"),
-    PUSH_BATTERY("PUSH_BATTERY","电池"),
-    PUSH_STORE("PUSH_STORE","门店");
+    PUSH_BATTERY("PUSH_BATTERY", "电池"),
+    PUSH_USER("PUSH_USER", "用户"),
+    PUSH_STORE("PUSH_STORE", "门店");
     
     private final String code;
     
