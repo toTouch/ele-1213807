@@ -533,9 +533,14 @@ public class TenantServiceImpl implements TenantService {
 
         // 查询所有的柜机信息
         List<ElectricityCabinetCardInfoBO> boList = electricityCabinetService.queryEleCardInfoByTenant(tenantIdList);
+        if (CollUtil.isEmpty(boList)){
+            return;
+        }
+
+        // 获取柜机流量卡模式
+        Map<String, Double> codeModeMap = this.getCodeMode();
 
         // 50一批请求获取流量信息
-        Map<String, Double> codeModeMap = getCodeMode();
         Map<String, CabinetCardDTO> cabinetCardMap = new HashMap<>();
         int batchSize = 50;
         IntStream.range(0, (boList.size() + batchSize - 1) / batchSize)
@@ -567,7 +572,7 @@ public class TenantServiceImpl implements TenantService {
             EasyExcel.write(outputStream, ElectricityCabinetCardInfoVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     .doWrite(result);
         } catch (IOException e) {
-            log.error("运营数据统计分析！", e);
+            log.error("柜机物联网卡流量！", e);
         }
     }
 
