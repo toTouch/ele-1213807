@@ -67,4 +67,16 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
                 .addContext(ThirdPartyMqContentConstant.STORE_ID, storeId).build());
     }
     
+    @Override
+    public void asyncPushBattery(String traceId, Integer tenantId, String sn, String operateType) {
+        thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_BATTERY).operateType(operateType)
+                .addContext(ThirdPartyMqContentConstant.BATTERY_SN, sn).build());
+    }
+    
+    @Override
+    public void asyncPushBatteryList(String traceId, Integer tenantId, List<String> snList, String operateType) {
+        thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_BATTERY).operateType(operateType)
+                .addContext(ThirdPartyMqContentConstant.BATTERY_SN_LIST, snList).build());
+    }
+    
 }

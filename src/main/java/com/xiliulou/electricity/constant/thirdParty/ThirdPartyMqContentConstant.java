@@ -13,6 +13,8 @@ public interface ThirdPartyMqContentConstant {
     String EID_LIST = "eidList";
     String UID = "uid";
     String STORE_ID = "storeId";
+    String BATTERY_SN = "batterySn";
+    String BATTERY_SN_LIST = "batterySnList";
     Integer EXCHANGE_ORDER = 1;
     Integer RENT_ORDER = 2;
     Integer MEI_TUAN_ORDER = 3;
