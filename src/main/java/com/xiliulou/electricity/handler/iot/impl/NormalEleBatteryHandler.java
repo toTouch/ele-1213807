@@ -377,6 +377,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryStatus(updateBattery);
             // TODO: 2023/1/3 BTC
+            
+            // 此处需要触发一次电池标签的离仓逻辑
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(electricityBattery, eleBox);
         }
 
     }
@@ -407,6 +410,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
             electricityBatteryService.updateBatteryStatus(updateBattery);
             // TODO: 2023/1/3 BTC
+            
+            // 此处需要触发一次电池标签的离仓逻辑
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(electricityBattery, eleBox);
         }
     }
 
