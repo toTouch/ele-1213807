@@ -138,6 +138,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserMoveHistoryService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -445,6 +446,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
+    
+    @Resource
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
     
     /**
      * 分页查询
@@ -1708,6 +1712,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     
                     // 修改原绑定电池标签为闲置
                     electricityBatteryService.asyncModifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
+                    electricityBatteryLabelBizService.clearCacheBySn(isBindElectricityBattery.getSn());
                 }
             }
             
@@ -1989,8 +1994,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 清除逾期用户备注
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         
-        // 修改电池标签为闲置
+        // 修改电池标签为闲置，并清除一下预修改标签
         electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
+        electricityBatteryLabelBizService.clearCacheBySn(oldElectricityBattery.getSn());
         
         try {
             Map<String, Object> map = new HashMap<>();

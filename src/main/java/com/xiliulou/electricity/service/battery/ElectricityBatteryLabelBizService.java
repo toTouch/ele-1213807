@@ -42,4 +42,9 @@ public interface ElectricityBatteryLabelBizService {
     void sendRecordAndGeneralHandling(ElectricityBattery battery, Long operatorUid, Integer newLabel, Integer oldLabel, Long updateTime, Long oldReceiverId, Long newReceiverId);
     
     void insertWithBattery(ElectricityBattery battery);
+    
+    /**
+     * 根据电池sn清除预修改标签
+     */
+    void clearCacheBySn(String sn);
 }

@@ -1,13 +1,16 @@
 package com.xiliulou.electricity.service.impl.battery;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
@@ -99,7 +102,10 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     @Resource
     private ElectricityCabinetBoxService electricityCabinetBoxService;
     
-    private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 1, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
+    @Resource
+    private RedisService redisService;
+    
+    private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 2, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
     
     
     @Override
@@ -451,7 +457,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             });
             
         } catch (Exception e) {
-            log.error("CHECK RENT STATUS FOR LABEL error! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
+            log.error("CHECK RENT STATUS FOR LABEL ERROR! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
         }
     }
     
@@ -498,5 +504,27 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         Integer newLabel = battery.getLabel();
         battery.setLabel(null);
         sendRecordAndGeneralHandling(battery, SecurityUtils.getUid(), newLabel, null, now, null, null);
+    }
+    
+    @Override
+    public void clearCacheBySn(String sn) {
+        try {
+            String traceId = MDC.get(CommonConstant.TRACE_ID);
+            checkRentStatusForLabelExecutor.execute(() -> {
+                MDC.put(CommonConstant.TRACE_ID, traceId);
+                
+                List<ElectricityCabinetBox> cabinetBoxes = electricityCabinetBoxService.listBySnList(List.of(sn));
+                if (CollectionUtils.isEmpty(cabinetBoxes)) {
+                    return;
+                }
+                
+                for (ElectricityCabinetBox box : cabinetBoxes) {
+                    redisService.delete(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), sn));
+                }
+            });
+            
+        } catch (Exception e) {
+            log.error("CLEAR CACHE BY SN ERROR! sn={}", sn, e);
+        }
     }
 }
