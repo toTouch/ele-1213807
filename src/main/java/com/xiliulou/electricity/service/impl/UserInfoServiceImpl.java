@@ -514,9 +514,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public UserInfo insert(UserInfo userInfo) {
         userInfoMapper.insert(userInfo);
-        
-        // 给第三方推送用户信息
-        pushDataToThirdService.asyncPushUserInfo(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), userInfo.getUid(), ThirdPartyOperatorTypeEnum.USER_ADD.getType());
         return userInfo;
     }
     
