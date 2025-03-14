@@ -2188,4 +2188,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0025", "自助开仓失败");
         }
     }
+
+    @Override
+    @Slave
+    public RentBatteryOrder queryLatelyReturnOrder(Long uid, Long scanTime, Long startTime) {
+        return rentBatteryOrderMapper.selectLatelyReturnOrder(uid, scanTime, startTime);
+    }
 }
