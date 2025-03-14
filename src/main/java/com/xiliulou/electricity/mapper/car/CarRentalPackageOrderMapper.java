@@ -219,4 +219,6 @@ public interface CarRentalPackageOrderMapper {
     List<CarRentalPackageOrderPo> selectListByUidAndUseStatus(@Param("uidList")List<Long> uidList, @Param("useStatus")Integer useStatus);
 
     Integer existNotFinishOrderByUid(@Param("uid") Long uid);
+
+    Long selectLastPayTime(@Param("uid") Long uid);
 }

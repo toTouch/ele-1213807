@@ -32,7 +32,7 @@ public interface UserDelRecordService {
     
     UserDelRecord queryByUidAndStatus(Long uid, List<Integer> statusList);
     
-    Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay);
+    Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay,  Long userLastPayTime);
     
     void asyncRecoverUserInfoGroup(Long uid);
     

@@ -160,4 +160,6 @@ public interface UserService {
     R updateTenantPassword(ResetPasswordRequest request);
     
     R listAdministrator(UserRequest request, TokenUser user);
+
+    Long getUserLastPayTime(Long uid);
 }

@@ -70,4 +70,10 @@ public class UserDelRecord {
      * 租户ID
      */
     private Integer tenantId;
+
+
+    /**
+     * 套餐购买时间
+     */
+    private Long purchaseTime;
 }

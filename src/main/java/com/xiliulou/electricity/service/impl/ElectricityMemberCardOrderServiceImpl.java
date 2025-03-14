@@ -4034,4 +4034,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         return validDays;
     }
+
+    @Override
+    @Slave
+    public Long queryLastPayTime(Long uid) {
+        return electricityMemberCardOrderMapper.selectLastPayTime(uid);
+    }
 }

@@ -236,4 +236,6 @@ public interface CarRentalPackageOrderService {
 
     List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus);
     boolean existNotFinishOrderByUid(Long uid);
+
+    Long queryLastPayTime(Long uid);
 }

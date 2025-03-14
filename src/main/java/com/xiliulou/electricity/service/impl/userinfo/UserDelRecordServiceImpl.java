@@ -117,10 +117,10 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
     }
     
     @Override
-    public Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay) {
+    public Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay, Long userLastPayTime) {
         UserDelRecord userDelRecord = UserDelRecord.builder().uid(uid).delPhone(Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone)
                 .delIdNumber(Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber).delTime(System.currentTimeMillis()).delayDay(delayDay).status(status)
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(franchiseeId).tenantId(tenantId).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(franchiseeId).tenantId(tenantId).purchaseTime(userLastPayTime).build();
     
         return userDelRecordMapper.insert(userDelRecord);
     }

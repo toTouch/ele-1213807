@@ -175,4 +175,6 @@ public interface ElectricityMemberCardOrderService {
      * @return 套餐订单
      */
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
+
+    Long queryLastPayTime(Long uid);
 }

@@ -8,8 +8,8 @@
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_del_record(uid, del_phone, del_id_number, del_time, delay_day, status, create_time, update_time, franchisee_id, tenant_id)
-        values (#{uid}, #{delPhone}, #{delIdNumber}, #{delTime}, #{delayDay}, #{status}, #{createTime}, #{updateTime}, #{franchiseeId}, #{tenantId})
+        insert into t_user_del_record(uid, del_phone, del_id_number, del_time, delay_day, status, create_time, update_time, franchisee_id, tenant_id,purchase_time)
+        values (#{uid}, #{delPhone}, #{delIdNumber}, #{delTime}, #{delayDay}, #{status}, #{createTime}, #{updateTime}, #{franchiseeId}, #{tenantId},#{purchaseTime})
     </insert>
     
     <update id="updateStatusById">

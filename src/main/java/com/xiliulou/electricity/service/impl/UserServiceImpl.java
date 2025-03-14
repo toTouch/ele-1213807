@@ -36,6 +36,7 @@ import com.xiliulou.electricity.request.user.UserRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
@@ -189,6 +190,10 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
+
+
+    @Resource
+    private CarRentalPackageOrderService carRentalPackageOrderService;
 
     /**
      * 启用锁定用户
@@ -1172,10 +1177,11 @@ public class UserServiceImpl implements UserService {
             delPhone = remarkPhoneAndIdNumber.getDelPhone();
             delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
         }
-        
+
         userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
-                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
+                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0, getUserLastPayTime(uid));
     }
+
     
     @Override
     public R userAutoCodeGeneration() {
@@ -1407,5 +1413,18 @@ public class UserServiceImpl implements UserService {
         
         return Boolean.TRUE;
     }
-    
+
+
+    @Override
+    public Long getUserLastPayTime(Long uid) {
+        Long batteryOrderPayTime = electricityMemberCardOrderService.queryLastPayTime(uid);
+        Long carOrderPayTime = carRentalPackageOrderService.queryLastPayTime(uid);
+        if (Objects.nonNull(batteryOrderPayTime) && Objects.nonNull(carOrderPayTime)) {
+            return Math.max(batteryOrderPayTime, carOrderPayTime);
+        }
+        if (Objects.nonNull(batteryOrderPayTime)) {
+            return batteryOrderPayTime;
+        }
+        return carOrderPayTime;
+    }
 }

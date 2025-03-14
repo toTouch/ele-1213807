@@ -599,4 +599,12 @@
         from t_electricity_member_card_order
         where external_agreement_no = #{externalAgreementNo}
     </select>
+
+    <select id="selectLastPayTime" resultType="java.lang.Long">
+        select create_time
+        from t_electricity_member_card_order
+        where uid = #{uid}
+          and status = 1
+        order by create_time desc limit 1
+    </select>
 </mapper>
