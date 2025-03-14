@@ -294,6 +294,14 @@
         order by id desc limit 1
     </select>
     
+    <select id="selectLatestBySn" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
+        select id,uid,update_time
+        from t_electricity_cabinet_order
+        where (old_electricity_battery_sn = #{sn} or new_electricity_battery_sn = #{sn})
+          and status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
+        order by id desc limit 1
+    </select>
+    
     <!--获取柜机今日订单-->
     <select id="selectTodayExchangeOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
         select

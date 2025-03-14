@@ -68,6 +68,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     private MerchantAreaService merchantAreaService;
     
     @Resource
+    private ElectricityCabinetBoxService electricityCabinetBoxService;
+    
+    @Resource
     private BoxOtherPropertiesService boxOtherPropertiesService;
 
     @Override
@@ -162,21 +165,32 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
         }
     
         Map<Integer, List<BoxOtherProperties>> finalBoxOtherPropertiesMap = boxOtherPropertiesMap;
-        return electricityCabinetBoxLocks.stream().map(item -> {
+        
+        Map<Integer, List<String>> eidAndCellNo = new HashMap<>();
+        List<ElectricityCabinetBoxLockPageVO> cabinetBoxLockPageVOS = electricityCabinetBoxLocks.stream().map(item -> {
+            Integer electricityCabinetId = item.getElectricityCabinetId();
             ElectricityCabinetBoxLockPageVO vo = new ElectricityCabinetBoxLockPageVO();
             BeanUtil.copyProperties(item, vo);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             vo.setStoreName(Objects.nonNull(store) ? store.getName() : null);
-    
-            Integer electricityCabinetId = item.getElectricityCabinetId();
+            
             Optional.ofNullable(electricityCabinetService.queryByIdFromCache(electricityCabinetId)).ifPresent(cabinet -> {
                 vo.setName(cabinet.getName());
                 vo.setAddress(cabinet.getAddress());
                 MerchantArea merchantArea = merchantAreaService.queryById(cabinet.getAreaId());
                 vo.setAreaName(Objects.isNull(merchantArea) ? null : merchantArea.getName());
             });
+            
+            // 收集柜机id与仓门号用于查询锁仓sn
+            if (eidAndCellNo.containsKey(electricityCabinetId)) {
+                eidAndCellNo.get(electricityCabinetId).add(item.getCellNo().toString());
+            } else {
+                List<String> cellNoList = new ArrayList<>();
+                cellNoList.add(item.getCellNo().toString());
+                eidAndCellNo.put(electricityCabinetId, cellNoList);
+            }
     
             // 锁仓备注
             if (MapUtils.isNotEmpty(finalBoxOtherPropertiesMap) && finalBoxOtherPropertiesMap.containsKey(electricityCabinetId)) {
@@ -186,16 +200,28 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
                         if (Objects.isNull(boxOtherProperties)) {
                             return;
                         }
-                        
+                
                         if (Objects.nonNull(item.getCellNo()) && Objects.equals(boxOtherProperties.getCellNo(), item.getCellNo().toString())) {
                             vo.setRemark(boxOtherProperties.getRemark());
                         }
                     });
                 }
             }
-
             return vo;
         }).collect(Collectors.toList());
+        
+        // 查询拼装锁定在仓sn
+        Map<Integer, Map<String, String>> lockSnsMap = electricityCabinetBoxService.listLockSnsByEidAndCellNo(eidAndCellNo);
+        if (MapUtils.isEmpty(lockSnsMap)) {
+            return cabinetBoxLockPageVOS;
+        }
+        for (ElectricityCabinetBoxLockPageVO pageVO : cabinetBoxLockPageVOS) {
+            if (lockSnsMap.containsKey(pageVO.getElectricityCabinetId())) {
+                pageVO.setLockSn(lockSnsMap.get(pageVO.getElectricityCabinetId()).get(pageVO.getCellNo()));
+            }
+        }
+        
+        return cabinetBoxLockPageVOS;
     }
 
     @Override

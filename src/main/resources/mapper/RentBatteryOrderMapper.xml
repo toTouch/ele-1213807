@@ -147,6 +147,14 @@
         limit 1
     </select>
     
+    <select id="selectLatestBySn" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
+        select id,uid,electricity_battery_sn,update_time from t_rent_battery_order
+        where electricity_battery_sn=#{sn} and tenant_id=#{tenantId}
+          and status = 'RENT_BATTERY_TAKE_SUCCESS'
+        order by create_time desc
+            limit 1
+    </select>
+    
     <resultMap type="com.xiliulou.electricity.entity.EleCabinetUsedRecord" id="EleCabinetUsedRecordMap">
         <result property="id" column="electricity_cabinet_id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>

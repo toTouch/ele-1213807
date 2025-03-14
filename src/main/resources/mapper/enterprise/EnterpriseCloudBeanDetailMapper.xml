@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanDetailMapper">
+    <sql id="column">
+         enterprise_id, distributable_cloud_bean, recovered_cloud_bean, recyclable_cloud_bean, del_flag, tenant_id,
+        create_time, update_time
+    </sql>
+
+    <select id="selectByEnterpriseId"
+            resultType="com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanDetail">
+        select <include refid="column"/>
+            from t_enterprise_cloud_bean_detail
+            where
+                enterprise_id = #{enterpriseId}
+              and del_flag = 0
+    </select>
+</mapper>
+

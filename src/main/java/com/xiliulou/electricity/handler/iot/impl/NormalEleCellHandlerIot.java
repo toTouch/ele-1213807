@@ -148,6 +148,10 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
             // 移除锁仓列表
             removeLockBox(electricityCabinet.getId(), eleCellVo);
+            
+            // 为保证锁仓sn在格挡启用后再删除，只能在此处清除锁仓sn，但是会产生多余的IO
+            // 本需求又需要优先保证不影响现有功能，若想整合到上文的格挡更新中就需要提前查询格挡信息并做业务逻辑判断，既没有减少IO，又影响了现有逻辑，暂不整合
+            electricityCabinetBoxService.updateLockSnByEidAndCellNo(electricityCabinet.getId(), cellNo, null);
         }
     }
 
@@ -172,10 +176,6 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
                 serviceWrapper.execute(() -> {
                     if (StrUtil.isEmpty(eleCellVo.getCell_no())) {
                         log.error("SaveLockBox Error! cellNo is empty,sessionId is {}", eleCellVo.getSessionId());
-                        return;
-                    }
-                    if (Objects.isNull(eleCellVo.getLockReason())) {
-                        log.warn("SaveLockBox warn! lockReason is empty,sessionId is {}", eleCellVo.getSessionId());
                         return;
                     }
                     ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(eleCellVo.getCell_no()))

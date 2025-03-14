@@ -125,6 +125,11 @@ public class ElectricityCabinetBox {
      */
     private Long emptyGridStartTime;
     
+    /**
+     * 锁定在仓的电池sn
+     */
+    private String lockSn;
+    
     
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

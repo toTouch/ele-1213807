@@ -1719,6 +1719,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Slave
     @Override
+    public RentBatteryOrder selectLatestBySn(Integer tenantId, String sn) {
+        return rentBatteryOrderMapper.selectLatestBySn(tenantId, sn);
+    }
+    
+    @Slave
+    @Override
     public List<EleCabinetUsedRecordVO> findEleCabinetUsedRecords(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery) {
         List<EleCabinetUsedRecord> eleCabinetUsedRecords = rentBatteryOrderMapper.selectEleCabinetUsedRecords(eleCabinetUsedRecordQuery);
         if (CollectionUtils.isEmpty(eleCabinetUsedRecords)) {
