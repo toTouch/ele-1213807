@@ -3824,7 +3824,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<Long, BatteryMemberCard> batteryMemberCardMap = null;
         List<BatteryMemberCard> batteryMemberCards = null;
         if (CollectionUtils.isNotEmpty(packageIds)) {
-            batteryMemberCards = batteryMemberCardService.queryListByIdList(packageIds);
+            batteryMemberCards = batteryMemberCardService.listByIdListIncludeDel(packageIds);
             if (CollectionUtils.isNotEmpty(batteryMemberCards)) {
                 batteryMemberCardMap = batteryMemberCards.stream().collect(Collectors.toMap(BatteryMemberCard::getId, v -> v, (k1, k2) -> k1));
             }
