@@ -79,8 +79,8 @@
         order by id desc
     </select>
     
-    <select id="selectDelUidByDelIdNumber" resultType="java.lang.Long">
-        select uid
+    <select id="selectDelUidByDelIdNumber" resultType="com.xiliulou.electricity.entity.UserDelRecord">
+        select  <include refid="basic_field"/>
         from t_user_del_record
         where tenant_id = #{tenantId}
           and del_id_number is not null
