@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.userinfo;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserInfoGroupConstant;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -242,9 +243,9 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
             log.info("recoverLostUserMark Info! purchaseTime is null, uid is {}", userDelRecord.getUid());
             return;
         }
-        Long days = (System.currentTimeMillis() - userDelRecord.getPurchaseTime()) / 1000 / 60 / 60 / 24;
-        log.info("recoverLostUserMark Info! days is {}, lostUserDays is {}, uid is {}, delUid is {}", days, electricityConfig.getLostUserDays(), userInfo.getUid(), userDelRecord.getUid());
-        if (days > electricityConfig.getLostUserDays()) {
+        Long timeMillis = System.currentTimeMillis() - userDelRecord.getPurchaseTime();
+        log.info("recoverLostUserMark Info! timeMillis is {}, lostUserDays is {}, uid is {}, delUid is {}", timeMillis, electricityConfig.getLostUserDays(), userInfo.getUid(), userDelRecord.getUid());
+        if (timeMillis > (electricityConfig.getLostUserDays() * TimeConstant.DAY_MILLISECOND)) {
             userInfoExtraService.updateByUid(UserInfoExtra.builder().lostUserStatus(YesNoEnum.YES.getCode()).uid(userInfo.getUid()).build());
         }
     }
