@@ -580,7 +580,7 @@ public class TenantServiceImpl implements TenantService {
         if (CollUtil.isEmpty(subList)) {
             return;
         }
-        List<String> cardNumberList = subList.stream().map(ElectricityCabinetCardInfoBO::getCardNumber).collect(Collectors.toList());
+        List<String> cardNumberList = subList.stream().map(ElectricityCabinetCardInfoBO::getCardNumber).filter(StrUtil::isNotBlank).collect(Collectors.toList());
         JSONObject json = new JSONObject();
         json.put("iccids", cardNumberList);
         String endPoint = CardInfoConstant.url + CardInfoConstant.apiKey + CardInfoConstant.cardInfoPath + "?_sign=" + getMD5(json.toJSONString());
