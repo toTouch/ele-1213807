@@ -6002,6 +6002,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return electricityCabinetMapper.selectCabinetIdByFilter(query);
     }
 
+    @Slave
     @Override
     public R listCabinetLocation(long size, long offset) {
         List<CabinetLocationVO> cabinetList = electricityCabinetMapper.selectCabinetLocationByPage(size, offset);
