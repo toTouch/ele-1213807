@@ -11,7 +11,6 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMqContentConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.QuickExchangeResultDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -24,6 +23,7 @@ import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
@@ -316,7 +316,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     
         // 给第三方推送换电订单
         pushDataToThirdService.asyncPushExchangeOrder(openFullCellRsp.getSessionId(), electricityCabinet.getTenantId(), cabinetOrder.getOrderId(),
-                ThirdPartyMqContentConstant.EXCHANGE_ORDER);
+                ThirdPartyOperatorTypeEnum.ORDER_TYPE_EXCHANGE.getType());
         
     }
     

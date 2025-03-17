@@ -14,7 +14,6 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.thirdParty.ThirdPartyMqContentConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
@@ -36,6 +35,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
@@ -754,7 +754,7 @@ public class EleOperateQueueHandler {
             
             // 给第三方推送租电订单
             pushDataToThirdService.asyncPushRentOrder(finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(), rentBatteryOrder.getOrderId(),
-                    ThirdPartyMqContentConstant.RENT_ORDER);
+                    ThirdPartyOperatorTypeEnum.ORDER_TYPE_RENT.getType());
         }
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),

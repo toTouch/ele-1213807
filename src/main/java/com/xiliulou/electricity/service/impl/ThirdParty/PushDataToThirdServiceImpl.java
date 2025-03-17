@@ -24,13 +24,13 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     private ThirdPartyPublish thirdPartyPublish;
     
     @Override
-    public void asyncPushExchangeOrder(String traceId, Integer tenantId, String orderId, Integer orderType) {
+    public void asyncPushExchangeOrder(String traceId, Integer tenantId, String orderId, String orderType) {
         thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_BATTERY_EXCHANGE_ORDER)
                 .addContext(ThirdPartyMqContentConstant.ORDER_ID, orderId).addContext(ThirdPartyMqContentConstant.ORDER_TYPE, orderType).build());
     }
     
     @Override
-    public void asyncPushRentOrder(String traceId, Integer tenantId, String orderId, Integer orderType) {
+    public void asyncPushRentOrder(String traceId, Integer tenantId, String orderId, String orderType) {
         thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_BATTERY_RENT_ORDER)
                 .addContext(ThirdPartyMqContentConstant.ORDER_ID, orderId).addContext(ThirdPartyMqContentConstant.ORDER_TYPE, orderType).build());
     }
@@ -55,7 +55,7 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     }
     
     @Override
-    public void asyncPushUserMemberCardOrder(String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType) {
+    public void asyncPushUserMemberCardOrder(String traceId, Integer tenantId, Long uid, String mtOrderId, String orderType) {
         thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_BATTERY_MEMBER_CARD_ORDER)
                 .addContext(ThirdPartyMqContentConstant.UID, uid).addContext(ThirdPartyMqContentConstant.ORDER_ID, mtOrderId)
                 .addContext(ThirdPartyMqContentConstant.ORDER_TYPE, orderType).build());

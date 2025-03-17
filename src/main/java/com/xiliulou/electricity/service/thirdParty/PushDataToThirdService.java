@@ -8,9 +8,9 @@ import java.util.List;
  */
 public interface PushDataToThirdService {
     
-    void asyncPushExchangeOrder(String traceId, Integer tenantId, String orderId, Integer orderType);
+    void asyncPushExchangeOrder(String traceId, Integer tenantId, String orderId, String orderType);
     
-    void asyncPushRentOrder(String traceId, Integer tenantId, String orderId, Integer orderType);
+    void asyncPushRentOrder(String traceId, Integer tenantId, String orderId, String orderType);
     
     void asyncPushCabinet(String traceId, Integer tenantId, Long eid, String operateType);
     
@@ -18,7 +18,7 @@ public interface PushDataToThirdService {
     
     void asyncPushCabinetStatus(String traceId, Integer tenantId, Long eid, Integer delayLevel, String operateType);
     
-    void asyncPushUserMemberCardOrder(String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType);
+    void asyncPushUserMemberCardOrder(String traceId, Integer tenantId, Long uid, String mtOrderId, String orderType);
     
     void asyncPushStore(String traceId, Integer tenantId, Long storeId, String operateType);
     
