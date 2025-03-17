@@ -243,7 +243,7 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
             log.info("recoverLostUserMark Info! purchaseTime is null, uid is {}", userDelRecord.getUid());
             return;
         }
-        Long timeMillis = System.currentTimeMillis() - userDelRecord.getPurchaseTime();
+        long timeMillis = System.currentTimeMillis() - userDelRecord.getPurchaseTime();
         log.info("recoverLostUserMark Info! timeMillis is {}, lostUserDays is {}, uid is {}, delUid is {}", timeMillis, electricityConfig.getLostUserDays(), userInfo.getUid(), userDelRecord.getUid());
         if (timeMillis > (electricityConfig.getLostUserDays() * TimeConstant.DAY_MILLISECOND)) {
             userInfoExtraService.updateByUid(UserInfoExtra.builder().lostUserStatus(YesNoEnum.YES.getCode()).uid(userInfo.getUid()).build());
