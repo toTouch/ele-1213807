@@ -315,7 +315,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 newBattery.setBorrowExpireTime(null);
                 electricityBatteryService.updateBatteryUser(newBattery);
                 
-                // 处理电池标签，强制修改
+                // 处理电池标签
                 electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
             }
         }
@@ -341,7 +341,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             OrderForBatteryUtil.save(electricityCabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, newElectricityBattery.getSn());
             
             // 处理电池标签，强制修改
-            electricityBatteryService.asyncModifyLabel(newElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
+            electricityBatteryService.asyncModifyLabel(newElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), true);
         }
         
     }
