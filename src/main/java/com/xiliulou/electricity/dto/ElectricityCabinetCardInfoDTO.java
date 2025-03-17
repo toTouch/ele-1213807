@@ -17,9 +17,12 @@ public class ElectricityCabinetCardInfoDTO {
 
     private String cardNumber;
 
-    private Long createTime;
+    private String createTime;
 
-    private Long expireTime;
+    /**
+     * 柜机过期时间
+     */
+    private String expireTime;
 
     private String dataBalance;
 
@@ -27,6 +30,9 @@ public class ElectricityCabinetCardInfoDTO {
 
     private String code;
 
+    /**
+     * 卡过期时间
+     */
     private String expiryDate;
 
     private String codeType;

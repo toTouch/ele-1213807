@@ -38,10 +38,10 @@ public class ElectricityCabinetCardInfoVO {
     private String codeType;
 
     @ExcelProperty("柜机创建时间")
-    private Long createTime;
+    private String createTime;
 
     @ExcelProperty("柜机到期时间")
-    private Long expireTime;
+    private String expireTime;
 
 
 }

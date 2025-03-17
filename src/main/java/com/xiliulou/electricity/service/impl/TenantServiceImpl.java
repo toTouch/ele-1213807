@@ -36,6 +36,7 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.service.retrofit.MsgCenterRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetCardInfoVO;
 import com.xiliulou.electricity.vo.OperateDataAnalyzeExcelVO;
@@ -552,6 +553,8 @@ public class TenantServiceImpl implements TenantService {
 
         List<ElectricityCabinetCardInfoDTO> result = boList.stream().map(item -> {
             ElectricityCabinetCardInfoDTO dto = BeanUtil.copyProperties(item, ElectricityCabinetCardInfoDTO.class);
+            dto.setCreateTime(DateUtils.parseTimeToStringDate(item.getCreateTime()));
+            dto.setExpireTime(DateUtils.parseTimeToStringDate(item.getExpireTime()));
             CabinetCardDTO cabinetCardDTO = cabinetCardMap.get(item.getCardNumber());
             if (Objects.nonNull(cabinetCardDTO)) {
                 dto.setDataBalance(cabinetCardDTO.getDataBalance());
