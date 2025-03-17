@@ -553,8 +553,8 @@ public class TenantServiceImpl implements TenantService {
 
         List<ElectricityCabinetCardInfoDTO> result = boList.stream().map(item -> {
             ElectricityCabinetCardInfoDTO dto = BeanUtil.copyProperties(item, ElectricityCabinetCardInfoDTO.class);
-            dto.setCreateTime(DateUtils.parseTimeToStringDate(item.getCreateTime()));
-            dto.setExpireTime(DateUtils.parseTimeToStringDate(item.getExpireTime()));
+            dto.setCreateTime(Objects.nonNull(item.getCreateTime()) ? DateUtils.parseTimeToStringDate(item.getCreateTime()) : null);
+            dto.setExpireTime(Objects.nonNull(item.getExpireTime()) ? DateUtils.parseTimeToStringDate(item.getExpireTime()) : null);
             CabinetCardDTO cabinetCardDTO = cabinetCardMap.get(item.getCardNumber());
             if (Objects.nonNull(cabinetCardDTO)) {
                 dto.setDataBalance(cabinetCardDTO.getDataBalance());
