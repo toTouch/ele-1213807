@@ -289,4 +289,6 @@ public interface ElectricityCabinetService {
     R countFullPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
 
     R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listCabinetLocation(long size, long offset);
 }
