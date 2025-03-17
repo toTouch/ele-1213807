@@ -36,6 +36,7 @@ import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -83,6 +84,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
@@ -109,6 +111,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -263,6 +266,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Resource
     private UserDelRecordService userDelRecordService;
+
+    @Resource
+    private ApplicationContext applicationContext;
+
+    @Resource
+    private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -1218,5 +1227,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Slave
     public EleDepositOrder queryDepositOrderByUid(Long uid) {
         return eleDepositOrderMapper.selectDepositOrderByUid(uid);
+    }
+
+    @Override
+    public Boolean isZeroDepositOrder(Long uid) {
+        EleDepositOrder eleDepositOrder = applicationContext.getBean(EleDepositOrderService.class).queryDepositOrderByUid(uid);
+        if (Objects.isNull(eleDepositOrder)) {
+            log.info("isZeroDepositOrder Info! not found eleDepositOrder, uid is {}", uid);
+            return false;
+        }
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
+        BigDecimal refundAmount = getRefundAmountV2(eleDepositOrder, freeDepositOrder);
+        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            return false;
+        }
+        return true;
     }
 }

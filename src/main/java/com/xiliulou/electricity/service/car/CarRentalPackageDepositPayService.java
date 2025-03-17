@@ -136,4 +136,6 @@ public interface CarRentalPackageDepositPayService {
     List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList);
 
     CarRentalPackageDepositPayPo queryDepositOrderByUid(Long uid);
+
+    Boolean isCarZeroDepositOrder(Long uid);
 }

@@ -18,7 +18,6 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -72,7 +71,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -190,7 +188,6 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
-
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -1092,16 +1089,15 @@ public class UserServiceImpl implements UserService {
         }
 
         if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryDepositOrderByUid(uid);
-            if (Objects.nonNull(eleDepositOrder) && !Objects.equals(eleDepositOrder.getPayAmount(), BigDecimal.ZERO)) {
+            // 如果不是零元退押
+            if (eleDepositOrderService.isZeroDepositOrder(uid)) {
                 return Triple.of(false, "402030", "请退还换电押金后，进行删除操作");
             }
         }
 
-        if( Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
-                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())){
-            CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = carRentalPackageDepositPayService.queryDepositOrderByUid(uid);
-            if (Objects.nonNull(carRentalPackageDepositPayPo) && !Objects.equals(carRentalPackageDepositPayPo.getDeposit(), BigDecimal.ZERO)) {
+        if (Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            if (carRentalPackageDepositPayService.isCarZeroDepositOrder(uid)) {
                 return Triple.of(false, "402030", "请退还租车押金后，进行删除操作");
             }
         }

@@ -99,4 +99,6 @@ public interface EleDepositOrderService {
     List<EleDepositOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList);
 
     EleDepositOrder queryDepositOrderByUid(Long uid);
+
+    Boolean isZeroDepositOrder(Long uid);
 }
