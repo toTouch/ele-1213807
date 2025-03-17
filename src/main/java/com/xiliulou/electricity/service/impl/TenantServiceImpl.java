@@ -534,8 +534,8 @@ public class TenantServiceImpl implements TenantService {
 
         // 查询所有的柜机信息
         List<ElectricityCabinetCardInfoBO> boList = electricityCabinetService.queryEleCardInfoByTenant(tenantIdList);
-        if (CollUtil.isEmpty(boList)){
-            return;
+        if (CollUtil.isEmpty(boList)) {
+            throw new BizException("当前租户下暂无柜机！");
         }
 
         // 获取柜机流量卡模式
