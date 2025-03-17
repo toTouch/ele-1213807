@@ -1817,7 +1817,7 @@
         </if>
     </select>
 
-    <select id="selectCabinetLocationByPage" resultType="com.xiliulou.electricity.vo.ElectricityCabinetLocationVO">
+    <select id="selectCabinetLocationByPage" resultType="com.xiliulou.electricity.vo.CabinetLocationVO">
         select longitude,
                latitude,
                tenant_id

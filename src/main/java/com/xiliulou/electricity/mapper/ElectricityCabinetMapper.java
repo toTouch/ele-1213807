@@ -16,10 +16,8 @@ import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAn
 import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 换电柜表(TElectricityCabinet)表数据库访问层
@@ -147,5 +145,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     List<Integer> selectCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
 
-    List<ElectricityCabinetLocationVO> selectCabinetLocationByPage(@Param("size") Long size, @Param("offset") Long offset);
+    List<CabinetLocationVO> selectCabinetLocationByPage(@Param("size") Long size, @Param("offset") Long offset);
 }

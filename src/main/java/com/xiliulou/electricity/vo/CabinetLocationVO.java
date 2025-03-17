@@ -1,10 +1,6 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.constant.EleCabinetConstant;
 import lombok.Data;
-
-import java.math.BigDecimal;
-import java.util.Map;
 
 /**
  * @author zzlong
@@ -12,7 +8,7 @@ import java.util.Map;
  * @date 2025/3/17 10:38
  */
 @Data
-public class ElectricityCabinetLocationVO {
+public class CabinetLocationVO {
     /**
      * 地址经度
      */
