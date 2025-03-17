@@ -3,13 +3,17 @@ package com.xiliulou.electricity.handler.iot.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
 import com.xiliulou.electricity.enums.LockTypeEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
@@ -18,6 +22,7 @@ import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
@@ -151,7 +156,7 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             
             // 为保证锁仓sn在格挡启用后再删除，只能在此处清除锁仓sn，但是会产生多余的IO
             // 本需求又需要优先保证不影响现有功能，若想整合到上文的格挡更新中就需要提前查询格挡信息并做业务逻辑判断，既没有减少IO，又影响了现有逻辑，暂不整合
-            electricityCabinetBoxService.updateLockSnByEidAndCellNo(electricityCabinet.getId(), cellNo, null);
+            modifyLabelAndClearLockSn(electricityCabinet.getId(), cellNo);
         }
     }
 
@@ -196,6 +201,29 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             log.error("saveLockBox Error! sessionId is {}", eleCellVo.getSessionId());
         } finally {
             TtlTraceIdSupport.clear();
+        }
+    }
+    
+    private void modifyLabelAndClearLockSn(Integer eid, String cellNo) {
+        try {
+            String traceId = MDC.get(CommonConstant.TRACE_ID);
+            serviceWrapper.execute(() -> {
+                MDC.put(CommonConstant.TRACE_ID, traceId);
+                
+                electricityCabinetBoxService.updateLockSnByEidAndCellNo(eid, cellNo, null);
+                
+                // 将电池锁定在仓的电池标签处理为闲置
+                ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(eid, cellNo);
+                if (Objects.isNull(box)) {
+                    log.warn("MODIFY LABEL AND CLEAR LOCK SN WARN! box is null, eid={}, cellNo={}", eid, cellNo);
+                    return;
+                }
+                
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(box.getLockSn(), box.getTenantId());
+                electricityBatteryService.syncModifyLabel(electricityBattery, box, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
+            });
+        } catch (Exception e) {
+            log.error("MODIFY LABEL AND CLEAR LOCK SN ERROR! eid={}, cellNo={}", eid, cellNo, e);
         }
     }
 
