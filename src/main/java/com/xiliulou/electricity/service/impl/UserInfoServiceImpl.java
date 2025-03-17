@@ -4459,24 +4459,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.warn("DeleteAccount WARN! userAccount is cancelling, uid={}", uid);
             return R.fail("120163", "账号处于注销缓冲期内，无法操作");
         }
-
-        Integer tenantId = userInfo.getTenantId();
-        String delPhone = StringUtils.EMPTY;
-        String delIdNumber = StringUtils.EMPTY;
     
-        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantIdFromCache(tenantId);
-        if (Objects.nonNull(electricityConfigExtra) && Objects.equals(ElectricityConfigExtraEnum.SWITCH_ON.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
-            // 注意：payCount=0时，delPhone=""、delIdNumber=""
-            UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userInfo, tenantId);
-            if (Objects.nonNull(remarkPhoneAndIdNumber)) {
-                delPhone = remarkPhoneAndIdNumber.getDelPhone();
-                delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
-            }
-        }
-
-        //给用户打注销中标记
-        userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
-                UserStatusEnum.USER_STATUS_CANCELLING.getCode(), tenantId, userInfo.getFranchiseeId(), UserStatusEnum.USER_DELAY_DAY_30.getCode());
+        // 注销时不打标记，batch定时任务注销成功时才打标记
+        userDelRecordService.insert(uid, StringUtils.EMPTY, StringUtils.EMPTY, UserStatusEnum.USER_STATUS_CANCELLING.getCode(), userInfo.getTenantId(), userInfo.getFranchiseeId(),
+                UserStatusEnum.USER_DELAY_DAY_30.getCode());
 
         return R.ok();
     }
