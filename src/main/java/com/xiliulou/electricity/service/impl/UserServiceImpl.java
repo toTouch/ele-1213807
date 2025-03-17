@@ -1171,35 +1171,66 @@ public class UserServiceImpl implements UserService {
         userInfoGroupBizService.deleteGroupDetailByUid(uid, null);
     
         //给用户打删除标记
-        markDelUser(userRentInfo, tenantId, uid);
-        
+        Triple<Boolean, String, Object> markDelUser = markDelUser(userRentInfo, tenantId, uid);
+        if (!markDelUser.getLeft()) {
+            return Triple.of(false, markDelUser.getMiddle(), markDelUser.getRight());
+        }
+    
         return Triple.of(true, null, null);
     }
     
-    private void markDelUser(UserInfo userRentInfo, Integer tenantId, Long uid) {
-        // 是否为"注销中"
-        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
-        if (Objects.nonNull(userDelRecord)) {
-            // 更新为"已删除"
-            userDelRecordService.updateStatusById(userDelRecord.getId(), UserStatusEnum.USER_STATUS_DELETED.getCode(), System.currentTimeMillis());
-            return;
+    private Triple<Boolean, String, Object> markDelUser(UserInfo userRentInfo, Integer tenantId, Long uid) {
+        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantIdFromCache(tenantId);
+        if (Objects.isNull(electricityConfigExtra)) {
+            log.error("MarkDelUser error! electricityConfigExtra is null,tenantId={} ", tenantId);
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
         }
         
         String delPhone = StringUtils.EMPTY;
         String delIdNumber = StringUtils.EMPTY;
-    
-        ElectricityConfigExtra electricityConfigExtra = electricityConfigExtraService.queryByTenantIdFromCache(tenantId);
-        if (Objects.nonNull(electricityConfigExtra) && Objects.equals(ElectricityConfigExtraEnum.SWITCH_ON.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
+        
+        // 是否为"注销中"
+        UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
+        if (Objects.nonNull(userDelRecord)) {
+            if (Objects.equals(ElectricityConfigExtraEnum.SWITCH_ON.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
+                // 开启状态：记录历史标记
+                // 注意：payCount=0时，delPhone=""、delIdNumber=""
+                UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userRentInfo, tenantId);
+                if (Objects.nonNull(remarkPhoneAndIdNumber)) {
+                    delPhone = remarkPhoneAndIdNumber.getDelPhone();
+                    delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
+                }
+                
+                // 更新为"已删除"，并打标记
+                userDelRecordService.update(
+                        UserDelRecord.builder().id(userDelRecord.getId()).status(UserStatusEnum.USER_STATUS_DELETED.getCode()).updateTime(System.currentTimeMillis())
+                                .delPhone(Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone).delIdNumber(Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber)
+                                .build());
+            } else {
+                // 关闭状态：清除历史标记
+                userDelRecordService.clearUserDelMark(userRentInfo.getPhone(), userRentInfo.getIdNumber(), tenantId);
+            }
+            
+            return Triple.of(true, null, null);
+        }
+        
+        if (Objects.equals(ElectricityConfigExtraEnum.SWITCH_ON.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
+            // 开启状态：记录历史标记
             // 注意：payCount=0时，delPhone=""、delIdNumber=""
             UserDelRecord remarkPhoneAndIdNumber = userDelRecordService.getRemarkPhoneAndIdNumber(userRentInfo, tenantId);
             if (Objects.nonNull(remarkPhoneAndIdNumber)) {
                 delPhone = remarkPhoneAndIdNumber.getDelPhone();
                 delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
             }
+            
+            userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
+                    UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
+        } else {
+            // 关闭状态：清除历史标记
+            userDelRecordService.clearUserDelMark(userRentInfo.getPhone(), userRentInfo.getIdNumber(), tenantId);
         }
         
-        userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
-                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
+        return Triple.of(true, null, null);
     }
     
     @Override

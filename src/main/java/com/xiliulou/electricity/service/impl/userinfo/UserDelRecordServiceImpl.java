@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.userinfo;
 
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.UserInfoGroupConstant;
@@ -14,6 +15,8 @@ import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetai
 import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.userinfo.UserDelRecordMapper;
+import com.xiliulou.electricity.query.supper.ClearUserDelMarkRequest;
+import com.xiliulou.electricity.queryModel.ClearUserDelMarkQueryModel;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
@@ -345,6 +348,51 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
     @Override
     public Long queryDelUidByDelIdNumber(String idNumber, Integer tenantId) {
         return userDelRecordMapper.selectDelUidByDelIdNumber(idNumber, tenantId);
+    }
+    
+    @Override
+    public R adminClearUserDelMark(ClearUserDelMarkRequest clearUserDelMarkRequest) {
+        Integer tenantId = clearUserDelMarkRequest.getTenantId();
+        String phoneDelMark = clearUserDelMarkRequest.getPhoneDelMark();
+        String idNumberDelMark = clearUserDelMarkRequest.getIdNumberDelMark();
+        if (StringUtils.isBlank(phoneDelMark) && StringUtils.isBlank(idNumberDelMark)) {
+            return R.fail("120165", "手机号和身份证号码不能同时为空");
+        }
+        
+        return R.ok(clearUserDelMark(phoneDelMark, idNumberDelMark, tenantId));
+    }
+    
+    @Override
+    public Integer clearUserDelMark(String phone, String idNumber, Integer tenantId) {
+        Integer count = 0;
+        
+        // 手机号和身份证号码同时存在时，先根据手机号清除再根据身份证号码清除
+        if (StringUtils.isNotBlank(phone) && StringUtils.isNotBlank(phone)) {
+            ClearUserDelMarkQueryModel phoneQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).phoneDelMark(phone).build();
+            Integer delPhoneCount = userDelRecordMapper.clearUserDelMark(phoneQueryModel);
+            count += delPhoneCount;
+            
+            ClearUserDelMarkQueryModel idNumberQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).idNumberDelMark(idNumber).build();
+            Integer delIdNumberCount = userDelRecordMapper.clearUserDelMark(idNumberQueryModel);
+            count += delIdNumberCount;
+        } else if (StringUtils.isNotBlank(phone) && StringUtils.isBlank(idNumber)) {
+            // 根据手机号清除
+            ClearUserDelMarkQueryModel phoneQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).phoneDelMark(phone).build();
+            Integer delPhoneCount = userDelRecordMapper.clearUserDelMark(phoneQueryModel);
+            count += delPhoneCount;
+        } else if (StringUtils.isBlank(phone) && StringUtils.isNotBlank(idNumber)) {
+            // 根据身份证号码清除
+            ClearUserDelMarkQueryModel idNumberQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).idNumberDelMark(idNumber).build();
+            Integer delIdNumberCount = userDelRecordMapper.clearUserDelMark(idNumberQueryModel);
+            count += delIdNumberCount;
+        }
+        
+        return count;
+    }
+    
+    @Override
+    public Integer update(UserDelRecord userDelRecord) {
+        return userDelRecordMapper.update(userDelRecord);
     }
     
 }
