@@ -2162,6 +2162,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return false;
             }
             
+            log.info("BATTERY LABEL MODIFY LABEL INFO! battery={}, box={}, dto={}, forcedModification={}, newSn={}", JsonUtil.toJson(electricityBattery),
+                    Objects.nonNull(box) ? JsonUtil.toJson(box) : "null", JsonUtil.toJson(dto), forcedModification, StringUtils.isNotEmpty(newSn) ? newSn : "null");
+            
             // 原本想减少数据库IO，电池从外部传入，但是出现了外部传入参数与当前数据库内数据不一致的情况，还是在这里查询一次，减少业务异常
             // 此处需要注意在编辑电池修改sn的同时修改标签，查询数据时，应当使用哪个sn查询，这里可以使用新sn查询标签关联数据，为了逻辑简单在编辑电池方法中修改了关联数据的sn
             String snForSearch = StringUtils.isBlank(newSn) || StringUtils.isEmpty(newSn) ? electricityBattery.getSn() : newSn;
