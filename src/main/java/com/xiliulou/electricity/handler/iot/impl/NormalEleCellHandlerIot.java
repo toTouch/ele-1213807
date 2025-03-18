@@ -210,8 +210,6 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             serviceWrapper.execute(() -> {
                 MDC.put(CommonConstant.TRACE_ID, traceId);
                 
-                electricityCabinetBoxService.updateLockSnByEidAndCellNo(eid, cellNo, null);
-                
                 // 将电池锁定在仓的电池标签处理为闲置
                 ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(eid, cellNo);
                 if (Objects.isNull(box)) {
@@ -221,6 +219,9 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
                 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(box.getLockSn(), box.getTenantId());
                 electricityBatteryService.syncModifyLabel(electricityBattery, box, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
+                
+                // 注意，此处需要使用锁仓sn查询电池，不可将清除锁仓sn的操作提到修改标签之前
+                electricityCabinetBoxService.updateLockSnByEidAndCellNo(eid, cellNo, null);
             });
         } catch (Exception e) {
             log.error("MODIFY LABEL AND CLEAR LOCK SN ERROR! eid={}, cellNo={}", eid, cellNo, e);
