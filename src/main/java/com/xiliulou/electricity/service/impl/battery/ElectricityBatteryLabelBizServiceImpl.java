@@ -486,11 +486,6 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
             electricityBatteryLabelService.deleteReceivedData(battery.getSn());
         }
-        
-        // 9.旧标签是锁定在仓的，清除掉格挡表的锁仓sn
-        if (Objects.equals(oldLabel, BatteryLabelEnum.LOCKED_IN_THE_CABIN.getCode())) {
-            electricityCabinetBoxService.deleteLockSn(battery.getSn());
-        }
     }
     
     @Override

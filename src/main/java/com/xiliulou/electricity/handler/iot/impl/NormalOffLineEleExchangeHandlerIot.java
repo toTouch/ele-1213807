@@ -247,8 +247,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             
             electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
             
-            // 处理电池标签，强制修改
-            electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), true);
+            // 处理电池标签
+            electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
         }
         
         // 归还电池soc
