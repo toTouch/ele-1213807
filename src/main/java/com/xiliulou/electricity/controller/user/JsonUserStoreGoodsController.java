@@ -36,7 +36,8 @@ public class JsonUserStoreGoodsController {
     @Autowired
     StoreGoodsService storeGoodsService;
     
-    //列表查询
+    //列表查询 过期 接口
+    @Deprecated
     @GetMapping(value = "/user/storeShops/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,

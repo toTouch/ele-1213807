@@ -11,7 +11,6 @@ import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.PictureVO;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -39,13 +38,6 @@ public class PictureServiceImpl implements PictureService {
     
     @Autowired
     private PictureMapper pictureMapper;
-    
-    @Autowired
-    StorageConfig storageConfig;
-    
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
     
     @Resource
     private StorageConverter storageConverter;
@@ -96,11 +88,11 @@ public class PictureServiceImpl implements PictureService {
     @Override
     public List<PictureVO> pictureParseVO(List<Picture> pictures) {
         try {
-            return pictures.parallelStream().map(item -> {
+            return pictures.stream().map(item -> {
                 PictureVO pictureVO = new PictureVO();
                 BeanUtils.copyProperties(item, pictureVO);
                 //                pictureVO.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getPictureUrl());
-                pictureVO.setPictureOSSUrl(storageConverter.assembleUrl(item.getPictureUrl()));
+                pictureVO.setPictureOSSUrl(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(item.getPictureUrl()));
                 return pictureVO;
             }).collect(Collectors.toList());
         } catch (Exception e) {

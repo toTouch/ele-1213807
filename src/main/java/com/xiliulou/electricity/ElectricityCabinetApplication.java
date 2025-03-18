@@ -19,7 +19,6 @@ import com.xiliulou.pay.EnableFreeDeposit;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.pay.ProfitSharingAutoConfiguration;
 import com.xiliulou.storage.EnableStorage;
-import com.xiliulou.thirdmall.EnableThirdMall;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
@@ -55,7 +54,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableFreeDeposit
 @EnableFengYun
 @EnableEsign
-@EnableThirdMall
 @Slf4j
 @ProfitSharingAutoConfiguration
 public class ElectricityCabinetApplication implements CommandLineRunner {

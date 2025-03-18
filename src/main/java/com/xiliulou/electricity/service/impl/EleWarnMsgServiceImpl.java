@@ -26,7 +26,6 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -73,7 +72,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
     @Resource
     private EleWarnMsgMapper eleWarnMsgMapper;
-    @Resource(name="aliyunOssService")
+    @Autowired
     private StorageService storageService;
     @Autowired
     private ElectricityCabinetService electricityCabinetService;
@@ -83,8 +82,6 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     private ReportManagementService reportManagementService;
     @Autowired
     private ClickHouseService clickHouseService;
-    @Autowired
-    private StorageConfig storageConfig;
 
     /**
      * 通过ID查询单条数据从DB
@@ -653,12 +650,12 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         String basePath="saas/report/";
 
         String fileName = basePath+IdUtil.simpleUUID() + StrUtil.DOT + EXCEL_TYPE;
-        String bucketName = storageConfig.getBucketName();
+        String bucketName = storageService.getBucketName();
         Map<String, String> resultMap = new HashMap<>(2);
         resultMap.put(CommonConstant.BUCKET_NAME, bucketName);
         resultMap.put(CommonConstant.FILE_NAME, fileName);
 
-        storageService.uploadFile(bucketName, fileName, new ByteArrayInputStream(bos.toByteArray()));
+        storageService.uploadFile(fileName, new ByteArrayInputStream(bos.toByteArray()));
         return resultMap;
     }
 

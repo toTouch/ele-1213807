@@ -169,6 +169,13 @@ public interface ElectricityCabinetService {
     
     R acquireIdcardFileSign();
     
+    /**
+     * 获取文件上传签名
+     *  华为云上传签名
+     * @param key
+     * @return
+     */
+    R acquireIdcardFileSign(String key);
     R queryName(Integer tenant, Integer id);
     
     List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query);
