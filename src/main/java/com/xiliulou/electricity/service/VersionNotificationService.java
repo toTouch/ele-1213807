@@ -56,4 +56,5 @@ public interface VersionNotificationService {
     void handleVersionNotificationSendEmail();
     
     R acquireVersionNotificationFileSign();
+    R acquireVersionNotificationFileSign(String key);
 }
