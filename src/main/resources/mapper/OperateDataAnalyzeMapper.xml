@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.OperateDataAnalyzeMapper">
+
+
+    <select id="selectLatestBatch" resultType="java.lang.String">
+        select batchNo
+        from t_operate_data_analyze
+        order by date desc
+        limit 1
+    </select>
+    <select id="selectListByBatch" resultType="com.xiliulou.electricity.bo.OperateDataAnalyzeBO">
+        select tenant_id                 AS tenantId,
+               tenant_name               AS tenantName,
+               batchNo,
+               sum_cabinet_count         AS sumCabinetCount,
+               normal_cabinet_count      AS normalCabinetCount,
+               cabinet_use_rate          AS cabinetUseRate,
+               sum_cell_count            AS sumCellCount,
+               normal_cell_count         AS normalCellCount,
+               cell_use_rate             AS cellUseRate,
+               sum_battery_count         AS sumBatteryCount,
+               rent_battery_count        AS rentBatteryCount,
+               battery_rent_rate         AS batteryRentRate,
+               total_real_count          AS totalRealCount,
+               total_buy_member_count    AS totalBuyMemberCount,
+               total_buy_rate            AS totalBuyRate,
+               only_buy_member_count     AS onlyBuyMemberCount,
+               total_churn_rate          AS totalChurnRate,
+               current_use_member_count  AS currentUseMemberCount,
+               people_cell_rate          AS peopleCellRate,
+               last_week_add_real_count  AS lastWeekAddRealCount,
+               last_week_add_buy_count   AS lastWeekAddBuyCount,
+               last_week_add_buy_rate    AS lastWeekAddBuyRate,
+               last_week_repurchase_rate AS lastWeekRepurchaseRate,
+               loyal_user_rate           AS loyalUserRate
+        from t_operate_data_analyze
+        where batchNo = #{batchNo}
+    </select>
+
+</mapper>

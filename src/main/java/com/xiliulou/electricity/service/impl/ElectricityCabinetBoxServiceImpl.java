@@ -8,6 +8,7 @@ import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -15,16 +16,26 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
+import com.xiliulou.electricity.service.BoxOtherPropertiesService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +44,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,7 +102,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         if (Objects.nonNull(id)) {
             for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
@@ -108,7 +120,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
     @Override
     public void batchInsertBoxByModelIdV2(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         List<ElectricityCabinetBox> boxList = Lists.newArrayList();
         if (Objects.nonNull(id)) {
@@ -210,8 +222,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                     }
                 }
             }
-
-            //设置电池短型号
+            
+            // 设置电池短型号
             if (Objects.nonNull(electricityBatteryVO) && Objects.nonNull(electricityBatteryVO.getModel())) {
                 if (finalBatteryModelMap.containsKey(electricityBatteryVO.getModel())) {
                     item.setBatteryShortType(finalBatteryModelMap.getOrDefault(electricityBatteryVO.getModel(), ""));
@@ -249,7 +261,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> listByElectricityCabinetIdS(List<Integer> electricityCabinetIdS, Integer tenantId) {
         return electricityCabinetBoxMapper.selectListByElectricityCabinetIdS(electricityCabinetIdS, tenantId);
     }
-
+    
     @Slave
     @Override
     public List<ElectricityCabinetBox> listCabineBoxByEids(List<Integer> electricityCabinetIdList) {
@@ -275,7 +287,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType, Double fullCharged) {
         List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.queryElectricityBatteryBox(electricityCabinet.getId(), cellNo, batteryType, fullCharged);
-        if (CollUtil.isEmpty(boxes)){
+        if (CollUtil.isEmpty(boxes)) {
             return new ArrayList<>();
         }
         return boxes;
@@ -357,13 +369,13 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             return Triple.of(true, "", "");
         }
         
-        //获取所有启用的格挡
+        // 获取所有启用的格挡
         List<ElectricityCabinetBox> electricityCabinetBoxes = this.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return Triple.of(true, "", "");
         }
         
-        //获取空格挡
+        // 获取空格挡
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(haveBatteryBoxs) || haveBatteryBoxs.size() <= 1) {
             log.warn("ELE WARN! emptyCellNumber less than 1,electricityCabinetId={}", electricityCabinetId);
@@ -377,7 +389,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public List<ElectricityCabinetBox> selectHaveBatteryCellId(Integer id) {
         List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.selectHaveBatteryCellId(id);
-        if (CollUtil.isEmpty(boxes)){
+        if (CollUtil.isEmpty(boxes)) {
             return new ArrayList<>();
         }
         return boxes;
@@ -393,5 +405,56 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Slave
     public List<ElectricityCabinetBox> listNotUsableBySn(String sn, Integer cabinetId, String cellNo) {
         return electricityCabinetBoxMapper.selectListNotUsableBySn(sn, cabinetId, cellNo);
+    }
+    
+    @Override
+    public int updateLockSnByEidAndCellNo(Integer eId, String cellNo, String lockSn) {
+        try {
+            return electricityCabinetBoxMapper.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
+        } catch (Exception e) {
+            log.error("UPDATE LOCK SN BY EID AND CELL NO ERROR!,eId={},cellNo={},lockSn={}", eId, cellNo, lockSn, e);
+        }
+        return 0;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetBox> listBySnAndEid(String sn, Integer eid) {
+        return electricityCabinetBoxMapper.selectListBySnAndEid(sn, eid);
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityCabinetBox> listByLockSn(String lockSn) {
+        return electricityCabinetBoxMapper.selectListByLockSn(lockSn);
+    }
+    
+    @Override
+    public int deleteLockSn(String lockSn) {
+        return electricityCabinetBoxMapper.deleteLockSn(lockSn);
+    }
+    
+    @Override
+    public Map<Integer, Map<String, String>> listLockSnsByEidAndCellNo(Map<Integer, List<String>> eidAndCellNo) {
+        if (MapUtils.isEmpty(eidAndCellNo)) {
+            return null;
+        }
+        List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.selectListLockSnsByEidAndCellNo(eidAndCellNo);
+        if (CollectionUtils.isEmpty(boxes)) {
+            return null;
+        }
+        
+        Map<Integer, Map<String, String>> result = new HashMap<>();
+        for (ElectricityCabinetBox box : boxes) {
+            Integer eid = box.getElectricityCabinetId();
+            if (result.containsKey(eid)) {
+                result.get(eid).put(box.getCellNo(), box.getLockSn());
+            } else {
+                HashMap<String, String> cellAndLockSn = new HashMap<>();
+                cellAndLockSn.put(box.getCellNo(), box.getLockSn());
+                result.put(eid, cellAndLockSn);
+            }
+        }
+        return result;
     }
 }

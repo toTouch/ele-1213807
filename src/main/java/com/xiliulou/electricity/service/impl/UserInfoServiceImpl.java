@@ -33,6 +33,35 @@ import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.dto.CarUserMemberInfoProDTO;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
+import com.xiliulou.electricity.entity.EleUserOperateHistory;
+import com.xiliulou.electricity.entity.EleUserOperateRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserAuthMessage;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -49,6 +78,16 @@ import com.xiliulou.electricity.enums.SignStatusEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.OverdueType;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.SignStatusEnum;
+import com.xiliulou.electricity.enums.UseStateEnum;
+import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageStatusVOEnum;
@@ -402,6 +441,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Resource
     private EmergencyContactService emergencyContactService;
+
 
     @Resource
     private InstallmentRecordService installmentRecordService;
@@ -1674,6 +1714,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
                     rentBatteryOrder.setOrderType(orderType);
                     rentBatteryOrderService.insert(rentBatteryOrder);
+
+                    // 修改原绑定电池标签为闲置
+                    electricityBatteryService.asyncModifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
                 }
             }
             
@@ -1725,12 +1768,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 ElectricityBattery electricityBattery = new ElectricityBattery();
                 electricityBattery.setId(oldElectricityBattery.getId());
                 electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
-                electricityBattery.setElectricityCabinetId(null);
-                electricityBattery.setElectricityCabinetName(null);
                 electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
                 electricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBattery.setBindTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(electricityBattery);
+                electricityBatteryService.updateBatteryUserExceptEid(electricityBattery);
                 
                 enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
                 
@@ -1742,6 +1783,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(),
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
+                // 修改新绑定电池标签为租借正常
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode(), user.getUid()), false);
+
                 try {
                     // 发送操作记录
                     // 判断没有发送实际的电池变更则不记录
@@ -1954,6 +1998,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 清除逾期用户备注
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         
+        // 修改电池标签为闲置
+        electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
+
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", oldUserInfo.getName());
@@ -3007,7 +3054,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (userBatteryMemberCard.getMemberCardExpireTime() <= System.currentTimeMillis()){
             vo.setIsViewOffLineAgree(Objects.nonNull(installmentRecord) ? DetailsBatteryInfoVo.IS_VIEW_OFF_LINE_AGREE : DetailsBatteryInfoVo.NOT_IS_VIEW_OFF_LINE_AGREE);
         }
-        
+
         vo.setMemberCardId(userBatteryMemberCard.getMemberCardId());
         vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
         vo.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
@@ -4164,6 +4211,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(),
                         OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
+                // 修改电池标签
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
+
                 return null;
             });
             return R.ok();

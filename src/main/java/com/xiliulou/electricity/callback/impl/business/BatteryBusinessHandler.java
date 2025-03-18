@@ -5,29 +5,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.callback.BusinessHandler;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
@@ -92,6 +73,8 @@ public class BatteryBusinessHandler implements BusinessHandler {
     private final RedisService redisService;
     
     private final InstallmentBizService installmentBizService;
+
+    private final FreeDepositExpireRecordService freeDepositExpireRecordService;
     
     @Override
     public boolean support(Integer type) {
@@ -269,7 +252,10 @@ public class BatteryBusinessHandler implements BusinessHandler {
             
             // 解约分期签约，如果有的话
             installmentBizService.terminateForReturnDeposit(userInfo.getUid());
-            
+
+            // 是否已在过期免押记录存在，如果存在，移除
+            freeDepositExpireRecordService.unfreeAfterDel(order.getOrderId());
+
             redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
         }catch (Exception e){
             log.error("battery unfree error!", e);

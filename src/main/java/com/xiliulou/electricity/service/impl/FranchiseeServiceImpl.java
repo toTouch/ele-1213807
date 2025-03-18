@@ -786,6 +786,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return Triple.of(true, null, franchisee);
     }
     
+    @Slave
+    @Override
+    public List<Long> listFranchiseeIdsByTenantId(Integer tenantId) {
+        return franchiseeMapper.selectListFranchiseeIdsByTenantId(tenantId);
+    }
+    
     /**
      * 用户迁移加盟商
      *

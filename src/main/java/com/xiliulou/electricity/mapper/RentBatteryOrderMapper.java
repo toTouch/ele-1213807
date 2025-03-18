@@ -28,7 +28,9 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
 	Integer queryCount(@Param("query") RentBatteryOrderQuery rentBatteryOrderQuery);
 
     RentBatteryOrder selectLatestByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId, @Param("status") String status);
-
+    
+    RentBatteryOrder selectLatestBySn(@Param("tenantId") Integer tenantId, @Param("sn") String sn);
+    
     List<EleCabinetUsedRecord> selectEleCabinetUsedRecords(@Param("query") EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
 
     Integer selectUsedRecordsTotalCount(@Param("query") EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);

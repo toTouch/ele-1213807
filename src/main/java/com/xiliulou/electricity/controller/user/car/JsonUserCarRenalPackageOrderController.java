@@ -9,9 +9,11 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderQryReq;
 import com.xiliulou.electricity.reqparam.opt.carpackage.FreezeRentOrderOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
@@ -55,6 +57,9 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     
     @Resource
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
+
+    @Resource
+    private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
     
     /**
      * 启用冻结套餐订单申请
@@ -426,5 +431,22 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         buyOptModel.setPaymentChannel(ChannelSourceContextHolder.get());
         return carRentalPackageOrderBizService.buyRentalPackageOrder(buyOptModel, request);
     }
-    
+
+
+    @GetMapping("/disable/list")
+    public R disableMemberList(@RequestParam("offset") Long offset, @RequestParam("size") Long size) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+
+        return R.ok(carRentalPackageOrderFreezeService.queryMemberDisableList(UserDisableMemberQuery.builder().uid(uid).offset(offset).size(size).build()));
+    }
 }

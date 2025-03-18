@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -154,6 +155,12 @@ public class ElectricityBattery {
      * 库房Id
      */
     private Long warehouseId;
+    
+    /**
+     * 电池标签
+     * @see BatteryLabelEnum
+     */
+    private Integer label;
     
     /**
      * 删除状态 0：正常，1：删除
