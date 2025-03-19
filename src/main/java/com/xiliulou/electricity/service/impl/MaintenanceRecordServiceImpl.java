@@ -20,8 +20,9 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.MaintenanceRecordVo;
 import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.config.StorageProperties;
 import com.xiliulou.storage.service.StorageService;
+import com.xiliulou.storage.service.impl.AliyunOssService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -30,11 +31,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -55,16 +59,11 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
-    @Autowired
-    StorageConfig storageConfig;
-
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
-    
+   
     @Autowired
     StorageConverter storageConverter;
     
+
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
 
@@ -153,14 +152,17 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
 
         for (MaintenanceRecord maintenanceRecord:returnList) {
             if(StringUtil.isNotEmpty(maintenanceRecord.getPic())){
-//                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
-                maintenanceRecord.setPic(storageConverter.generateUrl(maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                String pic = maintenanceRecord.getPic();
+                if (StringUtils.isNotEmpty(pic)) {
+                    maintenanceRecord.setPic(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(pic));
+                }
             }
         }
 
         return generateVoReturn(returnList);
     }
 
+    
     @Slave
     @Override
     public Triple<Boolean, String, Object> queryListForAdmin(MaintenanceRecordListQuery query) {
@@ -170,9 +172,9 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
         }
 
         for (MaintenanceRecord maintenanceRecord:returnList) {
-            if(StringUtil.isNotEmpty(maintenanceRecord.getPic())){
-//                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
-                maintenanceRecord.setPic(storageConverter.generateUrl( maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            if (StringUtil.isNotEmpty(maintenanceRecord.getPic())) {
+                String pic = maintenanceRecord.getPic();
+                maintenanceRecord.setPic(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(pic));
             }
         }
 

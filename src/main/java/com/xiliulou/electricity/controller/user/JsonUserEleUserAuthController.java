@@ -172,4 +172,20 @@ public class JsonUserEleUserAuthController {
         return eleUserAuthService.acquireselfieFileSign();
     }
     
+    
+    /**
+     * 获取上传身份证照片所需的签名  huawei obs
+     */
+    @GetMapping(value = "/user/acquire/upload/idcard/file/signhw")
+    public R getUploadIdcardFileSign(@RequestParam("key") String key) {
+        return eleUserAuthService.acquireIdcardFileSign(key);
+    }
+    
+    /**
+     * 获取上传自拍照片所需的签名 huawei obs
+     */
+    @GetMapping(value = "/user/acquire/upload/selfie/file/signhw")
+    public R getUploadselfieFileSign(@RequestParam("key") String key) {
+        return eleUserAuthService.acquireselfieFileSign(key);
+    }
 }
