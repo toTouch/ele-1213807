@@ -130,6 +130,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         ElectricityBatteryLabel batteryLabelFromDb = electricityBatteryLabelService.selectBySnAndTenantId(sn, tenantId);
         Long now = System.currentTimeMillis();
         
+        // update方法还是迭代成insertOrUpdate的逻辑了，一开始就直接用insertOrUpdate格式的SQL后续的麻烦也会少很多，没有必要专门用batchInsert
         if (Objects.isNull(batteryLabelFromDb)) {
             ElectricityBatteryLabel newBatteryLabel = new ElectricityBatteryLabel();
             BeanUtils.copyProperties(batteryLabel, newBatteryLabel);
