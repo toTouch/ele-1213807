@@ -681,8 +681,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(List<InstallmentDeductionPlan> deductionPlans, InstallmentRecord installmentRecord, FyConfig fyConfig) {
-        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "301023", "操作频繁，请3秒后再试");
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 30 * 60 * 1000L, false)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         try {
@@ -852,6 +852,22 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         // 流失用户活动处理
         String orderId = Objects.nonNull(tripleResult.getRight()) ? (String) tripleResult.getRight() : "";
         lostUserActivityDealPublish.publish(installmentRecord.getUid(), YesNoEnum.YES.getCode(), installmentRecord.getTenantId(), orderId);
+        
+        // 自动解约
+        if (Objects.equals(installmentRecord.getInstallmentNo(), update.getPaidInstallment())) {
+            FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+            if (Objects.isNull(config)) {
+                log.error("INSTALLMENT RENEW CONSUMER. no fyConfig, tenantId={}", installmentRecord.getTenantId());
+            }
+            
+            InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕",
+                    true);
+            installmentTerminatingRecordService.insert(installmentTerminatingRecord);
+            terminatingInstallmentRecord(installmentRecord, config);
+        }
+        
+        // 释放代扣锁
+        redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()));
     }
     
     @Override
@@ -1091,6 +1107,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         OptionalInt minIssue = plans.stream()
                 .mapToInt(InstallmentDeductionPlan::getIssue)
                 .min();
+        
+        // 加代扣互斥锁
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 30 * 60 * 1000L, false)) {
+            return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
 
         minIssue.ifPresent(issue -> {
             List<InstallmentDeductionPlan> planList = deductionPlans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
