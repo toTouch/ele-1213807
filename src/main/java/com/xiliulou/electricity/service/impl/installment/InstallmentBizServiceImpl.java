@@ -318,6 +318,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         FyQueryAgreementPayRsp rsp = (FyQueryAgreementPayRsp) queried.getData();
+        log.info("QUERY DEDUCT STATUS INFO! rsp={}", Objects.nonNull(rsp) ? JsonUtil.toJson(rsp) : "null");
         if (Objects.equals(rsp.getStatus(), AGREEMENT_PAY_QUERY_STATUS_SUCCESS)) {
             // 处理成功的场景
             handleAgreementPaySuccess(installmentDeductionRecord, rsp.getTradeNo());
