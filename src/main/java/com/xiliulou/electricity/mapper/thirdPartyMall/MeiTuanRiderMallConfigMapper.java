@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper.thirdPartyMall;
 
-import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
+import com.xiliulou.electricity.thirdparty.MeiTuanRiderMallConfig;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
