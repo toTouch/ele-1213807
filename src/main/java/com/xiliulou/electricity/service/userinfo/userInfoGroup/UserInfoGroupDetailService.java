@@ -50,7 +50,14 @@ public interface UserInfoGroupDetailService {
     
     Integer deleteForUpdate(Long uid, Long tenantId, Long franchiseeId);
     
+    Integer deleteForUpdateUids(List<Long> uids, Long tenantId, Long franchiseeId, String groupNo);
+    
     List<Long> listFranchiseeForUpdate(Long uid);
+    
+    R unbindUserGroupsInBatches(UserInfoBindGroupRequest request, TokenUser user);
+    
+    List<UserInfoGroupNamesBO> listGroupByUserGroups(List<Long> uids, Long groupId, Long franchiseeId);
+    
     
     Integer existsByUid(Long uid);
     

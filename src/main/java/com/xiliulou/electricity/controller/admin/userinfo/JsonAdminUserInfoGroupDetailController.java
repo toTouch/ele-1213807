@@ -231,6 +231,26 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     }
     
     /**
+     * 用户分组批量解绑
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/admin/userInfo/userInfoGroupDetail/unbindBatche")
+    public R unbindUserGroupsInBatches(@RequestBody @Validated UserInfoBindGroupRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        return userInfoGroupDetailService.unbindUserGroupsInBatches(request, user);
+    }
+    
+    /**
      * 加入分组
      * TODO SJP
      */
