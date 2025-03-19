@@ -200,6 +200,8 @@ import static com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO.IS_RETURN;
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
     
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    
     /**
      * 柜机编辑时，设置换电标准属性值
      */
@@ -214,7 +216,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      */
     private static final String ELE_CABINET_VERSION = "2.1.7";
     
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    @Resource
+    private ElectricityCabinetMapper electricityCabinetMapper;
     
     @Autowired
     ElectricityCabinetModelService electricityCabinetModelService;
@@ -273,6 +276,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     TenantService tenantService;
     
     @Autowired
+    private IotAcsService iotAcsService;
+    
+    @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     
     @Autowired
@@ -312,7 +318,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     EleCommonConfig eleCommonConfig;
     
     @Autowired
+    private ElectricityCabinetServerService electricityCabinetServerService;
+    
+    @Autowired
     RocketMqService rocketMqService;
+    
+    @Autowired
+    private MessageSendProducer messageSendProducer;
     
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
@@ -372,18 +384,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     AssetWarehouseService assetWarehouseService;
     
     @Resource
-    private ElectricityCabinetMapper electricityCabinetMapper;
-    
-    @Autowired
-    private IotAcsService iotAcsService;
-    
-    @Autowired
-    private ElectricityCabinetServerService electricityCabinetServerService;
-    
-    @Autowired
-    private MessageSendProducer messageSendProducer;
-    
-    @Resource
     private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
     
     @Resource
@@ -434,26 +434,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private TenantMapper tenantMapper;
-
-    private static Triple<Boolean, String, Object> commonGetFullCell(Long uid, Integer eid, List<ElectricityCabinetBox> usableBatteryCellNos) {
-        log.info("EXCHANGE INFO! commonGetFullCell.uid is {}, eid is {}", uid, eid);
-        
-        Double maxPower = usableBatteryCellNos.get(0).getPower();
-        usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
-        if (usableBatteryCellNos.size() == 1) {
-            return Triple.of(true, null, usableBatteryCellNos.get(0));
-        }
-        
-        // 如果存在多个电量相同的格挡，取充电器电压最大
-        ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.nonNull(item.getChargeV()))
-                .sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
-        if (Objects.isNull(usableCabinetBox)) {
-            log.warn("EXCHANGE WARN!nou found full battery,eid={}", eid);
-            return Triple.of(false, "100216", "换电柜暂无满电电池");
-        }
-        
-        return Triple.of(true, null, usableCabinetBox);
-    }
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -2746,6 +2726,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return commonGetFullCell(uid, eid, usableBatteryCellNos);
         }
     }
+    
+    private static Triple<Boolean, String, Object> commonGetFullCell(Long uid, Integer eid, List<ElectricityCabinetBox> usableBatteryCellNos) {
+        log.info("EXCHANGE INFO! commonGetFullCell.uid is {}, eid is {}", uid, eid);
+        
+        Double maxPower = usableBatteryCellNos.get(0).getPower();
+        usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+        if (usableBatteryCellNos.size() == 1) {
+            return Triple.of(true, null, usableBatteryCellNos.get(0));
+        }
+        
+        // 如果存在多个电量相同的格挡，取充电器电压最大
+        ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.nonNull(item.getChargeV()))
+                .sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
+        if (Objects.isNull(usableCabinetBox)) {
+            log.warn("EXCHANGE WARN!nou found full battery,eid={}", eid);
+            return Triple.of(false, "100216", "换电柜暂无满电电池");
+        }
+        
+        return Triple.of(true, null, usableCabinetBox);
+    }
+
     
     @Override
     public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version) {
