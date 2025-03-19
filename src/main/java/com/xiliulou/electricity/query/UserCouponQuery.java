@@ -68,9 +68,4 @@ public class UserCouponQuery {
      * 发券方式
      */
     private Long couponWay;
-    
-    /**
-     * 优惠卷名称
-     */
-    private String couponName;
 }

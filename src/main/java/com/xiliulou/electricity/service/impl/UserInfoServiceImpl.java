@@ -2914,7 +2914,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         // 电子签名未完成时，提示先完成电子签名
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
-        if (Objects.equals(CONSTRAINT_NOT_FORCE, updateUserPhoneRequest.getForceUpdate()) && Objects.nonNull(eleUserEsignRecord) && !Objects.equals(
+        if (Objects.equals(CONSTRAINT_NOT_FORCE, updateUserPhoneRequest.getForceUpdate()) && Objects.nonNull(eleUserEsignRecord) && Objects.equals(
                 eleUserEsignRecord.getSignFinishStatus(), ESIGN_STATUS_FAILED)) {
             return R.fail("100329", "请先完成电子签名");
         }

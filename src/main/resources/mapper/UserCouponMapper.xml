@@ -55,9 +55,6 @@
             <if test="query.uid != null">
                 and tuc.uid = #{query.uid}
             </if>
-            <if test="query.couponName != null and query.couponName != ''">
-                and tuc.name like concat('%', #{query.couponName}, '%')
-            </if>
             <if test="query.phone != null and query.phone != ''">
                 and tuc.phone = #{query.phone}
             </if>
@@ -138,9 +135,6 @@
         <where>
             <if test="query.uid != null">
                 and tuc.uid = #{query.uid}
-            </if>
-            <if test="query.couponName != null and query.couponName != ''">
-                and tuc.name like concat('%', #{query.couponName}, '%')
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and tuc.phone = #{query.phone}

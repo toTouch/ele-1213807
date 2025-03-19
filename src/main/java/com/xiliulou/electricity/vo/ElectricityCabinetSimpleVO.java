@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import lombok.Builder;
 import lombok.Data;
 
@@ -37,6 +38,12 @@ public class ElectricityCabinetSimpleVO implements Serializable {
      * 换电柜sn
      */
     private String sn;
+    
+    /**
+     * @see EleCabinetConstant 柜机供电类型：0--市电，1--反向供电
+     */
+    private Integer powerType;
+    
     /**
      * 联系电话
      */
