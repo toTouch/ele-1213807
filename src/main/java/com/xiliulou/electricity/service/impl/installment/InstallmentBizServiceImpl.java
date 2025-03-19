@@ -846,6 +846,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
 
         if (Objects.isNull(tripleResult) || !tripleResult.getLeft()) {
             log.info("installment handle deduct info result is null! uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+            // 释放代扣锁
+            redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()));
             return;
         }
     
