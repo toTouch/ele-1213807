@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -210,8 +211,21 @@ public class JsonOuterElectricityCabinetController {
      * 电柜地图
      */
     @GetMapping("/outer/electricityCabinet/map")
-    public R queryElectricityCabinetMap() {
-        return electricityCabinetService.queryElectricityCabinetMap();
+    public R queryElectricityCabinetMap(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("check") Long check) {
+        if (size < 100 || size > 1000) {
+            size = 1000L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        // 时间精度处理
+        
+        if (!Objects.equals(check, 183710250307L)) {
+            return R.ok();
+        }
+        return electricityCabinetService.queryElectricityCabinetMap(size, offset);
     }
-
+    
+    
 }

@@ -19,7 +19,6 @@ import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.RentReturnEditEchoVO;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -297,5 +296,5 @@ public interface ElectricityCabinetService {
 
     R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
     
-    R queryElectricityCabinetMap();
+    R queryElectricityCabinetMap(long size, long offset);
 }

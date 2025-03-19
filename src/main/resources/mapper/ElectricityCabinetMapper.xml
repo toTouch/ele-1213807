@@ -1816,4 +1816,14 @@
             and area_id = #{areaId}
         </if>
     </select>
+    <select id="selectMapByPage" resultType="com.xiliulou.electricity.vo.ElectricityCabinetLocationVO">
+        select longitude,
+        latitude,tenant_id
+        from t_electricity_cabinet tec
+        where del_flag=0
+        <if test="tenantId != null">
+            and tec.id = #{tenantId}
+        </if>
+        limit #{offset}, #{size}
+    </select>
 </mapper>

@@ -16,6 +16,8 @@ import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAn
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetLocationVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetMapVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
@@ -150,4 +152,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     Integer countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
 
     List<Integer> selectCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
+    
+    List<ElectricityCabinetLocationVO> selectMapByPage(@Param("size") Long size, @Param("offset") Long offset, @Param("tenantId") Integer tenantId);
 }
