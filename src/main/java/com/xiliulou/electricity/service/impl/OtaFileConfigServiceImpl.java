@@ -8,7 +8,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
 import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import com.xiliulou.storage.service.impl.AliyunOssService;
 
 import java.io.ByteArrayInputStream;
@@ -48,11 +48,9 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     @Resource
     private OtaFileConfigMapper otaFileConfigMapper;
     
-    @Autowired
-    private AliyunOssService aliyunOssService;
     
     @Autowired
-    private StorageConfig storageConfig;
+    private StorageService storageService;
     
     @Autowired
     private EleIotOtaPathConfig eleIotOtaPathConfig;
@@ -172,13 +170,13 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         InputStream sha256HexInputStream = null;
         try {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
-            String downloadLink = "https://" + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + ossPath;
+            String downloadLink = "https://" + storageService.getBucketName() + "." + storageService.getEndpoint() + "/" + ossPath;
         
             byte[] fileByte = file.getBytes();
             ossInputStream = new ByteArrayInputStream(fileByte);
             sha256HexInputStream = new ByteArrayInputStream(fileByte);
-        
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, ossInputStream);
+            
+            storageService.uploadFile(ossPath, ossInputStream);
         
             String sha256Hex = DigestUtils.sha256Hex(sha256HexInputStream);
             OtaFileConfig otaFileConfig = queryByType(type);

@@ -49,5 +49,9 @@ public interface EleUserAuthService {
 
     R acquireselfieFileSign();
     
+    R acquireIdcardFileSign(String key);
+    
+    R acquireselfieFileSign(String key);
+    
     Integer batchInsert(List<EleUserAuth> list);
 }

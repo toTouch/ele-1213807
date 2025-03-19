@@ -29,7 +29,6 @@ import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -89,15 +88,11 @@ public class StoreServiceImpl implements StoreService {
     StoreDetailService storeDetailService;
     @Autowired
     PictureService pictureService;
-    @Autowired
-    StorageConfig storageConfig;
-    @Qualifier("aliyunOssService")
-    @Autowired
-    StorageService storageService;
+
+ 
     @Autowired
     ElectricityCarModelService electricityCarModelService;
-    @Autowired
-    ElectricityConfigService electricityConfigService;
+
     
     @Resource
     private AuxRetrofitService auxRetrofitService;
