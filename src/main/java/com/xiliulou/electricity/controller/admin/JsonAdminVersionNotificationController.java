@@ -83,4 +83,15 @@ public class JsonAdminVersionNotificationController extends BaseController {
     public R getUploadVersionNotificationFileSign() {
         return notificationService.acquireVersionNotificationFileSign();
     }
+    
+    
+    /**
+     *  华为云新增
+     * @param key
+     * @return
+     */
+    @GetMapping(value = "/admin/acquire/upload/versionNotification/file/signhw")
+    public R getUploadVersionNotificationFileSign(@RequestParam("key") String key) {
+        return notificationService.acquireVersionNotificationFileSign(key);
+    }
 }

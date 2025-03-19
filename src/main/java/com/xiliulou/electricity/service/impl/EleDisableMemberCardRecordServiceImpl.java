@@ -27,6 +27,7 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.UserDisableMemberQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
@@ -454,5 +455,17 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         } catch (Throwable e) {
             log.error("Recording user operation records failed because:", e);
         }
+    }
+
+    @Override
+    @Slave
+    public R queryMemberDisableList(UserDisableMemberQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("QueryMemberDisableList Warn! not found user,uid is {} ", query.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        query.setTenantId(userInfo.getTenantId());
+        return R.ok(eleDisableMemberCardRecordMapper.selectDisableListByUid(query));
     }
 }
