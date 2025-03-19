@@ -750,12 +750,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                     }
                 });
                 
-                // 发送延迟消息，1分钟后将代扣计划、代扣记录处理成失败状态
+                // 发送延迟消息，30分钟后将代扣计划、代扣记录处理成失败状态，出现了成功回调比修改失败更慢，延迟时间需要延长到30分钟
                 InstallmentMqCommonDTO commonDTO = new InstallmentMqCommonDTO();
                 commonDTO.setDeductionPlanId(deductionPlan.getId());
                 commonDTO.setDeductionRecordId(deductionRecord.getId());
                 commonDTO.setTraceId(traceId);
-                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 5);
+                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 16);
             }
             
             return Triple.of(true, "301052", "已发起代扣，请稍后查看代扣结果");
