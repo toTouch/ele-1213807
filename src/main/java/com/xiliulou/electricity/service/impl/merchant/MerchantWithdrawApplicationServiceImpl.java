@@ -390,7 +390,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         merchantWithdrawApplicationRecord.setUpdateTime(System.currentTimeMillis());
         merchantWithdrawApplicationRecord.setPayConfigType(null);
         merchantWithdrawApplicationRecord.setFranchiseeId(merchantWithdrawApplication.getFranchiseeId());
-        merchantWithdrawApplicationRecord.setType(null);
+        merchantWithdrawApplicationRecord.setType(1);
 
 
         //merchantWithdrawApplicationRecord.setTransactionBatchId(wechatTransferOrderResult.getTransferBillNo());
