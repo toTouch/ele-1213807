@@ -45,7 +45,7 @@
             del_flag=0
             <if test="franchiseeId != null">
                 and (franchisee_id = #{franchiseeId} or franchisee_id is null )
-            </if>>
+            </if>
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>

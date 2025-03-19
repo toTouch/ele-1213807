@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetai
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequestV2;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.security.bean.TokenUser;
 
@@ -54,7 +55,7 @@ public interface UserInfoGroupDetailService {
     
     List<Long> listFranchiseeForUpdate(Long uid);
     
-    R unbindUserGroupsInBatches(UserInfoBindGroupRequest request, TokenUser user);
+    R unbindUserGroupsInBatches(UserInfoBindGroupRequestV2 request, TokenUser user);
     
     List<UserInfoGroupNamesBO> listGroupByUserGroups(List<Long> uids, Long groupId, Long franchiseeId);
     

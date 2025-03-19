@@ -7,6 +7,7 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequestV2;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
@@ -237,7 +238,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
      * @return
      */
     @PostMapping("/admin/userInfo/userInfoGroupDetail/unbindBatche")
-    public R unbindUserGroupsInBatches(@RequestBody @Validated UserInfoBindGroupRequest request) {
+    public R unbindUserGroupsInBatches(@RequestBody @Validated UserInfoBindGroupRequestV2 request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.warn("ELE WARN! not found user");

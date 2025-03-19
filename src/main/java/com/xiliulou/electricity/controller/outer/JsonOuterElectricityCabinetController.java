@@ -205,6 +205,13 @@ public class JsonOuterElectricityCabinetController {
     public R queryHeartbeat() {
         return R.ok();
     }
-
+    
+    /**
+     * 电柜地图
+     */
+    @GetMapping("/outer/electricityCabinet/map")
+    public R queryElectricityCabinetMap() {
+        return electricityCabinetService.queryElectricityCabinetMap();
+    }
 
 }
