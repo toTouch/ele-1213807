@@ -682,7 +682,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(List<InstallmentDeductionPlan> deductionPlans, InstallmentRecord installmentRecord, FyConfig fyConfig) {
-        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 30 * 60 * 1000L, false)) {
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 10 * 60 * 1000L, false)) {
             return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
@@ -751,12 +751,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                     }
                 });
                 
-                // 发送延迟消息，30分钟后将代扣计划、代扣记录处理成失败状态，出现了成功回调比修改失败更慢，延迟时间需要延长到30分钟
+                // 发送延迟消息，10分钟后将代扣计划、代扣记录处理成失败状态，出现了成功回调比修改失败更慢，延迟时间需要延长到30分钟
                 InstallmentMqCommonDTO commonDTO = new InstallmentMqCommonDTO();
                 commonDTO.setDeductionPlanId(deductionPlan.getId());
                 commonDTO.setDeductionRecordId(deductionRecord.getId());
                 commonDTO.setTraceId(traceId);
-                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 16);
+                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 14);
             }
             
             return Triple.of(true, "301052", "已发起代扣，请稍后查看代扣结果");
@@ -1112,7 +1112,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 .min();
         
         // 加代扣互斥锁
-        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 30 * 60 * 1000L, false)) {
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 10 * 60 * 1000L, false)) {
             return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
 
