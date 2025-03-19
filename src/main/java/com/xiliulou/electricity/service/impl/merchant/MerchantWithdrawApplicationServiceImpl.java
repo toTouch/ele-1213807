@@ -238,11 +238,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         }
         
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
-        if (!MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus()) && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(
-                reviewWithdrawApplicationRequest.getStatus())) {
-            log.warn("Illegal parameter warn for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
-            return Triple.of(false, "120014", "参数不合法");
-        }
+//        if (!MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus()) && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(
+//                reviewWithdrawApplicationRequest.getStatus())) {
+//            log.warn("Illegal parameter warn for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
+//            return Triple.of(false, "120014", "参数不合法");
+//        }
         
         //检查提现审核参数状态，是否为待审核状态
         MerchantWithdrawApplication merchantWithdrawApplication = merchantWithdrawApplicationMapper.selectById(reviewWithdrawApplicationRequest.getId());
@@ -604,11 +604,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         log.info("batch review withdraw application, request = {}", batchReviewWithdrawApplicationRequest);
         
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
-        if (!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus()) && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(
-                batchReviewWithdrawApplicationRequest.getStatus())) {
-            log.warn("Illegal parameter warn for approve withdraw application,  status = {}", batchReviewWithdrawApplicationRequest.getStatus());
-            return Triple.of(false, "120014", "参数不合法");
-        }
+//        if (!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus()) && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(
+//                batchReviewWithdrawApplicationRequest.getStatus())) {
+//            log.warn("Illegal parameter warn for approve withdraw application,  status = {}", batchReviewWithdrawApplicationRequest.getStatus());
+//            return Triple.of(false, "120014", "参数不合法");
+//        }
         
         //检查审批条数是否超过100条，如果超过100条，则提示错误信息
         if (batchReviewWithdrawApplicationRequest.getIds().size() > 100) {
