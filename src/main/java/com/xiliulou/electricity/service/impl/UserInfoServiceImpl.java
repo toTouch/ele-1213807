@@ -4418,10 +4418,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarDepositStatus(),
-                UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            log.warn("DeleteAccountPreCheck WARN! has unreturned deposit! uid={}", uid);
-            return R.fail("120155", "请退还押金后，进行注销操作");
+//        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarDepositStatus(),
+//                UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+//            log.warn("DeleteAccountPreCheck WARN! has unreturned deposit! uid={}", uid);
+//            return R.fail("120155", "请退还押金后，进行注销操作");
+//        }
+
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            // 如果不是零元退押
+            if (eleDepositOrderService.isZeroDepositOrder(uid)) {
+                return R.fail( "402030", "请退还换电押金后，进行删除操作");
+            }
+        }
+
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+                || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            if (carRentalPackageDepositPayService.isCarZeroDepositOrder(uid)) {
+                return R.fail("402030", "请退还租车押金后，进行删除操作");
+            }
         }
 
         return R.ok();
