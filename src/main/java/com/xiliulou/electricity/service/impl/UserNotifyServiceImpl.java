@@ -18,7 +18,6 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NotifyPictureInfoVO;
 import com.xiliulou.electricity.vo.UserNotifyVo;
-import com.xiliulou.storage.config.StorageConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -47,8 +46,6 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     @Resource
     RedisService redisService;
     
-    @Autowired
-    StorageConfig storageConfig;
     
     @Autowired
     StorageConverter storageConverter;
@@ -241,7 +238,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
                 infoVo.setActivityType(info.getActivityType());
                 infoVo.setPictureUrl(info.getPictureUrl());
 //                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
-                infoVo.setPictureOSSUrl(storageConverter.assembleUrl(info.getPictureUrl()));
+                infoVo.setPictureOSSUrl(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(info.getPictureUrl()));
                 pictureInfoVOList.add(infoVo);
             }
             vo.setPictureInfoList(pictureInfoVOList);
@@ -274,7 +271,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
                 infoVo.setActivityType(info.getActivityType());
                 infoVo.setPictureUrl(info.getPictureUrl());
 //                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
-                infoVo.setPictureOSSUrl(storageConverter.assembleUrl(info.getPictureUrl()));
+                infoVo.setPictureOSSUrl(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(info.getPictureUrl()));
                 pictureInfoVOList.add(infoVo);
             }
             vo.setPictureInfoList(pictureInfoVOList);
