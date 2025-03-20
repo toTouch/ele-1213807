@@ -4,7 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.TimeUtils;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +93,10 @@ public class ReturnBatterySuccessHandlerServiceImpl implements ReturnBatterySucc
                 OrderForBatteryUtil.delete(electricityBattery.getSn());
                 
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                electricityBatteryService.asyncModifyLabel(electricityBattery, null, dto, false);
             }
         }
         
@@ -116,6 +122,10 @@ public class ReturnBatterySuccessHandlerServiceImpl implements ReturnBatterySucc
                 if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                     newElectricityBattery.setBindTime(System.currentTimeMillis());
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                    
+                    // 修改电池标签并保存修改记录
+                    BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                    electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
                 }
             }
             
