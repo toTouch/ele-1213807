@@ -6011,9 +6011,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
     }
 
-
     @Override
     public List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query) {
         return electricityCabinetMapper.selectCabinetIdByFilter(query);
+    }
+
+    @Slave
+    @Override
+    public R listCabinetLocation(long size, long offset) {
+        List<CabinetLocationVO> cabinetList = electricityCabinetMapper.selectCabinetLocationByPage(size, offset);
+        if (CollectionUtils.isEmpty(cabinetList)) {
+            return R.ok(Collections.emptyList());
+        }
+
+        List<Integer> tenantIdList = cabinetList.stream().map(CabinetLocationVO::getTenantId).filter(Objects::nonNull).collect(Collectors.toList());
+
+        List<Tenant> tenantList = tenantService.listTenantByIds(tenantIdList);
+        Map<Integer, String> tenantMap = tenantList.stream().collect(Collectors.toMap(Tenant::getId, Tenant::getName));
+
+        cabinetList.forEach(item ->
+                item.setTenantName(tenantMap.getOrDefault(item.getTenantId(), ""))
+        );
+
+        return R.ok(cabinetList);
     }
 }
