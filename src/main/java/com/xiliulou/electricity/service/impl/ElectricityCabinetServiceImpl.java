@@ -83,7 +83,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.notify.AbnormalAlarmExceptionTypeEnum;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -104,7 +104,7 @@ import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
 import com.xiliulou.electricity.service.pipeline.ProcessController;
-import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.AssertUtil;
@@ -123,8 +123,9 @@ import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.iot.service.RegisterDeviceService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.config.StorageProperties;
 import com.xiliulou.storage.service.StorageService;
+import com.xiliulou.storage.service.impl.AliyunOssService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -173,6 +174,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE;
@@ -300,12 +303,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
     
-    @Autowired
-    StorageConfig storageConfig;
     
     @Autowired
     StorageConverter storageConverter;
     
+    @Autowired
+    AliyunOssService aliyunOssService;
+    @Autowired
+    StorageProperties storageProperties;
     @Autowired
     EleCommonConfig eleCommonConfig;
     
@@ -321,10 +326,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     
-    @Qualifier("aliyunOssService")
-    @Autowired
+     @Autowired
     StorageService storageService;
-    
+ 
     @Autowired
     UserDataScopeService userDataScopeService;
     
@@ -618,10 +622,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
-        
+    
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
-                electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_EDIT.getType());
         
         return R.ok();
     }
@@ -1396,8 +1400,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
-                electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinetStatus(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null,
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_STATUS.getType());
         
         return R.ok();
     }
@@ -3480,12 +3484,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryElectricityCabinetFileById(Integer electricityCabinetId) {
         List<ElectricityCabinetFile> electricityCabinetFiles = electricityCabinetFileService
-                .queryByDeviceInfo(electricityCabinetId.longValue(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
+                .queryByDeviceInfo(electricityCabinetId.longValue(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageService.getIsUseOSS());
         List<String> cabinetPhoto = new ArrayList<>();
         
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFiles) {
             if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
-                cabinetPhoto.add("https://" + storageConverter.getUrlPrefix() + "/" + electricityCabinetFile.getName());
+                String pic = electricityCabinetFile.getName();
+                if (StringUtils.isNotEmpty(pic)) {
+                    cabinetPhoto.add(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(pic));
+                }
             }
         }
         return R.ok(cabinetPhoto);
@@ -4269,6 +4276,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
     }
     
+    @Override
+    public R acquireIdcardFileSign(String key) {
+        return R.ok(storageService.getOssUploadSign(key));
+    }
+    
     @Slave
     @Override
     public R queryName(Integer tenantId, Integer id) {
@@ -4542,9 +4554,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return Collections.EMPTY_LIST;
             }
             
-            List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
-                //                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-                item.setUrl(storageConverter.generateUrl(item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.stream().peek(item -> {
+                String pic = item.getName();
+                if (StringUtils.isNotEmpty(pic)) {
+                    item.setUrl(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(pic));
+                }
             }).collect(Collectors.toList());
             
             return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());

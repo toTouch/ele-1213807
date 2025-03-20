@@ -12,15 +12,20 @@ import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.storage.config.StorageConfig;
+
+import com.xiliulou.storage.config.StorageProperties;
 import com.xiliulou.storage.service.StorageService;
+import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -28,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 换电柜文件表(TElectricityCabinetFile)表控制层
@@ -44,22 +51,21 @@ public class JsonAdminElectricityCabinetFileController {
     ElectricityCabinetFileService electricityCabinetFileService;
     
     @Autowired
-    StorageConfig storageConfig;
-    
-    @Qualifier("aliyunOssService")
-    @Autowired
     StorageService storageService;
-    
+    @Autowired
+    AliyunOssService aliyunOssService;
+    @Autowired
+    StorageProperties storageProperties;
     @Autowired
     StorageConverter storageConverter;
     
     //通知前端是aili还是oss
     @GetMapping("/admin/electricityCabinetFileService/noticeIsOss")
     public R noticeIsOss() {
-        if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+        if (Objects.equals(storageService.IS_USE_OSS, storageService.getIsUseOSS())) {
             return R.ok(storageService.getOssUploadSign());
         } else {
-            return R.ok(StorageConfig.IS_USE_MINIO);
+            return R.ok(storageService.IS_USE_MINIO);
         }
     }
     
@@ -67,12 +73,11 @@ public class JsonAdminElectricityCabinetFileController {
     @PostMapping("/admin/electricityCabinetFileService/minio/upload")
     public R minioUpload(@RequestParam("file") MultipartFile file) {
         String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
-        String bucketName = storageConfig.getBucketName();
         Map<String, String> resultMap = new HashMap<>(4);
-        resultMap.put("bucketName", bucketName);
+        //        resultMap.put("bucketName", bucketName);
         resultMap.put("fileName", fileName);
         try {
-            storageService.uploadFile(bucketName, fileName, file.getInputStream());
+            storageService.uploadFile(fileName, file.getInputStream());
         } catch (Exception e) {
             log.error("上传失败", e);
             return R.fail(e.getLocalizedMessage());
@@ -98,16 +103,18 @@ public class JsonAdminElectricityCabinetFileController {
         }
         
         //先删除
-        electricityCabinetFileService.deleteByDeviceInfo(callBackQuery.getOtherId(), callBackQuery.getFileType(), storageConfig.getIsUseOSS());
+        electricityCabinetFileService.deleteByDeviceInfo(callBackQuery.getOtherId(), callBackQuery.getFileType(),
+                storageService.getIsUseOSS());
         
         //再新增
-        if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+        if (Objects.equals(StorageService.IS_USE_OSS, storageService.getIsUseOSS())) {
             int index = 1;
             for (String fileName : callBackQuery.getFileNameList()) {
-                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                         .otherId(callBackQuery.getOtherId()).type(callBackQuery.getFileType())
-                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName).name(fileName).sequence(index)
-                        .isOss(StorageConfig.IS_USE_OSS).tenantId(tenantId).build();
+                        .url(storageService.HTTPS+storageService.getBucketName()+"."+storageService.getEndpoint()+"/"+fileName).name(fileName).sequence(index)
+                        .isOss(storageService.IS_USE_OSS).tenantId(tenantId).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
                 index = index + 1;
             }
@@ -115,9 +122,11 @@ public class JsonAdminElectricityCabinetFileController {
         } else {
             int index = 1;
             for (String fileName : callBackQuery.getFileNameList()) {
-                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                        .otherId(callBackQuery.getOtherId()).type(callBackQuery.getFileType()).bucketName(storageConfig.getBucketName()).name(fileName).sequence(index)
-                        .isOss(StorageConfig.IS_USE_MINIO).tenantId(tenantId).build();
+                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                        .otherId(callBackQuery.getOtherId()).type(callBackQuery.getFileType())
+                        .bucketName(storageService.getBucketName()).name(fileName).sequence(index)
+                        .isOss(storageService.IS_USE_MINIO).tenantId(tenantId).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
                 index = index + 1;
             }
@@ -132,34 +141,38 @@ public class JsonAdminElectricityCabinetFileController {
      * @return
      */
     @PostMapping("/admin/electricityCabinetFileService/electricityCabinetPictureBatchSave")
-    public R electricityCabinetPictureBatchSave(@RequestBody @Valid ElectricityCabinetPictureBatchSaveRequest batchSaveRequest) {
+    public R electricityCabinetPictureBatchSave(
+            @RequestBody @Valid ElectricityCabinetPictureBatchSaveRequest batchSaveRequest) {
         if (ObjectUtil.isEmpty(batchSaveRequest.getFileNameList())) {
             return R.ok();
         }
         
         //换电柜
-        if (ObjectUtil.equal(batchSaveRequest.getFileType(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET) && CollectionUtils.isEmpty(batchSaveRequest.getOtherIdList())) {
+        if (ObjectUtil.equal(batchSaveRequest.getFileType(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET)
+                && CollectionUtils.isEmpty(batchSaveRequest.getOtherIdList())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         
         return electricityCabinetFileService.batchSaveCabinetPicture(batchSaveRequest);
     }
-    
     /**
      * 获取文件信息
      */
     
     @GetMapping("/admin/electricityCabinetFileService/getFile")
-    public R getFile(@RequestParam(value = "otherId", required = false) Long otherId, @RequestParam("fileType") Integer fileType) {
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(otherId, fileType, storageConfig.getIsUseOSS());
+    public R getFile(@RequestParam(value = "otherId", required = false) Long otherId,
+            @RequestParam("fileType") Integer fileType) {
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(
+                otherId, fileType, storageService.getIsUseOSS());
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();
         }
         List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-            if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-                				electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-                electricityCabinetFile.setUrl(storageConverter.generateUrl(electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            if (Objects.equals(storageService.IS_USE_OSS, storageService.getIsUseOSS())) {
+                String pic = electricityCabinetFile.getName();
+                electricityCabinetFile.setUrl(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(pic));
+                
             }
             electricityCabinetFiles.add(electricityCabinetFile);
         }

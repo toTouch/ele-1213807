@@ -37,7 +37,6 @@ import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
@@ -84,11 +83,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
     private static final String CLOUD_BEAN_BILL_PATH = "saas/";
     
-    @Autowired
-    StorageConfig storageConfig;
-    
-    @Qualifier("aliyunOssService")
-    @Autowired
+   
+     @Autowired
     StorageService storageService;
     
     @Autowired
@@ -1072,10 +1068,10 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             EasyExcel.write(out, CloudBeanOrderExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(cloudBeanOrderExcelVOList);
         
             String excelPath = CLOUD_BEAN_BILL_PATH + IdUtil.simpleUUID() + ".xlsx";
+            
+            storageService.uploadFile(excelPath, new ByteArrayInputStream(out.toByteArray()));
         
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), excelPath, new ByteArrayInputStream(out.toByteArray()));
-        
-            return Triple.of(true, null, StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" +excelPath);
+            return Triple.of(true, null, storageService.HTTPS + storageService.getBucketName() + "." + storageService.getEndpoint() + "/" +excelPath);
         } catch (Exception e) {
             log.error("导出云豆账单失败！", e);
         }

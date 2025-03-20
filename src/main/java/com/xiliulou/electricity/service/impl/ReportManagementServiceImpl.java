@@ -5,7 +5,7 @@ import com.xiliulou.electricity.entity.ReportManagement;
 import com.xiliulou.electricity.mapper.ReportManagementMapper;
 import com.xiliulou.electricity.query.ReportManagementQuery;
 import com.xiliulou.electricity.service.ReportManagementService;
-import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,9 @@ public class ReportManagementServiceImpl implements ReportManagementService {
     @Autowired
     private ReportManagementMapper reportManagementMapper;
     @Autowired
-    private StorageConfig storageConfig;
-
+    private StorageService storageService;
+    
+   
     /**
      * 通过ID查询单条数据从DB
      *
@@ -65,9 +66,9 @@ public class ReportManagementServiceImpl implements ReportManagementService {
             return Collections.EMPTY_LIST;
         }
         
-        reportManagements.parallelStream().forEach(item->{
+        reportManagements.stream().forEach(item->{
             if(StringUtils.isNotBlank(item.getUrl())){
-                item.setUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getUrl());
+                item.setUrl(storageService.HTTPS + storageService.getBucketName() + "." + storageService.getEndpoint() + "/" + item.getUrl());
             }
         });
         

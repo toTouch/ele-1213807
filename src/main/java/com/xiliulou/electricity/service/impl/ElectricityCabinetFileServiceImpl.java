@@ -12,7 +12,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetFileMapper;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetPictureBatchSaveRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.storage.config.StorageConfig;
+
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +38,9 @@ import java.util.Objects;
 public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFileService {
     @Resource
     private ElectricityCabinetFileMapper electricityCabinetFileMapper;
-    @Qualifier("aliyunOssService")
-    @Autowired
+     @Autowired
     StorageService storageService;
     
-    @Autowired
-    StorageConfig storageConfig;
     
     /**
      * 新增数据
@@ -93,8 +90,10 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     @Override
     public void getMinioFile(String fileName, HttpServletResponse response) {
         int separator = fileName.lastIndexOf(StrUtil.DASHED);
-        try (InputStream inputStream = storageService.getFile(fileName.substring(0, separator),
-                fileName.substring(separator + 1))) {
+//        try (InputStream inputStream = storageService.getFile(fileName.substring(0, separator),
+//                fileName.substring(separator + 1))) {
+        
+        try (InputStream inputStream = storageService.getFile( fileName.substring(separator + 1))) {
             response.setContentType("application/octet-stream; charset=UTF-8");
             IoUtil.copy(inputStream, response.getOutputStream());
         } catch (Exception e) {
@@ -113,7 +112,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
         List<Long> otherIdList = batchSaveRequest.getOtherIdList();
         
         // 创建柜机图片
-        if (!Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+        if (!Objects.equals(storageService.IS_USE_OSS, storageService.getIsUseOSS())) {
             return R.ok();
         }
         
@@ -123,8 +122,10 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
             for (String fileName : batchSaveRequest.getFileNameList()) {
                 ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                         .otherId(otherId).type(batchSaveRequest.getFileType())
-                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName).name(fileName).sequence(index)
-                        .isOss(StorageConfig.IS_USE_OSS).tenantId(tenantId).build();
+//                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName)
+                        .url(storageService.HTTPS+storageService.getBucketName()+"."+storageService.getEndpoint()+"/"+fileName)
+                        .name(fileName).sequence(index)
+                        .isOss(storageService.IS_USE_OSS).tenantId(tenantId).build();
                 saveList.add(electricityCabinetFile);
                 index = index + 1;
             }

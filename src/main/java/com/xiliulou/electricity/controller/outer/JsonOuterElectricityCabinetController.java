@@ -5,7 +5,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +41,7 @@ public class JsonOuterElectricityCabinetController {
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-    @Autowired
-    StorageConfig storageConfig;
 
-    @Qualifier("minioService")
     @Autowired
     StorageService storageService;
 
@@ -124,8 +120,7 @@ public class JsonOuterElectricityCabinetController {
                 ZipEntry zipEntry = entries.nextElement();
                 String innerFileName = deviceName + "_" + "electricityCabinet" + "_" + zipEntry.getName();
                 try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
-                    String bucketName = storageConfig.getMinioBucketName();
-                    storageService.uploadFile(bucketName, innerFileName, inputStream);
+                    storageService.uploadFile(innerFileName, inputStream);
                 }
 
             }
