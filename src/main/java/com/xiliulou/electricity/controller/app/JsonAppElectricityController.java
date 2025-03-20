@@ -5,7 +5,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.storage.config.StorageConfig;
+
+import com.xiliulou.storage.service.StorageService;
 import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +31,9 @@ import java.util.Objects;
 @Slf4j
 @RefreshScope
 public class JsonAppElectricityController extends BaseController {
+
     @Autowired
-    AliyunOssService aliyunOssService;
-    @Autowired
-    StorageConfig storageConfig;
+    StorageService storageService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
@@ -41,8 +41,8 @@ public class JsonAppElectricityController extends BaseController {
     public R getOssConfig() {
         Map<String, Object> result = new HashMap<>(3);
         result.put("appId", CommonConstant.APP_ID);
-        result.put("ossAccessKeyId", storageConfig.getAccessKeyId());
-        result.put("ossAccessKeySecret", storageConfig.getAccessKeySecret());
+        result.put("ossAccessKeyId", storageService.getAccessKey());
+//        result.put("ossAccessKeySecret", storageService.getAccessKeySecret()); ---没有这个接口，临时屏蔽
         return R.ok(result);
     }
 

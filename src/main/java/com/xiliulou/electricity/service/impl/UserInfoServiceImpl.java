@@ -78,6 +78,7 @@ import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -146,12 +147,14 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
-import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.thirdParty.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -433,6 +436,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
     
     /**
      * 分页查询
@@ -1266,6 +1272,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUsableStatus(usableStatus);
         userInfo.setTenantId(tenantId);
         update(userInfo);
+        
+        // 给第三方推送用户信息
+        pushDataToThirdService.asyncPushUserInfo(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), userInfo.getUid(), ThirdPartyOperatorTypeEnum.USER_STATUS.getType());
+        
         return R.ok();
     }
     
@@ -3072,6 +3082,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Throwable e) {
             log.error("Recording user operation records failed because:", e);
         }
+    
+        // 给第三方推送用户信息
+        pushDataToThirdService.asyncPushUserInfo(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), userInfo.getUid(), ThirdPartyOperatorTypeEnum.USER_EDIT.getType());
+        
         return R.ok();
     }
     

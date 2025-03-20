@@ -15,7 +15,6 @@ import com.xiliulou.electricity.service.StoreGoodsService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.StoreGoodsVO;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,11 +45,8 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
 
-    @Autowired
-    StorageConfig storageConfig;
 
-    @Qualifier("aliyunOssService")
-    @Autowired
+     @Autowired
     StorageService storageService;
     
     @Autowired
@@ -145,15 +141,15 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             storeGoodsVO.setCarInventory(carInventory);
 
             //图片显示
-            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(e.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
+            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(e.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageService.getIsUseOSS());
             if (!DataUtil.collectionIsUsable(electricityCabinetFileList)) {
                 return storeGoodsVO;
             }
             List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
             electricityCabinetFileList.stream().forEach(auth -> {
-                if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-//                    auth.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), auth.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-                    auth.setUrl(storageConverter.generateUrl( auth.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                过期接口
+                if (Objects.equals(storageService.IS_USE_OSS, storageService.getIsUseOSS())) {
+                    auth.setUrl(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn( auth.getName()));
                     electricityCabinetFiles.add(auth);
                 }
                 storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);

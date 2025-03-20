@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
@@ -27,8 +28,10 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
@@ -100,6 +103,9 @@ public class JsonAdminUserInfoController extends BaseController {
     
     @Resource
     private UserDelRecordService userDelRecordService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
     
     // 列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -284,6 +290,9 @@ public class JsonAdminUserInfoController extends BaseController {
     
         // 老用户实名认证后,恢复用户历史分组及流失用户标记
         userDelRecordService.asyncRecoverUserInfoGroup(userInfo.getUid());
+    
+        // 给第三方推送用户信息
+        pushDataToThirdService.asyncPushUserInfo(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), userInfo.getUid(), ThirdPartyOperatorTypeEnum.USER_ADD.getType());
         
         return result;
     }

@@ -1176,7 +1176,13 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     public R getUploadCabinetFileSign() {
         return electricityCabinetService.acquireIdcardFileSign();
     }
-    
+    /**
+     * 获取上传柜机照片所需的签名
+     */
+    @GetMapping(value = "/admin/acquire/upload/cabinet/file/signhw")
+    public R getUploadCabinetFileSign(@RequestParam("key") String key) {
+        return electricityCabinetService.acquireIdcardFileSign(key);
+    }
     @GetMapping(value = "/admin/electricityCabinet/batchOperate/list")
     public R batchOperateList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "modelId", required = false) Integer modelId, @RequestParam(value = "sn", required = false) String sn,
