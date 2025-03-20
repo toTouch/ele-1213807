@@ -53,6 +53,7 @@ import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.enums.battery.SearchBatteryTypeEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -98,7 +99,9 @@ import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.tx.AdminSupperTxService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -257,6 +260,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Resource
     private ElectricityCabinetBoxService electricityCabinetBoxService;
     
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
     private final ExecutorService modifyBatteryLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("modifyBatteryLabel", 3, "MODIFY_BATTERY_LABEL_THREAD");
@@ -367,6 +373,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             
             assetWarehouseRecordService.asyncRecordOne(TenantContextHolder.getTenantId(), user.getUid(), warehouseId, sn, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(), operateType);
         }
+    
+        // 给第三方推送电池信息
+        pushDataToThirdService.asyncPushBattery(TtlTraceIdSupport.get(), saveBattery.getTenantId(), saveBattery.getSn(), ThirdPartyOperatorTypeEnum.BATTERY_ADD.getType());
         
         return R.ok();
     }
@@ -482,14 +491,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             insertBatch(saveList);
             // 新增电池标签表关联数据
             electricityBatteryLabelService.batchInsert(saveList, SecurityUtils.getUid());
-        
+    
+            List<String> snList = saveList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
             // 异步记录
             if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
-                List<String> snList = saveList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-                
                 assetWarehouseRecordService.asyncRecordByWarehouseId(TenantContextHolder.getTenantId(), uid, warehouseId, snList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(),
                         WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_IN.getCode());
             }
+    
+            // 给第三方推送电池信息
+            pushDataToThirdService.asyncPushBatteryList(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), snList, ThirdPartyOperatorTypeEnum.BATTERY_ADD.getType());
         
             return R.ok();
         } finally {
@@ -850,6 +861,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             // 修改电池标签，注意传递的电池中，sn是修改前还是修改后的
             BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(eleQuery.getLabel()).operatorUid(SecurityUtils.getUid()).newReceiverId(eleQuery.getReceiverId()).build();
             asyncModifyLabel(electricityBatteryDb, null, dto, false, newSn);
+    
+            // 给第三方推送电池信息
+            pushDataToThirdService.asyncPushBattery(TtlTraceIdSupport.get(), tenantId, sn, ThirdPartyOperatorTypeEnum.BATTERY_EDIT.getType());
             
             return R.ok();
         } else {
