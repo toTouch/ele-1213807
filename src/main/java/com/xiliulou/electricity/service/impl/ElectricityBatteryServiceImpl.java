@@ -1493,6 +1493,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Long operatorUid = SecurityUtils.getUid();
         Integer newLabel = isBind ? BatteryLabelEnum.UNUSED.getCode() : BatteryLabelEnum.INVENTORY.getCode();
         for (ElectricityBattery battery : electricityBatteries) {
+            // 此处异步操作会更新的电池再前文中更新过，异步操作内对电池的更新与本方法存在锁竞争问题，目前的异步操作不会阻塞主线程流程，锁竞争导致超时的情况应该可以避免
+            // 当初电池标签实现的代码设计有问题，应当使用通用方法得到最新的标签，然后在外部的业务中统筹电池数据的更新，避免多次更新同一张表
             asyncModifyLabel(battery, null, new BatteryLabelModifyDTO(newLabel, operatorUid), false);
         }
         return R.ok(count);
