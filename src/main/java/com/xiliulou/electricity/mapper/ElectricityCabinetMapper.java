@@ -13,17 +13,11 @@ import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
-import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
-import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 换电柜表(TElectricityCabinet)表数据库访问层
@@ -150,4 +144,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     Integer countLowPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
 
     List<Integer> selectCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
+
+    List<CabinetLocationVO> selectCabinetLocationByPage(@Param("size") Long size, @Param("offset") Long offset);
 }

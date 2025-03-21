@@ -3,8 +3,11 @@ package com.xiliulou.electricity.service.impl.battery;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.battery.BatteryLabelRecord;
+import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.mapper.battery.BatteryLabelRecordMapper;
 import com.xiliulou.electricity.request.battery.BatteryLabelRecordRequest;
 import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
@@ -13,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -27,31 +31,13 @@ import static com.xiliulou.electricity.mq.constant.MqProducerConstant.BATTERY_LA
  **/
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class BatteryLabelRecordServiceImpl implements BatteryLabelRecordService {
-
-    private final RocketMqService rocketMqService;
     
-    private final BatteryLabelRecordMapper batteryLabelRecordMapper;
+    @Resource
+    private BatteryLabelRecordMapper batteryLabelRecordMapper;
     
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
-    
-    @Override
-    public void sendRecord(ElectricityBattery battery, Long operatorUid, Integer newLabel, Long updateTime, Long oldReceiverId, Long newReceiverId) {
-        BatteryLabelRecord record = new BatteryLabelRecord();
-        record.setSn(battery.getSn());
-        record.setOldLabel(battery.getLabel());
-        record.setNewLabel(newLabel);
-        record.setOperatorUid(operatorUid);
-        record.setOldReceiverId(oldReceiverId);
-        record.setNewReceiverId(newReceiverId);
-        record.setTenantId(battery.getTenantId());
-        record.setFranchiseeId(battery.getFranchiseeId());
-        record.setExchangeTime(TimeUtils.convertToStandardFormatTime(updateTime));
-        
-        rocketMqService.sendAsyncMsg(BATTERY_LABEL_RECORD_TOPIC, JsonUtil.toJson(record));
-    }
     
     @Override
     @DS(value = "clickhouse")
