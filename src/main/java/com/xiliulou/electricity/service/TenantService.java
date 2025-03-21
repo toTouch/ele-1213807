@@ -39,4 +39,6 @@ public interface TenantService {
     List<Integer> queryIdListByStartId(Integer startId, Integer size);
 
     void dataAnalyze(String passWord, HttpServletResponse response);
+
+    List<Tenant> listTenantByIds(List<Integer> tenantIdList);
 }

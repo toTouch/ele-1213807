@@ -482,6 +482,11 @@ public class TenantServiceImpl implements TenantService {
         }
     }
 
+    @Override
+    public List<Tenant> listTenantByIds(List<Integer> tenantIdList) {
+        return tenantMapper.selectListByIds(tenantIdList);
+    }
+
     /**
      * 生成新的租户code
      */

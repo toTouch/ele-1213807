@@ -234,10 +234,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
-            
-            // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
-            ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, electricityCabinet.getTenantId());
-            electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
         }
     }
 
@@ -272,12 +268,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(TimeUtils.convertToStandardFormatTime(eleBatteryVO.getReportTime())).setENo(Integer.parseInt(eleBox.getCellNo())));
-            
-            // 修改电池标签，旧电池触发出库逻辑，新电池修改为在仓
-            Integer tenantId = eleBox.getTenantId();
-            // 离仓逻辑中，电池标签值与操作人uid都是从缓存中取的
-            ElectricityBattery oldBattery = electricityBatteryService.queryBySnFromDb(boxBatteryName, tenantId);
-            electricityBatteryService.modifyLabelWhenBatteryExitCabin(oldBattery, eleBox);
         }
     }
 
@@ -377,6 +367,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryStatus(updateBattery);
             // TODO: 2023/1/3 BTC
+            
+            // 此处需要触发一次电池标签的离仓逻辑
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(electricityBattery, eleBox);
         }
 
     }
@@ -407,6 +400,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
             electricityBatteryService.updateBatteryStatus(updateBattery);
             // TODO: 2023/1/3 BTC
+            
+            // 此处需要触发一次电池标签的离仓逻辑
+            electricityBatteryService.modifyLabelWhenBatteryExitCabin(electricityBattery, eleBox);
         }
     }
 
