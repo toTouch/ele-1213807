@@ -5,11 +5,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,11 +37,8 @@ public class JsonUserElectricityCabinetFileController {
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
     
-    @Autowired
-    StorageConfig storageConfig;
-    
-    @Qualifier("aliyunOssService")
-    @Autowired
+   
+     @Autowired
     StorageService storageService;
     
     @Resource
@@ -53,19 +48,25 @@ public class JsonUserElectricityCabinetFileController {
     /**
      * 获取文件信息
      */
-    
+    @Deprecated
     @GetMapping("/user/electricityCabinetFileService/getFile")
     public R getFile(@RequestParam(value = "otherId", required = false) Long otherId, @RequestParam("fileType") Integer fileType) {
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(otherId, fileType, storageConfig.getIsUseOSS());
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(otherId, fileType, storageService.getIsUseOSS());
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();
         }
         List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-            if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-//                electricityCabinetFile
-//                        .setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-                electricityCabinetFile.setUrl(storageConverter.generateUrl(electricityCabinetFile.getName(),System.currentTimeMillis() + 10 * 60 * 1000L));
+            if (Objects.equals(storageService.IS_USE_OSS, storageService.getIsUseOSS())) {
+                String ossType = storageService.getOSSType();
+                String ossFileUrl="";
+                if("1".equals(ossType)){
+                    ossFileUrl = storageService.getUrlPrefix() + electricityCabinetFile.getName();
+                }else {
+                    ossFileUrl = storageService.getOssFileUrl(electricityCabinetFile.getName(),
+                            System.currentTimeMillis() + 10 * 60 * 1000L);
+                }
+                electricityCabinetFile.setUrl(ossFileUrl);
             }
             electricityCabinetFiles.add(electricityCabinetFile);
         }

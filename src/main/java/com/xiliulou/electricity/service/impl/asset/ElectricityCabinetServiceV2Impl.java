@@ -22,6 +22,7 @@ import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
@@ -47,7 +48,9 @@ import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -65,7 +68,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -110,6 +112,9 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
     
     @Resource
     private ElectricityCabinetExtraService electricityCabinetExtraService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
     
     
     @Override
@@ -293,6 +298,10 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             if (Objects.nonNull(finalMerchantPlaceFeeRecord)) {
                 merchantPlaceFeeRecordService.asyncInsertOne(finalMerchantPlaceFeeRecord);
             }
+    
+            // 给第三方推送柜机信息
+            pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                    ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
         });
         
         return Triple.of(true, null, null);
@@ -444,6 +453,11 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             assetWarehouseRecordService.asyncRecords(TenantContextHolder.getTenantId(), uid, snWarehouseList, AssetTypeEnum.ASSET_TYPE_CABINET.getCode(),
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
         }
+    
+        // 给第三方推送柜机信息
+        pushDataToThirdService.asyncPushCabinetList(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(),
+                electricityCabinetList.stream().map(ElectricityCabinet::getId).map(Long::valueOf).collect(Collectors.toList()),
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
         
         return Triple.of(true, null, null);
     }

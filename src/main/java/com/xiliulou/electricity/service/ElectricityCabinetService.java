@@ -170,6 +170,13 @@ public interface ElectricityCabinetService {
     
     R acquireIdcardFileSign();
     
+    /**
+     * 获取文件上传签名
+     *  华为云上传签名
+     * @param key
+     * @return
+     */
+    R acquireIdcardFileSign(String key);
     R queryName(Integer tenant, Integer id);
     
     List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query);
@@ -290,6 +297,8 @@ public interface ElectricityCabinetService {
     R countFullPowerTotal(ElectricityCabinetQuery electricityCabinetQuery);
 
     R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listCabinetLocation(long size, long offset);
 
     List<ElectricityCabinetCardInfoBO> queryEleCardInfoByTenant(List<Integer> list);
 }

@@ -67,6 +67,24 @@
             limit #{size}
     </select>
 
+    <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.Tenant">
+        select
+        id,
+        name,
+        code,
+        status
+        from t_tenant
+        <where>
+            del_flag=0
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" item="sn" index="index" open="(" close=")" separator=",">
+                    #{sn}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
     <select id="selectListAll" resultType="com.xiliulou.electricity.entity.Tenant">
         select    id,
                   name

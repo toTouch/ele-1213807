@@ -41,7 +41,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserAuthMessageVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -83,12 +82,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Autowired
     UserInfoService userInfoService;
     
-    @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
     
-    @Autowired
-    StorageConfig storageConfig;
     
     @Resource
     StorageConverter storageConverter;
@@ -233,7 +229,16 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, entryId)) {
                 userInfo.setIdNumber(eleUserAuth.getValue());
             }
-    
+            // 处理图片路径
+            if (ObjectUtil.equal(EleAuthEntry.ID_CARD_FRONT_PHOTO, entryId) || ObjectUtil.equal(EleAuthEntry.ID_CARD_BACK_PHOTO, entryId) || ObjectUtil.equal(
+                    EleAuthEntry.ID_SELF_PHOTO, entryId)) {
+                String value = eleUserAuth.getValue();
+                if (StringUtils.isNotBlank(value)) {
+                    value = storageConverter.getPicRemovePrefix(value);
+                }
+                eleUserAuth.setValue(value);
+            }
+            
             // 紧急联系人，旧版小程序无该字段“emergencyContactList”
             if (ObjectUtil.equal(EleAuthEntry.ID_EMERGENCY_CONTACT, entryId) && Objects.nonNull(eleUserAuthRequest.getEmergencyContactList())) {
                 Triple<Boolean, String, Object> emergencyContactCheckResult = emergencyContactService.checkEmergencyContact(eleUserAuthRequest.getEmergencyContactList(),
@@ -440,13 +445,13 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
         
         List<EleUserAuth> collect = eleUserAuths.stream().peek(e -> {
-            if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_CARD_FRONT_PHOTO) || e.getEntryId()
-                    .equals(EleAuthEntry.ID_SELF_PHOTO)) {
+            if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId()
+                    .equals(EleAuthEntry.ID_CARD_FRONT_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_SELF_PHOTO)) {
                 if (StringUtils.isNotEmpty(e.getValue())) {
-                    e.setValue("https://" + storageConverter.getUrlPrefix() + "/" + e.getValue());
+                    e.setValue(storageConverter.filePrefixFoldPathHuaweiOrAliWithCdn(e.getValue()));
                 }
             }
-    
+            
             // 紧急联系人
             if (e.getEntryId().equals(EleAuthEntry.ID_EMERGENCY_CONTACT)) {
                 List<EmergencyContact> emergencyContactList = emergencyContactService.listByUidFromCache(e.getUid());
@@ -477,5 +482,15 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Override
     public R acquireselfieFileSign() {
         return R.ok(storageService.getOssUploadSign("selfie/"));
+    }
+    
+    @Override
+    public R acquireIdcardFileSign(String key) {
+        return R.ok(storageService.getOssUploadSign(key));
+    }
+    
+    @Override
+    public R acquireselfieFileSign(String key) {
+        return R.ok(storageService.getOssUploadSign(key));
     }
 }

@@ -41,5 +41,7 @@ public interface TenantService {
 
     void dataAnalyze(String passWord, HttpServletResponse response);
 
+    List<Tenant> listTenantByIds(List<Integer> tenantIdList);
+
     void trafficExport(TrafficExportQuery query, HttpServletResponse response);
 }
