@@ -331,9 +331,6 @@ public class EleOperateQueueHandler {
                 rentBatteryOrderService.update(rentBatteryOrder);
                 
                 handleRentOrder(rentBatteryOrder, finalOpenDTO, electricityCabinet);
-                
-                // 处理电池标签
-                handleBatteryLabel(finalOpenDTO, rentBatteryOrder);
             } catch (Exception e) {
                 log.error("RENT BATTERY HANDLER ERROR!", e);
             } finally {
@@ -513,9 +510,12 @@ public class EleOperateQueueHandler {
                     OrderForBatteryUtil.delete(electricityBattery.getSn());
                     
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                    // 修改电池标签并保存修改记录
+                    BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                    electricityBatteryService.asyncModifyLabel(electricityBattery, null, dto, false);
                 }
                 
-                //放入电池改为在仓
+                //放入电池改为在仓，此处不需要补充电池标签的在仓逻辑，总会上报在仓的
                 ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(newElectricityCabinetOrder.getOldElectricityBatterySn());
                 if (Objects.nonNull(oldElectricityBattery)) {
                     ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
@@ -533,6 +533,10 @@ public class EleOperateQueueHandler {
                         OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
                         
                         electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                        
+                        // 修改电池标签并保存修改记录
+                        BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                        electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
                     }
                 }
                 
@@ -670,6 +674,9 @@ public class EleOperateQueueHandler {
                 OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
                 
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
             }
             
             //电池改为在用
@@ -693,6 +700,12 @@ public class EleOperateQueueHandler {
             
             // 保存电池被取走对应的订单，供后台租借状态电池展示
             OrderForBatteryUtil.save(electricityCabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, electricityBattery.getSn());
+            
+            // 修改电池标签并保存修改记录
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.RENT_NORMAL.getCode()).build();
+            ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
+                    .cellNo(electricityCabinetOrder.getNewCellNo().toString()).build();
+            electricityBatteryService.asyncModifyLabel(electricityBattery, box, dto, false);
         }
     }
     
@@ -821,6 +834,10 @@ public class EleOperateQueueHandler {
             OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
             
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            
+            // 修改电池标签并保存修改记录
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+            electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
         }
         
         //电池改为在用
@@ -842,6 +859,12 @@ public class EleOperateQueueHandler {
             handleCallBatteryChangeSoc(electricityBattery);
             // 取走电池保存取走电池的soc
             operateBatterSocThreadPool.execute(() -> handlerUserTakeBatterySoc(userInfo, electricityBattery.getSn(), electricityBattery.getPower()));
+            
+            // 修改电池标签并保存修改记录
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.RENT_NORMAL.getCode()).build();
+            ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(rentBatteryOrder.getElectricityCabinetId())
+                    .cellNo(rentBatteryOrder.getCellNo().toString()).build();
+            electricityBatteryService.asyncModifyLabel(electricityBattery, box, dto, false);
         }
         
         // 保存电池被取走对应的订单，供后台租借状态电池展示
@@ -958,6 +981,9 @@ public class EleOperateQueueHandler {
                 OrderForBatteryUtil.delete(electricityBattery.getSn());
                 
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                electricityBatteryService.asyncModifyLabel(electricityBattery, null, dto, false);
             }
         }
         
@@ -983,6 +1009,10 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                     newElectricityBattery.setBindTime(System.currentTimeMillis());
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                    
+                    // 修改电池标签并保存修改记录
+                    BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                    electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
                 }
             }
             
@@ -1096,29 +1126,5 @@ public class EleOperateQueueHandler {
                 log.error("call battery sn error! sn={},result={}", electricityBattery.getSn(), null == r ? "" : r.getErrMsg());
             }
         });
-    }
-    
-    private void handleBatteryLabel(EleOpenDTO finalOpenDTO, RentBatteryOrder rentBatteryOrder) {
-        if (!Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) && !Objects.equals(finalOpenDTO.getOrderStatus(),
-                RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
-            return;
-        }
-        String sn = Objects.nonNull(finalOpenDTO.getBatterySn()) ? finalOpenDTO.getBatterySn() : rentBatteryOrder.getElectricityBatterySn();
-        if (Objects.isNull(sn)) {
-            log.error("HANDLE BATTERY LABEL ERROR! can not find battery sn, rentOrderRsp={}", finalOpenDTO);
-            return;
-        }
-        ElectricityBattery battery = ElectricityBattery.builder().tenantId(rentBatteryOrder.getTenantId()).sn(sn).build();
-        
-        // 处理租电成功的
-        if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
-            ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(rentBatteryOrder.getElectricityCabinetId()).cellNo(rentBatteryOrder.getCellNo().toString()).build();
-            electricityBatteryService.asyncModifyLabel(battery, box, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
-        }
-        
-        // 处理退电成功的
-        if (Objects.equals(finalOpenDTO.getOrderStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
-            electricityBatteryService.asyncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
-        }
     }
 }
