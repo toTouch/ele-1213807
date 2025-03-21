@@ -1256,16 +1256,19 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package by enterprise user error, user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "300084", "该用户未缴纳滞纳金，无法代付，请联系用户处理后操作");
             }
-            
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300070", "该用户套餐已冻结，无法代付，请联系用户处理后操作");
+
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+                    log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                    return Triple.of(false, "300070", "该用户套餐已冻结，无法代付，请联系用户处理后操作");
+                }
+
+                if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                    log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                    return Triple.of(false, "300071", "该用户套餐冻结审核中，无法代付，请联系用户处理后操作");
+                }
             }
-            
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("purchase package by enterprise user error, user package freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
-                return Triple.of(false, "300071", "该用户套餐冻结审核中，无法代付，请联系用户处理后操作");
-            }
+
             
             // 续租操作时，已经有了电池信息，查询用户当前关联的电池型号
             String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid());
