@@ -4,31 +4,23 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.domain.car.UserDepositPayTypeDO;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.DelFlagEnum;
-import com.xiliulou.electricity.enums.PayStateEnum;
-import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositPayMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -42,12 +34,6 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     
     @Resource
     private CarRentalPackageDepositPayMapper carRentalPackageDepositPayMapper;
-
-    @Resource
-    private ApplicationContext applicationContext;
-
-    @Resource
-    private FreeDepositOrderService freeDepositOrderService;
     
     /**
      * 查询用户最后一次的免押订单生成信息
@@ -273,30 +259,6 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         return carRentalPackageDepositPayMapper.selectDepositOrderByUid(uid);
     }
 
-    @Override
-    public Boolean isCarZeroDepositOrder(Long uid) {
-        CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = applicationContext.getBean(CarRentalPackageDepositPayService.class).queryDepositOrderByUid(uid);
-        if (Objects.isNull(carRentalPackageDepositPayPo)) {
-            log.info("isCarZeroDepositOrder Info! not found eleDepositOrder, uid is {}", uid);
-            return false;
-        }
-        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(carRentalPackageDepositPayPo.getOrderNo());
-        BigDecimal refundAmount = getRefundAmountV2(carRentalPackageDepositPayPo, freeDepositOrder);
-        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
-        if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            return false;
-        }
-        return true;
-    }
 
-    private BigDecimal getRefundAmountV2(CarRentalPackageDepositPayPo carRentalPackageDepositPayPo, FreeDepositOrder freeDepositOrder) {
-        if (!Objects.equals(carRentalPackageDepositPayPo.getPayType(), PayTypeEnum.EXEMPT.getCode())) {
-            return carRentalPackageDepositPayPo.getDeposit();
-        }
-        BigDecimal refundAmount = carRentalPackageDepositPayPo.getDeposit();
-        if (Objects.nonNull(freeDepositOrder)) {
-            return BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
-        }
-        return refundAmount;
-    }
+
 }

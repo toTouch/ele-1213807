@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -137,5 +136,4 @@ public interface CarRentalPackageDepositPayService {
 
     CarRentalPackageDepositPayPo queryDepositOrderByUid(Long uid);
 
-    Boolean isCarZeroDepositOrder(Long uid);
 }

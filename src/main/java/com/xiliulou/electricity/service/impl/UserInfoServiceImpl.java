@@ -148,6 +148,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
@@ -455,6 +456,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
+
+    @Resource
+    private CarRenalPackageDepositV2BizService carRenalPackageDepositV2BizService;
     
     /**
      * 分页查询
@@ -4446,14 +4450,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             // 如果不是零元退押
-            if (eleDepositOrderService.isZeroDepositOrder(uid)) {
+            if (eleDepositOrderService.isZeroDepositOrder(userInfo)) {
                 return R.fail( "402030", "请退还换电押金后，进行删除操作");
             }
         }
 
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
                 || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            if (carRentalPackageDepositPayService.isCarZeroDepositOrder(uid)) {
+            if (carRenalPackageDepositV2BizService.isCarZeroDepositOrder(userInfo)) {
                 return R.fail("402030", "请退还租车押金后，进行删除操作");
             }
         }

@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.service.car.v2;
 
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -16,7 +19,7 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 public interface CarRenalPackageDepositV2BizService {
-    
+
     /**
      * 运营商端创建退押，特殊退押(2.0过度数据)
      *
@@ -25,7 +28,7 @@ public interface CarRenalPackageDepositV2BizService {
      * @return true(成功)、false(失败)
      */
     boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel, Long optUid);
-    
+
     /**
      * 运营商端创建退押
      *
@@ -34,8 +37,8 @@ public interface CarRenalPackageDepositV2BizService {
      * @return
      */
     boolean refundDepositCreate(CarRentalPackageDepositRefundOptModel optModel, Long optUid);
-    
-    
+
+
     /**
      * 审批退还押金申请单
      *
@@ -48,8 +51,8 @@ public interface CarRenalPackageDepositV2BizService {
      * @return
      */
     boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount, Integer compelOffLine);
-    
-    
+
+
     /**
      * 查询免押状态
      *
@@ -58,17 +61,18 @@ public interface CarRenalPackageDepositV2BizService {
      * @return true(成功)、false(失败)
      */
     FreeDepositUserInfoVo queryFreeDepositStatus(Integer tenantId, Long uid);
-    
+
     /**
      * 创建免押订单，生成二维码<br /> 创建押金缴纳订单、生成免押记录
-     *  @param tenantId          租户ID
+     *
+     * @param tenantId          租户ID
      * @param uid               C端用户ID
      * @param freeDepositOptReq 免押申请数据
      * @return
      */
     FreeDepositVO createFreeDeposit(Integer tenantId, Long uid, FreeDepositOptReq freeDepositOptReq);
-    
-    
+
+
     /**
      * C端退押申请
      *
@@ -78,7 +82,7 @@ public interface CarRenalPackageDepositV2BizService {
      * @return
      */
     boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo);
-    
+
     /**
      * 用户名下的押金信息(单车、车电一体)
      *
@@ -87,9 +91,10 @@ public interface CarRenalPackageDepositV2BizService {
      * @return 押金缴纳信息
      */
     CarRentalPackageDepositPayVo selectUnRefundCarDeposit(Integer tenantId, Long uid);
-    
-    
-    
+
+
     CarRentalPackageMemberTermPo buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePo packageEntity, String depositPayOrderNo,
-            CarRentalPackageMemberTermPo memberTermEntity);
+                                                                 CarRentalPackageMemberTermPo memberTermEntity);
+
+    Boolean isCarZeroDepositOrder(UserInfo userInfo);
 }

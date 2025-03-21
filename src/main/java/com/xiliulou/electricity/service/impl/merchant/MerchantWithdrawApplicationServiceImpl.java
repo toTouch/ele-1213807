@@ -690,7 +690,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Set<Long> uids = new HashSet<>();
         
         merchantWithdrawApplications.forEach(withdrawRecord -> {
-            if (!Objects.equals(withdrawRecord.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS)) {
+            if (!Objects.equals(withdrawRecord.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS) || !Objects.equals(withdrawRecord.getStatus(), MerchantWithdrawConstant.REVIEW_SUCCESS)) {
                 alreadyReviewList.add(withdrawRecord);
             }
             uids.add(withdrawRecord.getUid());

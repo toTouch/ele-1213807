@@ -100,5 +100,5 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryDepositOrderByUid(Long uid);
 
-    Boolean isZeroDepositOrder(Long uid);
+    Boolean isZeroDepositOrder(UserInfo userInfo);
 }

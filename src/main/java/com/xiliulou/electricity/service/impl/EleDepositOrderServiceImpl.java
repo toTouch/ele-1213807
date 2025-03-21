@@ -36,7 +36,6 @@ import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -1230,16 +1229,40 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public Boolean isZeroDepositOrder(Long uid) {
-        EleDepositOrder eleDepositOrder = applicationContext.getBean(EleDepositOrderService.class).queryDepositOrderByUid(uid);
+    public Boolean isZeroDepositOrder(UserInfo userInfo) {
+        EleDepositOrder eleDepositOrder = applicationContext.getBean(EleDepositOrderService.class).queryDepositOrderByUid(userInfo.getUid());
         if (Objects.isNull(eleDepositOrder)) {
-            log.info("isZeroDepositOrder Info! not found eleDepositOrder, uid is {}", uid);
+            log.info("isZeroDepositOrder Info! not found eleDepositOrder, uid is {}", userInfo.getUid());
             return false;
         }
-        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
-        BigDecimal refundAmount = getRefundAmountV2(eleDepositOrder, freeDepositOrder);
-        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+
+        BigDecimal refundAmoun = eleDepositOrder.getPayAmount();
+        String orderId = eleDepositOrder.getOrderId();
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                refundAmoun = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+                orderId = freeDepositOrder.getOrderId();
+            }
+        }
+
+        BigDecimal eleRefundAmount = refundAmoun.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmoun;
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            // 生成退款订单
+            EleRefundOrder eleRefundOrder = new EleRefundOrder();
+            eleRefundOrder.setOrderId(orderId);
+            eleRefundOrder.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid()));
+            eleRefundOrder.setTenantId(userInfo.getTenantId());
+            eleRefundOrder.setFranchiseeId(userInfo.getFranchiseeId());
+            eleRefundOrder.setCreateTime(System.currentTimeMillis());
+            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
+            eleRefundOrder.setErrMsg(null);
+            eleRefundOrder.setPayType(eleDepositOrder.getPayType());
+            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setRefundAmount(BigDecimal.ZERO);
+            eleRefundOrderService.insert(eleRefundOrder);
             return false;
         }
         return true;
