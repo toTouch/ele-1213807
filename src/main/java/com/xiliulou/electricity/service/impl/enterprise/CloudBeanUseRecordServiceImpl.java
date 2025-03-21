@@ -569,7 +569,14 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
-                
+
+                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
+                boolean isMember = false;
+                if (Objects.nonNull(userBatteryDeposit)) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                    isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+                }
+
                 // 如果已经回收了则直接修改状态
                 if (Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
                     // 修改历史退出为成功
@@ -578,16 +585,15 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     // 修改企业用户为自主续费为退出
                     EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
                     enterpriseChannelUserService.updateRenewStatus(query);
+
+                    // 非会员用户自续费退出后清除加盟商
+                    if (!isMember) {
+                        userInfoService.unBindEnterpriseUserFranchiseeId(userInfo.getUid());
+                    }
+
                     return;
                 }
-    
-                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
-                boolean isMember = false;
-                if (Objects.nonNull(userBatteryDeposit)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
-                    isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
-                }
-    
+
                 boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(item.getUid());
                 boolean isEnterpriseFreeDepositNoPay = true;
                 // 企业免押用户，且不存在代付记录
@@ -609,6 +615,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             
                         // 修改历史退出为成功
                         userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+
+                        // 非会员用户自续费退出后清除加盟商
+                        if (!isMember) {
+                            userInfoService.unBindEnterpriseUserFranchiseeId(userInfo.getUid());
+                        }
                     }
         
                     return ;
@@ -677,7 +688,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     // 修改企业用户为自主续费为退出
                     EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
                     enterpriseChannelUserService.updateRenewStatus(query);
-                    
+
+                    // 非会员用户自续费退出后清除加盟商
+                    if (!isMember) {
+                        userInfoService.unBindEnterpriseUserFranchiseeId(userInfo.getUid());
+                    }
+
                     BigDecimal membercardTotalCloudBean = (BigDecimal) recycleBatteryMembercard.getRight();
                     BigDecimal batteryDepositTotalCloudBean = (BigDecimal) batteryDepositTriple.getRight();
                     

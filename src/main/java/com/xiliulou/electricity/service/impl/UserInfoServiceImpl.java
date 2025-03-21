@@ -4518,4 +4518,31 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Boolean isOldUser(UserInfo userInfo) {
         return userInfo.getPayCount() > 0 || userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
     }
+
+    @Override
+    public void unBindEnterpriseUserFranchiseeId(Long uid) {
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return;
+        }
+
+        // 租车押金
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            return;
+        }
+
+        // 租电池押金
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            return;
+        }
+
+        // 若租车和租电押金都退了，则解绑用户所属加盟商
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(uid);
+        updateUserInfo.setStoreId(NumberConstant.ZERO_L);
+        updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        this.updateByUid(updateUserInfo);
+    }
 }

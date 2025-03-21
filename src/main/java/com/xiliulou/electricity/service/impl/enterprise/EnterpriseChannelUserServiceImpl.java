@@ -991,6 +991,11 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUserUpdate.setRenewalStatus(EnterpriseChannelUser.RENEWAL_OPEN);
         enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
         update(enterpriseChannelUserUpdate);
+
+        // 清空非会员骑手的加盟商
+        if (!isMember) {
+            userInfoService.unBindEnterpriseUserFranchiseeId(request.getUid());
+        }
         
         // 判断用户是否存在与企业渠道用户然后站长退出的表中，类型未未处理或者是处理失败
         List<Integer> typeList = new ArrayList<>();
@@ -1193,6 +1198,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         List<Long> channelUserIds = new ArrayList<>();
+        // 非会员骑手自主续费退出成功的uidList
+        List<Long> enterpriseUserIdList = new ArrayList<>();
         List<EnterpriseChannelUserExit> addList = new ArrayList<>();
         for (EnterpriseChannelUser item : enterpriseChannelUserList) {
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
@@ -1214,6 +1221,10 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             if ((isEnterpriseFreeDepositNoPay && Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT)) || Objects.equals(item.getCloudBeanStatus(),
                     EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
                 channelUserIds.add(item.getId());
+                // 非会员用户
+                if (!isMember) {
+                    enterpriseUserIdList.add(item.getUid());
+                }
             }
             
             // 云豆未回收的
@@ -1234,6 +1245,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         if (ObjectUtils.isNotEmpty(channelUserIds)) {
             log.error("channel user exit all batch Update Renew Status, channelUserIds={},uid={}", channelUserIds, uid);
             enterpriseChannelUserMapper.batchUpdateRenewStatus(channelUserIds, EnterpriseChannelUser.RENEWAL_OPEN, System.currentTimeMillis());
+        }
+
+        // 批量修改非会员企业用户自主续费后退出的加盟商
+        if (ObjectUtils.isNotEmpty(enterpriseUserIdList)) {
+            enterpriseUserIdList.stream().forEach(item -> {
+                userInfoService.unBindEnterpriseUserFranchiseeId(item);
+            });
         }
         
         // 添加记录
@@ -1404,7 +1422,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         BeanUtils.copyProperties(channelUser, history);
         history.setExitTime(System.currentTimeMillis());
         history.setType(EnterpriseChannelUserHistory.EXIT);
-        
+
         channelUserHistoryMapper.insertOne(history);
         
         // 修改骑手为开启
@@ -1413,7 +1431,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUserUpdate.setRenewalStatus(EnterpriseChannelUser.RENEWAL_OPEN);
         enterpriseChannelUserUpdate.setUpdateTime(System.currentTimeMillis());
         update(enterpriseChannelUserUpdate);
-        
+
+        // 非会员骑手自主退出清除加盟商
+        if (!isMember) {
+            userInfoService.unBindEnterpriseUserFranchiseeId(request.getUid());
+        }
+
         // 判断用户是否存在与企业渠道用户然后站长退出的表中，类型未未处理或者是处理失败
         List<Integer> typeList = new ArrayList<>();
         typeList.add(EnterpriseChannelUserExit.TYPE_INIT);
