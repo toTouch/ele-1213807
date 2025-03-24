@@ -3,17 +3,20 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jpay.util.StringUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.EleDepositRefundBO;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
+import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.asset.AssertPermissionService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
@@ -44,7 +47,6 @@ import java.util.stream.Collectors;
 @Service("invitationActivityJoinHistoryService")
 @Slf4j
 public class InvitationActivityJoinHistoryServiceImpl implements InvitationActivityJoinHistoryService {
-    private static final Integer PAGE_LIMIT = 100;
 
     @Resource
     private InvitationActivityJoinHistoryMapper invitationActivityJoinHistoryMapper;
@@ -52,6 +54,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     private UserInfoService userInfoService;
     @Resource
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private EleRefundOrderService eleRefundOrderService;
+    @Resource
+    private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -326,5 +333,31 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     public InvitationActivityJoinHistory queryModifiedInviterHistory(Long joinUid, Integer tenantId) {
         return invitationActivityJoinHistoryMapper.selectModifiedInviterHistory(joinUid, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public Boolean isRebateAfterDepositRefund(Long uid, InvitationActivityJoinHistory invitationActivityJoinHistory) {
+        Long refundTime = 0L;
+    
+        // 查询电最近一笔退押成功的时间
+        EleDepositRefundBO eleDepositRefundBO = eleRefundOrderService.queryLastSuccessOrderByUid(uid);
+        if (Objects.nonNull(eleDepositRefundBO)) {
+            refundTime = eleDepositRefundBO.getUpdateTime() > refundTime ? eleDepositRefundBO.getUpdateTime() : refundTime;
+        }
+    
+        // 查询车最近一笔退押成功的时间
+        CarRentalPackageDepositRefundPo carRentalPackageDepositRefundPo = carRentalPackageDepositRefundService.queryLastSuccessOrderByUid(uid);
+        if (Objects.nonNull(carRentalPackageDepositRefundPo)) {
+            refundTime = carRentalPackageDepositRefundPo.getUpdateTime() > refundTime ? carRentalPackageDepositRefundPo.getUpdateTime() : refundTime;
+        }
+        
+        // 无退押，不拦截
+        if (Objects.isNull(refundTime) || Objects.equals(refundTime, 0L)) {
+            return true;
+        }
+    
+        // 如果退押时间在参与活动之前，不拦截
+        return refundTime <= invitationActivityJoinHistory.getStartTime();
     }
 }

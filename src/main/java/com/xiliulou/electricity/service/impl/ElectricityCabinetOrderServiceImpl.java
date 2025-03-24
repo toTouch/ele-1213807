@@ -2420,9 +2420,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Integer orderMode = electricityCabinetOrderQuery.getOrderMode();
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = new ArrayList<>();
         if (Objects.isNull(orderMode) || Objects.equals(orderMode, OrderDataModeEnums.CURRENT_ORDER.getCode())) {
-            electricityCabinetOrderMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
+            electricityCabinetOrderVOList = electricityCabinetOrderMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
         } else {
-            electricityCabinetOrderHistoryService.listSuperAdminPage(electricityCabinetOrderQuery);
+            electricityCabinetOrderVOList = electricityCabinetOrderHistoryService.listSuperAdminPage(electricityCabinetOrderQuery);
         }
         
         if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
@@ -2437,6 +2437,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (ObjectUtils.isNotEmpty(userInfos)) {
                 userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
             }
+    
+            // 查询已删除/已注销
+            List<Long> uidList = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toList());
+            Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                    List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+            
             Map<Long, String> finalUserNameMap = userNameMap;
             
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
@@ -2473,6 +2479,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.nonNull(franchisee)) {
                     e.setFranchiseeName(franchisee.getName());
                 }
+    
+                // 查询已删除/已注销
+                e.setUserStatus(userDelRecordService.getUserStatus(e.getUid(), userStatusMap));
                 
             });
         }

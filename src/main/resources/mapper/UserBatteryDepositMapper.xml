@@ -62,6 +62,16 @@
         </foreach>
     </select>
     
+    <select id="selectPayTypeByUidList" resultType="com.xiliulou.electricity.bo.UserBatteryDepositBO">
+        select tubd.id, tubd.uid, tubd.did, tubd.order_id, tubd.battery_deposit, tubd.del_flag, tubd.create_time, tubd.update_time, tubd.apply_deposit_time , tubd.deposit_type,
+        tubd.deposit_modify_flag, tubd.before_modify_deposit, tedo.pay_type
+        from t_user_battery_deposit tubd left join t_ele_deposit_order tedo on tubd.order_id = tedo.order_id and tubd.uid = tedo.uid
+        where tubd.del_flag = 0 and tubd.uid in
+        <foreach collection="uidList" item="uid" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_battery_deposit(uid, did, order_id, del_flag,battery_deposit, create_time, update_time, apply_deposit_time, deposit_type, deposit_modify_flag,before_modify_deposit)

@@ -661,7 +661,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
-    public R returnBattery(Integer electricityCabinetId) {
+    public R returnBattery(Integer electricityCabinetId, Integer isFreeze) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -849,7 +849,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
-
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
                     .phone(userInfo.getPhone()).name(userInfo.getName())
@@ -863,6 +862,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .franchiseeId(store.getFranchiseeId())
                     .tenantId(TenantContextHolder.getTenantId())
                     .channel(ChannelSourceContextHolder.get())
+                    .isFreeze(Objects.equals(isFreeze, RentBatteryOrder.IS_FREEZE_YES) ? RentBatteryOrder.IS_FREEZE_YES : RentBatteryOrder.IS_FREEZE_NO)
                     .build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
             
@@ -1779,6 +1779,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
             return R.ok(new ArrayList<>());
         }
+    
+        // 查询已删除/已注销
+        List<Long> uidList = rentBatteryOrderVOList.stream().map(RentBatteryOrderVO::getUid).collect(Collectors.toList());
+        Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(uidList,
+                List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
+        
         if (ObjectUtil.isNotEmpty(rentBatteryOrderVOList)) {
             rentBatteryOrderVOList.parallelStream().forEach(e -> {
                 if (Objects.nonNull(e.getTenantId())) {
@@ -1796,6 +1802,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 if (Objects.nonNull(franchisee)) {
                     e.setFranchiseeName(franchisee.getName());
                 }
+    
+                // 查询已删除/已注销
+                e.setUserStatus(userDelRecordService.getUserStatus(e.getUid(), userStatusMap));
             });
         }
     

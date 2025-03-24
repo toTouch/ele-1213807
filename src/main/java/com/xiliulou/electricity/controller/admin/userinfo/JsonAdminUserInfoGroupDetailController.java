@@ -7,6 +7,7 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
+import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequestV2;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
@@ -228,6 +229,26 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         }
         
         return userInfoGroupDetailService.updateV2(request, user);
+    }
+    
+    /**
+     * 用户分组批量解绑
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/admin/userInfo/userInfoGroupDetail/unbindBatche")
+    public R unbindUserGroupsInBatches(@RequestBody @Validated UserInfoBindGroupRequestV2 request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        return userInfoGroupDetailService.unbindUserGroupsInBatches(request, user);
     }
     
     /**

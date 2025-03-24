@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.bo.UserBatteryDepositBO;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 
 import java.util.List;
@@ -60,4 +61,6 @@ public interface UserBatteryDepositMapper extends BaseMapper<UserBatteryDeposit>
     Integer update(UserBatteryDeposit userBatteryDeposit);
     
     List<UserBatteryDeposit> selectListByUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
+    
+    List<UserBatteryDepositBO> selectPayTypeByUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList);
 }

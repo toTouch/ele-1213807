@@ -12,27 +12,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FreeDepositData;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.MemberCardBatteryType;
-import com.xiliulou.electricity.entity.PxzConfig;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserDelRecord;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
@@ -270,6 +250,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     private UserDelRecordService userDelRecordService;
+
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     @Deprecated
     @Override
@@ -443,7 +426,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(query.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
-        
+//        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(enterpriseMemberCardPayCount) || enterpriseMemberCardPayCount <= 0) {
             // 新租
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
@@ -543,6 +527,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(enterpriseUserId) : null);
         }
+
+       /* if (Objects.nonNull(userInfoExtra) && Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+            // 流失用户查询新租和不限
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+        }*/
         
         // 先获取企业关联套餐信息
         List<Long> packageIds = enterprisePackageService.selectByEnterpriseId(query.getEnterpriseId());
@@ -1192,6 +1181,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package by enterprise user error, not found user, uid = {}", uid);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
             }
+
+           /* UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userInfoExtra)) {
+                log.warn("purchase package by enterprise user error, not found user extra, uid = {}", uid);
+                return Triple.of(false, "120125", "未找到用户");
+            }*/
             
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.warn("purchase package by enterprise user error, user is unUsable, uid = {}", uid);
@@ -1238,12 +1233,21 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package by enterprise user error, not found batteryMemberCard, uid = {}, package id = {}", uid, query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.0087", "套餐不存在");
             }
-            
+
+            /*if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户不允许购买续租类型的套餐
+                if (Objects.equals(batteryMemberCard.getRentType(), BatteryMemberCard.RENT_TYPE_OLD)) {
+                    // 流失用户
+                    log.warn("purchase package by enterprise user error! The rent type of current package is a old rental package for renewal user battery member card, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
+                    return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                }
+            }*/
+
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
                 log.warn("purchase package by enterprise user error, batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100275", "电池套餐不可用");
             }
-            
+
             // 判断是否存在滞纳金
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             // 绑定的套餐
@@ -1364,6 +1368,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(SecurityUtils.getUid());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             // 记录企业代付订单信息
@@ -1470,7 +1475,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package with deposit by enterprise user warn, not found user,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
             }
-            
+
+            /*UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userInfoExtra)) {
+                log.warn("purchase package with deposit by enterprise user warn, not found user extra,uid={}", userInfo.getUid());
+                return Triple.of(false, "120125", "未找到用户");
+            }*/
+
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.warn("purchase package with deposit by enterprise user warn, user is unUsable,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
@@ -1504,7 +1515,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package with deposit by enterprise user warn, not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
             }
-            
+
+            /*if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户不允许购买续租类型的套餐
+                if (Objects.equals(batteryMemberCard.getRentType(), BatteryMemberCard.RENT_TYPE_OLD)) {
+                    // 流失用户
+                    log.warn("purchase package with deposit by enterprise user warn! The rent type of current package is a old rental package for renewal user battery member card, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
+                    return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                }
+            }*/
+
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
                 log.warn("purchase package with deposit by enterprise user warn, batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100275", "电池套餐不可用");
@@ -1666,6 +1686,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(SecurityUtils.getUid());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             // 记录企业代付订单信息
@@ -1771,7 +1792,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase Package with free deposit error, not found user info,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
             }
-            
+
+           /* UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userInfoExtra)) {
+                return Triple.of(false, "120125", "未找到用户");
+            }*/
+
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.warn("purchase Package with free deposit error, not found userInfo,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
@@ -1825,7 +1851,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase Package with free deposit warning, not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
             }
-            
+
+            /*if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户不允许购买续租类型的套餐
+                if (Objects.equals(batteryMemberCard.getRentType(), BatteryMemberCard.RENT_TYPE_OLD)) {
+                    // 流失用户
+                    log.warn("purchase Package with free deposit warning! The rent type of current package is a old rental package for renewal user battery member card, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
+                    return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                }
+            }*/
+
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
                 log.warn("purchase Package with free deposit warning, batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100275", "电池套餐不可用");
@@ -1969,6 +2004,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(SecurityUtils.getUid());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
             // 记录企业代付订单信息

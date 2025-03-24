@@ -81,6 +81,15 @@
           and cell_no = #{cellNo} limit 1
     </select>
     
+    <select id="selectByEidList" resultType="com.xiliulou.electricity.entity.BoxOtherProperties">
+        <include refid="selectBoxOtherProperties"/>
+        where electricity_cabinet_id in
+        <foreach collection="eidList" item="eid" open="(" close=")" separator=",">
+            #{eid}
+        </foreach>
+        order by electricity_cabinet_id, cell_no
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_box_other_properties(electricity_cabinet_id, cell_no, del_flag, remark, lock_reason, lock_status_change_time, create_time, update_time)

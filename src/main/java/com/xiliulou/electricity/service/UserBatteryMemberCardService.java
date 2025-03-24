@@ -119,4 +119,6 @@ public interface UserBatteryMemberCardService {
     void handlePackageNumber(Long uid);
     
     Integer updateByUidForEmptyOrder(UserBatteryMemberCard updateUserBatteryMemberCard);
+    
+    List<UserBatteryMemberCard> listByUidList(List<Long> uidList);
 }

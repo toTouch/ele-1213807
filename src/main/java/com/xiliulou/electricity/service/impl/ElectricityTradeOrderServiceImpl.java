@@ -585,6 +585,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(enterpriseCloudBeanOrder.getOperateUid());
             cloudBeanUseRecordService.insert(cloudBeanUseRecord);
         } else {
             enterpriseCloudBeanOrderUpdate.setStatus(EnterpriseCloudBeanOrder.STATUS_FAIL);
