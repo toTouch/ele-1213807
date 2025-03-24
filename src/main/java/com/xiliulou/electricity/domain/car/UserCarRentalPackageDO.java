@@ -137,5 +137,16 @@ public class UserCarRentalPackageDO {
      */
     private String depositOrderNo;
     /***********排期表内可快速实现的 P0 需求 15.1  实名用户列表（16条优化项）iii 20240313 end**************/
+
+    private Long storeId;
+    
+    private Long dueTime;
+    
+    private Long residue;
+    
+    /**
+     * 购买订单编号
+     */
+    private String rentalPackageOrderNo;
     
 }

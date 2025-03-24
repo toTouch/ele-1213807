@@ -413,5 +413,20 @@
         </where>
     </select>
     
+    <select id="selectListByOrderNoList" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
+        SELECT pay_amount, sn, battery_type, order_id, create_time, model_type, status,source,phone,name ,uid, status, pay_time, battery_service_fee ,
+        battery_service_fee_generate_time, expired_protection_time,tenant_id
+        FROM
+        t_ele_battery_service_fee_order
+        <where>
+            tenant_id =#{tenantId}
+            <if test="expireOrderNoList != null">
+                and order_id in
+                <foreach collection="expireOrderNoList" item="orderNo" index="index" open="(" close=")" separator=",">
+                    #{orderNo}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 </mapper>

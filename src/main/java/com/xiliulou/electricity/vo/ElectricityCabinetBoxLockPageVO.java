@@ -67,4 +67,9 @@ public class ElectricityCabinetBoxLockPageVO {
      * 锁定在仓sn
      */
     private String lockSn;
+    
+    /**
+     * 锁仓备注
+     */
+    private String remark;
 }
