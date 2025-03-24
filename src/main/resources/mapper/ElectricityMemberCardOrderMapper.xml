@@ -419,7 +419,14 @@
             #{id}
         </foreach>
     </update>
-    
+
+    <update id="updatePayChannelById">
+        update t_electricity_member_card_order
+        set payment_channel = #{paymentChannel},
+            update_time     = #{updateTime}
+        where id = #{id}
+    </update>
+
     <sql id="column">
         id ,
         pay_amount ,

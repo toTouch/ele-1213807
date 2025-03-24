@@ -77,4 +77,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     List<ElectricityMemberCardOrder> selectListOrderByExternalAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
     
     Integer existNotFinishOrderByUid(@Param("uid") Long uid);
+
+    void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
 }
