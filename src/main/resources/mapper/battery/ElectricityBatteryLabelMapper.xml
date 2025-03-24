@@ -96,6 +96,6 @@
     <select id="countReceived" resultType="java.lang.Integer">
         select count(1) from t_electricity_battery teb
             left join t_electricity_battery_label ebl on teb.sn = ebl.sn
-        where ebl.receiver_id = #{receiverId}
+        where teb.tenant_id = #{tenantId} and ebl.receiver_id = #{receiverId} and teb.label in (6,7)
     </select>
 </mapper>

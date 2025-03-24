@@ -50,7 +50,7 @@
           and mei_tuan_account = #{oldPhone}
     </update>
     
-    <select id="selectByMtOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+    <select id="selectByMtOrderId" resultType="com.xiliulou.electricity.thirdparty.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_order
@@ -64,7 +64,7 @@
         order by id desc limit 1
     </select>
     
-    <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+    <select id="selectByOrderId" resultType="com.xiliulou.electricity.thirdparty.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_order
@@ -72,7 +72,7 @@
         order by id desc limit 1
     </select>
     
-    <select id="selectByPhone" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+    <select id="selectByPhone" resultType="com.xiliulou.electricity.thirdparty.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_order

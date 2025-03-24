@@ -9,12 +9,15 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.request.userinfo.EleUserAuthRequest;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +57,9 @@ public class JsonUserEleUserAuthController {
     @Resource
     private UserDelRecordService userDelRecordService;
     
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
     //实名认证
     @PostMapping("/user/auth")
     public R webAuth(@RequestBody @Validated ValidList<EleUserAuthRequest> eleUserAuthList) {
@@ -84,6 +90,9 @@ public class JsonUserEleUserAuthController {
     
         // 老用户实名认证后,恢复用户历史分组及流失用户标记
         userDelRecordService.asyncRecoverUserInfoGroup(uid);
+    
+        // 给第三方推送用户信息
+        pushDataToThirdService.asyncPushUserInfo(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), uid, ThirdPartyOperatorTypeEnum.USER_ADD.getType());
         
         return result;
         
