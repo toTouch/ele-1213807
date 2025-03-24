@@ -1035,5 +1035,16 @@
         from t_battery_member_card
         where coupon_id = #{couponId} or JSON_CONTAINS(coupon_ids, #{couponIdStr})
     </select>
+    
+    <select id="selectListByIdListIncludeDel" resultMap="BatteryMemberCardMap">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_battery_member_card tbmc
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 
 </mapper>

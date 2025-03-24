@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -10,6 +12,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.merchant.MerchantEmployeeMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
@@ -26,8 +29,10 @@ import com.xiliulou.electricity.utils.QrCodeUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,6 +100,12 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
             log.info("The user name has been used by other one for add merchant employee, name = {}, tenant id = {}", name, merchantEmployeeRequest.getTenantId());
             throw new BizException("120009", "用户姓名已存在");
         }
+
+        // 判断邀请权限和站点代付权限是否都没有选中
+        if (Objects.equals(merchantEmployeeRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantEmployeeRequest.getEnterprisePackageAuth(),
+                MerchantConstant.DISABLE)) {
+            throw new BizException("120202", "邀请和代付权限员工至少需要开启一个");
+        }
         
         User existUser = userService.queryByUserPhoneFromDB(phone, User.TYPE_USER_MERCHANT_EMPLOYEE, merchantEmployeeRequest.getTenantId());
         if (Objects.nonNull(existUser)) {
@@ -141,6 +152,8 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         merchantEmployee.setDelFlag(CommonConstant.DEL_N);
         merchantEmployee.setCreateTime(System.currentTimeMillis());
         merchantEmployee.setUpdateTime(System.currentTimeMillis());
+        merchantEmployee.setInviteAuth(Objects.nonNull(merchantEmployeeRequest.getInviteAuth()) ? merchantEmployeeRequest.getInviteAuth() : YesNoEnum.NO.getCode());
+        merchantEmployee.setEnterprisePackageAuth(Objects.nonNull(merchantEmployeeRequest.getEnterprisePackageAuth()) ? merchantEmployeeRequest.getEnterprisePackageAuth() : YesNoEnum.NO.getCode());
         
         Integer result = merchantEmployeeMapper.insertOne(merchantEmployee);
         
@@ -190,7 +203,13 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
                 throw new BizException("120002", "当前手机号已注册");
             }
         }
-        
+
+        // 判断邀请权限和站点代付权限是否都没有选中
+        if (Objects.equals(merchantEmployeeRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantEmployeeRequest.getEnterprisePackageAuth(),
+                MerchantConstant.DISABLE)) {
+            throw new BizException("120202", "邀请和代付权限员工至少需要开启一个");
+        }
+
         String oldPhone = user.getPhone();
         User updateUser = new User();
         
@@ -212,7 +231,10 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantEmployee merchantEmployeeUpdate = new MerchantEmployee();
         BeanUtils.copyProperties(merchantEmployeeRequest, merchantEmployeeUpdate);
         merchantEmployeeUpdate.setUpdateTime(System.currentTimeMillis());
-        
+
+        merchantEmployeeUpdate.setInviteAuth(Objects.nonNull(merchantEmployeeRequest.getInviteAuth()) ? merchantEmployeeRequest.getInviteAuth() : YesNoEnum.NO.getCode());
+        merchantEmployeeUpdate.setEnterprisePackageAuth(Objects.nonNull(merchantEmployeeRequest.getEnterprisePackageAuth()) ? merchantEmployeeRequest.getEnterprisePackageAuth() : YesNoEnum.NO.getCode());
+
         Integer result = merchantEmployeeMapper.updateOne(merchantEmployeeUpdate);
         
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -422,5 +444,41 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         MerchantPromotionEmployeeDetailQueryModel queryModel = MerchantPromotionEmployeeDetailQueryModel.builder().tenantId(tenantId).uid(merchantUid).build();
         return merchantEmployeeMapper.selectListByMerchantUid(queryModel);
     }
-    
+
+    @Override
+    @Slave
+    public List<MerchantEmployeeBO> listMerchantAndEmployeeInfoByUidList(List<Long> merchantEmployeesUidList) {
+        return merchantEmployeeMapper.selectListMerchantAndEmployeeInfoByUidList(merchantEmployeesUidList);
+    }
+
+    @Override
+    @Slave
+    public MerchantEmployeeBO queryMerchantAndEmployeeInfoByUid(Long uid) {
+        return merchantEmployeeMapper.selectMerchantAndEmployeeInfoByUid(uid);
+    }
+
+    /**
+     * 根据员工uid查询当前商户uid
+     * @param userInfo
+     * @return
+     */
+    @Override
+    @Slave
+    public Long getCurrentMerchantUid(TokenUser userInfo) {
+        if (Objects.isNull(userInfo)) {
+            throw new CustomBusinessException("未查询到用户");
+        }
+
+        if (!Objects.equals(userInfo.getType(), User.TYPE_USER_MERCHANT_EMPLOYEE)) {
+            return userInfo.getUid();
+        }
+
+        // 查询员工对应的商户uid
+        MerchantEmployeeBO merchantEmployeeBO = merchantEmployeeMapper.selectMerchantAndEmployeeInfoByUid(userInfo.getUid());
+        if (Objects.isNull(merchantEmployeeBO)) {
+            throw new CustomBusinessException("未查询到用户");
+        }
+
+        return merchantEmployeeBO.getMerchantUid();
+    }
 }

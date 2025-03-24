@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
@@ -51,7 +50,10 @@ public class JsonAdminRentBatteryOrderController {
     @Autowired
     UserDataScopeService userDataScopeService;
     
-    //列表查询
+    /**
+     * 列表查询
+     * @param isFreeze:1-冻结退电 0-正常退电
+     */
     @GetMapping(value = "/admin/rentBatteryOrder/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "name", required = false) String name,
@@ -59,7 +61,7 @@ public class JsonAdminRentBatteryOrderController {
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityBatterySn", required = false) String electricityBatterySn,
-            @RequestParam(value = "channel", required = false) String channel) {
+            @RequestParam(value = "channel", required = false) String channel, @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -101,16 +103,21 @@ public class JsonAdminRentBatteryOrderController {
         
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).uid(uid).beginTime(beginTime)
                 .endTime(endTime).status(status).orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId())
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).electricityBatterySn(electricityBatterySn).channel(channel).build();
+                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).electricityBatterySn(electricityBatterySn).channel(channel).isFreeze(isFreeze).build();
         
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
     
+    /**
+     * 列表总数查询
+     * @param isFreeze:1-冻结退电 0-正常退电
+     */
     @GetMapping(value = "/admin/rentBatteryOrder/list/super")
     public R querySuperList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderId", required = false) String orderId) {
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -129,16 +136,20 @@ public class JsonAdminRentBatteryOrderController {
         }
         
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).beginTime(beginTime).endTime(endTime)
-                .status(status).orderId(orderId).type(type).eleIdList(null).tenantId(null).build();
+                .status(status).orderId(orderId).type(type).eleIdList(null).tenantId(null).isFreeze(isFreeze).build();
         
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
     
+    /**
+     * 列表总数查询
+     * @param isFreeze:1-冻结退电 0-正常退电
+     */
     @GetMapping(value = "/admin/rentBatteryOrder/queryCount/super")
     public R querySuperCount(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "orderId", required = false) String orderId) {
+            @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -148,21 +159,25 @@ public class JsonAdminRentBatteryOrderController {
         if (user.getTenantId() != 1) {
             return R.fail("权限不足");
         }
-        
+    
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().name(name).phone(phone).beginTime(beginTime).endTime(endTime).status(status).orderId(orderId)
-                .type(type).eleIdList(null).tenantId(null).build();
+                .type(type).eleIdList(null).tenantId(null).isFreeze(isFreeze).build();
         
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
     }
     
-    //列表查询
+    /**
+     * 列表总数查询
+     * @param isFreeze:1-冻结退电 0-正常退电
+     */
     @GetMapping(value = "/admin/rentBatteryOrder/queryCount")
     public R queryCount(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "electricityBatterySn", required = false) String electricityBatterySn,@RequestParam(value = "channel", required = false) String channel) {
+            @RequestParam(value = "electricityBatterySn", required = false) String electricityBatterySn,@RequestParam(value = "channel", required = false) String channel,
+            @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -184,10 +199,10 @@ public class JsonAdminRentBatteryOrderController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+    
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().name(name).phone(phone).uid(uid).beginTime(beginTime).endTime(endTime).status(status)
-                .orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).electricityCabinetId(electricityCabinetId).electricityBatterySn(electricityBatterySn).channel(channel).build();
+                .orderId(orderId).type(type).franchiseeIds(franchiseeIds).storeIds(storeIds).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
+                .electricityCabinetId(electricityCabinetId).electricityBatterySn(electricityBatterySn).channel(channel).isFreeze(isFreeze).build();
         
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
     }

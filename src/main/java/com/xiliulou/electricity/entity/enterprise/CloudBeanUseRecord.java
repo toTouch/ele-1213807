@@ -75,6 +75,15 @@ public class CloudBeanUseRecord {
      */
     private Long updateTime;
 
+    /**
+     * 操作人uid
+     *
+     *   线上充值：员工或者商户的uid
+     *     代付，回收：添加新字段：老数据默认为商户名称，新数据：后台回收uid是运营商，定时任务回收uid是商户，员工回收，自主续费，全部等类型为员工uid
+     *     2:云豆充值,3:赠送,4:后台充值,5:后台扣除: 等类型操作人取order表中的uid
+     */
+    private Long operateUid;
+
     //类型 0套餐代付，1套餐回收，2云豆充值，3赠送，4后台充值，5后台扣除
     public static final Integer TYPE_PAY_MEMBERCARD = 0;
     public static final Integer TYPE_RECYCLE = 1;

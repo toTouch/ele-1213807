@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.xiliulou.electricity.bo.EleDepositRefundBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 
 import cn.hutool.core.collection.CollUtil;
@@ -12,7 +13,6 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
@@ -80,7 +80,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -1873,5 +1872,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public EleRefundOrder queryLastByOrderId(String orderId) {
         return eleRefundOrderMapper.selectLastByOrderId(orderId);
+    }
+    
+    @Slave
+    @Override
+    public EleDepositRefundBO queryLastSuccessOrderByUid(Long uid) {
+        return eleRefundOrderMapper.selectLastSuccessOrderByUid(uid);
     }
 }

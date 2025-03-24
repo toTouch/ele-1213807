@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeQrCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
+import com.xiliulou.security.bean.TokenUser;
 
 import java.util.List;
 
@@ -44,4 +46,10 @@ public interface MerchantEmployeeService {
     Integer batchRemoveByUidList(List<Long> employeeUidList, Long timeMillis);
     
     List<MerchantEmployee> queryListByMerchantUid(Long merchantUid, Integer tenantId);
+
+    List<MerchantEmployeeBO> listMerchantAndEmployeeInfoByUidList(List<Long> merchantEmployeesUidList);
+
+    MerchantEmployeeBO queryMerchantAndEmployeeInfoByUid(Long uid);
+
+    Long getCurrentMerchantUid(TokenUser userInfo);
 }

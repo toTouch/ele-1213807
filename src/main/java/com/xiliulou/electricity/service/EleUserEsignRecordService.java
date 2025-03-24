@@ -20,4 +20,12 @@ public interface EleUserEsignRecordService {
     EleUserEsignRecord queryUserEsignRecordFromDB(Long uid, Long tenantId);
     
     EleUserEsignRecord queryEsignFinishedRecordByUser(Long uid, Long aLong);
+    
+    /**
+     * 取消签署流程 逻辑删除
+     *
+     * @param eleUserEsignRecord
+     * @return
+     */
+    Integer cancelEsignFlow(Long eleUserEsignRecord);
 }

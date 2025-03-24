@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.EnableMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
+import com.xiliulou.electricity.query.supper.ClearUserDelMarkRequest;
 import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
+import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.supper.DelBatteryVo;
 import com.xiliulou.security.bean.TokenUser;
@@ -94,6 +96,19 @@ public class JsonAdminSupperController {
 
     @Resource
     private EleOnlineLogService eleOnlineLogService;
+    
+    @Resource
+    private UserDelRecordService userDelRecordService;
+    
+    /**
+     * @description 清除用户的删除标记（该接口仅供内部测试使用）
+     * @date 2025/2/28 11:13:05
+     * @author HeYafeng
+     */
+    @PostMapping("/clearUserDelMark")
+    public R clearUserDelMark(@RequestBody ClearUserDelMarkRequest clearUserDelMarkParam) {
+        return userDelRecordService.clearUserDelMark(clearUserDelMarkParam);
+    }
 
     /**
      * 根据电池SN删除电池
@@ -455,6 +470,7 @@ public class JsonAdminSupperController {
 
     /**
      * 租退电订单列表
+     * @param isFreeze: 1-冻结退电 0-正常退电
      */
     @GetMapping(value = "/rentBatteryOrder/list")
     public R querySuperList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
@@ -465,7 +481,8 @@ public class JsonAdminSupperController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,
+            @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -482,16 +499,16 @@ public class JsonAdminSupperController {
         if (!SecurityUtils.isAdmin()) {
             return R.ok(Collections.emptyList());
         }
-
-        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size)
-                .name(name).phone(phone).beginTime(beginTime).endTime(endTime)
-                .status(status).orderId(orderId).type(type).eleIdList(null).tenantId(tenantId).build();
+    
+        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).beginTime(beginTime).endTime(endTime)
+                .status(status).orderId(orderId).type(type).eleIdList(null).tenantId(tenantId).isFreeze(isFreeze).build();
 
         return rentBatteryOrderService.listSuperAdminPage(rentBatteryOrderQuery);
     }
 
     /**
      * 租退电订单列表
+     * @param isFreeze: 1-冻结退电 0-正常退电
      */
     @GetMapping(value = "/rentBatteryOrder/queryCount")
     public R querySuperCount(@RequestParam(value = "status", required = false) String status,
@@ -501,7 +518,8 @@ public class JsonAdminSupperController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,
+            @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -514,7 +532,7 @@ public class JsonAdminSupperController {
 
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().name(name).phone(phone)
                 .beginTime(beginTime).endTime(endTime).status(status).orderId(orderId)
-                .type(type).eleIdList(null).tenantId(tenantId).build();
+                .type(type).eleIdList(null).tenantId(tenantId).isFreeze(isFreeze).build();
 
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
     }

@@ -42,4 +42,6 @@ public interface MerchantPromotionFeeService {
     R queryMerchantByChannelEmployeeUid(Long employeeUid);
     
     R statisticUserV2(Integer type, Long uid, Long beginTime, Long endTime, Integer userType);
+
+    R statisticUserForEmployee(Integer type, Long uid, Long beginTime, Long endTime, Integer userType);
 }
