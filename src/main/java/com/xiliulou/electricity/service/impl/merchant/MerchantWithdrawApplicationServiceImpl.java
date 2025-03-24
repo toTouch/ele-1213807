@@ -650,9 +650,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
         // 提前处理线下付款
         if (Objects.equals(batchReviewWithdrawApplicationRequest.getStatus(), MerchantWithdrawConstant.OFF_LINE_TRANSFER)){
-            List<MerchantWithdrawApplication> list = merchantWithdrawApplications.stream().filter(e -> {
-                return Objects.equals(e.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS);
-            }).collect(Collectors.toList());
+            List<MerchantWithdrawApplication> list = merchantWithdrawApplications.stream().filter(e -> !Objects.equals(e.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS)).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(list)) {
                 return Triple.of(false, "120026", "只可选择审核中状态的数据项，请重新选择后操作");
             }
