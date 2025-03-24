@@ -68,4 +68,14 @@ public class MerchantEmployee {
      */
     private Long updateTime;
 
+
+    /**
+     * 邀请权限：0-开启，1-关闭
+     */
+    private Integer inviteAuth;
+
+    /**
+     * 站点代付权限：0-开启，1-关闭
+     */
+    private Integer enterprisePackageAuth;
 }

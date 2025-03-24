@@ -15,6 +15,8 @@
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="inviteAuth" column="invite_auth" jdbcType="INTEGER"/>
+        <result property="enterprisePackageAuth" column="enterprise_package_auth" jdbcType="INTEGER"/>
     </resultMap>
     
     <select id="selectById" resultMap="MerchantEmployeeMap">
@@ -49,7 +51,9 @@
             tme.del_flag,
             tme.remark,
             tme.create_time,
-            tme.update_time
+            tme.update_time,
+            tme.invite_auth,
+            tme.enterprise_package_auth
         from t_merchant_employee tme
         left join t_user tu on tu.uid = tme.uid
         where tme.uid = #{uid}
@@ -66,7 +70,9 @@
           tme.del_flag,
           tme.remark,
           tme.create_time,
-          tme.update_time
+          tme.update_time,
+          tme.invite_auth,
+          tme.enterprise_package_auth
         from t_merchant_employee tme
         left join t_merchant tm on tm.uid = tme.merchant_uid
         <where>
@@ -148,7 +154,9 @@
             del_flag,
             remark,
             create_time,
-            update_time
+            update_time,
+            invite_auth,
+            enterprise_package_auth
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -158,7 +166,9 @@
             #{delFlag},
             #{remark},
             #{createTime},
-            #{updateTime}
+            #{updateTime},
+            #{inviteAuth},
+            #{enterprisePackageAuth}
         </trim>
     </insert>
     
@@ -184,6 +194,12 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="inviteAuth != null">
+                invite_auth = #{inviteAuth},
+            </if>
+            <if test="enterprisePackageAuth != null">
+                enterprise_package_auth = #{enterprisePackageAuth}
             </if>
         </set>
         
@@ -243,7 +259,9 @@
             tme.del_flag,
             tme.remark,
             tme.create_time,
-            tme.update_time
+            tme.update_time,
+            tme.invite_auth,
+            tme.enterprise_package_auth
         from t_merchant_employee tme
         left join t_user tu on tu.uid = tme.uid
         where tme.merchant_uid = #{merchantUid}
@@ -259,5 +277,53 @@
             limit #{offset}, #{size}
         </if>
     </select>
-    
+
+    <select id="selectListMerchantAndEmployeeInfoByUidList" resultType="com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO">
+        SELECT
+            e.id,
+            e.uid,
+            e.invite_auth 'employeeInviteAuth',
+            e.enterprise_package_auth 'employeeEnterprisePackageAuth',
+            e.merchant_uid,
+            u.lock_flag 'merchantUserLockFlag',
+            m.invite_auth 'merchantInviteAuth',
+            m.enterprise_package_auth 'merchantEnterprisePackageAuth',
+            m.purchase_authority,
+            m.id 'merchantId'
+        FROM
+            t_merchant_employee e
+            left join t_user u on u.uid = e.merchant_uid
+            left join t_merchant m on m.uid = e.merchant_uid
+        WHERE
+            e.uid in
+            <foreach collection="merchantEmployeesUidList" item="uid" open="(" close=")" separator=",">
+                #{uid}
+            </foreach>
+          and e.del_flag = 0
+          and m.del_flag = 0
+    </select>
+
+    <select id="selectMerchantAndEmployeeInfoByUid"
+            resultType="com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO">
+        SELECT
+            e.id,
+            e.uid,
+            e.invite_auth 'employeeInviteAuth',
+            e.enterprise_package_auth 'employeeEnterprisePackageAuth',
+            e.merchant_uid,
+            u.lock_flag 'merchantUserLockFlag',
+            m.invite_auth 'merchantInviteAuth',
+            m.enterprise_package_auth 'merchantEnterprisePackageAuth',
+            m.purchase_authority,
+            m.id 'merchantId'
+        FROM
+        t_merchant_employee e
+        inner join t_user u on u.uid = e.merchant_uid
+        inner join t_merchant m on m.uid = e.merchant_uid
+        WHERE
+        e.uid = #{uid}
+        and e.del_flag = 0
+        and m.del_flag = 0
+    </select>
+
 </mapper>
