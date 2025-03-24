@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
+import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -95,7 +96,7 @@ public interface InstallmentTerminatingRecordService {
      * @param externalAgreementNo 请求签约号
      * @return left-rentPrice, right-unpaidPrice
      */
-    Pair<BigDecimal, BigDecimal> queryRentPriceAndUnpaidAmount(String externalAgreementNo);
+    Pair<BigDecimal, BigDecimal> queryRentPriceAndUnpaidAmount(String externalAgreementNo, InstallmentRecordVO installmentRecordVO);
     
     
     List<InstallmentTerminatingRecord> listByExternalAgreementNo(InstallmentTerminatingRecordQuery query);

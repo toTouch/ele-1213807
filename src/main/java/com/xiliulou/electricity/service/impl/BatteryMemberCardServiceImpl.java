@@ -1418,6 +1418,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return Boolean.FALSE;
     }
     
+    @Slave
+    @Override
+    public List<BatteryMemberCard> listByIdListIncludeDel(List<Long> ids) {
+        return batteryMemberCardMapper.selectListByIdListIncludeDel(ids);
+    }
+    
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {
         
         List<MemberCardBatteryType> memberCardBatteryTypeList = Lists.newArrayList();

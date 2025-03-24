@@ -94,7 +94,7 @@ public interface CarRentalPackageMemberTermBizService {
     
     CarUserMemberInfoProDTO queryUserMemberInfoForProPreSelect(Integer tenantId, List<Long> uidList);
     
-    UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO, Map<Long, Boolean> usingRefundMap,
+    UserMemberInfoVo queryUserMemberInfoForPro(Integer tenantId, Long uid, List<Long> uidList, CarUserMemberInfoProDTO carUserMemberInfoProDTO,
             Map<Long, Boolean> noUsingRefundMap);
     
 }

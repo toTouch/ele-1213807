@@ -72,6 +72,11 @@ public class EnterpriseChannelUserExit {
      */
     private String errorMsg;
 
+    /**
+     * 操作人
+     */
+    private Long operateUid;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     

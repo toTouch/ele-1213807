@@ -3,12 +3,15 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,9 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     
     @Resource
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
+    
+    @Resource
+    private UserCouponService userCouponService;
     
     /**
      * 支付成功订单且未使用的总计剩余时间，退租使用<br /> 此方法使用慎重
@@ -476,8 +482,64 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
 
     @Slave
     @Override
-    public List<CarRentalPackageOrderPo> listByUidAndUseStatus(List<Long> uidList, Integer useStatus) {
-        return carRentalPackageOrderMapper.selectListByUidAndUseStatus(uidList, useStatus);
+    public List<CarRentalPackageOrderPo> listUnUseAndRefundByUidList(Integer tenantId, List<Long> uidList, Long rentRebateEndTime) {
+        return carRentalPackageOrderMapper.selectListUnUseAndRefundByUidList(tenantId, uidList, rentRebateEndTime);
+    }
+    
+    @Override
+    public Boolean isCarRentalPackageOrderRefund(Long uid, Integer tenantId, CarRentalPackageMemberTermPo carRentalPackageMemberTermPo) {
+        boolean carRentalPackageOrderRefundFlag = true;
+        
+        if (Objects.isNull(carRentalPackageMemberTermPo)) {
+            carRentalPackageOrderRefundFlag = false;
+        } else {
+            CarRentalPackageOrderPo carRentalPackageOrderPo = this.selectByOrderNo(carRentalPackageMemberTermPo.getRentalPackageOrderNo());
+            if (Objects.isNull(carRentalPackageOrderPo)) {
+                carRentalPackageOrderRefundFlag = false;
+            } else {
+                if (Objects.equals(carRentalPackageOrderPo.getRentRebate(), YesNoEnum.NO.getCode())) {
+                    carRentalPackageOrderRefundFlag = false;
+                } else {
+                    // 已过期或已退租->不可退
+                    if (Objects.equals(carRentalPackageOrderPo.getUseState(), UseStateEnum.EXPIRED.getCode()) || Objects.equals(carRentalPackageOrderPo.getUseState(),
+                            UseStateEnum.RETURNED.getCode())) {
+                        carRentalPackageOrderRefundFlag = false;
+                        
+                        // 使用中且已过期->不可退
+                    } else if (Objects.equals(carRentalPackageOrderPo.getUseState(), UseStateEnum.IN_USE.getCode()) && ObjectUtils.isNotEmpty(
+                            carRentalPackageMemberTermPo.getDueTime()) && carRentalPackageMemberTermPo.getDueTime() <= System.currentTimeMillis()) {
+                        carRentalPackageOrderRefundFlag = false;
+                    }
+                    
+                    // 已过可退期->不可退
+                    if (carRentalPackageOrderPo.getRentRebateEndTime() <= System.currentTimeMillis()) {
+                        carRentalPackageOrderRefundFlag = false;
+                    }
+                }
+                
+                if (carRentalPackageOrderRefundFlag) {
+                    // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
+                    List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(carRentalPackageOrderPo.getOrderNo());
+                    if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCoupons)) {
+                        for (UserCoupon userCoupon : userCoupons) {
+                            Integer status = userCoupon.getStatus();
+                            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_USED.equals(status) || UserCoupon.STATUS_DESTRUCTION.equals(status)) {
+                                carRentalPackageOrderRefundFlag = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 当前套餐不可退时，则需判断未使用订单是否可退
+        if (!carRentalPackageOrderRefundFlag) {
+            // 是否存在未使用且可退的订单
+            carRentalPackageOrderRefundFlag = this.isExitUnUseAndRefund(tenantId, uid, System.currentTimeMillis());
+        }
+        
+        return carRentalPackageOrderRefundFlag;
     }
 
     /**

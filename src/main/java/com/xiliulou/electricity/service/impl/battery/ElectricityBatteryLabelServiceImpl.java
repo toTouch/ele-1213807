@@ -80,7 +80,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     
     @Override
     public void insert(ElectricityBatteryLabel batteryLabel) {
-        electricityBatteryLabelMapper.insert(batteryLabel);
+        try {
+            electricityBatteryLabelMapper.insert(batteryLabel);
+        } catch (Exception e) {
+            log.warn("INSERT BATTERY LABEL WARN!", e);
+        }
     }
     
     @Override
@@ -101,7 +105,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             electricityBatteryLabelBizService.sendRecordAndGeneralHandling(battery, operatorUid, newLabel, null, now, null, null);
         }
         
-        electricityBatteryLabelMapper.batchInsert(batteryLabels);
+        try {
+            electricityBatteryLabelMapper.batchInsert(batteryLabels);
+        } catch (Exception e) {
+            log.warn("BATCH INSERT BATTERY LABEL WARN!", e);
+        }
     }
     
     @Slave

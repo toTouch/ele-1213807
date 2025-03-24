@@ -50,4 +50,6 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
 
     RentBatteryOrder selectLatelyRentReturnOrder(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("currentTime") Long currentTime,
                                                  @Param("orderTypes") List<Integer> orderTypes);
+
+    RentBatteryOrder selectLatelyReturnOrder(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("currentTime") Long currentTime);
 }

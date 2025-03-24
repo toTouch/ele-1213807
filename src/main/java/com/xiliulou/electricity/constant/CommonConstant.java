@@ -91,4 +91,14 @@ public interface CommonConstant {
     
     String INIT_FQA_URL="classpath:initTemplate/initFaq.properties";
     
+    /**
+     * 开关状态 0：开
+     */
+    Integer SWITCH_ON = 0;
+    
+    /**
+     * 开关状态 1：关
+     */
+    Integer SWITCH_OFF = 1;
+    
 }

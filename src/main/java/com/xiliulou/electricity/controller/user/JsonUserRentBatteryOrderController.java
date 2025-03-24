@@ -51,11 +51,12 @@ public class JsonUserRentBatteryOrderController {
      * 退电
      *
      * @param electricityCabinetId electricityCabinetId
+     * @param isFreeze 1-冻结退电 空-正常退电
      * @return R
      */
     @PostMapping("/user/returnBattery")
-    public R returnBattery(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
-        return rentBatteryOrderService.returnBattery(electricityCabinetId);
+    public R returnBattery(@RequestParam("electricityCabinetId") Integer electricityCabinetId, @RequestParam(value = "isFreeze", required = false) Integer isFreeze) {
+        return rentBatteryOrderService.returnBattery(electricityCabinetId, isFreeze);
     }
 
     /**

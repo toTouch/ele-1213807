@@ -145,4 +145,5 @@ public interface BatteryMemberCardService {
      */
     Boolean checkIsAdvanceRenewal(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);
     
+    List<BatteryMemberCard> listByIdListIncludeDel(List<Long> ids);
 }

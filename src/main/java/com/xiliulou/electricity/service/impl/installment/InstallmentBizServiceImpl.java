@@ -1,22 +1,17 @@
 package com.xiliulou.electricity.service.impl.installment;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.dto.InstallmentMqCommonDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.FreeDepositData;
-import com.xiliulou.electricity.entity.FyConfig;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -35,15 +30,7 @@ import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.FreeDepositDataService;
-import com.xiliulou.electricity.service.FyConfigService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
@@ -72,6 +59,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.MDC;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -80,12 +68,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -94,29 +77,7 @@ import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_CANCEL_LOCK;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.AGREEMENT_PAY_QUERY_STATUS_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_CANCEL;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_DEDUCTING;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_CANCEL;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_EXPIRED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_RELEASE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.*;
 
 /**
  * @Description ...
@@ -169,6 +130,13 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     private InheritableThreadLocal<String> inheritableThreadLocal;
 
     private final LostUserActivityDealPublish lostUserActivityDealPublish;
+
+    private final UserBatteryDepositService userBatteryDepositService;
+
+    private final BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
+    private final EleRefundOrderService refundOrderService;
+
     
     @PostConstruct
     public void init() {
@@ -350,6 +318,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         FyQueryAgreementPayRsp rsp = (FyQueryAgreementPayRsp) queried.getData();
+        log.info("QUERY DEDUCT STATUS INFO! rsp={}", Objects.nonNull(rsp) ? JsonUtil.toJson(rsp) : "null");
         if (Objects.equals(rsp.getStatus(), AGREEMENT_PAY_QUERY_STATUS_SUCCESS)) {
             // 处理成功的场景
             handleAgreementPaySuccess(installmentDeductionRecord, rsp.getTradeNo());
@@ -585,7 +554,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                     plansNeedCancel.add(deductionPlan);
                 }
                 
-                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
+                if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID) || Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
                     paidAmount = paidAmount.add(deductionPlan.getAmount());
                 }
             }
@@ -713,8 +682,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(List<InstallmentDeductionPlan> deductionPlans, InstallmentRecord installmentRecord, FyConfig fyConfig) {
-        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "301023", "操作频繁，请3秒后再试");
+        // 加代扣互斥锁，失败处理的延迟时间是3分钟，此处加4分钟，覆盖住避免意料之外的并发问题
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 4 * 60 * 1000L, false)) {
+            return Triple.of(false, "301023", "代扣执行中，请3分钟后再试");
         }
         
         try {
@@ -754,7 +724,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 
                 // 代扣0元，0元只有一个代扣计划，也只会出现在第一期，直接在0元处理中续费套餐就可以了，也不用考虑代扣完解约的问题
                 if (deductionPlan.getAmount().compareTo(BigDecimal.ZERO) == 0) {
-                    handleDeductZero(installmentRecord, List.of(deductionPlan), deductionRecord);
+                    handleDeductZero(installmentRecord, List.of(deductionPlan), deductionRecord, null);
                     return Triple.of(true, null, null);
                 }
                 
@@ -782,12 +752,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                     }
                 });
                 
-                // 发送延迟消息，1分钟后将代扣计划、代扣记录处理成失败状态
+                // 发送延迟消息，3分钟后将代扣计划、代扣记录处理成失败状态
                 InstallmentMqCommonDTO commonDTO = new InstallmentMqCommonDTO();
                 commonDTO.setDeductionPlanId(deductionPlan.getId());
                 commonDTO.setDeductionRecordId(deductionRecord.getId());
                 commonDTO.setTraceId(traceId);
-                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 5);
+                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 7);
             }
             
             return Triple.of(true, "301052", "已发起代扣，请稍后查看代扣结果");
@@ -839,33 +809,69 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public void handleDeductZero(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, InstallmentDeductionRecord deductionRecord) {
-        Triple<Boolean, String, Object> tripleResult = handleBatteryMemberCard(installmentRecord, deductionPlans, installmentRecord.getUid());
-        
+    public void handleDeductZero(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, InstallmentDeductionRecord deductionRecord, Integer type) {
+        Triple<Boolean, String, Object> tripleResult = handleBatteryMemberCard(installmentRecord, deductionPlans, installmentRecord.getUid(), type);
+
+        BigDecimal amount = installmentRecord.getPaidAmount();
         for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+
             deductionPlanUpdate.setId(deductionPlan.getId());
-            deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
-            deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
             deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
+            if (Objects.equals(type, DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
+                // 如果是已支付不做修改支付状态
+                if (!Objects.equals(deductionPlan.getStatus(), InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID)) {
+                    deductionPlanUpdate.setStatus(DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+                }
+                // 已支付金额累加
+                amount = amount.add(deductionPlan.getAmount());
+            }else {
+                deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
+                deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
+            }
             deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
             installmentDeductionPlanService.update(deductionPlanUpdate);
-            
-            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
-            installmentRecordUpdate.setId(installmentRecord.getId());
-            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
-            installmentRecordService.update(installmentRecordUpdate);
         }
-    
+        InstallmentRecord update = new InstallmentRecord();
+        update.setId(installmentRecord.getId());
+        update.setUpdateTime(System.currentTimeMillis());
+        update.setPaidInstallment(installmentRecord.getPaidInstallment()+1);
+        // 线下履约之后更新 已付金额
+        if (Objects.equals(type, DEDUCTION_PLAN_OFFLINE_AGREEMENT)) {
+            update.setPaidAmount(amount);
+            //如果是最后一期，修改状态为已完成
+            if (Objects.equals(installmentRecord.getInstallmentNo(), update.getPaidInstallment())) {
+                update.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
+            }
+        }
+        installmentRecordService.update(update);
+
         if (Objects.isNull(tripleResult) || !tripleResult.getLeft()) {
             log.info("installment handle deduct info result is null! uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+            // 释放代扣锁
+            redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()));
             return;
         }
     
         // 流失用户活动处理
         String orderId = Objects.nonNull(tripleResult.getRight()) ? (String) tripleResult.getRight() : "";
         lostUserActivityDealPublish.publish(installmentRecord.getUid(), YesNoEnum.YES.getCode(), installmentRecord.getTenantId(), orderId);
+        
+        // 自动解约
+        if (Objects.equals(installmentRecord.getInstallmentNo(), update.getPaidInstallment())) {
+            FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+            if (Objects.isNull(config)) {
+                log.error("INSTALLMENT RENEW CONSUMER. no fyConfig, tenantId={}", installmentRecord.getTenantId());
+            }
+            
+            InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕",
+                    true);
+            installmentTerminatingRecordService.insert(installmentTerminatingRecord);
+            terminatingInstallmentRecord(installmentRecord, config);
+        }
+        
+        // 释放代扣锁
+        redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()));
     }
     
     @Override
@@ -922,7 +928,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, Long uid) {
+    public Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, List<InstallmentDeductionPlan> deductionPlans, Long uid, Integer type) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
@@ -931,7 +937,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         InstallmentDeductionPlan deductionPlan = deductionPlans.get(0);
         ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.queryOrderByAgreementNoAndIssue(deductionPlan.getExternalAgreementNo(), 1);
-        
+
+
         // 给用户绑定套餐
         if (Objects.equals(deductionPlan.getIssue(), 1)) {
             ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -939,6 +946,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             memberCardOrderUpdate.setValidDays(deductionPlan.getRentTime());
             memberCardOrderUpdate.setCreateTime(System.currentTimeMillis());
             memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            if (Objects.equals(type, DEDUCTION_PLAN_OFFLINE_AGREEMENT)){
+                // 由于mybatisPlus无法更新为空的字段，所以这里要单独更新
+                ElectricityMemberCardOrder update = new ElectricityMemberCardOrder();
+                update.setId(memberCardOrder.getId());
+                update.setUpdateTime(System.currentTimeMillis());
+                update.setPaymentChannel(null);
+                electricityMemberCardOrderService.updatePayChannelById(update);
+            }
             electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
             
             // TODO SJP 优化点，外部查询了套餐订单，里面又查了一次，还有考虑在生成套餐订单时保存好有效天数
@@ -955,7 +970,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return Triple.of(false, "套餐不存在", null);
             }
             memberCardOrder = electricityMemberCardOrderService.saveRenewalUserBatteryMemberCardOrder(null, userInfo, batteryMemberCard, userBatteryMemberCard, batteryMemberCard, installmentRecord,
-                    memberCardOrder.getSource(), deductionPlans);
+                     memberCardOrder.getSource(), deductionPlans, type);
         }
         
         return Triple.of(true, null, Objects.nonNull(memberCardOrder) ? memberCardOrder.getOrderId() : "");
@@ -1056,6 +1071,58 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         return R.fail("查询失败");
     }
-    
-    
+
+
+    @Override
+    public R offlineAgree(Long uid) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            return R.fail("100247", "用户信息不存在");
+        }
+
+        Integer isExistStatusInitOrder = refundOrderService.existByOrderIdAndStatus(userBatteryDeposit.getOrderId(), CollUtil.newArrayList(EleRefundOrder.STATUS_INIT));
+        if (Objects.nonNull(isExistStatusInitOrder)) {
+            return R.fail("402043", "押金退款审核中");
+        }
+
+        InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
+                CollUtil.newArrayList(InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN));
+        if (Objects.isNull(installmentRecord)) {
+            return R.fail("402044", "用户未签约");
+        }
+
+        InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
+        query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(query).getData();
+        if (CollUtil.isEmpty(deductionPlans)) {
+            return R.fail("402045", "用户不存在代扣计划");
+        }
+        List<InstallmentDeductionPlan> planingList = deductionPlans.stream().filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_DEDUCTING)).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(planingList)){
+            return R.fail("402047", "代扣计划正执行中，线下履约请稍后再试");
+        }
+
+        List<InstallmentDeductionPlan> plans = deductionPlans.stream().filter(e -> Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(e.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
+                .sorted(Comparator.comparing(InstallmentDeductionPlan::getIssue)).collect(Collectors.toList());
+        if (CollUtil.isEmpty(plans)){
+            return R.fail("402046", "代扣计划已完成，线下履约失败");
+        }
+
+        OptionalInt minIssue = plans.stream()
+                .mapToInt(InstallmentDeductionPlan::getIssue)
+                .min();
+        
+        // 加代扣互斥锁，失败处理的延迟时间是3分钟，此处加4分钟，覆盖住避免意料之外的并发问题
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 4 * 60 * 1000L, false)) {
+            return R.fail("301023", "代扣执行中，请3分钟后再试");
+        }
+
+        minIssue.ifPresent(issue -> {
+            List<InstallmentDeductionPlan> planList = deductionPlans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
+            log.info("offlineAgree Info! minIssue is {}, planList is {}", minIssue.getAsInt(), JSONUtil.toJsonStr(planList));
+            // 处理套餐购买记录
+            handleDeductZero(installmentRecord, planList, null, DEDUCTION_PLAN_OFFLINE_AGREEMENT);
+        });
+        return R.ok();
+    }
 }

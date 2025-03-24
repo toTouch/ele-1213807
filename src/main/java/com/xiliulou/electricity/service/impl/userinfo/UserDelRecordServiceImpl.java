@@ -351,6 +351,41 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
     }
     
     @Override
+    public R clearUserDelMark(ClearUserDelMarkRequest clearUserDelMarkRequest) {
+        Integer tenantId = clearUserDelMarkRequest.getTenantId();
+        String phoneDelMark = clearUserDelMarkRequest.getPhoneDelMark();
+        String idNumberDelMark = clearUserDelMarkRequest.getIdNumberDelMark();
+        if (StringUtils.isBlank(phoneDelMark) && StringUtils.isBlank(idNumberDelMark)) {
+            return R.fail("120165", "手机号和身份证号码不能同时为空");
+        }
+        
+        Integer count = 0;
+        
+        // 手机号和身份证号码同时存在时，先根据手机号清除再根据身份证号码清除
+        if (StringUtils.isNotBlank(phoneDelMark) && StringUtils.isNotBlank(idNumberDelMark)) {
+            ClearUserDelMarkQueryModel phoneQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).phoneDelMark(phoneDelMark).build();
+            Integer delPhoneCount = userDelRecordMapper.clearUserDelMark(phoneQueryModel);
+            count += delPhoneCount;
+        
+            ClearUserDelMarkQueryModel idNumberQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).idNumberDelMark(idNumberDelMark).build();
+            Integer delIdNumberCount = userDelRecordMapper.clearUserDelMark(idNumberQueryModel);
+            count += delIdNumberCount;
+        } else if (StringUtils.isNotBlank(phoneDelMark) && StringUtils.isBlank(idNumberDelMark)) {
+            // 根据手机号清除
+            ClearUserDelMarkQueryModel phoneQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).phoneDelMark(phoneDelMark).build();
+            Integer delPhoneCount = userDelRecordMapper.clearUserDelMark(phoneQueryModel);
+            count += delPhoneCount;
+        } else if (StringUtils.isBlank(phoneDelMark) && StringUtils.isNotBlank(idNumberDelMark)) {
+            // 根据身份证号码清除
+            ClearUserDelMarkQueryModel idNumberQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).idNumberDelMark(idNumberDelMark).build();
+            Integer delIdNumberCount = userDelRecordMapper.clearUserDelMark(idNumberQueryModel);
+            count += delIdNumberCount;
+        }
+    
+        return R.ok(count);
+    }
+    
+    @Override
     public R adminClearUserDelMark(ClearUserDelMarkRequest clearUserDelMarkRequest) {
         Integer tenantId = clearUserDelMarkRequest.getTenantId();
         String phoneDelMark = clearUserDelMarkRequest.getPhoneDelMark();

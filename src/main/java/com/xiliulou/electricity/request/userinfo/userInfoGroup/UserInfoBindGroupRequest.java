@@ -15,16 +15,34 @@ import java.util.List;
 @Data
 public class UserInfoBindGroupRequest {
     
+    /**
+     * 用户id
+     */
     @NotNull(message = "uid不能为空")
     private Long uid;
     
+    /**
+     * 加盟商id
+     */
     private Long franchiseeId;
     
+    /**
+     * 分组id
+     */
+    private Long groupId;
+    
+    /**
+     * 分组id list
+     */
     private List<Long> groupIds;
     
+    /**
+     * 用户id list
+     */
+    private List<String> userPhones;
     /**
      * key: franchiseeId value: groupIds
      */
     private HashMap<Long, List<Long>> franchiseeIdAndGroupIds;
 }
-    
+

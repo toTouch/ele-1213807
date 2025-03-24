@@ -33,6 +33,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,7 +119,8 @@ public class FyInstallmentHandler {
     }
     
     public void dailyInstallmentDeduct() {
-        List<String> externalAgreementNos = installmentDeductionPlanService.listExternalAgreementNoForDeduct(System.currentTimeMillis());
+        long endTime = LocalDate.now().atTime(LocalTime.MAX).atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
+        List<String> externalAgreementNos = installmentDeductionPlanService.listExternalAgreementNoForDeduct(endTime);
         
         externalAgreementNos.parallelStream().forEach(externalAgreementNo -> {
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);

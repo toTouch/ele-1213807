@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -1279,6 +1280,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             
             // 获取购买套餐的活动
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
+            if (Objects.isNull(invitationActivity)) {
+                log.info("Invitation activity info! not found the invitationActivity, activityId={}", activityId);
+                return;
+            }
+    
+            // 如果"退押后再次购买是否返现"为关闭状态，则需判断退押后再次购买是否给邀请人返现
+            if (Objects.equals(invitationActivity.getDepositRefundRebateSwitch(), CommonConstant.SWITCH_OFF) && !invitationActivityJoinHistoryService.isRebateAfterDepositRefund(
+                    userInfo.getUid(), activityJoinHistory)) {
+                log.info("Invitation activity info! the switch off and refund deposit after join activity, uid={}, activityId={}", userInfo.getUid(), activityId);
+                return;
+            }
             
             //返现金额
             BigDecimal rewardAmount;
