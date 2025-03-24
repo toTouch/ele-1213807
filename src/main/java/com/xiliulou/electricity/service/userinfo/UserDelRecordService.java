@@ -51,5 +51,9 @@ public interface UserDelRecordService {
     /**
      * 该接口只用于内部测试，外部请勿调用
      */
-    R clearUserDelMark(ClearUserDelMarkRequest clearUserDelMarkRequest);
+    R adminClearUserDelMark(ClearUserDelMarkRequest clearUserDelMarkRequest);
+    
+    Integer clearUserDelMark(String phone, String idNumber, Integer tenantId);
+    
+    Integer update(UserDelRecord userDelRecord);
 }

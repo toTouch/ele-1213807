@@ -18,6 +18,16 @@
         where id = #{id}
     </update>
     
+    <update id="update">
+        update t_user_del_record
+        set del_phone     = #{delPhone},
+            del_id_number = #{delIdNumber},
+            status        = #{status},
+            del_time      = #{updateTime},
+            update_time   = #{updateTime}
+        where id = #{id}
+    </update>
+    
     <update id="clearUserDelMark">
         update t_user_del_record set del_phone = '', del_id_number = ''
         <where>

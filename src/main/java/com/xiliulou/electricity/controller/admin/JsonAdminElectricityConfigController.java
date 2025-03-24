@@ -55,6 +55,7 @@ public class JsonAdminElectricityConfigController {
         }
         if (Objects.nonNull(electricityConfigExtra)) {
             electricityConfigVO.setAccountDelSwitch(electricityConfigExtra.getAccountDelSwitch());
+            electricityConfigVO.setDelUserMarkSwitch(electricityConfigExtra.getDelUserMarkSwitch());
         }
     
         return R.ok(electricityConfigVO);
