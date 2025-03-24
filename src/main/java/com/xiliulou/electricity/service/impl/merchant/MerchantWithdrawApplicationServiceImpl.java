@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alipay.api.AlipayApiException;
@@ -649,6 +650,13 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
 
         // 提前处理线下付款
         if (Objects.equals(batchReviewWithdrawApplicationRequest.getStatus(), MerchantWithdrawConstant.OFF_LINE_TRANSFER)){
+            List<MerchantWithdrawApplication> list = merchantWithdrawApplications.stream().filter(e -> {
+                return Objects.equals(e.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS);
+            }).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(list)) {
+                return Triple.of(false, "120026", "只可选择审核中状态的数据项，请重新选择后操作");
+            }
+
             batchOfflineTransferHandler(batchReviewWithdrawApplicationRequest, tenantId, user, merchantWithdrawApplications, batchNo);
             return Triple.of(true, "", merchantWithdrawApplications.size());
         }
@@ -690,7 +698,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Set<Long> uids = new HashSet<>();
         
         merchantWithdrawApplications.forEach(withdrawRecord -> {
-            if (!Objects.equals(withdrawRecord.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS) || !Objects.equals(withdrawRecord.getStatus(), MerchantWithdrawConstant.REVIEW_SUCCESS)) {
+            if (!Objects.equals(withdrawRecord.getStatus(), MerchantWithdrawConstant.REVIEW_IN_PROGRESS)) {
                 alreadyReviewList.add(withdrawRecord);
             }
             uids.add(withdrawRecord.getUid());
