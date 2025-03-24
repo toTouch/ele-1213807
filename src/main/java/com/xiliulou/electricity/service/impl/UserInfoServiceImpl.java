@@ -95,6 +95,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageStatusVOEnum;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
@@ -3332,7 +3333,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         // 檢查当前用户是否为企业用户，若为企业用户，则不解绑加盟商
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
-        if (Objects.nonNull(enterpriseChannelUserVO)) {
+        if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), RenewalStatusEnum.RENEWAL_STATUS_NOT_BY_SELF.getCode())) {
             return;
         }
         
@@ -4836,5 +4837,32 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public Boolean isOldUser(UserInfo userInfo) {
         return userInfo.getPayCount() > 0 || userDelRecordService.existsByDelPhoneAndDelIdNumber(userInfo.getPhone(), userInfo.getIdNumber(), userInfo.getTenantId());
+    }
+
+    @Override
+    public void unBindEnterpriseUserFranchiseeId(Long uid) {
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return;
+        }
+
+        // 租车押金
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            return;
+        }
+
+        // 租电池押金
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            return;
+        }
+
+        // 若租车和租电押金都退了，则解绑用户所属加盟商
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(uid);
+        updateUserInfo.setStoreId(NumberConstant.ZERO_L);
+        updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        this.updateByUid(updateUserInfo);
     }
 }

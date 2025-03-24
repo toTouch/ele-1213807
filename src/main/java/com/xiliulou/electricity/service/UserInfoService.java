@@ -235,4 +235,6 @@ public interface UserInfoService extends IService<UserInfo> {
      *  2、根据手机号查询，曾被删除后又重新注册的用户（删除前payCount>0）
      */
     Boolean isOldUser(UserInfo userInfo);
+
+    void unBindEnterpriseUserFranchiseeId(Long uid);
 }
