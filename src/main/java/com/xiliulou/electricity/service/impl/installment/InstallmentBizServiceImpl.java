@@ -318,6 +318,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         FyQueryAgreementPayRsp rsp = (FyQueryAgreementPayRsp) queried.getData();
+        log.info("QUERY DEDUCT STATUS INFO! rsp={}", Objects.nonNull(rsp) ? JsonUtil.toJson(rsp) : "null");
         if (Objects.equals(rsp.getStatus(), AGREEMENT_PAY_QUERY_STATUS_SUCCESS)) {
             // 处理成功的场景
             handleAgreementPaySuccess(installmentDeductionRecord, rsp.getTradeNo());
@@ -681,8 +682,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(List<InstallmentDeductionPlan> deductionPlans, InstallmentRecord installmentRecord, FyConfig fyConfig) {
-        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "301023", "操作频繁，请3秒后再试");
+        // 加代扣互斥锁，失败处理的延迟时间是3分钟，此处加4分钟，覆盖住避免意料之外的并发问题
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 4 * 60 * 1000L, false)) {
+            return Triple.of(false, "301023", "代扣执行中，请3分钟后再试");
         }
         
         try {
@@ -750,12 +752,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                     }
                 });
                 
-                // 发送延迟消息，1分钟后将代扣计划、代扣记录处理成失败状态
+                // 发送延迟消息，3分钟后将代扣计划、代扣记录处理成失败状态
                 InstallmentMqCommonDTO commonDTO = new InstallmentMqCommonDTO();
                 commonDTO.setDeductionPlanId(deductionPlan.getId());
                 commonDTO.setDeductionRecordId(deductionRecord.getId());
                 commonDTO.setTraceId(traceId);
-                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 5);
+                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 7);
             }
             
             return Triple.of(true, "301052", "已发起代扣，请稍后查看代扣结果");
@@ -846,12 +848,30 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
 
         if (Objects.isNull(tripleResult) || !tripleResult.getLeft()) {
             log.info("installment handle deduct info result is null! uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+            // 释放代扣锁
+            redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()));
             return;
         }
     
         // 流失用户活动处理
         String orderId = Objects.nonNull(tripleResult.getRight()) ? (String) tripleResult.getRight() : "";
         lostUserActivityDealPublish.publish(installmentRecord.getUid(), YesNoEnum.YES.getCode(), installmentRecord.getTenantId(), orderId);
+        
+        // 自动解约
+        if (Objects.equals(installmentRecord.getInstallmentNo(), update.getPaidInstallment())) {
+            FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+            if (Objects.isNull(config)) {
+                log.error("INSTALLMENT RENEW CONSUMER. no fyConfig, tenantId={}", installmentRecord.getTenantId());
+            }
+            
+            InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕",
+                    true);
+            installmentTerminatingRecordService.insert(installmentTerminatingRecord);
+            terminatingInstallmentRecord(installmentRecord, config);
+        }
+        
+        // 释放代扣锁
+        redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()));
     }
     
     @Override
@@ -1091,6 +1111,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         OptionalInt minIssue = plans.stream()
                 .mapToInt(InstallmentDeductionPlan::getIssue)
                 .min();
+        
+        // 加代扣互斥锁，失败处理的延迟时间是3分钟，此处加4分钟，覆盖住避免意料之外的并发问题
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 4 * 60 * 1000L, false)) {
+            return R.fail("301023", "代扣执行中，请3分钟后再试");
+        }
 
         minIssue.ifPresent(issue -> {
             List<InstallmentDeductionPlan> planList = deductionPlans.stream().filter(e -> Objects.equals(e.getIssue(), minIssue.getAsInt())).collect(Collectors.toList());
