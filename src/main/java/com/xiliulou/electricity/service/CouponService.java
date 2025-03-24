@@ -55,6 +55,8 @@ public interface CouponService {
     
     List<SearchVo> search(CouponQuery query);
     
+    List<SearchVo> searchV2(CouponQuery query);
+    
     Triple<Boolean, String, Object> findCouponById(Long id);
     
     List<CarCouponNamePO> queryListByIdsFromCache(List<Long> couponId);
@@ -64,4 +66,5 @@ public interface CouponService {
     List<Coupon> queryListByIdsFromDB(List<Long> couponIds);
 
     R editEnablesState(Long id, Integer enabledState);
+    
 }

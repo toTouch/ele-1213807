@@ -73,4 +73,9 @@ public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService 
         return eleUserEsignRecordMapper.selectEsignFinishedRecordByUser(uid, tenantId);
     }
     
+    @Override
+    public Integer cancelEsignFlow(Long id) {
+        return eleUserEsignRecordMapper.delById(id);
+    }
+    
 }

@@ -464,6 +464,11 @@ public class CouponServiceImpl implements CouponService {
     }
     
     @Override
+    public List<SearchVo> searchV2(CouponQuery query) {
+        return couponMapper.searchV2(query);
+    }
+    
+    @Override
     public Triple<Boolean, String, Object> findCouponById(Long id) {
         Coupon coupon = this.queryByIdFromCache(id.intValue());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {

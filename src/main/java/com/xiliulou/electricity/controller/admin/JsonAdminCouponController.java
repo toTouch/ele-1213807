@@ -23,6 +23,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -87,6 +88,33 @@ public class JsonAdminCouponController extends BaseController {
         CouponQuery query = CouponQuery.builder().size(size).discountType(discountType).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).franchiseeId(franchiseeId).build();
         
         return R.ok(couponService.search(query));
+    }
+    
+    /**
+     * 加盟商可为空 可返回租户下全部优惠卷数据 慎用于优惠卷购买
+     *
+     * @param size
+     * @param offset
+     * @param name
+     * @param franchiseeId
+     * @param discountType
+     * @return
+     */
+    @GetMapping("/admin/coupon/searchV2")
+    public R searchV2(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "discountType", required = false) Integer discountType) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        CouponQuery query = CouponQuery.builder().size(size).discountType(discountType).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name)
+                .franchiseeId(franchiseeId).build();
+        
+        return R.ok(couponService.searchV2(query));
     }
     
     //新增
@@ -190,7 +218,8 @@ public class JsonAdminCouponController extends BaseController {
         
         return returnTripleResult(couponService.deleteById(id, franchiseeIds));
     }
-
+    
+    
     /**
      * 列表查询
      */

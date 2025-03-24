@@ -39,6 +39,22 @@
             </if>
     </delete>
     
+    <delete id="deleteForUpdateUids">
+        delete from t_user_info_group_detail where uid in
+        <foreach collection="uids" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="groupNo != null">
+            and group_no = #{groupNo}
+        </if>
+    </delete>
+    
     <select id="selectPage" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailBO">
         select
         any_value(tuigd.id) as id,
@@ -144,6 +160,28 @@
                 <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
                     #{uid}
                 </foreach>
+            </if>
+        </where>
+        order by tuigd.update_time, tuigd.id desc
+    </select>
+    
+    <select id="selectListGroupByUserGroups" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO">
+        select tuigd.uid as uid, tuigd.franchisee_id as franchiseeId, tuigd.group_no as groupNo, tuig.id as groupId, tuig.name as groupName
+        from t_user_info_group_detail tuigd
+        left join t_user_info_group tuig on tuigd.group_no = tuig.group_no
+        <where>
+            tuig.del_flag = 0
+            <if test="uidList != null and uidList.size()>0">
+                and tuigd.uid in
+                <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
+                    #{uid}
+                </foreach>
+            </if>
+            <if test="groupId != null">
+                and tuig.id = #{groupId}
+            </if>
+            <if test="franchiseeId != null">
+                and tuigd.franchisee_id = #{franchiseeId}
             </if>
         </where>
         order by tuigd.update_time, tuigd.id desc
