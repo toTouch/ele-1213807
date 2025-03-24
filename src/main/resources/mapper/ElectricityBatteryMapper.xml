@@ -459,7 +459,8 @@
                electricity_cabinet_id,
                tenant_id,
                franchisee_id,
-               uid
+               uid,
+               label
         FROM t_electricity_battery as teb
         WHERE teb.uid = #{uid}
           and teb.del_flag = 0

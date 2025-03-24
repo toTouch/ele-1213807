@@ -14,7 +14,6 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -28,7 +27,7 @@ import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -48,7 +47,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
-import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
@@ -222,21 +221,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
-            
-            // ！！！在换电流程结束的最后一次上报时再修改电池标签
-            if (!exchangeOrderRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-                return;
-            }
-            // 修改电池标签
-            ElectricityBattery.ElectricityBatteryBuilder batteryBuilder = ElectricityBattery.builder().tenantId(electricityCabinetOrder.getTenantId());
-            // 修改旧电池，即使电池已经还进去了，这次处理也不会出问题，标签会被保存到预修改标签的缓存内，下次如果有人换电取出，会把还没修改落库的闲置覆盖掉
-            electricityBatteryService.asyncModifyLabel(batteryBuilder.sn(exchangeOrderRsp.getPlaceBatteryName()).build(), null,
-                    new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
-            // 修改新电池
-            ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
-                    .cellNo(electricityCabinetOrder.getNewCellNo().toString()).build();
-            electricityBatteryService.asyncModifyLabel(batteryBuilder.sn(exchangeOrderRsp.getTakeBatteryName()).build(), box,
-                    new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
         } catch (Exception e) {
             log.error("ELE EXCHANGE HANDLER ERROR!", e);
         } finally {
@@ -349,6 +333,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
                 
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+                electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
+                
                 if (Objects.nonNull(placeBattery)) {
                     returnBattery(placeBattery, electricityCabinetOrder.getUid());
                 }
@@ -389,6 +377,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 lineExchangeBatterSocThreadPool.execute(
                         () -> handlerUserTakeBatterySoc(electricityCabinetOrder.getUid(), exchangeOrderRsp.getTakeBatteryName(), exchangeOrderRsp.getTakeBatterySoc()));
                 
+                // 修改电池标签并保存修改记录
+                BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.RENT_NORMAL.getCode()).build();
+                ElectricityCabinetBox box = ElectricityCabinetBox.builder().electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
+                        .cellNo(electricityCabinetOrder.getNewCellNo().toString()).build();
+                electricityBatteryService.asyncModifyLabel(electricityBattery, box, dto, false);
             }
             
             //保存取走电池格挡
@@ -414,9 +407,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
         
-        // 给第三方推送换电记录/用户信息/电池信息
-        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), exchangeOrderRsp.getSessionId(),
-                electricityCabinet.getTenantId(), electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
+        // 给第三方推送换电订单
+        pushDataToThirdService.asyncPushExchangeOrder(exchangeOrderRsp.getSessionId(), electricityCabinet.getTenantId(), electricityCabinetOrder.getOrderId(),
+                ThirdPartyOperatorTypeEnum.ORDER_TYPE_EXCHANGE.getType());
     }
     
     /**
@@ -518,6 +511,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            
+            // 修改电池标签并保存修改记录
+            BatteryLabelModifyDTO dto = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.UNUSED.getCode()).build();
+            electricityBatteryService.asyncModifyLabel(placeBattery, null, dto, false);
         }
     }
     

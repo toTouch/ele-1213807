@@ -167,9 +167,9 @@ public interface MqProducerConstant {
     String USER_DEVICE_STATUS_TOPIC = "user_device_status_topic";
     
     /**
-     * 第三方商城主题
+     * 第三方主题
      */
-    String THIRD_PARTY_MALL_TOPIC = "third_party_mall_topic";
+    String THIRD_PARTY_SAAS_TOPIC = "third_party_saas_topic";
 
     /**
      * 分期业务相关的topic

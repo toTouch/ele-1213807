@@ -39,7 +39,7 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
     
-    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+    <select id="selectByTenantId" resultType="com.xiliulou.electricity.thirdparty.MeiTuanRiderMallConfig">
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_config
@@ -48,7 +48,7 @@
         limit 1
     </select>
     
-    <select id="selectByConfig" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+    <select id="selectByConfig" resultType="com.xiliulou.electricity.thirdparty.MeiTuanRiderMallConfig">
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_config
@@ -57,7 +57,7 @@
         limit 1
     </select>
     
-    <select id="selectListEnableMeiTuanRiderMall" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+    <select id="selectListEnableMeiTuanRiderMall" resultType="com.xiliulou.electricity.thirdparty.MeiTuanRiderMallConfig">
         select id,
                app_id,
                app_key,

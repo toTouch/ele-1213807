@@ -83,7 +83,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.notify.AbnormalAlarmExceptionTypeEnum;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mapper.TenantMapper;
@@ -105,7 +105,7 @@ import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
 import com.xiliulou.electricity.service.pipeline.ProcessController;
-import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.AssertUtil;
@@ -627,10 +627,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
-        
+    
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
-                electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_EDIT.getType());
         
         return R.ok();
     }
@@ -1409,8 +1409,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
         
         // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
-                electricityCabinet.getId().longValue());
+        pushDataToThirdService.asyncPushCabinetStatus(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null,
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_STATUS.getType());
         
         return R.ok();
     }
@@ -6006,24 +6006,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             });
         }
     }
-    
+
     
     @Override
     public List<Integer> queryCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query) {
         return electricityCabinetMapper.selectCabinetIdByFilter(query);
     }
-    
+
+    @Slave
     @Override
-    public R queryElectricityCabinetMap(long size, long offset) {
-        TenantQuery tenantQuery = TenantQuery.builder().offset(0L).size(600L).build();
-        List<TenantVO> tenantVOS = tenantMapper.queryAll(tenantQuery);
-        Map<Integer, String> tenantMap = tenantVOS.stream().collect(Collectors.toMap(TenantVO::getId, TenantVO::getName));
-        
-        List<ElectricityCabinetLocationVO> cabinetLocationVOS = electricityCabinetMapper.selectMapByPage(size, offset, null);
-        cabinetLocationVOS.forEach(i -> {
-            i.setTenantName(tenantMap.get(i.getTenantId()));
-        });
-        return R.ok(cabinetLocationVOS);
+    public R listCabinetLocation(long size, long offset) {
+        List<CabinetLocationVO> cabinetList = electricityCabinetMapper.selectCabinetLocationByPage(size, offset);
+        if (CollectionUtils.isEmpty(cabinetList)) {
+            return R.ok(Collections.emptyList());
+        }
+
+        List<Integer> tenantIdList = cabinetList.stream().map(CabinetLocationVO::getTenantId).filter(Objects::nonNull).collect(Collectors.toList());
+
+        List<Tenant> tenantList = tenantService.listTenantByIds(tenantIdList);
+        Map<Integer, String> tenantMap = tenantList.stream().collect(Collectors.toMap(Tenant::getId, Tenant::getName));
+
+        cabinetList.forEach(item ->
+                item.setTenantName(tenantMap.getOrDefault(item.getTenantId(), ""))
+        );
+
+        return R.ok(cabinetList);
     }
-    
 }
