@@ -13,12 +13,11 @@ import java.util.List;
  */
 
 @Data
-public class UserInfoBindGroupRequest {
+public class UserInfoBindGroupRequestV2 {
     
     /**
      * 用户id
      */
-    @NotNull(message = "uid不能为空")
     private Long uid;
     
     /**
@@ -40,6 +39,7 @@ public class UserInfoBindGroupRequest {
      * 用户id list
      */
     private List<String> userPhones;
+    
     /**
      * key: franchiseeId value: groupIds
      */

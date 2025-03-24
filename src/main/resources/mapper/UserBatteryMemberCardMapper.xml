@@ -403,7 +403,9 @@
                b.create_time,
                b.update_time,
                b.card_pay_count,
-               a.id as 'channelUserExitId', a.channel_user_id as 'channelUserId'
+               a.id as 'channelUserExitId',
+               a.channel_user_id as 'channelUserId',
+               a.operate_uid
         FROM t_enterprise_channel_user_exit a
                  left JOIN t_user_battery_member_card b on b.uid = a.uid
         where a.del_flag = 0

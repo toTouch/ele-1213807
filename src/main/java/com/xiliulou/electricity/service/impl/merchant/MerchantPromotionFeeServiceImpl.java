@@ -10,6 +10,7 @@ import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantChannelEmployeeBindHistoryConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
@@ -423,67 +424,171 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         if (!PromotionFeeQueryTypeEnum.contains(type)) {
             return R.fail("300850", "该类型用户不存在");
         }
+
+        List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS = new ArrayList<>();
+        List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS = new ArrayList<>();
+        List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = new ArrayList<>();
+
+        initStaticUserResult(beginTime, endTime, userType, type, uid, merchantRenewalStatisticsUserVOS, merchantAddStatisticsUserVOS, merchantStatisticsUserVOS);
+
+        return dealStaticUserResult(beginTime, endTime, merchantRenewalStatisticsUserVOS, merchantAddStatisticsUserVOS, merchantStatisticsUserVOS);
         
+    }
+
+    private void initStaticUserResult(Long beginTime, Long endTime, Integer userType, Integer type, Long uid, List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS,
+                                      List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS, List<MerchantStatisticsUserVO> merchantStatisticsUserVOS) {
         // 渠道员登录并且查询的是商户数据
         boolean channelEmployeeFlag = false;
-        
+
         if (Objects.equals(userType, User.TYPE_USER_CHANNEL) && Objects.equals(type, PromotionFeeQueryTypeEnum.MERCHANT.getCode())) {
             channelEmployeeFlag = true;
         }
-        
+
         boolean finalChannelEmployeeFlag = channelEmployeeFlag;
-    
+
         // 查询扫码人数
-        List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = new ArrayList<>();
         CompletableFuture<List<MerchantStatisticsUserVO>> merchantStatisticsUserInfo = CompletableFuture.supplyAsync(
                 () -> queryMerchantJoinRecord(type, uid, beginTime, endTime, null, finalChannelEmployeeFlag), threadPool).whenComplete((result, e) -> {
             if (ObjectUtils.isNotEmpty(result)) {
                 merchantStatisticsUserVOS.addAll(result);
             }
-        
+
             if (e != null) {
                 log.error("MERCHANT PROMOTION FEE QUERY ERROR!, merchant statistics error", e);
             }
         });
-    
+
         // 查询新增人数
-        List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS = new ArrayList<>();
         CompletableFuture<List<MerchantStatisticsUserVO>> merchantAddStatisticsUserInfo = CompletableFuture.supplyAsync(
                 () -> queryMerchantJoinRecord(type, uid, beginTime, endTime, MerchantJoinRecordConstant.STATUS_SUCCESS, finalChannelEmployeeFlag), threadPool).whenComplete((result, e) -> {
             if (ObjectUtils.isNotEmpty(result)) {
                 merchantAddStatisticsUserVOS.addAll(result);
             }
-        
+
             if (e != null) {
                 log.error("MERCHANT PROMOTION FEE QUERY ERROR!, merchant add statistics error", e);
             }
         });
-        
+
         // 查询续费人数
-        List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS = new ArrayList<>();
         CompletableFuture<List<MerchantStatisticsUserVO>> merchantRenewalStatisticsUserInfo = CompletableFuture.supplyAsync(
                 () -> queryRenewalNum(type, uid, beginTime, endTime, finalChannelEmployeeFlag), threadPool).whenComplete((result, e) -> {
             if (ObjectUtils.isNotEmpty(result)) {
                 merchantRenewalStatisticsUserVOS.addAll(result);
             }
-        
+
             if (e != null) {
                 log.error("MERCHANT PROMOTION FEE QUERY ERROR!, merchant renewal statistics error", e);
             }
         });
-    
+
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(merchantStatisticsUserInfo, merchantAddStatisticsUserInfo, merchantRenewalStatisticsUserInfo);
-        
+
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("merchant user statistics query summary browsing error for merchant query", e);
         }
-    
-        return dealStaticUserResult(beginTime, endTime, merchantRenewalStatisticsUserVOS, merchantAddStatisticsUserVOS, merchantStatisticsUserVOS);
-        
     }
-    
+
+    /**
+     * 商户员工登录用户统计分析
+     * @param type
+     * @param uid
+     * @param beginTime
+     * @param endTime
+     * @param userType
+     * @return
+     */
+    @Override
+    public R statisticUserForEmployee(Integer type, Long uid, Long beginTime, Long endTime, Integer userType) {
+        if (!PromotionFeeQueryTypeEnum.contains(type)) {
+            return R.fail("300850", "该类型用户不存在");
+        }
+
+        List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS = new ArrayList<>();
+        List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS = new ArrayList<>();
+        List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = new ArrayList<>();
+
+
+        initStaticUserResult(beginTime, endTime, userType, type, uid, merchantRenewalStatisticsUserVOS, merchantAddStatisticsUserVOS, merchantStatisticsUserVOS);
+
+        return dealEmployeeStaticUserResult(beginTime, endTime, merchantRenewalStatisticsUserVOS, merchantAddStatisticsUserVOS, merchantStatisticsUserVOS);
+    }
+
+    private R dealEmployeeStaticUserResult(Long beginTime, Long endTime, List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS,
+                                           List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS, List<MerchantStatisticsUserVO> merchantStatisticsUserVOS) {
+        PromotionFeeStatisticAnalysisUserVO userVO = new PromotionFeeStatisticAnalysisUserVO();
+        List<PromotionFeeStatisticAnalysisUserScanCodeVO> scanCodeVOList = new ArrayList<>();
+
+        List<PromotionFeeStatisticAnalysisPurchaseVO> purchaseVOList = new ArrayList<>();
+
+        List<PromotionFeeStatisticAnalysisRenewalVO> renewalVOList = new ArrayList<>();
+
+        Map<String, Integer> merchantRenewalUserMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantRenewalStatisticsUserVOS)) {
+            merchantRenewalUserMap = merchantRenewalStatisticsUserVOS.stream().filter(item -> Objects.nonNull(item.getScanCodeCount()) && Objects.nonNull(item.getMonthDate()))
+                    .collect(Collectors.groupingBy(item -> item.getMonthDate().substring(0, item.getMonthDate().lastIndexOf(StringConstant.DASH)), Collectors.summingInt(MerchantStatisticsUserVO::getScanCodeCount)));
+        }
+
+        Map<String, Integer> merchantAddUserMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantAddStatisticsUserVOS)) {
+            merchantAddUserMap = merchantAddStatisticsUserVOS.stream().filter(item -> Objects.nonNull(item.getScanCodeCount()) && Objects.nonNull(item.getMonthDate()))
+                    .collect(Collectors.groupingBy(item -> item.getMonthDate().substring(0, item.getMonthDate().lastIndexOf(StringConstant.DASH)), Collectors.summingInt(MerchantStatisticsUserVO::getScanCodeCount)));
+        }
+
+        Map<String, Integer> merchantScanCodeMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantStatisticsUserVOS)) {
+            merchantScanCodeMap = merchantStatisticsUserVOS.stream().filter(item -> Objects.nonNull(item.getScanCodeCount()) && Objects.nonNull(item.getMonthDate()))
+                    .collect(Collectors.groupingBy(item -> item.getMonthDate().substring(0, item.getMonthDate().lastIndexOf(StringConstant.DASH)), Collectors.summingInt(MerchantStatisticsUserVO::getScanCodeCount)));
+        }
+
+        List<DateTime> dateTimes = DateUtil.rangeToList(new Date(beginTime), new Date(endTime), DateField.MONTH);
+        for (DateTime dateTime : dateTimes) {
+            String monthDateStr = DateUtil.format(dateTime, DateFormatConstant.MONTH_DATE_FORMAT);
+
+            // 扫码人数
+            Integer scanCodeNum = NumberConstant.ZERO;
+            if (merchantScanCodeMap.containsKey(monthDateStr)) {
+                scanCodeNum = merchantScanCodeMap.get(monthDateStr);
+            }
+
+            PromotionFeeStatisticAnalysisUserScanCodeVO scanCodeVO = new PromotionFeeStatisticAnalysisUserScanCodeVO();
+            scanCodeVO.setScanCodeNum(scanCodeNum);
+            scanCodeVO.setStatisticTime(monthDateStr);
+            scanCodeVOList.add(scanCodeVO);
+
+
+            // 新增人数
+            Integer purchaseNum = NumberConstant.ZERO;
+            if (merchantAddUserMap.containsKey(monthDateStr)) {
+                purchaseNum = merchantAddUserMap.get(monthDateStr);
+            }
+
+            PromotionFeeStatisticAnalysisPurchaseVO purchaseVO = new PromotionFeeStatisticAnalysisPurchaseVO();
+            purchaseVO.setPurchaseNum(purchaseNum);
+            purchaseVO.setStatisticTime(monthDateStr);
+            purchaseVOList.add(purchaseVO);
+
+            // 续费人数
+            Integer renewalNum = NumberConstant.ZERO;
+            if (merchantRenewalUserMap.containsKey(monthDateStr)) {
+                renewalNum = merchantRenewalUserMap.get(monthDateStr);
+            }
+
+            PromotionFeeStatisticAnalysisRenewalVO renewalVO = new PromotionFeeStatisticAnalysisRenewalVO();
+            renewalVO.setRenewalNum(renewalNum);
+            renewalVO.setStatisticTime(monthDateStr);
+            renewalVOList.add(renewalVO);
+        }
+
+        userVO.setPurchaseVOList(purchaseVOList);
+        userVO.setScanCodeVOList(scanCodeVOList);
+        userVO.setRenewalVOList(renewalVOList);
+
+        return R.ok(userVO);
+    }
+
     private R dealStaticUserResult(Long beginTime, Long endTime, List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS, List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS, List<MerchantStatisticsUserVO> merchantStatisticsUserVOS) {
         PromotionFeeStatisticAnalysisUserVO userVO = new PromotionFeeStatisticAnalysisUserVO();
         List<PromotionFeeStatisticAnalysisUserScanCodeVO> scanCodeVOList = new ArrayList<>();

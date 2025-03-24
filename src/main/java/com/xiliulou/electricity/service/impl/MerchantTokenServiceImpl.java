@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
 import com.xiliulou.electricity.config.merchant.MerchantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantTokenService;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
@@ -42,10 +44,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -92,6 +92,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     
     @Resource
     private ServicePhoneService servicePhoneService;
+
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
     
     @Override
     public Triple<Boolean, String, Object> login(HttpServletRequest request, MerchantLoginRequest merchantLoginRequest) {
@@ -136,19 +139,39 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
             
             List<User> users = Optional.ofNullable(userService.listUserByPhone(purePhoneNumber)).orElse(Lists.newArrayList()).stream()
-                    .filter(e -> (e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL))).collect(Collectors.toList());
+                    .filter(e -> (e.getUserType().equals(User.TYPE_USER_MERCHANT) || e.getUserType().equals(User.TYPE_USER_CHANNEL)
+                            || e.getUserType().equals(User.TYPE_USER_MERCHANT_EMPLOYEE))).collect(Collectors.toList());
             
             if (Collections.isEmpty(users)) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
             }
-            
+
+
             List<User> notLockUsers = users.stream().filter(user -> !user.isLock()).collect(Collectors.toList());
             if (notLockUsers.isEmpty()) {
                 return Triple.of(false, null, "当前登录账号已禁用，请联系客服处理");
             }
-            
+
+            List<Long> merchantEmployeesUidList = notLockUsers.stream().filter(user -> Objects.equals(User.TYPE_USER_MERCHANT_EMPLOYEE, user.getUserType())).map(User::getUid).collect(Collectors.toList());
+            Map<Long, MerchantEmployeeBO> merchantEmployeeBOMap = new HashMap<>();
+            if (ObjectUtils.isNotEmpty(merchantEmployeesUidList)) {
+                // 商户存在并且商户不是禁用状态
+                List<MerchantEmployeeBO> merchantEmployeeBOList = merchantEmployeeService.listMerchantAndEmployeeInfoByUidList(merchantEmployeesUidList);
+
+                Map<Long, MerchantEmployeeBO> merchantEmployeeBOMapTemp = merchantEmployeeBOList.stream().collect(Collectors.toMap(MerchantEmployeeBO::getUid, Function.identity(), (k1, k2) -> k1));
+                notLockUsers = notLockUsers.stream().filter(user -> merchantEmployeeBOMapTemp.containsKey(user.getUid())
+                        && !Objects.equals(merchantEmployeeBOMapTemp.get(user.getUid()).getMerchantUserLockFlag(), User.USER_LOCK)).collect(Collectors.toList());
+                if (notLockUsers.isEmpty()) {
+                    log.error("merchant login info. merchant employee is lock");
+                    return Triple.of(false, null, "当前登录账号已禁用，请联系客服处理");
+                }
+
+                merchantEmployeeBOMap = merchantEmployeeBOMapTemp;
+            }
+
             // 用户是否绑定了业务信息
-            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(this::checkUserBindingBusiness).filter(UserBindBusinessDTO::isBinding)
+            Map<Long, MerchantEmployeeBO> finalMerchantEmployeeBOMap = merchantEmployeeBOMap;
+            Map<Long, UserBindBusinessDTO> userBindBusinessDTOS = users.stream().map(item -> checkUserBindingBusiness(item, finalMerchantEmployeeBOMap)).filter(UserBindBusinessDTO::isBinding)
                     .collect(Collectors.toMap(UserBindBusinessDTO::getUid, e -> e));
             if (userBindBusinessDTOS.isEmpty()) {
                 return Triple.of(false, null, "未找到绑定账号，请检查");
@@ -156,7 +179,8 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             
             log.info("userBindBusinessDTOS:{} notLockerUser:{}", userBindBusinessDTOS, notLockUsers);
             
-            List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())))
+            List<User> merchantUser = users.stream().filter((user -> User.TYPE_USER_MERCHANT.equals(user.getUserType()) || User.TYPE_USER_CHANNEL.equals(user.getUserType())
+                    || User.TYPE_USER_MERCHANT_EMPLOYEE.equals(user.getUserType())))
                     .collect(Collectors.toList());
             
             String openid = result.getOpenid();
@@ -236,7 +260,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
         return CollectionUtils.isNotEmpty(userOauthBindList) ? Pair.of(true, userOauthBindList) : Pair.of(false, null);
     }
     
-    private UserBindBusinessDTO checkUserBindingBusiness(User user) {
+    private UserBindBusinessDTO checkUserBindingBusiness(User user, Map<Long, MerchantEmployeeBO> merchantEmployeeBOMap) {
         UserBindBusinessDTO userBindBusinessDTO = new UserBindBusinessDTO();
         userBindBusinessDTO.setUid(user.getUid());
         if (User.TYPE_USER_MERCHANT.equals(user.getUserType())) {
@@ -248,6 +272,17 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 userBindBusinessDTO.setBindBusinessId(merchant.getId());
                 userBindBusinessDTO.setPurchaseAuthority(merchant.getPurchaseAuthority());
                 userBindBusinessDTO.setEnterprisePackageAuth(merchant.getEnterprisePackageAuth());
+            }
+        } else if (User.TYPE_USER_MERCHANT_EMPLOYEE.equals(user.getUserType())) {
+            // 员工登录信息
+            MerchantEmployeeBO merchantEmployeeBO = merchantEmployeeBOMap.get(user.getUid());
+            if (Objects.isNull(merchantEmployeeBO)) {
+                userBindBusinessDTO.setBinding(false);
+            } else {
+                userBindBusinessDTO.setBinding(true);
+                userBindBusinessDTO.setBindBusinessId(merchantEmployeeBO.getId());
+                userBindBusinessDTO.setPurchaseAuthority(merchantEmployeeBO.getPurchaseAuthority());
+                userBindBusinessDTO.setEnterprisePackageAuth(merchantEmployeeBO.getEnterprisePackageAuth());
             }
         } else if (User.TYPE_USER_CHANNEL.equals(user.getUserType())) {
             ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(user.getUid());
@@ -288,6 +323,11 @@ class UserBindBusinessDTO {
      * 会员代付权限 0：关，1：开
      */
     private Integer purchaseAuthority;
+
+    /**
+     * 邀请权限：0-开启，1-关闭
+     */
+    private Integer inviteAuth;
     
     public static final Integer AUTHORITY_DISABLE = 0;
     

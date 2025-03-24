@@ -35,10 +35,13 @@ public interface CouponMapper extends BaseMapper<Coupon>{
     int deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
 
     List<SearchVo> search(CouponQuery query);
+    
+    List<SearchVo> searchV2(CouponQuery query);
 
     List<Coupon> selectCouponByQuery(Coupon coupon);
     
     List<Coupon> selectNameListByIds(@Param("list")Collection<Long> couponId,@Param("tenantId") Integer tenantId);
     
     List<Coupon> selectListByIdsFromDB(@Param("list") List<Long> couponIds);
+    
 }

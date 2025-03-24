@@ -34,7 +34,7 @@ public class EnterpriseCloudBeanOrder {
      */
     private Long uid;
 
-    private Long operateUid  ;
+    private Long operateUid;
     /**
      * 支付金额
      */

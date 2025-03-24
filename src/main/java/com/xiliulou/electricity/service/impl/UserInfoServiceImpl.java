@@ -221,6 +221,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.EleEsignConstant.ESIGN_STATUS_FAILED;
+import static com.xiliulou.electricity.constant.EleEsignConstant.ESIGN_STATUS_SUCCESS;
+import static com.xiliulou.electricity.request.user.UpdateUserPhoneRequest.CONSTRAINT_NOT_FORCE;
+import static com.xiliulou.electricity.request.user.UpdateUserPhoneRequest.CONSTRAINT_FORCE;
 import static com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO.FREE_OF_CHARGE;
 import static com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO.UNPAID;
 
@@ -3044,6 +3048,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo updatePhone = this.queryUserInfoByPhone(phone, TenantContextHolder.getTenantId());
         if (Objects.nonNull(updatePhone)) {
             return R.fail("100565", "手机号已被使用，请重新输入");
+        }
+        
+        // 电子签名未完成时，提示先完成电子签名
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
+        if (Objects.equals(CONSTRAINT_NOT_FORCE, updateUserPhoneRequest.getForceUpdate()) && Objects.nonNull(eleUserEsignRecord) && Objects.equals(
+                eleUserEsignRecord.getSignFinishStatus(), ESIGN_STATUS_FAILED)) {
+            return R.fail("100329", "请先完成电子签名");
+        }
+        
+        // 取消旧手机电子签名流程
+        if (Objects.equals(CONSTRAINT_FORCE, updateUserPhoneRequest.getForceUpdate()) && Objects.nonNull(eleUserEsignRecord) && !Objects.equals(
+                eleUserEsignRecord.getSignFinishStatus(), ESIGN_STATUS_SUCCESS)) {
+            eleUserEsignRecordService.cancelEsignFlow(eleUserEsignRecord.getId());
         }
         
         // 更新用戶
