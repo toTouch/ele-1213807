@@ -785,7 +785,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
             enterpriseChannelUserMapper.update(enterpriseChannelUser);
-            
+
+            if (!isModify) {
+                UserInfo userInfoUpdate = new UserInfo();
+                userInfoUpdate.setUid(uid);
+                userInfoUpdate.setFranchiseeId(query.getFranchiseeId());
+                userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(userInfoUpdate);
+            }
+
             // 添加操作记录, 新记录
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUser.getId());
@@ -1754,7 +1762,15 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
             enterpriseChannelUserMapper.update(enterpriseChannelUser);
-            
+
+            if (!isModify) {
+                UserInfo userInfoUpdate = new UserInfo();
+                userInfoUpdate.setUid(uid);
+                userInfoUpdate.setFranchiseeId(query.getFranchiseeId());
+                userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(userInfoUpdate);
+            }
+
             // 添加操作记录, 新记录
             EnterpriseChannelUserHistory history = new EnterpriseChannelUserHistory();
             EnterpriseChannelUser user = enterpriseChannelUserMapper.queryById(channelUser.getId());
