@@ -19,8 +19,6 @@ public interface ElectricityBatteryLabelService {
     
     void insert (ElectricityBatteryLabel batteryLabel);
     
-    void insertWithBattery(ElectricityBattery battery);
-    
     void batchInsert(List<ElectricityBattery> batteries, Long operatorUid);
     
     ElectricityBatteryLabel selectBySnAndTenantId(String sn, Integer tenantId);
@@ -47,7 +45,7 @@ public interface ElectricityBatteryLabelService {
     
     List<ElectricityBatteryLabelVO> listLabelVOBySns(List<String> sns, Map<String, Integer> snAndLabel);
     
-    Integer countReceived(Long uid);
+    Integer countReceived(Long receiverId);
     
     /**
      * 保存或者清除柜机格挡表内的锁定在仓sn

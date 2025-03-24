@@ -124,7 +124,7 @@ public class ElectricityConfig {
     private String franchiseeMoveInfo;
     
     /**
-     * 是否启用0元退押审核 (0--是 1--否)
+     * 是否启用0元退押审核 (0--是 1--否) 默认为0 是
      */
     private Integer isZeroDepositAuditEnabled;
     

@@ -38,6 +38,37 @@
         limit #{offset}, #{size}
     </select>
     
+    <select id="searchV2" resultType="com.xiliulou.electricity.vo.SearchVo">
+        select
+        id, name ,enabled_state from t_coupon
+        <where>
+            del_flag=0
+            <if test="franchiseeId != null">
+                and (franchisee_id = #{franchiseeId} or franchisee_id is null )
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="tenantId != null ">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="discountType != null">
+                and discount_type = #{discountType}
+            </if>
+            <if test="status != null ">
+                and status = #{status}
+            </if>
+            <if test="ids != null">
+                and id in
+                <foreach collection="ids" item="id" index="index" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.Coupon">
         select

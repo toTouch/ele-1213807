@@ -84,6 +84,7 @@ import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -138,6 +139,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserMoveHistoryService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -152,12 +154,14 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
-import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.thirdParty.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.service.userinfo.emergencyContact.EmergencyContactService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -228,6 +232,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.EleEsignConstant.ESIGN_STATUS_FAILED;
+import static com.xiliulou.electricity.constant.EleEsignConstant.ESIGN_STATUS_SUCCESS;
+import static com.xiliulou.electricity.request.user.UpdateUserPhoneRequest.CONSTRAINT_NOT_FORCE;
+import static com.xiliulou.electricity.request.user.UpdateUserPhoneRequest.CONSTRAINT_FORCE;
 import static com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO.FREE_OF_CHARGE;
 import static com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO.UNPAID;
 
@@ -445,6 +453,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
+    @Resource
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
     
     /**
      * 分页查询
@@ -1146,6 +1160,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUsableStatus(usableStatus);
         userInfo.setTenantId(tenantId);
         update(userInfo);
+        
+        // 给第三方推送用户信息
+        pushDataToThirdService.asyncPushUserInfo(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), userInfo.getUid(), ThirdPartyOperatorTypeEnum.USER_STATUS.getType());
+        
         return R.ok();
     }
     
@@ -1708,6 +1726,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     
                     // 修改原绑定电池标签为闲置
                     electricityBatteryService.asyncModifyLabel(isBindElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
+                    electricityBatteryLabelBizService.clearCacheBySn(isBindElectricityBattery.getSn());
                 }
             }
             
@@ -1989,8 +2008,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 清除逾期用户备注
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         
-        // 修改电池标签为闲置
+        // 修改电池标签为闲置，并清除一下预修改标签
         electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), user.getUid()), false);
+        electricityBatteryLabelBizService.clearCacheBySn(oldElectricityBattery.getSn());
         
         try {
             Map<String, Object> map = new HashMap<>();
@@ -2908,6 +2928,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("100565", "手机号已被使用，请重新输入");
         }
         
+        // 电子签名未完成时，提示先完成电子签名
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
+        if (Objects.equals(CONSTRAINT_NOT_FORCE, updateUserPhoneRequest.getForceUpdate()) && Objects.nonNull(eleUserEsignRecord) && Objects.equals(
+                eleUserEsignRecord.getSignFinishStatus(), ESIGN_STATUS_FAILED)) {
+            return R.fail("100329", "请先完成电子签名");
+        }
+        
+        // 取消旧手机电子签名流程
+        if (Objects.equals(CONSTRAINT_FORCE, updateUserPhoneRequest.getForceUpdate()) && Objects.nonNull(eleUserEsignRecord) && !Objects.equals(
+                eleUserEsignRecord.getSignFinishStatus(), ESIGN_STATUS_SUCCESS)) {
+            eleUserEsignRecordService.cancelEsignFlow(eleUserEsignRecord.getId());
+        }
+        
         // 更新用戶
         DbUtils.dbOperateSuccessThenHandleCache(
                 userInfoMapper.updatePhoneByUid(TenantContextHolder.getTenantId(), uid, phone,
@@ -2950,6 +2983,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Throwable e) {
             log.error("Recording user operation records failed because:", e);
         }
+    
+        // 给第三方推送用户信息
+        pushDataToThirdService.asyncPushUserInfo(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), userInfo.getUid(), ThirdPartyOperatorTypeEnum.USER_EDIT.getType());
+        
         return R.ok();
     }
     
