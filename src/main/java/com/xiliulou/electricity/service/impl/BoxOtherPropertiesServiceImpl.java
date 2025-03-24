@@ -138,4 +138,10 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
     public Integer existsByUk(Integer electricityCabinetId, String cellNo) {
         return boxOtherPropertiesMapper.existsByUk(electricityCabinetId, cellNo);
     }
+    
+    @Slave
+    @Override
+    public List<BoxOtherProperties> listByEidList(List<Integer> eidList) {
+        return boxOtherPropertiesMapper.selectByEidList(eidList);
+    }
 }

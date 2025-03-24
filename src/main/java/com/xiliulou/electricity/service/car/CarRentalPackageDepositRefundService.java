@@ -89,4 +89,9 @@ public interface CarRentalPackageDepositRefundService {
      * @return
      */
     Long insert(CarRentalPackageDepositRefundPo entity);
+    
+    /**
+     * 根据uid查询最后一笔退押成功的订单
+     */
+    CarRentalPackageDepositRefundPo queryLastSuccessOrderByUid(Long uid);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.bo.UserBatteryDepositBO;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 
 import java.math.BigDecimal;
@@ -70,4 +71,6 @@ public interface UserBatteryDepositService {
     Integer deleteById(Long id);
     
     List<UserBatteryDeposit> listByUidList(Integer tenantId, List<Long> uidList);
+    
+    List<UserBatteryDepositBO> listPayTypeByUidList(Integer tenantId, List<Long> uidList);
 }

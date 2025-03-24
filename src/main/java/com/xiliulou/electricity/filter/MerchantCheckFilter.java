@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.filter;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.MerchantUserContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -14,6 +16,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -37,6 +40,9 @@ public class MerchantCheckFilter implements Filter {
 
     @Autowired
     MerchantService merchantService;
+
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
 
     private RequestMatcher requiresAuthenticationRequestMatcher;
 
@@ -62,6 +68,27 @@ public class MerchantCheckFilter implements Filter {
             return;
         }
 
+        // 如果是商户员工
+        if (Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT_EMPLOYEE)) {
+            // 判断员工是否存在
+            MerchantEmployeeBO merchantEmployeeBO = merchantEmployeeService.queryMerchantAndEmployeeInfoByUid(SecurityUtils.getUid());
+            if (Objects.isNull(merchantEmployeeBO)) {
+                log.warn("merchant user not exists! uid={}", SecurityUtils.getUid());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                ResponseUtil.out(response, R.fail("用户不存在"));
+                return;
+            }
+
+            // 用户或者商户锁定则禁止登录
+            if (user.isLock() || merchantEmployeeBO.isMerchantLock()) {
+                log.warn("merchant user is locked! uid={}", SecurityUtils.getUid());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                ResponseUtil.out(response, R.fail("当前登录账号已禁用，请联系客服处理"));
+                return;
+            }
+        }
+
+        // 商户或者渠道员锁定则禁止登录
         if (user.isLock()) {
             log.warn("user is locked! uid={}", SecurityUtils.getUid());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

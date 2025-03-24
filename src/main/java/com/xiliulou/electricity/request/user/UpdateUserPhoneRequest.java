@@ -25,4 +25,14 @@ public class UpdateUserPhoneRequest {
      */
     @NotEmpty(message = "手机号不能为空!", groups = {UpdateGroup.class})
     private String phone;
+    
+    /**
+     * 直接更换手机号 0--非强制 1--强制
+     */
+    private Integer forceUpdate;
+    
+    //是否强制更换 0--非强制 1--强制
+    public static final Integer CONSTRAINT_NOT_FORCE = 0;
+    
+    public static final Integer CONSTRAINT_FORCE = 1;
 }

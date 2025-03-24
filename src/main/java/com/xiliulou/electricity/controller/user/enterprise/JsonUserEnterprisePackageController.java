@@ -89,7 +89,7 @@ public class JsonUserEnterprisePackageController extends BaseController {
     
     /**
      * 购买套餐时，查询骑手套餐信息和押金信息
-     *
+     *  已废弃
      * @param uid
      * @return
      */

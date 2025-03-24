@@ -12,7 +12,8 @@
             type,
             error_msg,
             create_time,
-            update_time
+            update_time,
+            operate_uid
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{uid},
@@ -23,7 +24,8 @@
             #{type},
             #{errorMsg},
             #{createTime},
-            #{updateTime}
+            #{updateTime},
+            #{operateUid}
         </trim>
     </insert>
     
@@ -36,7 +38,9 @@
         type,
         error_msg,
         create_time,
-        update_time)
+        update_time,
+        operate_uid
+        )
         values
         <foreach item="item" index="index" collection="list" separator=",">
             (#{item.uid},
@@ -47,7 +51,8 @@
             #{item.type},
             #{item.errorMsg},
             #{item.createTime},
-            #{item.updateTime}
+            #{item.updateTime},
+             #{item.operateUid}
             )
         </foreach>
 

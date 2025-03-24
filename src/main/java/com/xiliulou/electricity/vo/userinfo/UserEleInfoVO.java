@@ -47,7 +47,7 @@ public class UserEleInfoVO {
 
 
     /**
-     * 电池押金状态
+     * 电池押金状态 0--未缴纳押金，1--已缴纳押金
      */
     private Integer batteryDepositStatus;
 
@@ -142,6 +142,12 @@ public class UserEleInfoVO {
 
 
     private String remark;
+    
+    private Long orderExpireTime;
+    
+    private Long orderRemainingNumber;
+    
+    private Long storeId;
 
     
     private Integer delFlag;

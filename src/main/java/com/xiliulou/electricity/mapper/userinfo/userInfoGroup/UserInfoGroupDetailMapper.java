@@ -23,6 +23,8 @@ public interface UserInfoGroupDetailMapper {
     
     List<UserInfoGroupNamesBO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
     
+    List<UserInfoGroupNamesBO> selectListGroupByUserGroups(@Param("uidList") List<Long> uidList, @Param("groupId") Long groupId, @Param("franchiseeId") Long franchiseeId);
+    
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetail> detailList);
     
     @Deprecated
@@ -35,6 +37,8 @@ public interface UserInfoGroupDetailMapper {
     Integer deleteByGroupNo(@Param("groupNo") String groupNo, @Param("tenantId") Integer tenantId);
     
     Integer deleteForUpdate(@Param("uid") Long uid, @Param("tenantId") Long tenantId, @Param("franchiseeId") Long franchiseeId);
+    
+    Integer deleteForUpdateUids(@Param("uids") List<Long> uids, @Param("tenantId") Long tenantId, @Param("franchiseeId") Long franchiseeId, @Param("groupNo") String groupNo);
     
     List<Long> selectListFranchiseeForUpdate(@Param("uid") Long uid);
     

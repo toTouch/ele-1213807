@@ -16,6 +16,7 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="operateUid" column="operate_uid" jdbcType="INTEGER"/>
     </resultMap>
     
     <!--查询单个-->
@@ -41,7 +42,7 @@
     
     <select id="selectByTime" resultMap="CloudBeanUseRecordMap">
         select
-            id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+            id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, operate_uid
         from t_cloud_bean_use_record
         where enterprise_id = #{enterpriseId} and create_time &gt;= #{beginTime} and  create_time &lt;= #{endTime}
     </select>
@@ -69,7 +70,7 @@
     
     <select id="selectByUserPage" resultMap="CloudBeanUseRecordMap">
         select
-        id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time
+        id, enterprise_id, uid, type, order_type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, operate_uid
         from t_cloud_bean_use_record
         <where>
             <if test="startTime != null">
@@ -139,10 +140,7 @@
             </if>
         
             <if test="operateUid != null">
-                AND (
-                     (r.type IN ( 2, 3, 4, 5 )
-                AND EXISTS ( SELECT 1 FROM t_enterprise_cloud_bean_order o WHERE o.operate_uid = #{operateUid} AND o.order_id = r.ref ))
-                OR ( r.type IN ( 0, 1 )  and e.uid = #{operateUid} ))
+                AND r.operate_uid = #{operateUid}
             </if>
         </where>
     </sql>
@@ -155,7 +153,8 @@
             r.bean_amount,
             r.create_time,
             r.ref,
-            r.id
+            r.id,
+            r.operate_uid
         FROM
         t_cloud_bean_use_record r
         left join t_enterprise_info e on e.id = r.enterprise_id
@@ -229,11 +228,11 @@
     </delete>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_cloud_bean_use_record (id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, order_type)
+        insert into t_cloud_bean_use_record (id, enterprise_id, uid, type, bean_amount, remaining_bean_amount, package_id, franchisee_id, ref, tenant_id, create_time, update_time, order_type, operate_uid)
         values
         <foreach item="item" index="index" collection="list" separator=",">
             (#{item.id}, #{item.enterpriseId}, #{item.uid}, #{item.type}, #{item.beanAmount}, #{item.remainingBeanAmount}, #{item.packageId}, #{item.franchiseeId}, #{item.ref}, #{item.tenantId},
-            #{item.createTime}, #{item.updateTime}, #{item.orderType})
+            #{item.createTime}, #{item.updateTime}, #{item.orderType}, #{item.operateUid})
         </foreach>
     </insert>
 </mapper>

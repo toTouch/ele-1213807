@@ -93,4 +93,6 @@ public interface CarRentalPackageDepositRefundMapper {
      * @return
      */
     int insert(CarRentalPackageDepositRefundPo entity);
+    
+    CarRentalPackageDepositRefundPo selectLastSuccessOrderByUid(Long uid);
 }

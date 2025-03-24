@@ -118,6 +118,9 @@ public class UserInfo {
 
     /**
      * 套餐购买次数(所有套餐类型的总次数，包含：换电、车、车电一体)
+     * 《特别需要注意》：payCount=0时不一定就是新用户，如果payCount=0但曾被删过（打过删除标记），那么就是老用户。
+     * 参照如下方法：
+     * com.xiliulou.electricity.service.userinfo.UserDelRecordService#existsByDelPhoneAndDelIdNumber(String, Integer)
      */
     private Integer payCount = 0;
 

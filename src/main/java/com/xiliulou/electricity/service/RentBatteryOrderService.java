@@ -34,7 +34,7 @@ public interface RentBatteryOrderService {
 
     R rentBattery(RentBatteryQuery rentBatteryQuery);
 
-    R returnBattery(Integer electricityCabinetId);
+    R returnBattery(Integer electricityCabinetId, Integer isFreeze);
 
     void update(RentBatteryOrder rentBatteryOrder);
 

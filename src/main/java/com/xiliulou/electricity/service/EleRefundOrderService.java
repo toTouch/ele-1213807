@@ -1,18 +1,14 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.EleDepositRefundBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -124,4 +120,6 @@ public interface EleRefundOrderService {
     Integer updateRefundAmountById(Long id, BigDecimal refundAmount);
     
     List<EleRefundOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList);
+    
+    EleDepositRefundBO queryLastSuccessOrderByUid(Long uid);
 }
