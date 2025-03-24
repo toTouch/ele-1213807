@@ -66,4 +66,6 @@ public interface BoxOtherPropertiesService {
      */
     Integer existsByUk(Integer electricityCabinetId, String cellNo);
     
+    List<BoxOtherProperties> listByEidList(List<Integer> eidList);
+    
 }

@@ -49,4 +49,6 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
     List<EleBatteryServiceFeeOrderVo> selectListSuperAdminPage(@Param("query") BatteryServiceFeeQuery batteryServiceFeeQuery);
     
     Integer countTotalForSuperAdmin(@Param("query")BatteryServiceFeeQuery batteryServiceFeeQuery);
+    
+    List<EleBatteryServiceFeeOrder> selectListByOrderNoList(@Param("expireOrderNoList") List<String> expireOrderNoList, @Param("tenantId") Integer tenantId);
 }

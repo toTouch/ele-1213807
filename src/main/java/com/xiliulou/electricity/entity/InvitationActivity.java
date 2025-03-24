@@ -84,7 +84,12 @@ public class InvitationActivity {
     private Integer tenantId;
     
     private Long franchiseeId;
-
+    
+    /**
+     *  退押后再次购买是否返现开关:0-开启,1-关闭
+     */
+    private Integer depositRefundRebateSwitch;
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

@@ -76,6 +76,17 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.*;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordDetailService;
+import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordDetailService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -248,6 +259,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     private FreeDepositService freeDepositService;
 
     @Resource
+    private MerchantEmployeeService merchantEmployeeService;
+
+    @Resource
     private EnterpriseCloudBeanDetailService enterpriseCloudBeanDetailService;
 
     @Resource
@@ -255,7 +269,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Resource
     private RocketMqService rocketMqService;
-    
+
     
     static XllThreadPoolExecutorService handleQueryCloudBeanPool = XllThreadPoolExecutors.newFixedThreadPool("HandleQueryCloudBeanPool", 6, "handle-query-cloud-bean-pool-thread");
     
@@ -399,7 +413,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> recycleBatteryMemberCardV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard userBatteryMemberCard) {
+    public Triple<Boolean, String, Object> recycleBatteryMemberCardV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, UserBatteryMemberCard userBatteryMemberCard, Long operateUid) {
         BigDecimal result = BigDecimal.ZERO;
     
         List<AnotherPayMembercardRecord> anotherPayMembercardRecords = anotherPayMembercardRecordService.selectByUid(userInfo.getUid());
@@ -435,14 +449,14 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         List<EnterpriseRentRecordDetail> enterpriseRentRecordDetailList = rentRecordDetailService.queryListByUid(userInfo.getUid());
         // 没有租电记录
         if (ObjectUtils.isEmpty(enterpriseRentRecordDetailList)) {
-            recycleEmptyRentRecord(anotherPayMembercardRecords, orderMap, userInfo, enterpriseInfo);
+            recycleEmptyRentRecord(anotherPayMembercardRecords, orderMap, userInfo, enterpriseInfo, operateUid);
             return Triple.of(true, null, totalCloudBean);
         }
     
         // 过滤非法数据
         enterpriseRentRecordDetailList = enterpriseRentRecordDetailList.stream().filter(item -> Objects.nonNull(item.getRentTime()) && Objects.nonNull(item.getReturnTime())).collect(Collectors.toList());
         if (ObjectUtils.isEmpty(enterpriseRentRecordDetailList)) {
-            recycleEmptyRentRecord(anotherPayMembercardRecords, orderMap, userInfo, enterpriseInfo);
+            recycleEmptyRentRecord(anotherPayMembercardRecords, orderMap, userInfo, enterpriseInfo, operateUid);
             return Triple.of(true, null, totalCloudBean);
         }
     
@@ -536,7 +550,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
-        
+            cloudBeanUseRecord.setOperateUid(operateUid);
             cloudBeanUseRecordList.add(cloudBeanUseRecord);
     
             orderMap.remove(orderId);
@@ -577,6 +591,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
                 cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
                 cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+                cloudBeanUseRecord.setOperateUid(operateUid);
                 cloudBeanUseRecordService.insert(cloudBeanUseRecord);
             
                 log.info("RECYCLE BATTERY MEMBERCARD INFO!not used membercard cloudBean={},uid={}", v.getPayAmount().doubleValue(), userInfo.getUid());
@@ -606,7 +621,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid) {
+    public Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid, Long operateUid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || (Objects.nonNull(TenantContextHolder.getTenantId()) && !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId()))) {
             log.warn("RECYCLE WARN! not found user,uid={}", uid);
@@ -641,7 +656,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
     
         //回收押金
-        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDepositV2(userInfo, enterpriseInfo);
+        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDepositV2(userInfo, enterpriseInfo, operateUid);
         if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
             return batteryDepositTriple;
         }
@@ -655,7 +670,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public UserCloudBeanDetailVO cloudBeanDetailV2() {
-        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        Long merchantUid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
+        EnterpriseInfo enterpriseInfo = this.selectByUid(merchantUid);
         if (Objects.isNull(enterpriseInfo)) {
             log.error("USER CLOUD BEAN DETAIL ERROR!not found enterpriseInfo,uid={}", SecurityUtils.getUid());
             return null;
@@ -685,7 +701,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     @Slave
     public Triple<Boolean, String, Object> cloudBeanGeneralViewV2() {
-        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = this.selectByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
         if (Objects.isNull(enterpriseInfo)) {
             log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
             return Triple.of(true, null, null);
@@ -732,7 +748,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Override
     public Triple<Boolean, String, Object> refresh(Integer type) {
-        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "300074", "未找到企业信息");
         }
@@ -753,7 +769,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 
     @Override
     public Triple<Boolean, String, Object> queryRefresh(String sessionId) {
-        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
         if (Objects.isNull(enterpriseInfo)) {
             return Triple.of(false, "300074", "未找到企业信息");
         }
@@ -827,7 +843,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     }
     
     private void recycleEmptyRentRecord(List<AnotherPayMembercardRecord> anotherPayMembercardRecords, Map<String, ElectricityMemberCardOrder> orderMap,
-            UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
+            UserInfo userInfo, EnterpriseInfo enterpriseInfo, Long operateUid) {
         List<CloudBeanUseRecord> cloudBeanUseRecordList = new ArrayList<>();
         
         //生成退租记录、回收记录
@@ -851,6 +867,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
             cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
             cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+            cloudBeanUseRecord.setOperateUid(operateUid);
             cloudBeanUseRecordList.add(cloudBeanUseRecord);
             
             enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(electricityMemberCardOrder.getPayAmount()));
@@ -932,7 +949,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             log.error("CLOUD BEAN RECHARGE ERROR! not found user,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-        
+
+        Long merchantUid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
+
         if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_CLOUD_BEAN_RECHARGE_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
@@ -943,7 +962,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
             }
             
-            EnterpriseInfo enterpriseInfo = this.selectByUid(uid);
+            EnterpriseInfo enterpriseInfo = this.selectByUid(merchantUid);
             if (Objects.isNull(enterpriseInfo)) {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found enterpriseInfo,uid={}", uid);
                 return Triple.of(false, "100315", "企业配置信息不存在");
@@ -1255,6 +1274,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
         cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setOperateUid(SecurityUtils.getUid());
         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
         
         return Triple.of(true, null, null);
@@ -1303,9 +1323,10 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public UserCloudBeanDetailVO cloudBeanDetail() {
-        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        Long merchantUid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
+        EnterpriseInfo enterpriseInfo = this.selectByUid(merchantUid);
         if (Objects.isNull(enterpriseInfo)) {
-            log.error("USER CLOUD BEAN DETAIL ERROR!not found enterpriseInfo,uid={}", SecurityUtils.getUid());
+            log.error("USER CLOUD BEAN DETAIL ERROR!not found enterpriseInfo,uid={}", merchantUid);
             return null;
         }
         
@@ -1338,7 +1359,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> recycleCloudBean(Long uid) {
+    public Triple<Boolean, String, Object> recycleCloudBean(Long uid, Long operateUid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("RECYCLE WARN! not found user,uid={}", uid);
@@ -1412,13 +1433,13 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         //回收押金
-        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDepositV2(userInfo, enterpriseInfo);
+        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDepositV2(userInfo, enterpriseInfo, operateUid);
         if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
             return batteryDepositTriple;
         }
         
         //回收套餐
-        Triple<Boolean, String, Object> membercardTriple = recycleBatteryMemberCardV2(userInfo, enterpriseInfo, userBatteryMemberCard);
+        Triple<Boolean, String, Object> membercardTriple = recycleBatteryMemberCardV2(userInfo, enterpriseInfo, userBatteryMemberCard, operateUid);
         if (Boolean.FALSE.equals(membercardTriple.getLeft())) {
             return membercardTriple;
         }
@@ -1959,7 +1980,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     
     @Override
-    public Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
+    public Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo, Long operateUid) {
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("RECYCLE BATTERY DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
@@ -1998,6 +2019,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
         cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
         cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setOperateUid(operateUid);
         cloudBeanUseRecordService.insert(cloudBeanUseRecord);
         
         Integer status = EleRefundOrder.STATUS_SUCCESS;
@@ -2065,7 +2087,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Slave
     @Override
     public Triple<Boolean, String, Object> cloudBeanGeneralView() {
-        EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());
+        EnterpriseInfo enterpriseInfo = this.selectByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
         if (Objects.isNull(enterpriseInfo)) {
             log.error("ENTERPRISE ERROR! not found enterpriseInfo,uid={} ", SecurityUtils.getUid());
             return Triple.of(true, null, null);

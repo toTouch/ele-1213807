@@ -37,6 +37,7 @@ public class JsonAppElectricityController extends BaseController {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
+/*    @Deprecated
     @GetMapping("/outer/oss/config")
     public R getOssConfig() {
         Map<String, Object> result = new HashMap<>(3);
@@ -44,7 +45,7 @@ public class JsonAppElectricityController extends BaseController {
         result.put("ossAccessKeyId", storageService.getAccessKey());
 //        result.put("ossAccessKeySecret", storageService.getAccessKeySecret()); ---没有这个接口，临时屏蔽
         return R.ok(result);
-    }
+    }*/
 
     /**
      * 保存机柜日志

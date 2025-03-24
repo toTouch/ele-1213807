@@ -53,6 +53,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -158,6 +159,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Resource
     private UserDelRecordService userDelRecordService;
+
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -261,7 +265,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             enterpriseChannelUser.setFranchiseeId(enterpriseInfo.getFranchiseeId());
             enterpriseChannelUser.setPaymentStatus(EnterprisePaymentStatusEnum.PAYMENT_TYPE_NO_PAY.getCode());
             enterpriseChannelUser.setTenantId(TenantContextHolder.getTenantId().longValue());
-            enterpriseChannelUser.setInviterId(SecurityUtils.getUid());
+            enterpriseChannelUser.setInviterId(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo()));
             enterpriseChannelUser.setCreateTime(System.currentTimeMillis());
             enterpriseChannelUser.setUpdateTime(System.currentTimeMillis());
             enterpriseChannelUserMapper.insertOne(enterpriseChannelUser);
@@ -821,7 +825,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     public Triple<Boolean, String, Object> channelUserExitCheck(EnterpriseUserExitCheckRequest request) {
         // 判断用户是否存在当前站长的企业内
         // 查询当前用户是否为站长
-        Long id = SecurityUtils.getUid();
+        Long id = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(id);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
             log.error("channel User Exit Check  enterprise not exists, uid={}", id);
@@ -910,7 +914,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     @Transactional
     public Triple<Boolean, String, Object> channelUserExit(EnterpriseUserExitCheckRequest request) {
-        Long uid = SecurityUtils.getUid();
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_USER_EXIT_LOCK + uid, "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
@@ -971,13 +975,13 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 免押用户 不存在代付记录 则单独进行押金回收
         if (!isEnterpriseFreeDepositNoPay) {
-            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid());
+            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid(), SecurityUtils.getUid());
             if (!tripleRecycle.getLeft()) {
                 log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
                 return tripleRecycle;
             }
         } else if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
-            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid());
+            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid(), SecurityUtils.getUid());
             if (!tripleRecycle.getLeft()) {
                 log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
                 return tripleRecycle;
@@ -1027,7 +1031,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public Triple<Boolean, String, Object> channelUserExitCheckAll(EnterpriseUserExitCheckRequest request) {
         // 查询当前用户是否为站长
-        Long uid = SecurityUtils.getUid();
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("channel user exit  all  enterprise not exists, uid={}", uid);
@@ -1071,7 +1075,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Override
     public Triple<Boolean, String, Object> queryEnterpriseChannelUserList() {
-        Long uid = SecurityUtils.getUid();
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("query channel user   enterprise not exists, uid={}", uid);
@@ -1162,7 +1166,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public Triple<Boolean, String, Object> channelUserExitAll(EnterpriseUserExitCheckRequest request) {
         // 查询当前用户是否为站长
-        Long uid = SecurityUtils.getUid();
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_USER_EXIT_ALL_LOCK + uid, "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
@@ -1245,6 +1249,8 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 exit.setFranchiseeId(item.getFranchiseeId());
                 exit.setCreateTime(System.currentTimeMillis());
                 exit.setUid(item.getUid());
+                exit.setOperateUid(SecurityUtils.getUid());
+
                 addList.add(exit);
             }
         }
@@ -1282,7 +1288,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     @Override
     public Triple<Boolean, String, Object> channelUserClose(EnterpriseUserExitCheckRequest request) {
         // 查询当前用户是否为站长
-        Long uid = SecurityUtils.getUid();
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
             log.error("channel user close  enterprise not exists, uid={}", request.getUid());
@@ -1410,14 +1416,14 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         // 免押用户 不存在代付记录 则单独进行押金回收
         if (!isEnterpriseFreeDepositNoPay) {
-            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid());
+            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid(), uid);
             if (!tripleRecycle.getLeft()) {
                 log.warn("channel user admin exit recycle Cloud Bean warn,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
                 return tripleRecycle;
             }
         } else if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
             // 云豆回收
-            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid());
+            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid(), uid);
             if (!tripleRecycle.getLeft()) {
                 log.warn("channel user admin exit recycle Cloud Bean warn,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
                 return tripleRecycle;
@@ -1833,7 +1839,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             
             // 免押用户 不存在代付记录 则单独进行押金回收
             if (!isEnterpriseFreeDepositNoPay) {
-                Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(userInfo.getUid());
+                Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(userInfo.getUid(), getSwitchOldEnterpriseUid(channelUser));
                 if (!tripleRecycle.getLeft()) {
                     log.warn("enterprise channel switch user recycle cloud bean warn,uid={}, msg={}", userInfo.getUid(), tripleRecycle.getRight());
                     return tripleRecycle;
@@ -1849,7 +1855,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 // 未回收的云豆的情况进行云豆回收
                 if (Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
                     // 回收云豆
-                    Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
+                    Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid(), getSwitchOldEnterpriseUid(channelUser));
                     if (!triple.getLeft()) {
                         log.warn("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
                         return triple;
@@ -1899,7 +1905,18 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         return Triple.of(true, null, null);
     }
-    
+
+    private Long getSwitchOldEnterpriseUid(EnterpriseChannelUser channelUser) {
+        Long enterpriseId = channelUser.getEnterpriseId();
+        EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
+        if (Objects.isNull(enterpriseInfo)) {
+            log.warn("query enterprise info failed by query franchisee, enterpriseId = {}", enterpriseId);
+            return 0L;
+        }
+
+        return enterpriseInfo.getUid();
+    }
+
     private Triple<Boolean, String, Object> checkUserEnableExit(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         

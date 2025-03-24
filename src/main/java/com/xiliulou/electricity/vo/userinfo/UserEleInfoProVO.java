@@ -66,6 +66,11 @@ public class UserEleInfoProVO {
      */
     private Integer batteryDepositStatus;
     
+    /**
+     * 是否免押:0-非免押 1-免押
+     */
+    private Integer freeDeposit;
+    
     private EnterpriseChannelUserVO enterpriseChannelUserInfo;
     
     /**
@@ -106,5 +111,10 @@ public class UserEleInfoProVO {
      * 删除/注销时间
      */
     private Long delTime;
-    
+
+
+    /**
+     * 是否展示线下履约，0否，1是
+     */
+    private Integer isViewOffLineAgree = 0;
 }

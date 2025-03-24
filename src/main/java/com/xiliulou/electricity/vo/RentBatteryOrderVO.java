@@ -117,4 +117,9 @@ public class RentBatteryOrderVO {
      * 用户状态:0-正常,1-已删除, 2-已注销
      */
     private Integer userStatus;
+    
+    /**
+     * 0-退租退电（默认） 1-冻结退电
+     */
+    private Integer isFreeze;
 }

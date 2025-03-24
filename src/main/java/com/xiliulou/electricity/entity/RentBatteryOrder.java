@@ -97,6 +97,11 @@ public class RentBatteryOrder {
      * @see com.xiliulou.core.base.enums.ChannelEnum
      */
     private String channel;
+    
+    /**
+     * 0-退租退电（默认） 1-冻结退电
+     */
+    private Integer isFreeze;
 
     //租电池
     public static final Integer TYPE_USER_RENT = 1;
@@ -207,5 +212,15 @@ public class RentBatteryOrder {
      * 柜机使用中
      */
     public static final String INIT_DEVICE_USING="INIT_DEVICE_USING";
+    
+    /**
+     * 退租退电
+     */
+    public static final Integer IS_FREEZE_NO = 0;
+    
+    /**
+     * 冻结退电
+     */
+    public static final Integer IS_FREEZE_YES = 1;
 
 }
