@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -20,7 +21,9 @@ import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.request.user.FeatureSortReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.AuxRetrofitService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -92,10 +95,11 @@ public class StoreServiceImpl implements StoreService {
  
     @Autowired
     ElectricityCarModelService electricityCarModelService;
-
     
     @Resource
     private AuxRetrofitService auxRetrofitService;
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
 
     /**
      * 根据车辆<code>SN</code>码获取门店信息
@@ -234,6 +238,9 @@ public class StoreServiceImpl implements StoreService {
         });
 
         if (insert > 0) {
+            // 给第三方推送门店信息
+            pushDataToThirdService.asyncPushStore(TtlTraceIdSupport.get(), tenantId, store.getId(), ThirdPartyOperatorTypeEnum.STORE_ADD.getType());
+            
             return R.ok(store.getId());
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
@@ -311,6 +318,9 @@ public class StoreServiceImpl implements StoreService {
         });
 
         if (update > 0) {
+            // 给第三方推送门店信息
+            pushDataToThirdService.asyncPushStore(TtlTraceIdSupport.get(), store.getTenantId(), store.getId(), ThirdPartyOperatorTypeEnum.STORE_EDIT.getType());
+            
             return Triple.of(true,"",null);
         }
         return Triple.of(false,"ELECTRICITY.0086", "操作失败");
@@ -500,6 +510,12 @@ public class StoreServiceImpl implements StoreService {
             redisService.saveWithHash(CacheConstant.CACHE_STORE + store.getId(), store);
             return null;
         });
+    
+        if (update > 0) {
+            // 给第三方推送门店状态信息
+            pushDataToThirdService.asyncPushStore(TtlTraceIdSupport.get(), store.getTenantId(), store.getId(), ThirdPartyOperatorTypeEnum.STORE_STATUS.getType());
+        }
+        
         return R.ok();
     }
 
