@@ -10,6 +10,7 @@ import lombok.Getter;
 @Getter
 public enum ThirdPartyOperatorTypeEnum {
     ELE_CABINET_ADD("ELE_CABINET_ADD", "新增柜机"),
+    ELE_CABINET_DELETE("ELE_CABINET_DELETE", "删除柜机"),
     ELE_CABINET_EDIT("ELE_CABINET_EDIT", "编辑柜机"),
     ELE_CABINET_STATUS("ELE_CABINET_STATUS", "柜机上下线"),
     BATTERY_ADD("BATTERY_ADD", "新增电池"),
