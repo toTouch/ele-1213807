@@ -10,5 +10,5 @@ import java.util.regex.Pattern;
  **/
 public class PatternConstant {
 
-    public static final Pattern BATTERY_PATTERN = Pattern.compile("^B_\\d+V");
+    public static final Pattern BATTERY_PATTERN = Pattern.compile("^B_\\\\d{2}V");
 }

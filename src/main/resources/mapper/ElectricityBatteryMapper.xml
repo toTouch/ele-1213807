@@ -966,6 +966,14 @@
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
         </if>
+        <if test="query.model != null and query.model != ''">
+            <if test="query.model == '1'">
+                and teb.model
+            </if>
+            <if test="query.model != '1'">
+                and teb.model
+            </if>
+        </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>

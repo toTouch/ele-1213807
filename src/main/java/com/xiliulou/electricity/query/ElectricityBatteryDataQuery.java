@@ -105,9 +105,17 @@ public class ElectricityBatteryDataQuery {
      * 领用人，管理员uid或者商户id
      */
     private Long receiverId;
+
+
+    /**
+     * 电池型号
+     */
+    private String model;
+
     
     /**
      *  默认为0降序，1为升序
      */
     private Integer sort;
+
 }
