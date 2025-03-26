@@ -220,4 +220,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void modifyLabelWhenBatteryExitCabin(ElectricityBattery battery, ElectricityCabinetBox box);
     
     R listAllBatterySn(ElectricityBatteryQuery batteryQuery);
+
+    /**
+     * @return: @return {@link List }<{@link String }>
+     */
+    List<String> listBatteryModel();
 }

@@ -23,12 +23,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
-import com.xiliulou.electricity.constant.AssetConstant;
-import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.constant.battery.BindBatteryConstants;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
@@ -154,6 +149,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -2422,5 +2418,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         return map;
+    }
+
+
+    @Override
+    @Slave
+    public List<String> listBatteryModel() {
+        List<String> listModel = electricitybatterymapper.selectListModel(TenantContextHolder.getTenantId());
+        if (CollUtil.isEmpty(listModel)){
+            return listModel;
+        }
+        List<String> shortBatteryTypeList = batteryModelService.selectShortBatteryType(listModel.stream().filter(s -> !PatternConstant.BATTERY_PATTERN.matcher(s).matches()).collect(Collectors.toList()), null);
+        shortBatteryTypeList.add(0, "标准型号");
+        return shortBatteryTypeList;
     }
 }

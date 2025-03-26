@@ -1761,5 +1761,9 @@
         where sn = #{sn} and tenant_id = #{tenantId}
     </select>
 
+    <select id="selectListModel" resultType="java.lang.String">
+        select model from t_electricity_battery where del_flag = 0 and tenant_id = #{tenantId} group by model
+    </select>
+
 
 </mapper>
