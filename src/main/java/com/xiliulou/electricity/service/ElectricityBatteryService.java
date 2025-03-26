@@ -19,10 +19,7 @@ import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryEnableAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
-import com.xiliulou.electricity.vo.BatteryChangeInfoVO;
-import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
+import com.xiliulou.electricity.vo.*;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -222,7 +219,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     R listAllBatterySn(ElectricityBatteryQuery batteryQuery);
 
     /**
-     * @return: @return {@link List }<{@link String }>
+     * @return: @return {@link List }<{@link BatteryModelItem }>
      */
-    List<String> listBatteryModel();
+    List<BatteryModelItem> listBatteryModel();
 }
