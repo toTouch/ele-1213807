@@ -13,6 +13,7 @@ public enum ThirdPartyOperatorTypeEnum {
     ELE_CABINET_DELETE("ELE_CABINET_DELETE", "删除柜机"),
     ELE_CABINET_EDIT("ELE_CABINET_EDIT", "编辑柜机"),
     ELE_CABINET_STATUS("ELE_CABINET_STATUS", "柜机上下线"),
+    ELE_CABINET_BOX_STATUS("ELE_CABINET_BOX_STATUS", "柜机格挡禁启用"),
     BATTERY_ADD("BATTERY_ADD", "新增电池"),
     BATTERY_EDIT("BATTERY_EDIT", "编辑电池"),
     BATTERY_STATUS("BATTERY_STATUS", "电池状态"),

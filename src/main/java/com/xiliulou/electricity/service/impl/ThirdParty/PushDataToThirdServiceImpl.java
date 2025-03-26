@@ -55,6 +55,12 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     }
     
     @Override
+    public void asyncPushCabinetBoxList(String traceId, Integer tenantId, Long eid, List<String> cellNoList, String operateType) {
+        thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_ELE_CABINET_BOX).operateType(operateType)
+                .addContext(ThirdPartyMqContentConstant.EID, eid).addContext(ThirdPartyMqContentConstant.CELL_NO_LIST, cellNoList).build());
+    }
+    
+    @Override
     public void asyncPushUserMemberCardOrder(String traceId, Integer tenantId, Long uid, String mtOrderId, String operateType) {
         thirdPartyPublish.publish(ThirdPartyEvent.builder().traceId(traceId).tenantId(tenantId).type(ThirdPartyDataTypeEnum.PUSH_BATTERY_MEMBER_CARD_ORDER).operateType(operateType)
                 .addContext(ThirdPartyMqContentConstant.UID, uid).addContext(ThirdPartyMqContentConstant.ORDER_ID, mtOrderId).build());
