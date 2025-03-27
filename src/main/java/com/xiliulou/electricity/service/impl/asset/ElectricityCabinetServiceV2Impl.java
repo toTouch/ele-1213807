@@ -299,7 +299,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                 merchantPlaceFeeRecordService.asyncInsertOne(finalMerchantPlaceFeeRecord);
             }
     
-            // 给第三方推送柜机信息
+            // 给第三方推送柜机信息（柜机出库推送，新增不推送）
             pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
                     ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());
         });
@@ -454,7 +454,7 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_OUT.getCode());
         }
     
-        // 给第三方推送柜机信息
+        // 给第三方推送柜机信息（柜机出库推送，新增不推送）
         pushDataToThirdService.asyncPushCabinetList(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(),
                 electricityCabinetList.stream().map(ElectricityCabinet::getId).map(Long::valueOf).collect(Collectors.toList()),
                 ThirdPartyOperatorTypeEnum.ELE_CABINET_ADD.getType());

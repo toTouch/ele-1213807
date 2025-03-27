@@ -18,6 +18,8 @@ public interface PushDataToThirdService {
     
     void asyncPushCabinetStatus(String traceId, Integer tenantId, Long eid, Integer delayLevel, String operateType);
     
+    void asyncPushCabinetBoxList(String traceId, Integer tenantId, Long eid, List<String> cellNoList, String operateType);
+    
     void asyncPushUserMemberCardOrder(String traceId, Integer tenantId, Long uid, String mtOrderId, String operateType);
     
     void asyncPushStore(String traceId, Integer tenantId, Long storeId, String operateType);

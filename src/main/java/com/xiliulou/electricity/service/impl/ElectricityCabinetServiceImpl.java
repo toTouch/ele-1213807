@@ -764,6 +764,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
+    
+        if (update > 0) {
+            // 给第三方推送柜机信息
+            pushDataToThirdService.asyncPushCabinet(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                    ThirdPartyOperatorTypeEnum.ELE_CABINET_DELETE.getType());
+        }
         
         return R.ok();
     }
@@ -4595,6 +4601,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
         
+        List<Long> delIdList = new ArrayList<>();
         for (Integer id : ids) {
             ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
             if (Objects.isNull(electricityCabinet)) {
@@ -4622,8 +4629,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 // 删除柜机GEO信息
                 redisService.removeGeoMember(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetUpdate.getTenantId(), electricityCabinetUpdate.getId().toString());
+    
+                delIdList.add(Long.valueOf(id));
             });
             
+        }
+        
+        if (CollUtil.isNotEmpty(delIdList)) {
+            // 给第三方推送柜机信息
+            pushDataToThirdService.asyncPushCabinetList(TtlTraceIdSupport.get(), TenantContextHolder.getTenantId(), delIdList,
+                    ThirdPartyOperatorTypeEnum.ELE_CABINET_DELETE.getType());
         }
         
         return Triple.of(true, null, null);
