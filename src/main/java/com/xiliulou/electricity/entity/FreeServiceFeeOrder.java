@@ -82,6 +82,10 @@ public class FreeServiceFeeOrder {
     private Long updateTime;
 
 
+    /**
+     * todo 版本号
+     */
+    public static final String APP_VERSION = "";
 }
 
 

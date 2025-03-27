@@ -59,4 +59,7 @@ public class FreeBatteryDepositHybridOrderQuery {
      * 新版本小程序必须传灵活续费参数-1，不传不能灵活续费
      */
     private Integer flexibleRenewal;
+
+
+    private String version;
 }

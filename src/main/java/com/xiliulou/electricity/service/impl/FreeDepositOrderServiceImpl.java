@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -18,41 +19,13 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
-import com.xiliulou.electricity.entity.FreeDepositData;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.PxzConfig;
-import com.xiliulou.electricity.entity.UnionPayOrder;
-import com.xiliulou.electricity.entity.UnionTradeOrder;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.enums.PayStateEnum;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
@@ -69,41 +42,7 @@ import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
-import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarModelService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
-import com.xiliulou.electricity.service.FreeDepositDataService;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
-import com.xiliulou.electricity.service.FreeDepositService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TradeOrderService;
-import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
@@ -114,6 +53,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.FreeDepositOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.FreeDepositVO;
@@ -302,6 +242,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     @Resource
     private UserInfoExtraService userInfoExtraService;
+
+    @Resource
+    private FreeServiceFeeOrderService freeServiceFeeOrderService;
     
     
     /**
@@ -1757,6 +1700,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                                 electricityMemberCardOrder.getOrderId()));
             }
         }
+
+        // 服务费，判断小程序版本
+        if (StrUtil.isNotBlank(query.getVersion()) && VersionUtil.compareVersion(query.getVersion(), FreeServiceFeeOrder.APP_VERSION) >= 0){
+            // 需要添加免押服务费
+            IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+            if (supportFreeServiceFee.getSupportFreeServiceFee()){
+                // 生成服务费订单
+                FreeServiceFeeOrder freeServiceFeeOrder = getFreeServiceFeeOrder(userInfo, userBatteryDeposit, supportFreeServiceFee, payParamConfig);
+                freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+                orderList.add(freeServiceFeeOrder.getOrderId());
+                orderTypeList.add(UnionPayOrder.FREE_SERVICE_FEE);
+                payAmountList.add(supportFreeServiceFee.getFreeServiceFee());
+                totalPayAmount = totalPayAmount.add(supportFreeServiceFee.getFreeServiceFee());
+            }
+        }
         
         // 处理支付0元场景
         if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
@@ -1784,7 +1742,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
-    
+
+    private FreeServiceFeeOrder getFreeServiceFeeOrder(UserInfo userInfo, UserBatteryDeposit userBatteryDeposit, IsSupportFreeServiceFeeDTO supportFreeServiceFee, BasePayConfig payParamConfig) {
+        String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
+        return  FreeServiceFeeOrder.builder()
+                .uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(userBatteryDeposit.getOrderId())
+                .payAmount(supportFreeServiceFee.getFreeServiceFee()).status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                .paymentChannel(payParamConfig.getPaymentChannel()).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
+                .storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .build();
+    }
+
     private void dealProfitSharingTradeOrder(Triple<Boolean, String, Object> generateMemberCardOrderResult, Triple<Boolean, String, Object> generateInsuranceOrderResult,
             BasePayConfig payParamConfig, BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {
         // 判断分账配置是否存在

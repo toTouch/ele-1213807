@@ -44,10 +44,7 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
 
     private final FreeServiceFeeOrderService freeServiceFeeOrderService;
 
-    /**
-     * todo 版本号
-     */
-    public static final String VERSION = "";
+
 
     @PostConstruct
     public void init() {
@@ -60,7 +57,7 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
 
         String queryVersion = context.getPlaceOrderQuery().getVersion();
         // 兼容旧版本小程序，如果旧版不需要计算免押服务费
-        if (StrUtil.isEmpty(queryVersion) || VersionUtil.compareVersion(queryVersion, VERSION) < 0) {
+        if (StrUtil.isEmpty(queryVersion) || VersionUtil.compareVersion(queryVersion, FreeServiceFeeOrder.APP_VERSION) < 0) {
             log.info("FreeServiceFeeOrderHandler Info! version is {}", queryVersion);
             fireProcess(context, result, placeOrderType);
             return;
