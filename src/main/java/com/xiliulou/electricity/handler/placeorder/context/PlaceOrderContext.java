@@ -89,6 +89,11 @@ public class PlaceOrderContext {
      * 购买保险生成的保险订单
      */
     private InsuranceOrder insuranceOrder;
+
+    /**
+     * 免押金服务费订单
+     */
+    private FreeServiceFeeOrder freeServiceFeeOrder;
     
     /**
      * 购买下单各子订单订单号

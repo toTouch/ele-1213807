@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FreeServiceFeeOrderMapper">
+
+    <insert id="insert">
+        insert into t_free_service_fee_order
+        (order_id, free_deposit_order_id, uid, pay_amount, status, payment_channel, tenant_id, franchisee_id, store_id,
+         create_time, update_time)
+        values (#{orderId}, #{freeDepositOrderId}, #{uid}, #{payAmount}, #{status}, #{paymentChannel}, #{tenantId},
+                #{franchiseeId}, #{storeId}, #{createTime}, #{updateTime})
+    </insert>
+
+
+    <select id="existsPaySuccessOrder" resultType="java.lang.Integer">
+        select 1
+        from t_free_service_fee_order
+        where free_deposit_order_id = #{freeDepositOrderId}
+          and uid = #{uid}
+          and status = '${@com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum@STATUS_SUCCESS.status}'
+    </select>
+</mapper>

@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_DEPOSIT;
-import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD;
+import static com.xiliulou.electricity.enums.PlaceOrderTypeEnum.PLACE_ORDER_DEPOSIT;
+import static com.xiliulou.electricity.enums.PlaceOrderTypeEnum.PLACE_ORDER_MEMBER_CARD;
 
 /**
  * @Description 套餐校验处理节点，同时需要将后续处理需要的数据存入上下文对象context中
@@ -79,7 +79,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     @PostConstruct
     public void init() {
         this.nextHandler = memberCardPlaceOrderHandler;
-        this.nodePlaceOrderType = PLACE_ORDER_MEMBER_CARD;
+        this.nodePlaceOrderType = PLACE_ORDER_MEMBER_CARD.getType();
     }
     
     @Override
@@ -106,7 +106,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         
         // 续费套餐时，需要校验押金缴纳状态
-        if ((placeOrderType & PLACE_ORDER_DEPOSIT) != PLACE_ORDER_DEPOSIT) {
+        if ((placeOrderType & PLACE_ORDER_DEPOSIT.getType()) != PLACE_ORDER_DEPOSIT.getType()) {
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 log.warn("PLACE ORDER WARN! user not pay deposit,uid={} ", userInfo.getUid());
                 throw new BizException("ELECTRICITY.0049", "未缴纳押金");

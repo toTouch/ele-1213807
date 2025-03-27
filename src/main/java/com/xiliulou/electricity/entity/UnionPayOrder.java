@@ -67,7 +67,12 @@ public class UnionPayOrder {
      * 分期套餐服务费
      */
     public static final Integer ORDER_TYPE_INSTALLMENT_SERVICE_FEE = 7;
-    
+
+    /**
+     * 免押服务费
+     */
+    public static final Integer FREE_SERVICE_FEE = 8;
+
     
     // 保险附加信息
     public static final String ATTACH_INSURANCE_UNION_DEPOSIT = "insurance_union_deposit";
