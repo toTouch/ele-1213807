@@ -26,7 +26,13 @@
         </foreach>
         and tenant_id = #{tenantId}
     </select>
-    
+
+    <select id="selectMemberCardIdsByBatteryType" resultType="java.lang.Long">
+        select mid from t_member_card_battery_type
+        where battery_type = #{batteryType}
+        and tenant_id = #{tenantId}
+    </select>
+
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_member_card_battery_type(battery_type, battery_v,mid, create_time, update_time, tenant_id)
         values

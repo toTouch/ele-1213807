@@ -91,4 +91,6 @@ public interface FranchiseeService {
     Triple<Boolean, String, Object> selectById(Long id);
     
     List<Long> listFranchiseeIdsByTenantId(Integer tenantId);
+
+    List<Long> queryOldByTenantId(Integer tenantId);
 }

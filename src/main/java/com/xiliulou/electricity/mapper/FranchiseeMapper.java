@@ -41,4 +41,6 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
     List<Franchisee> selectByIdsAndTenantId(@Param("ids") List<Long> ids, @Param("tenantId") Integer tenantId);
     
     List<Long> selectListFranchiseeIdsByTenantId(@Param("tenantId") Integer tenantId);
+
+    List<Long> selectOldByTenantId(@Param("tenantId") Integer tenantId);
 }

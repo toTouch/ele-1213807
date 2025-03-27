@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Sets;
@@ -27,42 +29,7 @@ import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
-import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.BatteryMemberCardOrderCoupon;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.ChannelActivityHistory;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.EleUserOperateRecord;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.EnableMemberCardRecord;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
-import com.xiliulou.electricity.entity.MqNotifyCommon;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBattery;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserDelRecord;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -564,6 +531,28 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Slave
     public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
+        // 判断是否需要查选电池model
+        if (StrUtil.isNotBlank(memberCardOrderQuery.getModel())) {
+            // 标准型号
+            if (Objects.equals(memberCardOrderQuery.getModel(), NumberConstant.ONE.toString())) {
+                // 区分租户和加盟商权限
+                List<Long> franchiseeIds = franchiseeService.queryOldByTenantId(memberCardOrderQuery.getTenantId());
+                if (Objects.equals(SecurityUtils.getUserInfo().getDataType(), User.DATA_TYPE_OPERATE)) {
+                    // 租户级别的查询下面的 单加盟商
+                    memberCardOrderQuery.setFranchiseeIds(franchiseeIds);
+                }
+                if (Objects.equals(SecurityUtils.getUserInfo().getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+                    // 判断当前加盟商是否是单加盟商
+                    List<Long> currentId = franchiseeIds.stream().filter(item -> Objects.equals(item, memberCardOrderQuery.getFranchiseeId())).collect(Collectors.toList());
+                    memberCardOrderQuery.setFranchiseeIds(currentId);
+                }
+            } else {
+                // 电池型号
+                List<Long> memberCardIds = memberCardBatteryTypeService.queryMemberCardIdsByBatteryType(memberCardOrderQuery.getTenantId(), memberCardOrderQuery.getModel());
+                memberCardOrderQuery.setMemberCardIds(memberCardIds);
+            }
+        }
+
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
         if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
             return R.ok(Collections.EMPTY_LIST);
@@ -579,7 +568,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         for (UserInfo userInfo : userInfos) {
             userInfoMap.put(userInfo.getUid(), userInfo);
         }
-    
+
+        // 查询电池型号
+        List<Long> memberCardId = electricityMemberCardOrderVOList.stream().map(ElectricityMemberCardOrderVO::getMemberCardId).collect(Collectors.toList());
+        List<MemberCardBatteryType> memberCardBatteryTypes = memberCardBatteryTypeService.listByMemberCardIds(memberCardOrderQuery.getTenantId(), memberCardId);
+        Map<Long, List<String>> midBatteryTypeMap = new HashMap<>(10);
+        if (CollUtil.isNotEmpty(memberCardBatteryTypes)) {
+            midBatteryTypeMap = memberCardBatteryTypes.stream().filter(Objects::nonNull)
+                    .collect(Collectors.groupingBy(MemberCardBatteryType::getMid, Collectors.mapping(MemberCardBatteryType::getBatteryType, Collectors.toList())));
+        }
+
         // 查询已删除/已注销
         Map<Long, UserDelStatusDTO> userStatusMap = userDelRecordService.listUserStatus(new ArrayList<>(uidSet),
                 List.of(UserStatusEnum.USER_STATUS_DELETED.getCode(), UserStatusEnum.USER_STATUS_CANCELLED.getCode()));
@@ -667,6 +665,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 查询已删除/已注销
             electricityMemberCardOrderVO.setUserStatus(userDelRecordService.getUserStatus(electricityMemberCardOrderVO.getUid(), userStatusMap));
 
+            electricityMemberCardOrderVO.setModel(midBatteryTypeMap.get(electricityMemberCardOrderVO.getMemberCardId()));
             electricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
         

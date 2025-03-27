@@ -1019,5 +1019,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         
         return franchiseeMoveRecord;
     }
-    
+
+    @Override
+    @Slave
+    public List<Long> queryOldByTenantId(Integer tenantId) {
+        return franchiseeMapper.selectOldByTenantId(tenantId);
+    }
 }

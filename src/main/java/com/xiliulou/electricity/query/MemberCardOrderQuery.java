@@ -80,4 +80,8 @@ public class MemberCardOrderQuery {
      * 请求签约号
      */
     private String externalAgreementNo;
+
+    private String model;
+
+    private List<Long> memberCardIds;
 }

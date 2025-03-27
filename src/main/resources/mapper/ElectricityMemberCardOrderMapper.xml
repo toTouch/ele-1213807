@@ -98,6 +98,12 @@
             <if test="query.paymentChannel != null and query.paymentChannel != ''">
                 and tel.payment_channel = #{query.paymentChannel}
             </if>
+            <if test="query.memberCardIds != null">
+                and tel.member_card_id in
+                <foreach collection="query.memberCardIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by tel.id desc
         limit #{query.offset}, #{query.size}
