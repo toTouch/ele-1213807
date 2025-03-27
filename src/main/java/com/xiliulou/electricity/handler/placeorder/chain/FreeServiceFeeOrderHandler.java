@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.placeorder.chain;
 
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.entity.*;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.VersionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -48,6 +50,11 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
 
     private final FreeServiceFeeOrderService freeServiceFeeOrderService;
 
+    /**
+     * todo 版本号
+     */
+    public static final String VERSION = "";
+
     @PostConstruct
     public void init() {
         this.nextHandler = memberCardVerificationHandler;
@@ -56,8 +63,16 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
 
     @Override
     public void dealWithBusiness(PlaceOrderContext context, R<Object> result, Integer placeOrderType) {
-        UserInfo userInfo = context.getUserInfo();
 
+        String queryVersion = context.getPlaceOrderQuery().getVersion();
+        // 兼容旧版本小程序，如果旧版不需要计算免押服务费
+        if (StrUtil.isEmpty(queryVersion) || VersionUtil.compareVersion(queryVersion, VERSION) < 0) {
+            log.info("FreeServiceFeeOrderHandler Info! version is {}", queryVersion);
+            fireProcess(context, result, placeOrderType);
+            return;
+        }
+
+        UserInfo userInfo = context.getUserInfo();
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.warn("PLACE ORDER WARN! user not pay deposit,uid={} ", userInfo.getUid());
             throw new BizException("ELECTRICITY.0049", "未缴纳押金");
@@ -76,18 +91,22 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
             throw new BizException("ELECTRICITY.0049", "未缴纳押金");
         }
 
-        // 如果押金已支付，且支付方式为免押，则看服务费情况
         if (!Objects.equals(eleDepositOrder.getStatus(), EleDepositOrder.STATUS_SUCCESS)) {
+            fireProcess(context, result, placeOrderType);
             return;
         }
+
+        // 如果押金类型不是免押，走正常的支付
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             log.warn("FreeServiceFeeOrderHandler WARN! user not free order ,uid is {} ", userInfo.getUid());
+            fireProcess(context, result, placeOrderType);
             return;
         }
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
             log.warn("FreeServiceFeeOrderHandler WARN! freeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
+            fireProcess(context, result, placeOrderType);
             return;
         }
 
@@ -95,8 +114,10 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
         Integer existsPaySuccessOrder = freeServiceFeeOrderService.existsPaySuccessOrder(eleDepositOrder.getOrderId(), userInfo.getUid());
         if (Objects.nonNull(existsPaySuccessOrder)) {
             log.info("FreeServiceFeeOrderHandler Info! current User Payed FreeServiceFee, freeDepositOrderId is {} , uid is {} ", eleDepositOrder.getOrderId(), userInfo.getUid());
+            fireProcess(context, result, placeOrderType);
             return;
         }
+
         BasePayConfig payParamConfig = context.getPayParamConfig();
         // 生成服务免押订单
         String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
@@ -106,7 +127,6 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
                 .tenantId(TenantContextHolder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).storeId(eleDepositOrder.getStoreId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .build();
-
 
         context.setFreeServiceFeeOrder(freeServiceFeeOrder);
 

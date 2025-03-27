@@ -75,4 +75,10 @@ public class PlaceOrderQuery {
      * 后台绑定时，被操作用户的uid
      */
     private Long uid;
+
+
+    /**
+     * 小程序版本号
+     */
+    private String version;
 }
