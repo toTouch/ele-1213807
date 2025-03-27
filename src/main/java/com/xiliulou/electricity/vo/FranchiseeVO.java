@@ -103,4 +103,15 @@ public class FranchiseeVO {
     private Integer regionId;
 
     private String regionName;
+
+
+    /**
+     * 免押服务费开关
+     */
+    private Integer freeServiceFeeSwitch;
+
+    /**
+     * 免押服务费
+     */
+    private BigDecimal freeServiceFee;
 }

@@ -204,6 +204,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
             
         }
+
+        if (Objects.equals(franchiseeAddAndUpdate.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_OPEN) && Objects.isNull(franchiseeAddAndUpdate.getFreeServiceFee())) {
+            return R.fail("402060", "服务费开关开启，服务费不能为空");
+        }
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -301,7 +305,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
             
         }
-        
+
+
         //检查修改后的名称是否重复.
         if (!oldFranchisee.getName().equals(franchiseeAddAndUpdate.getName())) {
             User userNameExists = userService.queryByUserNameAndTenantId(franchiseeAddAndUpdate.getName(), TenantContextHolder.getTenantId());
@@ -309,7 +314,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 return R.fail("110200", "用户名已经存在！");
             }
         }
-        
+        if (Objects.equals(franchiseeAddAndUpdate.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_OPEN) && Objects.isNull(franchiseeAddAndUpdate.getFreeServiceFee())) {
+            return R.fail("402060", "服务费开关开启，服务费不能为空");
+        }
+
         Franchisee updateFranchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, updateFranchisee);
         updateFranchisee.setUpdateTime(System.currentTimeMillis());
