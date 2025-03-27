@@ -102,6 +102,12 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
         context.getAllPayAmount().add(supportFreeServiceFee.getFreeServiceFee());
         context.setTotalAmount(context.getTotalAmount().add(supportFreeServiceFee.getFreeServiceFee()));
 
+        // 如果只是缴纳免押服务费，这个需要中断
+        if (Objects.equals(placeOrderType, FREE_SERVICE_FEE.getType())){
+            exit();
+            return;
+        }
+
         fireProcess(context, result, placeOrderType);
     }
 }

@@ -95,6 +95,7 @@ public class PlaceOrderChainManager {
         FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_MEMBER_CARD.getType(), freeServiceFeeOrderHandler);
         FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE.getType(), freeServiceFeeOrderHandler);
         FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_ALL.getType(), depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderTypeEnum.FREE_SERVICE_FEE.getType(), freeServiceFeeOrderHandler);
     }
     
     /**
