@@ -25,7 +25,7 @@ public enum ThirdPartyOperatorTypeEnum {
     STORE_STATUS("STORE_STATUS", "禁启用门店"),
     ORDER_TYPE_EXCHANGE("ORDER_TYPE_EXCHANGE", "换电订单"),
     ORDER_TYPE_RENT("ORDER_TYPE_RENT", "租电订单"),
-    ORDER_TYPE_MEI_TUAN("ORDER_TYPE_MEI_TUAN", "美团换电订单");
+    ORDER_TYPE_MEI_TUAN("ORDER_TYPE_MEI_TUAN", "美团套餐订单");
     
     private final String type;
     
