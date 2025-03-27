@@ -1019,7 +1019,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     }
                 }
             }
-            
+
             // 检测结束，进入购买阶段
             Integer payType = buyOptModel.getPayType();
             // 1）押金处理
@@ -1038,6 +1038,22 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 depositPayOrderNo = depositPayVo.getOrderNo();
                 log.info("BuyRentalPackageOrder rentalPackageDeposit paid. depositPayOrderNo is {}", depositPayOrderNo);
                 rentalPackageDeposit = BigDecimal.ZERO;
+
+                // 处理免押服务费，判断是否免押
+                if (Objects.equals(depositPayVo.getPayType(),PayTypeEnum.EXEMPT.getCode())){
+                    IsSupportFreeServiceFeeDTO supportFreeServiceFeeCar = freeServiceFeeOrderService.isSupportFreeServiceFeeCar(userInfo, depositPayVo.getOrderNo());
+                    if (supportFreeServiceFeeCar.getSupportFreeServiceFee()){
+                        CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                                .userInfo(userInfo)
+                                .depositOrderId(depositPayVo.getOrderNo())
+                                .freeServiceFee(supportFreeServiceFeeCar.getFreeServiceFee())
+                                .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                                .paymentChannel(null)
+                                .payTime(System.currentTimeMillis()).build();
+                        FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO);
+                        freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+                    }
+                }
             }
             
             // 3）支付金额处理
