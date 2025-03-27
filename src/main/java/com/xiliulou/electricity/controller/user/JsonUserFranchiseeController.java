@@ -96,5 +96,13 @@ public class JsonUserFranchiseeController extends BaseController {
     public R moveFranchisee() {
         return returnTripleResult(franchiseeService.moveFranchisee());
     }
-    
+
+
+    /**
+     * 用户端获取当前套餐加盟商的免押服务费
+     */
+    @GetMapping("/user/franchisee/getFreeServiceFee")
+    public R getFreeServiceFee(@RequestParam(value = "franchiseeId") Long franchiseeId) {
+        return R.ok(franchiseeService.getFreeServiceFee(franchiseeId));
+    }
 }

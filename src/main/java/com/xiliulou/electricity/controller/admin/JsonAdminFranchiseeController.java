@@ -413,4 +413,14 @@ public class JsonAdminFranchiseeController extends BasicController {
         List<Franchisee> franchiseeList = franchiseeIds.stream().map(franchiseeId -> franchiseeService.queryByIdFromCache(franchiseeId)).collect(Collectors.toList());
         return R.ok(franchiseeList.get(0));
     }
+
+
+
+    /**
+     * 用户端获取当前套餐加盟商的免押服务费
+     */
+    @GetMapping("/admin/franchisee/getFreeServiceFee")
+    public R getFreeServiceFee(@RequestParam(value = "franchiseeId") Long franchiseeId) {
+        return R.ok(franchiseeService.getFreeServiceFee(franchiseeId));
+    }
 }

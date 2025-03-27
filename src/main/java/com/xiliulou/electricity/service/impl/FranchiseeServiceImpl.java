@@ -66,6 +66,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.vo.FreeServiceFeeInfoVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -1032,5 +1033,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Slave
     public List<Long> queryOldByTenantId(Integer tenantId) {
         return franchiseeMapper.selectOldByTenantId(tenantId);
+    }
+
+    @Override
+    public FreeServiceFeeInfoVO getFreeServiceFee(Long franchiseeId) {
+        Franchisee franchisee = queryByIdFromCache(franchiseeId);
+        if (Objects.nonNull(franchisee)) {
+            return FreeServiceFeeInfoVO.builder().freeServiceFeeSwitch(franchisee.getFreeServiceFeeSwitch())
+                    .freeServiceFee(franchisee.getFreeServiceFee()).build();
+        }
+        return new FreeServiceFeeInfoVO();
     }
 }
