@@ -4,17 +4,15 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.VersionUtil;
 import lombok.RequiredArgsConstructor;
@@ -42,11 +40,7 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
 
     private final MemberCardVerificationHandler memberCardVerificationHandler;
 
-    private final EleDepositOrderService eleDepositOrderService;
-
     private final UserBatteryDepositService userBatteryDepositService;
-
-    private final FranchiseeService franchiseeService;
 
     private final FreeServiceFeeOrderService freeServiceFeeOrderService;
 
@@ -85,35 +79,9 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
             throw new BizException("ELECTRICITY.0049", "未缴纳押金");
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
-        if (Objects.isNull(eleDepositOrder)) {
-            log.warn("FreeServiceFeeOrderHandler Warn! eleDepositOrder is null, uid is {}", userInfo.getUid());
-            throw new BizException("ELECTRICITY.0049", "未缴纳押金");
-        }
-
-        if (!Objects.equals(eleDepositOrder.getStatus(), EleDepositOrder.STATUS_SUCCESS)) {
-            fireProcess(context, result, placeOrderType);
-            return;
-        }
-
-        // 如果押金类型不是免押，走正常的支付
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
-            log.warn("FreeServiceFeeOrderHandler WARN! user not free order ,uid is {} ", userInfo.getUid());
-            fireProcess(context, result, placeOrderType);
-            return;
-        }
-
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        if (Objects.isNull(franchisee) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
-            log.warn("FreeServiceFeeOrderHandler WARN! freeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
-            fireProcess(context, result, placeOrderType);
-            return;
-        }
-
-        // 用户是否已经支付过免押服务费
-        Integer existsPaySuccessOrder = freeServiceFeeOrderService.existsPaySuccessOrder(eleDepositOrder.getOrderId(), userInfo.getUid());
-        if (Objects.nonNull(existsPaySuccessOrder)) {
-            log.info("FreeServiceFeeOrderHandler Info! current User Payed FreeServiceFee, freeDepositOrderId is {} , uid is {} ", eleDepositOrder.getOrderId(), userInfo.getUid());
+        // 是否支持免押服务费
+        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+        if (!supportFreeServiceFee.getSupportFreeServiceFee()) {
             fireProcess(context, result, placeOrderType);
             return;
         }
@@ -121,19 +89,18 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
         BasePayConfig payParamConfig = context.getPayParamConfig();
         // 生成服务免押订单
         String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
-        FreeServiceFeeOrder freeServiceFeeOrder = FreeServiceFeeOrder.builder().uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(eleDepositOrder.getOrderId())
-                .uid(userInfo.getUid()).payAmount(franchisee.getFreeServiceFee()).status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
-                .paymentChannel(payParamConfig.getPaymentChannel())
-                .tenantId(TenantContextHolder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).storeId(eleDepositOrder.getStoreId())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+        FreeServiceFeeOrder freeServiceFeeOrder = FreeServiceFeeOrder.builder().uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(userBatteryDeposit.getOrderId())
+                .payAmount(supportFreeServiceFee.getFreeServiceFee()).status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
+                .paymentChannel(payParamConfig.getPaymentChannel()).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
+                .storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .build();
 
         context.setFreeServiceFeeOrder(freeServiceFeeOrder);
 
         context.getOrderList().add(freeServiceFeeOrderId);
         context.getOrderTypeList().add(UnionPayOrder.FREE_SERVICE_FEE);
-        context.getAllPayAmount().add(franchisee.getFreeServiceFee());
-        context.setTotalAmount(context.getTotalAmount().add(franchisee.getFreeServiceFee()));
+        context.getAllPayAmount().add(supportFreeServiceFee.getFreeServiceFee());
+        context.setTotalAmount(context.getTotalAmount().add(supportFreeServiceFee.getFreeServiceFee()));
 
         fireProcess(context, result, placeOrderType);
     }

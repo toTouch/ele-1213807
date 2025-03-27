@@ -4,10 +4,32 @@
 
     <insert id="insert">
         insert into t_free_service_fee_order
-        (order_id, free_deposit_order_id, uid, pay_amount, status, payment_channel, tenant_id, franchisee_id, store_id,
-         create_time, update_time)
-        values (#{orderId}, #{freeDepositOrderId}, #{uid}, #{payAmount}, #{status}, #{paymentChannel}, #{tenantId},
-                #{franchiseeId}, #{storeId}, #{createTime}, #{updateTime})
+        (order_id,
+         free_deposit_order_id,
+         uid,
+         pay_amount,
+         status,
+         <if test="paymentChannel != null and paymentChannel != ''">payment_channel,</if>
+         tenant_id,
+         franchisee_id,
+         store_id,
+        <if test="payTime != null">pay_time,</if>
+        create_time,
+         update_time)
+        values (
+                #{orderId},
+                #{freeDepositOrderId},
+                #{uid},
+                #{payAmount},
+                #{status},
+                <if test="paymentChannel != null and paymentChannel != ''">  #{paymentChannel},</if>
+                #{tenantId},
+                #{franchiseeId},
+                #{storeId},
+                <if test="payTime != null">#{payTime},</if>
+                #{createTime},
+                #{updateTime}
+        )
     </insert>
 
 

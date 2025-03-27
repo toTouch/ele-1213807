@@ -25,22 +25,12 @@ import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
-import com.xiliulou.electricity.dto.ActivityProcessDTO;
-import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
-import com.xiliulou.electricity.dto.UserCouponDTO;
-import com.xiliulou.electricity.dto.UserDelStatusDTO;
+import com.xiliulou.electricity.dto.*;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
-import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.CheckFreezeDaysSourceEnum;
-import com.xiliulou.electricity.enums.CouponTypeEnum;
-import com.xiliulou.electricity.enums.DivisionAccountEnum;
-import com.xiliulou.electricity.enums.OverdueType;
-import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
@@ -63,59 +53,7 @@ import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
 import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
-import com.xiliulou.electricity.service.ActivityService;
-import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.ChannelActivityHistoryService;
-import com.xiliulou.electricity.service.CouponActivityPackageService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.DivisionAccountRecordService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.EleUserOperateRecordService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarModelService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.EnableMemberCardRecordService;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.InvitationActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.OldUserActivityService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.ShareActivityMemberCardService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserAmountService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
@@ -413,6 +351,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Resource
     private UserDelRecordService userDelRecordService;
+
+    @Resource
+    private FreeServiceFeeOrderService freeServiceFeeOrderService;
     
     /**
      * 根据用户ID查询对应状态的记录
@@ -2816,7 +2757,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
             // 免押后给用户绑定套餐
-            return freeDepositBindUserMembercerd(userInfo, batteryMemberCardToBuy);
+            return freeDepositBindUserMembercerd(userInfo, batteryMemberCardToBuy, userBatteryDeposit.getOrderId());
         }
         
         if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
@@ -2885,7 +2826,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Triple.of(true, null, null);
     }
     
-    private Triple<Boolean, String, Object> freeDepositBindUserMembercerd(UserInfo userInfo, BatteryMemberCard batteryMemberCard) {
+    private Triple<Boolean, String, Object> freeDepositBindUserMembercerd(UserInfo userInfo, BatteryMemberCard batteryMemberCard, String depoisitOrderId) {
         ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
         memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
         memberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
@@ -2969,7 +2910,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityService.asyncProcessActivity(activityProcessDTO);
-        
+
+        // todo 免押服务费判断
+        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, depoisitOrderId);
+        if (supportFreeServiceFee.getSupportFreeServiceFee()){
+            String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
+            FreeServiceFeeOrder freeServiceFeeOrder = FreeServiceFeeOrder.builder()
+                    .uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(depoisitOrderId)
+                    .payAmount(supportFreeServiceFee.getFreeServiceFee())
+                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus()).paymentChannel(null)
+                    .tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
+                    .payTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                    .build();
+            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+        }
+
+
         // 赠送优惠券
         sendUserCoupon(batteryMemberCard, memberCardOrder);
         
