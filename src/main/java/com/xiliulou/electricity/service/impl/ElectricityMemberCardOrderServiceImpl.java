@@ -2911,18 +2911,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityService.asyncProcessActivity(activityProcessDTO);
 
-        // todo 免押服务费判断
+        //  免押服务费判断
         IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, depoisitOrderId);
-        if (supportFreeServiceFee.getSupportFreeServiceFee()){
-            String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
-            FreeServiceFeeOrder freeServiceFeeOrder = FreeServiceFeeOrder.builder()
-                    .uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(depoisitOrderId)
-                    .payAmount(supportFreeServiceFee.getFreeServiceFee())
-                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus()).paymentChannel(null)
-                    .tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
-                    .payTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+            CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                    .userInfo(userInfo)
+                    .depositOrderId(depoisitOrderId)
+                    .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                    .payTime(System.currentTimeMillis())
+                    .paymentChannel(null)
                     .build();
-            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO));
         }
 
 

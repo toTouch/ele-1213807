@@ -4,6 +4,7 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -83,18 +84,17 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
             return;
         }
 
-        BasePayConfig payParamConfig = context.getPayParamConfig();
-        // 生成服务免押订单
-        String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
-        FreeServiceFeeOrder freeServiceFeeOrder = FreeServiceFeeOrder.builder().uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(userBatteryDeposit.getOrderId())
-                .payAmount(supportFreeServiceFee.getFreeServiceFee()).status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
-                .paymentChannel(payParamConfig.getPaymentChannel()).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
-                .storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+        // 生成免押服务订单
+        CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder().userInfo(userInfo)
+                .depositOrderId(userBatteryDeposit.getOrderId())
+                .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+                .status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
+                .paymentChannel(context.getPayParamConfig().getPaymentChannel())
                 .build();
-
+        FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO);
         context.setFreeServiceFeeOrder(freeServiceFeeOrder);
 
-        context.getOrderList().add(freeServiceFeeOrderId);
+        context.getOrderList().add(freeServiceFeeOrder.getOrderId());
         context.getOrderTypeList().add(UnionPayOrder.FREE_SERVICE_FEE);
         context.getAllPayAmount().add(supportFreeServiceFee.getFreeServiceFee());
         context.setTotalAmount(context.getTotalAmount().add(supportFreeServiceFee.getFreeServiceFee()));

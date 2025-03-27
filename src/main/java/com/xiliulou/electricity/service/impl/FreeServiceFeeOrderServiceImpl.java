@@ -1,21 +1,27 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FreeServiceFeeOrder;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeServiceFeeOrderMapper;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -82,7 +88,40 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
             log.info("isSupportFreeServiceFee Info! current User Payed FreeServiceFee, freeDepositOrderId is {} , uid is {} ", eleDepositOrder.getOrderId(), userInfo.getUid());
             return dto;
         }
-        dto.setSupportFreeServiceFee(true).setFreeServiceFee(franchisee.getFreeServiceFee());
-        return dto;
+
+        return dto.setSupportFreeServiceFee(true).setFreeServiceFee(franchisee.getFreeServiceFee());
+    }
+
+    @Override
+    public IsSupportFreeServiceFeeDTO isSupportFreeServiceFeeCar(UserInfo userInfo, String depositOrderId) {
+        IsSupportFreeServiceFeeDTO dto = new IsSupportFreeServiceFeeDTO().setSupportFreeServiceFee(false);
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
+            log.warn("isSupportFreeServiceFeeCar WARN! freeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
+            return dto;
+        }
+
+        // 用户是否已经支付过免押服务费
+        Integer existsPaySuccessOrder = applicationContext.getBean(FreeServiceFeeOrderService.class).existsPaySuccessOrder(depositOrderId, userInfo.getUid());
+        if (Objects.nonNull(existsPaySuccessOrder)) {
+            log.info("isSupportFreeServiceFeeCar Info! current User Payed FreeServiceFee, freeDepositOrderId is {} , uid is {} ", depositOrderId, userInfo.getUid());
+            return dto;
+        }
+
+        return dto.setSupportFreeServiceFee(true).setFreeServiceFee(franchisee.getFreeServiceFee());
+    }
+
+
+    @Override
+    public FreeServiceFeeOrder createFreeServiceFeeOrder(CreateFreeServiceFeeOrderDTO dto) {
+        UserInfo userInfo = dto.getUserInfo();
+        String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
+        return FreeServiceFeeOrder.builder().uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(dto.getDepositOrderId())
+                .payAmount(dto.getFreeServiceFee()).status(dto.getStatus())
+                .tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
+                .storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .paymentChannel(StrUtil.isNotBlank(dto.getPaymentChannel()) ? dto.getPaymentChannel() : null)
+                .payTime(Objects.nonNull(dto.getPayTime()) ? dto.getPayTime() : null)
+                .build();
     }
 }

@@ -17,6 +17,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
+import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
@@ -1701,14 +1702,24 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             }
         }
 
-        // 服务费，判断小程序版本
+        // 免押服务费，判断小程序版本
         if (StrUtil.isNotBlank(query.getVersion()) && VersionUtil.compareVersion(query.getVersion(), FreeServiceFeeOrder.APP_VERSION) >= 0){
             // 需要添加免押服务费
             IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
             if (supportFreeServiceFee.getSupportFreeServiceFee()){
                 // 生成服务费订单
-                FreeServiceFeeOrder freeServiceFeeOrder = getFreeServiceFeeOrder(userInfo, userBatteryDeposit, supportFreeServiceFee, payParamConfig);
+                CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                        .userInfo(userInfo)
+                        .depositOrderId(userBatteryDeposit.getOrderId())
+                        .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+                        .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                        .paymentChannel(payParamConfig.getPaymentChannel())
+                        .payTime(null)
+                        .build();
+
+                FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO);
                 freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+
                 orderList.add(freeServiceFeeOrder.getOrderId());
                 orderTypeList.add(UnionPayOrder.FREE_SERVICE_FEE);
                 payAmountList.add(supportFreeServiceFee.getFreeServiceFee());

@@ -17,27 +17,8 @@ import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
-import com.xiliulou.electricity.dto.ActivityProcessDTO;
-import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
-import com.xiliulou.electricity.dto.UserCouponDTO;
-import com.xiliulou.electricity.entity.CarLockCtrlHistory;
-import com.xiliulou.electricity.entity.CommonPayOrder;
-import com.xiliulou.electricity.entity.EleUserOperateRecord;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.RefundOrder;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserDelRecord;
-import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserInfoExtra;
-import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.dto.*;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
@@ -48,32 +29,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
-import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.enums.ApplicableTypeEnum;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.CallBackEnums;
-import com.xiliulou.electricity.enums.CouponTypeEnum;
-import com.xiliulou.electricity.enums.DayCouponUseScope;
-import com.xiliulou.electricity.enums.DelFlagEnum;
-import com.xiliulou.electricity.enums.DepositTypeEnum;
-import com.xiliulou.electricity.enums.DivisionAccountEnum;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.enums.PayStateEnum;
-import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
-import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
-import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
-import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
-import com.xiliulou.electricity.enums.RentalTypeEnum;
-import com.xiliulou.electricity.enums.RentalUnitEnum;
-import com.xiliulou.electricity.enums.SlippageTypeEnum;
-import com.xiliulou.electricity.enums.SystemDefinitionEnum;
-import com.xiliulou.electricity.enums.UpDownEnum;
-import com.xiliulou.electricity.enums.UseStateEnum;
-import com.xiliulou.electricity.enums.UserStatusEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
 import com.xiliulou.electricity.event.SiteMessageEvent;
@@ -83,29 +39,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.service.ActivityService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
-import com.xiliulou.electricity.service.CouponDayRecordService;
-import com.xiliulou.electricity.service.DivisionAccountRecordService;
-import com.xiliulou.electricity.service.EleUserOperateRecordService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCarModelService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
@@ -339,6 +273,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Resource
     private UserDelRecordService userDelRecordService;
+
+    @Resource
+    private FreeServiceFeeOrderService freeServiceFeeOrderService;
     
     
     public static final Integer ELE = 0;
@@ -3177,7 +3114,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     }
                 }
             }
-            
+
+            BigDecimal freeServiceFee = new BigDecimal(0);
             // 检测结束，进入购买阶段
             Integer payType = buyOptModel.getPayType();
             // 1）押金处理
@@ -3197,6 +3135,24 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 depositPayOrderNo = depositPayVo.getOrderNo();
                 log.info("buyRentalPackageOrder rentalPackageDeposit paid. depositPayOrderNo is {}", depositPayOrderNo);
                 rentalPackageDeposit = BigDecimal.ZERO;
+
+                // 处理免押服务费，判断是否免押
+                if (Objects.equals(depositPayVo.getPayType(),PayTypeEnum.EXEMPT.getCode())){
+                    IsSupportFreeServiceFeeDTO supportFreeServiceFeeCar = freeServiceFeeOrderService.isSupportFreeServiceFeeCar(userInfo, depositPayVo.getOrderNo());
+                    if (supportFreeServiceFeeCar.getSupportFreeServiceFee()){
+                        CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                                .userInfo(userInfo)
+                                .depositOrderId(depositPayVo.getOrderNo())
+                                .freeServiceFee(supportFreeServiceFeeCar.getFreeServiceFee())
+                                .status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
+                                .paymentChannel(payParamConfig.getPaymentChannel())
+                                .payTime(null).build();
+                        FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO);
+                        freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+
+                        freeServiceFee= freeServiceFeeOrder.getPayAmount();
+                    }
+                }
             }
             
             // 2）保险处理
@@ -3213,8 +3169,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 实际支付租金金额
             BigDecimal rentPaymentAmount = couponTriple.getLeft();
             log.info("buyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);
+
             // 实际支付总金额（租金 + 押金 + 保险）
-            BigDecimal paymentAmount = rentPaymentAmount.add(rentalPackageDeposit).add(insuranceAmount);
+            BigDecimal paymentAmount = rentPaymentAmount.add(rentalPackageDeposit).add(insuranceAmount).add(freeServiceFee);
             log.info("buyRentalPackageOrder paymentAmount is {}", paymentAmount);
             
             // 4）生成租车套餐订单，准备 insert

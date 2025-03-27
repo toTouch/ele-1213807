@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.FreeServiceFeeOrder;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -40,4 +41,25 @@ public interface FreeServiceFeeOrderService {
      */
 
     IsSupportFreeServiceFeeDTO isSupportFreeServiceFee(UserInfo userInfo, String depositOrderId);
+
+
+    /**
+     * 车是否支持免押服务费
+     *
+     * @param userInfo userInfo
+     * @param depositOrderId depositOrderId
+     * @return: @return {@link IsSupportFreeServiceFeeDTO }
+     */
+
+    IsSupportFreeServiceFeeDTO isSupportFreeServiceFeeCar(UserInfo userInfo, String depositOrderId);
+
+
+    /**
+     * 生成免押服务费订单
+     *
+     * @param dto dto
+     * @return: @return {@link FreeServiceFeeOrder }
+     */
+
+    FreeServiceFeeOrder createFreeServiceFeeOrder(CreateFreeServiceFeeOrderDTO dto);
 }
