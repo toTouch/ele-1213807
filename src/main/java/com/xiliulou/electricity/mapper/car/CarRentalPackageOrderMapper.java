@@ -216,9 +216,10 @@ public interface CarRentalPackageOrderMapper {
      */
     List<CarRentalPackageOrderPo> selectListByOrderNos(@Param("tenantId") Integer tenantId, @Param("orderNos") List<String> orderNos);
 
-    List<CarRentalPackageOrderPo> selectListByUidAndUseStatus(@Param("uidList")List<Long> uidList, @Param("useStatus")Integer useStatus);
-
     Integer existNotFinishOrderByUid(@Param("uid") Long uid);
+
+    List<CarRentalPackageOrderPo> selectListUnUseAndRefundByUidList(@Param("tenantId") Integer tenantId, @Param("uidList") List<Long> uidList,
+            @Param("rentRebateEndTime") Long rentRebateEndTime);
 
     Long selectLastPayTime(@Param("uid") Long uid);
 }

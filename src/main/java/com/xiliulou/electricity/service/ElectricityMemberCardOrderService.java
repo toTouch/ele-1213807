@@ -167,7 +167,7 @@ public interface ElectricityMemberCardOrderService {
      * 后台续费套餐、分期套餐续费
      */
     ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard,
-            BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source, List<InstallmentDeductionPlan> deductionPlans);
+            BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source, List<InstallmentDeductionPlan> deductionPlans,  Integer type);
     
     /**
      * 查询分期套餐子套餐订单
@@ -175,6 +175,8 @@ public interface ElectricityMemberCardOrderService {
      * @return 套餐订单
      */
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
+
+    void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
 
     Long queryLastPayTime(Long uid);
 }

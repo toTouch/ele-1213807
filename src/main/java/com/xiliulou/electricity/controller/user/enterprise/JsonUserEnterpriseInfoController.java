@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
 import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.UserCloudBeanRechargeQuery;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,9 @@ public class JsonUserEnterpriseInfoController extends BaseController {
     
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
+
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
     
     /**
      * 获取用户是否属于企业渠道
@@ -62,7 +66,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      */
     @GetMapping({"/user/enterpriseInfo/detail", "/merchant/enterpriseInfo/detail"})
     public R queryEnterpriseInfo() {
-        return R.ok(enterpriseInfoService.selectDetailByUid(SecurityUtils.getUid()));
+        return R.ok(enterpriseInfoService.selectDetailByUid(merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo())));
     }
 
     @GetMapping("/merchant/enterpriseInfo/cloudBean/refresh")
@@ -104,7 +108,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      */
     @PutMapping({"/user/enterpriseInfo/recycleCloudBean/{uid}", "/merchant/enterpriseInfo/recycleCloudBean/{uid}"})
     public R recycleCloudBean(@PathVariable("uid") Long uid) {
-        return returnTripleResult(enterpriseInfoService.recycleCloudBean(uid));
+        return returnTripleResult(enterpriseInfoService.recycleCloudBean(uid, SecurityUtils.getUid()));
     }
     
     /**
@@ -114,7 +118,7 @@ public class JsonUserEnterpriseInfoController extends BaseController {
      */
     @GetMapping({"/user/enterpriseInfo/queryPurchasePackageCount", "/merchant/enterpriseInfo/queryPurchasePackageCount"})
     public R queryPurchasePackageCount() {
-        Long uid = SecurityUtils.getUid();
+        Long uid = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
         Long tenantId = TenantContextHolder.getTenantId().longValue();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
         

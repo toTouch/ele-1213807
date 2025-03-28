@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.merchant;
 
+import com.xiliulou.electricity.bo.merchant.MerchantEmployeeBO;
 import com.xiliulou.electricity.entity.merchant.MerchantEmployee;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantEmployeeRequest;
@@ -39,5 +40,8 @@ public interface MerchantEmployeeMapper {
     Integer batchRemoveByUidList(@Param("uidList") List<Long> uidList,@Param("updateTime") Long timeMillis);
     
     List<MerchantEmployee> selectListAllByMerchantUid(MerchantPromotionEmployeeDetailQueryModel queryModel);
-    
+
+    List<MerchantEmployeeBO> selectListMerchantAndEmployeeInfoByUidList(@Param("merchantEmployeesUidList") List<Long> merchantEmployeesUidList);
+
+    MerchantEmployeeBO selectMerchantAndEmployeeInfoByUid(@Param("uid") Long uid);
 }

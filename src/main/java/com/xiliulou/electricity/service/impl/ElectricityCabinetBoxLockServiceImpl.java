@@ -15,7 +15,6 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxLockMapper;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetIdByFilterQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
@@ -24,7 +23,8 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -69,6 +69,9 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
     
     @Resource
     private ElectricityCabinetBoxService electricityCabinetBoxService;
+    
+    @Resource
+    private BoxOtherPropertiesService boxOtherPropertiesService;
 
     @Override
     public void insertElectricityCabinetBoxLock(ElectricityCabinetBoxLock cabinetBoxLock) {
@@ -146,12 +149,22 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
                 return CollUtil.newArrayList();
             }
         }
-
-
+    
         List<ElectricityCabinetBoxLock> electricityCabinetBoxLocks = electricityCabinetBoxLockMapper.listCabinetBoxLock(query);
         if (CollUtil.isEmpty(electricityCabinetBoxLocks)) {
             return CollUtil.newArrayList();
         }
+    
+        Map<Integer, List<BoxOtherProperties>> boxOtherPropertiesMap = null;
+        Set<Integer> eidSet = electricityCabinetBoxLocks.stream().map(ElectricityCabinetBoxLock::getElectricityCabinetId).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(eidSet)) {
+            List<BoxOtherProperties> boxOtherProperties = boxOtherPropertiesService.listByEidList(new ArrayList<>(eidSet));
+            if (CollectionUtils.isNotEmpty(boxOtherProperties)) {
+                boxOtherPropertiesMap = boxOtherProperties.stream().collect(Collectors.groupingBy(BoxOtherProperties::getElectricityCabinetId));
+            }
+        }
+    
+        Map<Integer, List<BoxOtherProperties>> finalBoxOtherPropertiesMap = boxOtherPropertiesMap;
         
         Map<Integer, List<String>> eidAndCellNo = new HashMap<>();
         List<ElectricityCabinetBoxLockPageVO> cabinetBoxLockPageVOS = electricityCabinetBoxLocks.stream().map(item -> {
@@ -177,6 +190,22 @@ public class ElectricityCabinetBoxLockServiceImpl implements ElectricityCabinetB
                 List<String> cellNoList = new ArrayList<>();
                 cellNoList.add(item.getCellNo().toString());
                 eidAndCellNo.put(electricityCabinetId, cellNoList);
+            }
+    
+            // 锁仓备注
+            if (MapUtils.isNotEmpty(finalBoxOtherPropertiesMap) && finalBoxOtherPropertiesMap.containsKey(electricityCabinetId)) {
+                List<BoxOtherProperties> boxOtherPropertiesList = finalBoxOtherPropertiesMap.get(electricityCabinetId);
+                if (CollectionUtils.isNotEmpty(boxOtherPropertiesList)) {
+                    boxOtherPropertiesList.forEach(boxOtherProperties -> {
+                        if (Objects.isNull(boxOtherProperties)) {
+                            return;
+                        }
+                
+                        if (Objects.nonNull(item.getCellNo()) && Objects.equals(boxOtherProperties.getCellNo(), item.getCellNo().toString())) {
+                            vo.setRemark(boxOtherProperties.getRemark());
+                        }
+                    });
+                }
             }
             return vo;
         }).collect(Collectors.toList());

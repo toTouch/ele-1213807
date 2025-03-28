@@ -7,19 +7,23 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.query.UpdateBoxesQuery;
 import com.xiliulou.electricity.query.UpdateBoxesStatusQuery;
 import com.xiliulou.electricity.query.UpdateUsableStatusQuery;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -40,6 +44,9 @@ public class JsonAdminElectricityCabinetBoxController {
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetBox/list")
@@ -202,6 +209,10 @@ public class JsonAdminElectricityCabinetBoxController {
 
         oldElectricityCabinetBox.setUsableStatus(updateUsableStatusQuery.getUsableStatus());
         oldElectricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+    
+        // 给第三方推送格挡信息
+        pushDataToThirdService.asyncPushCabinetBoxList(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), cellList,
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_BOX_STATUS.getType());
         return electricityCabinetBoxService.modify(oldElectricityCabinetBox);
     }
 
@@ -259,6 +270,10 @@ public class JsonAdminElectricityCabinetBoxController {
                 .build();
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
+    
+        // 给第三方推送格挡信息
+        pushDataToThirdService.asyncPushCabinetBoxList(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), cellList,
+                ThirdPartyOperatorTypeEnum.ELE_CABINET_BOX_STATUS.getType());
         return R.ok();
     }
 

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.userinfo;
 
 import com.xiliulou.electricity.entity.UserDelRecord;
+import com.xiliulou.electricity.queryModel.ClearUserDelMarkQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -26,6 +27,10 @@ public interface UserDelRecordMapper {
     Integer deleteById(Long id);
     
     List<UserDelRecord> selectListByUidListAndStatus(@Param("uidList") List<Long> uidList, @Param("statusList") List<Integer> statusList);
+
+    Integer clearUserDelMark(ClearUserDelMarkQueryModel phoneQueryModel);
+
+    Integer update(UserDelRecord userDelRecord);
 
     UserDelRecord selectDelUidByDelIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
 }

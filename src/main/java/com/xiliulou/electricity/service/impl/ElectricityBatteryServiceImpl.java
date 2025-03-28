@@ -2354,6 +2354,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricitybatterymapper.update(batteryUpdate);
                 
                 // 领用的还要修改标签关联表的数据
+                // TODO 领用人处理了两次，待优化
                 if (BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
                     ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().receiverId(labelModifyDto.getNewReceiverId()).build();
                     electricityBatteryLabelBizService.updateOrInsertBatteryLabel(battery, batteryLabel);

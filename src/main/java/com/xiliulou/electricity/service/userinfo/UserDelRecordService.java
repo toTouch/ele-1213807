@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.userinfo;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
 import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.supper.ClearUserDelMarkRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,15 @@ public interface UserDelRecordService {
     Map<Long, UserDelStatusDTO> listUserStatus(List<Long> uidList, List<Integer> status);
     
     Integer getUserStatus(Long uid, Map<Long, UserDelStatusDTO> userStatusMap);
+
+    /**
+     * 该接口只用于内部测试，外部请勿调用
+     */
+    R adminClearUserDelMark(ClearUserDelMarkRequest clearUserDelMarkRequest);
+
+    Integer clearUserDelMark(String phone, String idNumber, Integer tenantId);
+
+    Integer update(UserDelRecord userDelRecord);
 
     UserDelRecord queryDelUidByDelIdNumber(String idNumber, Integer tenantId);
 }

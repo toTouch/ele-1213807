@@ -78,5 +78,7 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     
     Integer existNotFinishOrderByUid(@Param("uid") Long uid);
 
+    void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
+
     Long selectLastPayTime(@Param("uid") Long uid);
 }

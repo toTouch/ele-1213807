@@ -108,4 +108,6 @@ public interface InstallmentRecordService {
      * @return 签约记录
      */
     InstallmentRecord queryLatestUsingRecordByUid(Long uid);
+
+
 }

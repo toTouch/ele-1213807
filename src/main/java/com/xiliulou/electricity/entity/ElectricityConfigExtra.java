@@ -44,9 +44,16 @@ public class ElectricityConfigExtra {
      * @see ElectricityConfigExtraEnum
      */
     private Integer accountDelSwitch;
-
+    
     /**
      * 商户提现额度
      */
     private BigDecimal withdrawAmountLimit;
+    
+    /**
+     * 删除/注销用户是否打标记开关：0-开启（默认） 1-关闭
+     *
+     * @see ElectricityConfigExtraEnum
+     */
+    private Integer delUserMarkSwitch;
 }

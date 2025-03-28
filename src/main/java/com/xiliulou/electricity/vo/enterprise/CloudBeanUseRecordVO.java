@@ -77,4 +77,9 @@ public class CloudBeanUseRecordVO {
      * 收入
      */
     private BigDecimal income;
+
+    /**
+     * 来源
+     */
+    private String operateName;
 }

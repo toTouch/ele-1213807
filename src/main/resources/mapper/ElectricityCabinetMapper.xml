@@ -169,7 +169,7 @@
 
      <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select tec.id, tec.name,tec.sn, tec.address, tec.longitude, tec.latitude, tec.product_key, tec.device_name, tec.device_secret,
-        tec.usable_status, tec.online_status, tec.model_id, tec.version,
+         tec.usable_status, tec.online_status, tec.model_id, tec.version,tec.power_type,
         tec.fully_charged, tec.service_phone, tec.business_time, tec.create_time, tec.update_time, ROUND(
         6378.138 * 2 * ASIN(
         SQRT(
