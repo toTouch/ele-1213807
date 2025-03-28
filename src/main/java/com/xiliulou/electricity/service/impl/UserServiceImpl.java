@@ -234,8 +234,6 @@ public class UserServiceImpl implements UserService {
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
 
-    @Resource
-    private UserService userService;
 
     /**
      * 启用锁定用户
@@ -1251,7 +1249,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
-                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0, userService.getUserLastPayTime(uid));
+                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0, getUserLastPayTime(uid));
 
         // 关闭状态：清除历史标记
         if (Objects.equals(ElectricityConfigExtraEnum.SWITCH_OFF.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
