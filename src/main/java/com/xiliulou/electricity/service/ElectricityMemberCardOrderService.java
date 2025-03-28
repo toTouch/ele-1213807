@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
+import com.xiliulou.electricity.vo.BatteryModelItem;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -177,4 +178,15 @@ public interface ElectricityMemberCardOrderService {
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
 
     void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
+
+
+    /**
+     * getBatteryMode
+     *
+     * @param size size
+     * @param offset offset
+     * @return: @return {@link List }<{@link BatteryModelItem }>
+     */
+
+    List<BatteryModelItem> getBatteryMode(Long size, Long offset);
 }

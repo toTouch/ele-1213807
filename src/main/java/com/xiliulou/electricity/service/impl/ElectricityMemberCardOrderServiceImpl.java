@@ -72,11 +72,7 @@ import com.xiliulou.electricity.utils.InstallmentUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.BatteryMemberCardVO;
-import com.xiliulou.electricity.vo.CouponSearchVo;
-import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.OldUserActivityVO;
-import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import jodd.util.ArraysUtil;
@@ -4020,4 +4016,23 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         baseMapper.updatePayChannelById(memberCardOrder);
     }
 
+
+    @Override
+    public List<BatteryModelItem> getBatteryMode(Long size, Long offset) {
+        List<Long> memberCardIds = baseMapper.selectMemberCardId(TenantContextHolder.getTenantId(), size, offset);
+        if (CollUtil.isEmpty(memberCardIds)) {
+            return CollUtil.newArrayList();
+        }
+
+        List<MemberCardBatteryType> batteryTypeList = memberCardBatteryTypeService.listByMemberCardIds(TenantContextHolder.getTenantId(), memberCardIds);
+        if (CollUtil.isEmpty(batteryTypeList)) {
+            return CollUtil.newArrayList();
+        }
+        List<String> modelList = batteryTypeList.stream().map(MemberCardBatteryType::getBatteryType).collect(Collectors.toList());
+        Map<String, String> map = batteryModelService.listBatteryModelByBatteryTypeList(modelList, TenantContextHolder.getTenantId()).stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (k1, k2) -> k1));
+
+        List<BatteryModelItem> items = modelList.stream().map(s -> BatteryModelItem.builder().key(s).value(map.get(s)).build()).collect(Collectors.toList());
+        items.add(0, BatteryModelItem.builder().key("标准型号").value("1").build());
+        return items;
+    }
 }

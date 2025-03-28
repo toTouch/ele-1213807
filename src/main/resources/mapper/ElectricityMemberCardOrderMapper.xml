@@ -618,4 +618,12 @@
         from t_electricity_member_card_order
         where external_agreement_no = #{externalAgreementNo}
     </select>
+
+    <select id="selectMemberCardId" resultType="java.lang.Long">
+        select member_card_id
+        from t_electricity_member_card_order
+        where tenant_id = #{tenantId}
+        group by member_card_id
+        limit #{offset}, #{size}
+    </select>
 </mapper>
