@@ -8,6 +8,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -18,7 +19,8 @@ import java.util.Objects;
  * @description JsonAdminFreeServiceFeeOrderController
  * @date : 2025-03-28 09:10
  **/
-@RestController("admin/freeServiceFee")
+@RestController
+@RequestMapping("admin/freeServiceFee")
 public class JsonAdminFreeServiceFeeOrderController {
 
     @Resource
