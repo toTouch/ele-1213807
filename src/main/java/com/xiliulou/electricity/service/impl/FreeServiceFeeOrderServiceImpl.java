@@ -1,25 +1,36 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeServiceFeeOrderMapper;
+import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FreeServiceFeeOrderPageVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author : renhang
@@ -44,6 +55,9 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
     @Resource
     private FreeDepositOrderService freeDepositOrderService;
+
+    @Resource
+    private AssertPermissionService assertPermissionService;
 
     @Override
     @Slave
@@ -127,5 +141,42 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
                 .updateTime(System.currentTimeMillis()).paymentChannel(StrUtil.isNotBlank(dto.getPaymentChannel()) ? dto.getPaymentChannel() : null)
                 .payTime(Objects.nonNull(dto.getPayTime()) ? dto.getPayTime() : null)
                 .build();
+    }
+
+
+    @Override
+    @Slave
+    public List<FreeServiceFeeOrderPageVO> pageList(FreeServiceFeePageQuery query) {
+        query.setTenantId(TenantContextHolder.getTenantId());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
+        }
+        query.setFranchiseeIds(pair.getRight());
+
+        List<FreeServiceFeeOrder> list = freeServiceFeeOrderMapper.selectPageList(query);
+        if (CollUtil.isEmpty(list)) {
+            return CollUtil.newArrayList();
+        }
+
+        return list.stream().map(order -> {
+            FreeServiceFeeOrderPageVO vo = BeanUtil.copyProperties(order, FreeServiceFeeOrderPageVO.class);
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(order.getFranchiseeId());
+            vo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+
+    @Override
+    @Slave
+    public Long count(FreeServiceFeePageQuery query) {
+        query.setTenantId(TenantContextHolder.getTenantId());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return NumberConstant.ZERO_L;
+        }
+        query.setFranchiseeIds(pair.getRight());
+        return freeServiceFeeOrderMapper.selectCount(query);
     }
 }

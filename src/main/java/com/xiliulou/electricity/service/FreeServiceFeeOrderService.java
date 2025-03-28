@@ -4,6 +4,10 @@ import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.FreeServiceFeeOrder;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
+import com.xiliulou.electricity.vo.FreeServiceFeeOrderPageVO;
+
+import java.util.List;
 
 /**
  * @Description: FreeServiceFeeOrderService
@@ -62,4 +66,22 @@ public interface FreeServiceFeeOrderService {
      */
 
     FreeServiceFeeOrder createFreeServiceFeeOrder(CreateFreeServiceFeeOrderDTO dto);
+
+    /**
+     * pageList
+     *
+     * @param query query
+     * @return: @return {@link FreeServiceFeeOrderPageVO }
+     */
+
+    List<FreeServiceFeeOrderPageVO> pageList(FreeServiceFeePageQuery query);
+
+    /**
+     * count
+     *
+     * @param query query
+     * @return: @return {@link Long }
+     */
+
+    Long count(FreeServiceFeePageQuery query);
 }
