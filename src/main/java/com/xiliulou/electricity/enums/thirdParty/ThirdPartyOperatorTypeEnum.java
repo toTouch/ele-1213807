@@ -10,8 +10,10 @@ import lombok.Getter;
 @Getter
 public enum ThirdPartyOperatorTypeEnum {
     ELE_CABINET_ADD("ELE_CABINET_ADD", "新增柜机"),
+    ELE_CABINET_DELETE("ELE_CABINET_DELETE", "删除柜机"),
     ELE_CABINET_EDIT("ELE_CABINET_EDIT", "编辑柜机"),
     ELE_CABINET_STATUS("ELE_CABINET_STATUS", "柜机上下线"),
+    ELE_CABINET_BOX_STATUS("ELE_CABINET_BOX_STATUS", "柜机格挡禁启用"),
     BATTERY_ADD("BATTERY_ADD", "新增电池"),
     BATTERY_EDIT("BATTERY_EDIT", "编辑电池"),
     BATTERY_STATUS("BATTERY_STATUS", "电池状态"),
@@ -23,7 +25,7 @@ public enum ThirdPartyOperatorTypeEnum {
     STORE_STATUS("STORE_STATUS", "禁启用门店"),
     ORDER_TYPE_EXCHANGE("ORDER_TYPE_EXCHANGE", "换电订单"),
     ORDER_TYPE_RENT("ORDER_TYPE_RENT", "租电订单"),
-    ORDER_TYPE_MEI_TUAN("ORDER_TYPE_MEI_TUAN", "美团换电订单");
+    ORDER_TYPE_MEI_TUAN("ORDER_TYPE_MEI_TUAN", "美团套餐订单");
     
     private final String type;
     

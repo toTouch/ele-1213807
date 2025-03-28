@@ -8,11 +8,12 @@ package com.xiliulou.electricity.constant.thirdParty;
 public interface ThirdPartyMqContentConstant {
     
     String ORDER_ID = "orderId";
-    String ORDER_TYPE = "orderType";
     String EID = "eid";
     String EID_LIST = "eidList";
     String UID = "uid";
     String STORE_ID = "storeId";
     String BATTERY_SN = "batterySn";
     String BATTERY_SN_LIST = "batterySnList";
+    
+    String CELL_NO_LIST = "cellNoList";
 }

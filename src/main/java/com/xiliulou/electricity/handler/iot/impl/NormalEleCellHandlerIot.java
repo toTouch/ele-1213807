@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -14,20 +15,26 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
 import com.xiliulou.electricity.enums.LockTypeEnum;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import shaded.org.apache.commons.lang3.ArrayUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -50,6 +57,9 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
     @Resource
     ElectricityCabinetBoxLockService boxLockService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
 
 
     private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport.get(
@@ -125,6 +135,10 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinetBox.setVersion(version);
         }
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
+    
+        // 给第三方推送格挡信息
+        pushDataToThirdService.asyncPushCabinetBoxList(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                Lists.newArrayList(cellNo), ThirdPartyOperatorTypeEnum.ELE_CABINET_BOX_STATUS.getType());
 
         //格挡禁用  保存禁用原因
         if (StringUtils.isNotEmpty(isForbidden) && Objects.equals(Integer.valueOf(isForbidden), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
