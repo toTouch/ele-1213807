@@ -4,16 +4,13 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FreeServiceFeeOrder;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeServiceFeeOrderMapper;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +41,9 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
     @Resource
     ApplicationContext applicationContext;
+
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
 
     @Override
     @Slave
@@ -116,11 +116,15 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
     public FreeServiceFeeOrder createFreeServiceFeeOrder(CreateFreeServiceFeeOrderDTO dto) {
         UserInfo userInfo = dto.getUserInfo();
         String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
-        return FreeServiceFeeOrder.builder().uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(dto.getDepositOrderId())
-                .payAmount(dto.getFreeServiceFee()).status(dto.getStatus())
-                .tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
-                .storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .paymentChannel(StrUtil.isNotBlank(dto.getPaymentChannel()) ? dto.getPaymentChannel() : null)
+
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getDepositOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            throw new BizException("402061", "不存在的免押订单");
+        }
+        return FreeServiceFeeOrder.builder().uid(userInfo.getUid()).name(userInfo.getName()).phone(userInfo.getPhone()).orderId(freeServiceFeeOrderId)
+                .freeDepositOrderId(dto.getDepositOrderId()).payAmount(dto.getFreeServiceFee()).status(dto.getStatus()).depositType(freeDepositOrder.getDepositType())
+                .tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).paymentChannel(StrUtil.isNotBlank(dto.getPaymentChannel()) ? dto.getPaymentChannel() : null)
                 .payTime(Objects.nonNull(dto.getPayTime()) ? dto.getPayTime() : null)
                 .build();
     }

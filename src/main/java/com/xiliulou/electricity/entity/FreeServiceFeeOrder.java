@@ -36,6 +36,16 @@ public class FreeServiceFeeOrder {
     private Long uid;
 
     /**
+     * 姓名
+     */
+    private String name;
+
+    /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
      * 免押服务费金额
      */
     private BigDecimal payAmount;
@@ -50,6 +60,11 @@ public class FreeServiceFeeOrder {
      * 支付渠道：WECHAT-微信支付,ALIPAY-支付宝
      */
     private String paymentChannel;
+
+    /**
+     * 免押服务费类型
+     */
+    private Integer depositType;
 
     /**
      * 租户ID
