@@ -616,6 +616,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Slave
     @Override
     public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
+        // 判断是否需要查选电池model
+        if (StrUtil.isNotBlank(memberCardOrderQuery.getModel())) {
+            // 标准型号
+            if (Objects.equals(memberCardOrderQuery.getModel(), NumberConstant.ONE.toString())) {
+                // 区分租户和加盟商权限
+                List<Long> franchiseeIds = franchiseeService.queryOldByTenantId(memberCardOrderQuery.getTenantId());
+                if (Objects.equals(SecurityUtils.getUserInfo().getDataType(), User.DATA_TYPE_OPERATE)) {
+                    // 租户级别的查询下面的 单加盟商
+                    memberCardOrderQuery.setFranchiseeIds(franchiseeIds);
+                }
+                if (Objects.equals(SecurityUtils.getUserInfo().getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+                    // 判断当前加盟商是否是单加盟商
+                    List<Long> currentId = franchiseeIds.stream().filter(item -> Objects.equals(item, memberCardOrderQuery.getFranchiseeId())).collect(Collectors.toList());
+                    memberCardOrderQuery.setFranchiseeIds(currentId);
+                }
+            } else {
+                // 电池型号
+                List<Long> memberCardIds = memberCardBatteryTypeService.queryMemberCardIdsByBatteryType(memberCardOrderQuery.getTenantId(), memberCardOrderQuery.getModel());
+                memberCardOrderQuery.setMemberCardIds(memberCardIds);
+            }
+        }
         return R.ok(baseMapper.queryCount(memberCardOrderQuery));
     }
     
