@@ -1610,7 +1610,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         } else {
             log.warn("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
-        
+
         for (int i = 0; i < orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
                 Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus, userInfo, null);
@@ -1622,14 +1622,19 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 if (!manageInsuranceOrderResult.getLeft()) {
                     return manageInsuranceOrderResult;
                 }
-                
+
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrderV2(orderIdLIst.get(i), depositOrderStatus, userInfo);
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.FREE_SERVICE_FEE)) {
+                Pair<Boolean, Object> freeServiceFeeOrderResult = freeServiceFeeOrderService.notifyOrderHandler(orderIdLIst.get(i), depositOrderStatus, userInfo);
+                if (!freeServiceFeeOrderResult.getLeft()) {
+                    return freeServiceFeeOrderResult;
+                }
             } else {
-                log.error("WX PAY CALL BACK ERROR!not found order type ,tradeOrderNo={}",tradeOrderNo);
+                log.error("WX PAY CALL BACK ERROR!not found order type ,tradeOrderNo={}", tradeOrderNo);
             }
         }
         

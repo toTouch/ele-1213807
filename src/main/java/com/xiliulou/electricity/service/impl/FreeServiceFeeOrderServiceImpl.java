@@ -195,17 +195,16 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
     }
 
     @Override
-    public void notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo) {
-        // 保险订单
+    public Pair<Boolean, Object> notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo) {
         FreeServiceFeeOrder freeServiceFeeOrder = applicationContext.getBean(FreeServiceFeeOrderService.class).queryByOrderId(orderId);
         if (ObjectUtil.isEmpty(freeServiceFeeOrder)) {
             log.error("FreeServiceFeeOrderService NotifyOrderHandler Error! freeServiceFeeOrder is null , orderId is {} ", orderId);
-            return;
+            return Pair.of(Boolean.FALSE, "未找到免押服务费订单");
         }
 
         if (!ObjectUtil.equal(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())) {
             log.warn("FreeServiceFeeOrderService NotifyOrderHandler Warn! freeServiceFeeOrder is notNeed Update , orderId is {} , status is {}", orderId, freeServiceFeeOrder.getStatus());
-            return;
+            return Pair.of(Boolean.FALSE, "免押服务费订单已处理");
         }
 
         FreeServiceFeeOrder updateOrder = new FreeServiceFeeOrder();
@@ -214,5 +213,6 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         updateOrder.setPayTime(System.currentTimeMillis());
         updateOrder.setStatus(tradeOrderStatus);
         update(updateOrder);
+        return Pair.of(Boolean.TRUE, null);
     }
 }

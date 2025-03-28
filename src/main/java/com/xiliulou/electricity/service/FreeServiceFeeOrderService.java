@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.FreeServiceFeeOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
 import com.xiliulou.electricity.vo.FreeServiceFeeOrderPageVO;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -105,16 +106,17 @@ public interface FreeServiceFeeOrderService {
 
     FreeServiceFeeOrder queryByOrderId(String orderId);
 
+
     /**
      * 回调处理订单状态
      *
-     * @param orderId          orderId
+     * @param orderId orderId
      * @param tradeOrderStatus tradeOrderStatus
-     * @param userInfo         userInfo
-     * @return:
+     * @param userInfo userInfo
+     * @return: @return {@link Pair }<{@link Boolean }, {@link Object }>
      */
 
-    void notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo);
+    Pair<Boolean, Object> notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo);
 
 
 }
