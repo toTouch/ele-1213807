@@ -231,9 +231,11 @@ public class UserServiceImpl implements UserService {
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
 
-
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
+
+    @Resource
+    private UserService userService;
 
     /**
      * 启用锁定用户
@@ -1249,7 +1251,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
-                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
+                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0, userService.getUserLastPayTime(uid));
 
         // 关闭状态：清除历史标记
         if (Objects.equals(ElectricityConfigExtraEnum.SWITCH_OFF.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
@@ -1257,7 +1259,6 @@ public class UserServiceImpl implements UserService {
         }
 
         return Triple.of(true, null, null);
-                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0, getUserLastPayTime(uid));
     }
 
 

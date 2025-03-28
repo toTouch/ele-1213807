@@ -4821,12 +4821,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         // 注销时不打标记，batch定时任务注销成功时才打标记
         userDelRecordService.insert(uid, StringUtils.EMPTY, StringUtils.EMPTY, UserStatusEnum.USER_STATUS_CANCELLING.getCode(), userInfo.getTenantId(), userInfo.getFranchiseeId(),
-                UserStatusEnum.USER_DELAY_DAY_30.getCode());
+                UserStatusEnum.USER_DELAY_DAY_30.getCode(),userService.getUserLastPayTime(uid));
 
 
-        //给用户打注销中标记
-        userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
-                UserStatusEnum.USER_STATUS_CANCELLING.getCode(), tenantId, userInfo.getFranchiseeId(), UserStatusEnum.USER_DELAY_DAY_30.getCode(),userService.getUserLastPayTime(uid));
 
         return R.ok();
     }
