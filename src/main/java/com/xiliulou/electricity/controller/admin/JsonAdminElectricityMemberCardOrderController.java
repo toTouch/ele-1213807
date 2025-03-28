@@ -234,6 +234,14 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
     }
 
 
+    /**
+     * 套餐购买记录电池型号下拉列表
+     *
+     * @param size size
+     * @param offset offset
+     * @return: @return {@link R }
+     */
+
     @GetMapping(value = "/admin/electricityMemberCard/getBatteryMode")
     public R getBatteryMode(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
