@@ -119,4 +119,12 @@ public interface FreeServiceFeeOrderService {
     Pair<Boolean, Object> notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo);
 
 
+    /**
+     * 根据免押订单id查询订单
+     *
+     * @param freeDepositOrderId freeDepositOrderId
+     * @return: @return {@link FreeServiceFeeOrder }
+     */
+
+    FreeServiceFeeOrder queryByFreeDepositOrderId(String freeDepositOrderId);
 }

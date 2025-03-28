@@ -3509,6 +3509,20 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 7.2 给用户绑定保险
             insuranceUserInfoService.saveUserInsurance(insuranceOrder);
         }
+
+        //  处理免押服务费
+        if (Objects.equals(depositPayEntity.getPayType(), PayTypeEnum.EXEMPT.getCode())) {
+            // 如果押金是免押，查询押金订单号=免押服务费订单号存在，并且是未支付
+            FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.queryByFreeDepositOrderId(depositPayEntity.getOrderNo());
+            if (Objects.nonNull(freeServiceFeeOrder) && Objects.equals(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())) {
+                FreeServiceFeeOrder updateFreeServiceFeeOrder = new FreeServiceFeeOrder();
+                updateFreeServiceFeeOrder.setOrderId(freeServiceFeeOrder.getOrderId());
+                updateFreeServiceFeeOrder.setPayTime(currentTimeMillis);
+                updateFreeServiceFeeOrder.setStatus(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus());
+                updateFreeServiceFeeOrder.setUpdateTime(currentTimeMillis);
+                freeServiceFeeOrderService.update(updateFreeServiceFeeOrder);
+            }
+        }
         
         // 11. 车辆解锁
         ElectricityCar electricityCar = carService.selectByUid(tenantId, uid);
@@ -3649,6 +3663,21 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         // 5. 处理用户优惠券的使用状态
         userCouponService.updateStatusByOrderId(orderNo, UserCoupon.STATUS_UNUSED);
+
+
+        //  处理免押服务费
+        if (Objects.equals(depositPayEntity.getPayType(), PayTypeEnum.EXEMPT.getCode())) {
+            // 如果押金是免押，查询押金订单号=免押服务费订单号存在，并且是未支付
+            FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.queryByFreeDepositOrderId(depositPayEntity.getOrderNo());
+            if (Objects.nonNull(freeServiceFeeOrder) && Objects.equals(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())) {
+                FreeServiceFeeOrder updateFreeServiceFeeOrder = new FreeServiceFeeOrder();
+                updateFreeServiceFeeOrder.setOrderId(freeServiceFeeOrder.getOrderId());
+                updateFreeServiceFeeOrder.setPayTime(System.currentTimeMillis());
+                updateFreeServiceFeeOrder.setStatus(FreeServiceFeeStatusEnum.STATUS_FAIL.getStatus());
+                updateFreeServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
+                freeServiceFeeOrderService.update(updateFreeServiceFeeOrder);
+            }
+        }
         
         return Pair.of(true, null);
     }

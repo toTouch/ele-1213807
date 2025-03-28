@@ -196,7 +196,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
     @Override
     public Pair<Boolean, Object> notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo) {
-        FreeServiceFeeOrder freeServiceFeeOrder = applicationContext.getBean(FreeServiceFeeOrderService.class).queryByOrderId(orderId);
+        FreeServiceFeeOrder freeServiceFeeOrder = queryByOrderId(orderId);
         if (ObjectUtil.isEmpty(freeServiceFeeOrder)) {
             log.error("FreeServiceFeeOrderService NotifyOrderHandler Error! freeServiceFeeOrder is null , orderId is {} ", orderId);
             return Pair.of(Boolean.FALSE, "未找到免押服务费订单");
@@ -214,5 +214,10 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         updateOrder.setStatus(tradeOrderStatus);
         update(updateOrder);
         return Pair.of(Boolean.TRUE, null);
+    }
+
+    @Override
+    public FreeServiceFeeOrder queryByFreeDepositOrderId(String freeDepositOrderId) {
+        return freeServiceFeeOrderMapper.selectByFreeDepositOrderId(freeDepositOrderId);
     }
 }
