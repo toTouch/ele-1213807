@@ -3,18 +3,15 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.VersionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
