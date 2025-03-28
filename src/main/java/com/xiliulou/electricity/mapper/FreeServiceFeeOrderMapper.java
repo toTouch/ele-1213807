@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface FreeServiceFeeOrderMapper {
 
+    void update(@Param("freeServiceFeeOrder") FreeServiceFeeOrder freeServiceFeeOrder);
+
     Integer existsPaySuccessOrder(@Param("freeDepositOrderId") String freeDepositOrderId, @Param("uid") Long uid);
 
     void insert(FreeServiceFeeOrder freeServiceFeeOrder);
@@ -15,4 +17,7 @@ public interface FreeServiceFeeOrderMapper {
     List<FreeServiceFeeOrder> selectPageList(@Param("query") FreeServiceFeePageQuery query);
 
     Long selectCount(@Param("query") FreeServiceFeePageQuery query);
+
+    FreeServiceFeeOrder selectByOrderId(@Param("orderId") String orderId);
+
 }

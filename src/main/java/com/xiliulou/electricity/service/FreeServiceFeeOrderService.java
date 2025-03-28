@@ -16,6 +16,16 @@ import java.util.List;
  */
 public interface FreeServiceFeeOrderService {
 
+
+    /**
+     * update
+     *
+     * @param freeServiceFeeOrder freeServiceFeeOrder
+     * @return:
+     */
+
+    void update(FreeServiceFeeOrder freeServiceFeeOrder);
+
     /**
      * existsPaySuccessOrder
      *
@@ -39,7 +49,7 @@ public interface FreeServiceFeeOrderService {
     /**
      * 是否支持免押服务费
      *
-     * @param userInfo userInfo
+     * @param userInfo       userInfo
      * @param depositOrderId depositOrderId
      * @return: @return {@link IsSupportFreeServiceFeeDTO }
      */
@@ -50,7 +60,7 @@ public interface FreeServiceFeeOrderService {
     /**
      * 车是否支持免押服务费
      *
-     * @param userInfo userInfo
+     * @param userInfo       userInfo
      * @param depositOrderId depositOrderId
      * @return: @return {@link IsSupportFreeServiceFeeDTO }
      */
@@ -84,4 +94,27 @@ public interface FreeServiceFeeOrderService {
      */
 
     Long count(FreeServiceFeePageQuery query);
+
+
+    /**
+     * 根据订单id查询订单
+     *
+     * @param orderId orderId
+     * @return: @return {@link FreeServiceFeeOrder }
+     */
+
+    FreeServiceFeeOrder queryByOrderId(String orderId);
+
+    /**
+     * 回调处理订单状态
+     *
+     * @param orderId          orderId
+     * @param tradeOrderStatus tradeOrderStatus
+     * @param userInfo         userInfo
+     * @return:
+     */
+
+    void notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo);
+
+
 }

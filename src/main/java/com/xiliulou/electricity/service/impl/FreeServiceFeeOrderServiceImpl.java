@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeServiceFeeOrderMapper;
 import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
@@ -58,6 +60,12 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
     @Resource
     private AssertPermissionService assertPermissionService;
+
+
+    @Override
+    public void update(FreeServiceFeeOrder freeServiceFeeOrder) {
+        freeServiceFeeOrderMapper.update(freeServiceFeeOrder);
+    }
 
     @Override
     @Slave
@@ -178,5 +186,33 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         }
         query.setFranchiseeIds(pair.getRight());
         return freeServiceFeeOrderMapper.selectCount(query);
+    }
+
+    @Override
+    @Slave
+    public FreeServiceFeeOrder queryByOrderId(String orderId) {
+        return freeServiceFeeOrderMapper.selectByOrderId(orderId);
+    }
+
+    @Override
+    public void notifyOrderHandler(String orderId, Integer tradeOrderStatus, UserInfo userInfo) {
+        // 保险订单
+        FreeServiceFeeOrder freeServiceFeeOrder = applicationContext.getBean(FreeServiceFeeOrderService.class).queryByOrderId(orderId);
+        if (ObjectUtil.isEmpty(freeServiceFeeOrder)) {
+            log.error("FreeServiceFeeOrderService NotifyOrderHandler Error! freeServiceFeeOrder is null , orderId is {} ", orderId);
+            return;
+        }
+
+        if (!ObjectUtil.equal(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())) {
+            log.warn("FreeServiceFeeOrderService NotifyOrderHandler Warn! freeServiceFeeOrder is notNeed Update , orderId is {} , status is {}", orderId, freeServiceFeeOrder.getStatus());
+            return;
+        }
+
+        FreeServiceFeeOrder updateOrder = new FreeServiceFeeOrder();
+        updateOrder.setOrderId(freeServiceFeeOrder.getOrderId());
+        updateOrder.setUpdateTime(System.currentTimeMillis());
+        updateOrder.setPayTime(System.currentTimeMillis());
+        updateOrder.setStatus(tradeOrderStatus);
+        update(updateOrder);
     }
 }

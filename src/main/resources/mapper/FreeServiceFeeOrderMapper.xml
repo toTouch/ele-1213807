@@ -4,7 +4,8 @@
 
 
     <sql id="baseSql">
-        id,
+        id
+        ,
         order_id,
         free_deposit_order_id,
         uid,
@@ -22,39 +23,47 @@
         update_time
     </sql>
 
+    <update id="update">
+        update t_free_service_fee_order
+        set status      = #{status},
+            update_time = #{updateTime},
+            pay_time    = #{payTime}
+        where order_id = #{orderId}
+    </update>
+
     <insert id="insert">
         insert into t_free_service_fee_order
         (order_id,
-         free_deposit_order_id,
-         uid,
-         name,
-         phone,
-         pay_amount,
-         status,
-         <if test="paymentChannel != null and paymentChannel != ''">payment_channel,</if>
-         deposit_type,
-         tenant_id,
-         franchisee_id,
-         store_id,
+        free_deposit_order_id,
+        uid,
+        name,
+        phone,
+        pay_amount,
+        status,
+        <if test="paymentChannel != null and paymentChannel != ''">payment_channel,</if>
+        deposit_type,
+        tenant_id,
+        franchisee_id,
+        store_id,
         <if test="payTime != null">pay_time,</if>
         create_time,
-         update_time)
+        update_time)
         values (
-                #{orderId},
-                #{freeDepositOrderId},
-                #{uid},
-                #{name},
-                #{phone},
-                #{payAmount},
-                #{status},
-                <if test="paymentChannel != null and paymentChannel != ''">  #{paymentChannel},</if>
-                #{depositType},
-                #{tenantId},
-                #{franchiseeId},
-                #{storeId},
-                <if test="payTime != null">#{payTime},</if>
-                #{createTime},
-                #{updateTime}
+        #{orderId},
+        #{freeDepositOrderId},
+        #{uid},
+        #{name},
+        #{phone},
+        #{payAmount},
+        #{status},
+        <if test="paymentChannel != null and paymentChannel != ''">#{paymentChannel},</if>
+        #{depositType},
+        #{tenantId},
+        #{franchiseeId},
+        #{storeId},
+        <if test="payTime != null">#{payTime},</if>
+        #{createTime},
+        #{updateTime}
         )
     </insert>
 
@@ -139,5 +148,12 @@
                 #{franchiseeId}
             </foreach>
         </if>
+    </select>
+
+    <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.FreeServiceFeeOrder">
+        select
+        <include refid="baseSql"/>
+        from t_free_service_fee_order
+        where order_id = #{orderId}
     </select>
 </mapper>

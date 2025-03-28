@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -13,6 +15,8 @@ import java.math.BigDecimal;
  */
 @Builder
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @TableName("t_free_service_fee_order")
 public class FreeServiceFeeOrder {
     /**
