@@ -624,6 +624,5 @@
         from t_electricity_member_card_order
         where tenant_id = #{tenantId}
         group by member_card_id
-        limit #{offset}, #{size}
     </select>
 </mapper>
