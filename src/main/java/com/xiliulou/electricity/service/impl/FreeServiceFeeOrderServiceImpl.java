@@ -93,7 +93,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         }
 
         // 如果押金类型不是免押，走正常的支付
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+        if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             log.warn("isSupportFreeServiceFee WARN! user not free order ,uid is {} ", userInfo.getUid());
             return dto;
         }
