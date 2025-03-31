@@ -510,9 +510,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         List<Long> memberCardId = electricityMemberCardOrderVOList.stream().map(ElectricityMemberCardOrderVO::getMemberCardId).collect(Collectors.toList());
         List<MemberCardBatteryType> memberCardBatteryTypes = memberCardBatteryTypeService.listByMemberCardIds(memberCardOrderQuery.getTenantId(), memberCardId);
         Map<Long, List<String>> midBatteryTypeMap = new HashMap<>(10);
+        Map<String, String> batteryShortMap = new HashMap<>(10);
         if (CollUtil.isNotEmpty(memberCardBatteryTypes)) {
             midBatteryTypeMap = memberCardBatteryTypes.stream().filter(Objects::nonNull)
                     .collect(Collectors.groupingBy(MemberCardBatteryType::getMid, Collectors.mapping(MemberCardBatteryType::getBatteryType, Collectors.toList())));
+
+            List<String> list = memberCardBatteryTypes.stream().map(MemberCardBatteryType::getBatteryType).collect(Collectors.toList());
+            List<BatteryModel> batteryModels = batteryModelService.listBatteryModelByBatteryTypeList(list, memberCardOrderQuery.getTenantId());
+            batteryShortMap = batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (item1, item2) -> item2));
         }
 
         // 查询已删除/已注销
@@ -602,7 +607,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 查询已删除/已注销
             electricityMemberCardOrderVO.setUserStatus(userDelRecordService.getUserStatus(electricityMemberCardOrderVO.getUid(), userStatusMap));
 
-            electricityMemberCardOrderVO.setModel(midBatteryTypeMap.get(electricityMemberCardOrderVO.getMemberCardId()));
+            List<String> list = midBatteryTypeMap.get(electricityMemberCardOrderVO.getMemberCardId());
+            if (CollUtil.isNotEmpty(list)) {
+                electricityMemberCardOrderVO.setModel(list.stream().map(batteryShortMap::get).collect(Collectors.toList()));
+            }
+
             electricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
         
