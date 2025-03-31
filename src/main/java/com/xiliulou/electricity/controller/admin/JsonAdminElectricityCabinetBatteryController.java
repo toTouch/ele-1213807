@@ -900,8 +900,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
 
     @GetMapping("/admin/battery/getModel")
-    public R getBatteryModel() {
-        return R.ok(electricityBatteryService.listBatteryModel());
+    public R getBatteryModel(@RequestParam(value = "model", required = false) String model) {
+        return R.ok(electricityBatteryService.listBatteryModel(model));
     }
 
 }

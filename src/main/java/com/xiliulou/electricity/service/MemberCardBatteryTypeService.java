@@ -49,4 +49,7 @@ public interface MemberCardBatteryTypeService {
 
 
     List<Long> queryMemberCardIdsByBatteryType(Integer tenantId, String batteryType);
+
+    List<MemberCardBatteryType> listByMemberCardIdsAndModel(Integer tenantId, List<Long> memberCardIds, String model);
+
 }

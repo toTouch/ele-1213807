@@ -23,4 +23,5 @@ public interface MemberCardBatteryTypeMapper extends BaseMapper<MemberCardBatter
 
     List<Long> selectMemberCardIdsByBatteryType(@Param("tenantId") Integer tenantId,@Param("batteryType")  String batteryType);
 
+    List<MemberCardBatteryType> selectListByMemberCardIdsAndModel(@Param("tenantId") Integer tenantId, @Param("memberCardIds") List<Long> memberCardIds, @Param("model")  String model);
 }

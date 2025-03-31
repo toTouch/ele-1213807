@@ -235,29 +235,12 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
 
 
     /**
-     * 套餐购买记录电池型号下拉列表
-     *
-     * @param size size
-     * @param offset offset
+     * @param model model
      * @return: @return {@link R }
      */
-
     @GetMapping(value = "/admin/electricityMemberCard/getBatteryMode")
-    public R getBatteryMode(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
-        if (Objects.isNull(size) || size < 0 || size > 50) {
-            size = 10L;
-        }
-
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        return R.ok(electricityMemberCardOrderService.getBatteryMode(size, offset));
+    public R getBatteryMode(@RequestParam(value = "model", required = false) String model) {
+        return R.ok(electricityMemberCardOrderService.getBatteryMode(model));
     }
 
 }

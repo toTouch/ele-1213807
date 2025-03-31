@@ -183,10 +183,9 @@ public interface ElectricityMemberCardOrderService {
     /**
      * getBatteryMode
      *
-     * @param size size
-     * @param offset offset
+     * @param model model
      * @return: @return {@link List }<{@link BatteryModelItem }>
      */
 
-    List<BatteryModelItem> getBatteryMode(Long size, Long offset);
+    List<BatteryModelItem> getBatteryMode(String model);
 }

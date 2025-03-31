@@ -4018,13 +4018,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 
     @Override
-    public List<BatteryModelItem> getBatteryMode(Long size, Long offset) {
-        List<Long> memberCardIds = baseMapper.selectMemberCardId(TenantContextHolder.getTenantId(), size, offset);
+    public List<BatteryModelItem> getBatteryMode(String model) {
+
+        List<Long> memberCardIds = baseMapper.selectMemberCardId(TenantContextHolder.getTenantId());
         if (CollUtil.isEmpty(memberCardIds)) {
             return CollUtil.newArrayList();
         }
 
-        List<MemberCardBatteryType> batteryTypeList = memberCardBatteryTypeService.listByMemberCardIds(TenantContextHolder.getTenantId(), memberCardIds);
+        List<MemberCardBatteryType> batteryTypeList = memberCardBatteryTypeService.listByMemberCardIdsAndModel(TenantContextHolder.getTenantId(), memberCardIds, model);
         if (CollUtil.isEmpty(batteryTypeList)) {
             return CollUtil.newArrayList();
         }

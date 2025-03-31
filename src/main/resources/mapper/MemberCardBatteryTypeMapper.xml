@@ -41,4 +41,15 @@
         </foreach>
     </insert>
 
+
+    <select id="selectListByMemberCardIdsAndModel"
+            resultType="com.xiliulou.electricity.entity.MemberCardBatteryType">
+        select mid from t_member_card_battery_type
+        where battery_type = #{batteryType}
+        and tenant_id = #{tenantId}
+        <if test="model != null and model != ''">
+            and battery_type like concat('%', #{model}, '%')
+        </if>
+    </select>
+
 </mapper>

@@ -967,10 +967,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1042,10 +1042,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1112,10 +1112,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1174,10 +1174,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1242,10 +1242,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1313,10 +1313,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1500,10 +1500,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1564,10 +1564,10 @@
             and ebl.receiver_id = #{query.receiverId}
         </if>
         <if test="query.model != null and query.model != ''">
-            <if test="query.model == '1'">
+            <if test='query.model == "1" '>
                 and teb.model NOT REGEXP '^B_[0-9]{2}V';
             </if>
-            <if test="query.model != '1'">
+            <if test='query.model != "1" '>
                 and teb.model = #{query.model}
             </if>
         </if>
@@ -1826,7 +1826,11 @@
     </select>
 
     <select id="selectListModel" resultType="java.lang.String">
-        select model from t_electricity_battery where del_flag = 0 and tenant_id = #{tenantId} group by model
+        select model from t_electricity_battery where del_flag = 0 and tenant_id = #{tenantId}
+        <if test="model != null and model != ''">
+            and model like concat('%',#{model},'%')
+        </if>
+        group by model
     </select>
 
 

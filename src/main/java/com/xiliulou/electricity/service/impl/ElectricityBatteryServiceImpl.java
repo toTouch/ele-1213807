@@ -2417,15 +2417,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     @Slave
-    public List<BatteryModelItem> listBatteryModel() {
-        List<String> listModel = electricitybatterymapper.selectListModel(TenantContextHolder.getTenantId());
+    public List<BatteryModelItem> listBatteryModel(String model) {
+        List<String> listModel = electricitybatterymapper.selectListModel(TenantContextHolder.getTenantId(), model);
         if (CollUtil.isEmpty(listModel)) {
             return CollUtil.newArrayList();
         }
         List<String> modelList = listModel.stream().filter(s -> !PatternConstant.BATTERY_PATTERN.matcher(s).matches()).collect(Collectors.toList());
         Map<String, String> map = batteryModelService.listBatteryModelByBatteryTypeList(modelList, TenantContextHolder.getTenantId()).stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (k1, k2) -> k1));
         List<BatteryModelItem> items = modelList.stream().map(s -> BatteryModelItem.builder().key(s).value(map.get(s)).build()).collect(Collectors.toList());
-        items.add(0, BatteryModelItem.builder().key("标准型号").value("1").build());
+        items.add(0, BatteryModelItem.builder().key("1").value("标准型号").build());
         return items;
     }
 }

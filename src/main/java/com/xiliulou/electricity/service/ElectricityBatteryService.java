@@ -218,8 +218,11 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     R listAllBatterySn(ElectricityBatteryQuery batteryQuery);
 
+
     /**
+     * @param model model
      * @return: @return {@link List }<{@link BatteryModelItem }>
      */
-    List<BatteryModelItem> listBatteryModel();
+
+    List<BatteryModelItem> listBatteryModel(String model);
 }

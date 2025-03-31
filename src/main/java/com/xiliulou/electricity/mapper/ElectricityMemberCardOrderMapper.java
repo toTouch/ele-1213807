@@ -80,5 +80,5 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
 
-    List<Long> selectMemberCardId(@Param("tenantId") Integer tenantId, @Param("size") Long size, @Param("offset") Long offset);
+    List<Long> selectMemberCardId(@Param("tenantId") Integer tenantId);
 }

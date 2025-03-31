@@ -218,5 +218,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     ElectricityBattery selectBySnAndTenantId(@Param("sn") String sn, @Param("tenantId") Integer tenantId);
 
-    List<String> selectListModel(@Param("tenantId") Integer tenantId);
+    List<String> selectListModel(@Param("tenantId") Integer tenantId, @Param("model") String model);
 }
