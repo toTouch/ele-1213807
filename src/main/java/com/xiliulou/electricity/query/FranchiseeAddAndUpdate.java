@@ -89,7 +89,7 @@ public class FranchiseeAddAndUpdate {
     /**
      * 免押服务费开关
      */
-    @NotBlank(message = "免押服务费开关不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "免押服务费开关不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer freeServiceFeeSwitch;
 
     /**
