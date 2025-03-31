@@ -4033,7 +4033,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Map<String, String> map = batteryModelService.listBatteryModelByBatteryTypeList(modelList, TenantContextHolder.getTenantId()).stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (k1, k2) -> k1));
 
         List<BatteryModelItem> items = modelList.stream().map(s -> BatteryModelItem.builder().key(s).value(map.get(s)).build()).collect(Collectors.toList());
-        items.add(0, BatteryModelItem.builder().key("标准型号").value(NumberConstant.ONE.toString()).build());
+        items.add(0, BatteryModelItem.builder().key(NumberConstant.ONE.toString()).value("标准型号").build());
         return items;
     }
 }
