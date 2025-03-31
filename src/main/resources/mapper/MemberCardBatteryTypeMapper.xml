@@ -44,7 +44,7 @@
 
     <select id="selectListByMemberCardIdsAndModel"
             resultType="com.xiliulou.electricity.entity.MemberCardBatteryType">
-        select mid from t_member_card_battery_type
+        select mid,battery_type from t_member_card_battery_type
         where mid in
         <foreach item="item" index="index" collection="memberCardIds" open="(" separator="," close=")">
             #{item}
