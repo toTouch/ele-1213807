@@ -8,12 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CarRenalCacheConstant;
-import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
-import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.constant.UserInfoExtraConstant;
-import com.xiliulou.electricity.constant.UserOperateRecordConstant;
+import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
@@ -1040,9 +1035,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 rentalPackageDeposit = BigDecimal.ZERO;
 
                 // 处理免押服务费，判断是否免押
-                if (Objects.equals(depositPayVo.getPayType(),PayTypeEnum.EXEMPT.getCode())){
+                if (Objects.equals(depositPayVo.getPayType(), PayTypeEnum.EXEMPT.getCode()) && Objects.equals(depositPayVo.getPayCount(), NumberConstant.ZERO)) {
                     IsSupportFreeServiceFeeDTO supportFreeServiceFeeCar = freeServiceFeeOrderService.isSupportFreeServiceFeeCar(userInfo, depositPayVo.getOrderNo());
-                    if (supportFreeServiceFeeCar.getSupportFreeServiceFee()){
+                    if (supportFreeServiceFeeCar.getSupportFreeServiceFee()) {
                         CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
                                 .userInfo(userInfo)
                                 .depositOrderId(depositPayVo.getOrderNo())
@@ -3153,9 +3148,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 rentalPackageDeposit = BigDecimal.ZERO;
 
                 // 处理免押服务费，判断是否免押
-                if (Objects.equals(depositPayVo.getPayType(),PayTypeEnum.EXEMPT.getCode())){
+                if (Objects.equals(depositPayVo.getPayType(), PayTypeEnum.EXEMPT.getCode()) && Objects.equals(depositPayVo.getPayCount(), NumberConstant.ZERO)) {
                     IsSupportFreeServiceFeeDTO supportFreeServiceFeeCar = freeServiceFeeOrderService.isSupportFreeServiceFeeCar(userInfo, depositPayVo.getOrderNo());
-                    if (supportFreeServiceFeeCar.getSupportFreeServiceFee()){
+                    if (supportFreeServiceFeeCar.getSupportFreeServiceFee()) {
                         CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
                                 .userInfo(userInfo)
                                 .depositOrderId(depositPayVo.getOrderNo())
@@ -3166,7 +3161,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO);
                         freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
 
-                        freeServiceFee= freeServiceFeeOrder.getPayAmount();
+                        freeServiceFee = freeServiceFeeOrder.getPayAmount();
                     }
                 }
             }

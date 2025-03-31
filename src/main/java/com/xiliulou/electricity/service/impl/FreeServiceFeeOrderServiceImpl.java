@@ -14,10 +14,7 @@ import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeServiceFeeOrderMapper;
 import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
-import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -61,6 +58,9 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
     @Resource
     private AssertPermissionService assertPermissionService;
 
+    @Resource
+    private UserBatteryMemberCardService userBatteryMemberCardService;
+
 
     @Override
     public void update(FreeServiceFeeOrder freeServiceFeeOrder) {
@@ -84,7 +84,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(depositOrderId);
         if (Objects.isNull(eleDepositOrder)) {
-            log.warn("isSupportFreeServiceFee Warn! eleDepositOrder is null, uid is {}", userInfo.getUid());
+            log.warn("isSupportFreeServiceFee Warn! EleDepositOrder is null, uid is {}", userInfo.getUid());
             throw new BizException("ELECTRICITY.0049", "未缴纳押金");
         }
 
@@ -94,20 +94,27 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
         // 如果押金类型不是免押，走正常的支付
         if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
-            log.warn("isSupportFreeServiceFee WARN! user not free order ,uid is {} ", userInfo.getUid());
+            log.warn("isSupportFreeServiceFee WARN! User not free order ,uid is {} ", userInfo.getUid());
+            return dto;
+        }
+
+        // 是否是第一次购买套餐
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            log.warn("isSupportFreeServiceFee WARN! User is renew member, don't need pay freeServiceFee, uid is {}", userInfo.getUid());
             return dto;
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
-            log.warn("isSupportFreeServiceFee WARN! freeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
+            log.warn("isSupportFreeServiceFee WARN! FreeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
             return dto;
         }
 
         // 用户是否已经支付过免押服务费
         Integer existsPaySuccessOrder = applicationContext.getBean(FreeServiceFeeOrderService.class).existsPaySuccessOrder(eleDepositOrder.getOrderId(), userInfo.getUid());
         if (Objects.nonNull(existsPaySuccessOrder)) {
-            log.info("isSupportFreeServiceFee Info! current User Payed FreeServiceFee, freeDepositOrderId is {} , uid is {} ", eleDepositOrder.getOrderId(), userInfo.getUid());
+            log.info("isSupportFreeServiceFee Info! Current User Payed FreeServiceFee, freeDepositOrderId is {} , uid is {} ", eleDepositOrder.getOrderId(), userInfo.getUid());
             return dto;
         }
 
