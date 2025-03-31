@@ -36,7 +36,8 @@ public class JsonAdminEleDeviceCodeController extends BaseController {
      */
     @GetMapping("/admin/eleDeviceCode/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus) {
+            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus, @RequestParam(value = "startTime",required = false) Long startTime,
+                  @RequestParam(value = "endTime",required = false) Long endTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -49,7 +50,8 @@ public class JsonAdminEleDeviceCodeController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        EleDeviceCodeQuery query = EleDeviceCodeQuery.builder().size(size).offset(offset).deviceName(deviceName).onlineStatus(onlineStatus).delFlag(CommonConstant.DEL_N).build();
+        EleDeviceCodeQuery query = EleDeviceCodeQuery.builder().size(size).offset(offset).deviceName(deviceName).onlineStatus(onlineStatus).delFlag(CommonConstant.DEL_N).startTime(startTime)
+                .endTime(endTime).build();
         
         return R.ok(eleDeviceCodeService.listByPage(query));
     }
@@ -58,13 +60,14 @@ public class JsonAdminEleDeviceCodeController extends BaseController {
      * 分页总数
      */
     @GetMapping("/admin/eleDeviceCode/queryCount")
-    public R pageCount(@RequestParam(value = "deviceName", required = false) String deviceName, @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus) {
+    public R pageCount(@RequestParam(value = "deviceName", required = false) String deviceName, @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus, @RequestParam(value = "startTime",required = false) Long startTime,
+                       @RequestParam(value = "endTime",required = false) Long endTime) {
         
         if (!SecurityUtils.isAdmin()) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        EleDeviceCodeQuery query = EleDeviceCodeQuery.builder().deviceName(deviceName).onlineStatus(onlineStatus).delFlag(CommonConstant.DEL_N).build();
+        EleDeviceCodeQuery query = EleDeviceCodeQuery.builder().deviceName(deviceName).onlineStatus(onlineStatus).delFlag(CommonConstant.DEL_N).startTime(startTime).endTime(endTime).build();
         
         return R.ok(eleDeviceCodeService.countByPage(query));
     }

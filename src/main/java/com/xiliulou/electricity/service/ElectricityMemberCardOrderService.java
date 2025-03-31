@@ -177,4 +177,7 @@ public interface ElectricityMemberCardOrderService {
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
 
     void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
+
+    ElectricityMemberCardOrder queryUserFirstPaySuccessByUid(Long uid);
+
 }

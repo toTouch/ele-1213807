@@ -4044,4 +4044,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         baseMapper.updatePayChannelById(memberCardOrder);
     }
 
+    @Override
+    @Slave
+    public ElectricityMemberCardOrder queryUserFirstPaySuccessByUid(Long uid) {
+        return baseMapper.selectUserFirstPaySuccessByUid(uid);
+    }
+
 }
