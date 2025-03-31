@@ -44,7 +44,7 @@
 
     <select id="selectListByMemberCardIdsAndModel"
             resultType="com.xiliulou.electricity.entity.MemberCardBatteryType">
-        select mid,battery_type from t_member_card_battery_type
+        select battery_type from t_member_card_battery_type
         where mid in
         <foreach item="item" index="index" collection="memberCardIds" open="(" separator="," close=")">
             #{item}
@@ -53,6 +53,7 @@
         <if test="model != null and model != ''">
             and battery_type like concat('%', #{model}, '%')
         </if>
+        group by battery_type
     </select>
 
 </mapper>
