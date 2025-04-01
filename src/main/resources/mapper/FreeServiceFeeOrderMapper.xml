@@ -156,6 +156,7 @@
         from t_free_service_fee_order
         where order_id = #{orderId}
     </select>
+
     <select id="selectByFreeDepositOrderId" resultType="com.xiliulou.electricity.entity.FreeServiceFeeOrder">
         select
         <include refid="baseSql"/>

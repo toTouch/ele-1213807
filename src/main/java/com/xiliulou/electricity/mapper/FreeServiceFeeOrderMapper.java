@@ -20,5 +20,5 @@ public interface FreeServiceFeeOrderMapper {
 
     FreeServiceFeeOrder selectByOrderId(@Param("orderId") String orderId);
 
-    FreeServiceFeeOrder selectByFreeDepositOrderId(@Param("orderId") String freeDepositOrderId);
+    FreeServiceFeeOrder selectByFreeDepositOrderId(@Param("freeDepositOrderId") String freeDepositOrderId);
 }
