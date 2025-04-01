@@ -167,4 +167,9 @@ public class DetailsUserInfoVo {
      * @see UserStatusEnum
      */
     private Integer userStatus;
+
+    /**
+     * 押金类型
+     */
+    private Integer payType;
 }

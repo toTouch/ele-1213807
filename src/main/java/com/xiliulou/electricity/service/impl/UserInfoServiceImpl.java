@@ -102,6 +102,7 @@ import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -2896,6 +2897,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setRemark(Objects.nonNull(userInfoExtra) ? userInfoExtra.getRemark() : null);
         // 查询已删除/已注销
         vo.setUserStatus(this.queryUserDelStatus(uid));
+
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.nonNull(userBatteryDeposit)) {
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+            vo.setPayType(Objects.nonNull(eleDepositOrder) ? eleDepositOrder.getPayType() : null);
+        }
 
         return R.ok(vo);
     }
