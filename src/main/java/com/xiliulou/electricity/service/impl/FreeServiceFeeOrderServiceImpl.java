@@ -219,7 +219,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         updateOrder.setUpdateTime(System.currentTimeMillis());
         updateOrder.setPayTime(System.currentTimeMillis());
         updateOrder.setStatus(tradeOrderStatus);
-        update(updateOrder);
+        this.update(updateOrder);
         return Pair.of(Boolean.TRUE, null);
     }
 

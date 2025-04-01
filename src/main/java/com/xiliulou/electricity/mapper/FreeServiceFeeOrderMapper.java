@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface FreeServiceFeeOrderMapper {
 
-    void update(@Param("freeServiceFeeOrder") FreeServiceFeeOrder freeServiceFeeOrder);
+    void update(FreeServiceFeeOrder freeServiceFeeOrder);
 
     Integer existsPaySuccessOrder(@Param("freeDepositOrderId") String freeDepositOrderId, @Param("uid") Long uid);
 
