@@ -1703,7 +1703,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         // 免押服务费，判断小程序版本
-        if (StrUtil.isNotBlank(query.getVersion()) && VersionUtil.compareVersion(query.getVersion(), FreeServiceFeeOrder.APP_VERSION) >= 0){
+        if (StrUtil.isNotBlank(query.getVersion())){
             // 需要添加免押服务费
             IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
             if (supportFreeServiceFee.getSupportFreeServiceFee()){
