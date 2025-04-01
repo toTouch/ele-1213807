@@ -1712,7 +1712,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                         .userInfo(userInfo)
                         .depositOrderId(userBatteryDeposit.getOrderId())
                         .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
-                        .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                        .status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
                         .paymentChannel(payParamConfig.getPaymentChannel())
                         .payTime(null)
                         .build();
