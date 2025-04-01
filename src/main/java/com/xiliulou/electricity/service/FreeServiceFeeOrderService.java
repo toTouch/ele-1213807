@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.FreeServiceFeeOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
 import com.xiliulou.electricity.vo.FreeServiceFeeOrderPageVO;
+import com.xiliulou.electricity.vo.UserFreeServiceFeeStatusVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -127,4 +128,13 @@ public interface FreeServiceFeeOrderService {
      */
 
     FreeServiceFeeOrder queryByFreeDepositOrderId(String freeDepositOrderId);
+
+    /**
+     * 获取用户免押服务费状态
+     *
+     * @param uid uid
+     * @return: @return {@link UserFreeServiceFeeStatusVO }
+     */
+
+    UserFreeServiceFeeStatusVO getFreeServiceFeeStatus(Long uid);
 }

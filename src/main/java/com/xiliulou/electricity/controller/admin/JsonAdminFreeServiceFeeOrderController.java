@@ -6,10 +6,7 @@ import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
 import com.xiliulou.electricity.service.FreeServiceFeeOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Objects;
@@ -59,5 +56,18 @@ public class JsonAdminFreeServiceFeeOrderController {
         }
 
         return R.ok(freeServiceFeeOrderService.count(query));
+    }
+
+
+    /**
+     * 获取免押服务费状态
+     *
+     * @param uid uid
+     * @return: @return {@link R }
+     */
+
+    @GetMapping("getFreeServiceFeeStatus")
+    public R getFreeServiceFeeStatus(@RequestParam("uid") Long uid) {
+        return R.ok(freeServiceFeeOrderService.getFreeServiceFeeStatus(uid));
     }
 }

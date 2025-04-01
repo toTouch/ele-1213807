@@ -9,17 +9,21 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
 import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeServiceFeeOrderMapper;
 import com.xiliulou.electricity.query.FreeServiceFeePageQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeServiceFeeOrderPageVO;
+import com.xiliulou.electricity.vo.UserFreeServiceFeeStatusVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.context.ApplicationContext;
@@ -60,6 +64,18 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
     @Resource
     private UserBatteryMemberCardService userBatteryMemberCardService;
+
+    @Resource
+    private UserInfoServiceImpl userInfoService;
+
+    @Resource
+    private UserBatteryDepositServiceImpl userBatteryDepositService;
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    @Resource
+    private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
 
     @Override
@@ -226,5 +242,42 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
     @Override
     public FreeServiceFeeOrder queryByFreeDepositOrderId(String freeDepositOrderId) {
         return freeServiceFeeOrderMapper.selectByFreeDepositOrderId(freeDepositOrderId);
+    }
+
+
+    @Override
+    public UserFreeServiceFeeStatusVO getFreeServiceFeeStatus(Long uid) {
+        UserFreeServiceFeeStatusVO vo = UserFreeServiceFeeStatusVO.builder().batteryFreeServiceFeeStatus(0).carFreeServiceFeeStatus(0).build();
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return vo;
+        }
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.queryByUid(uid);
+            if (Objects.nonNull(userBatteryDeposit)) {
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getStatus(), EleDepositOrder.STATUS_SUCCESS)
+                        && Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+                    FreeServiceFeeOrder freeServiceFeeOrder = this.queryByFreeDepositOrderId(eleDepositOrder.getOrderId());
+                    vo.setBatteryFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) ? 1 : 0);
+                }
+            }
+        }
+
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            // 租车会员信息
+            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), uid);
+            if (Objects.nonNull(memberTermEntity)) {
+                // 押金缴纳信息
+                CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(memberTermEntity.getDepositPayOrderNo());
+                if (Objects.nonNull(depositPayEntity) && Objects.equals(depositPayEntity.getPayState(), PayStateEnum.SUCCESS.getCode())
+                        && Objects.equals(depositPayEntity.getPayType(), PayTypeEnum.EXEMPT.getCode())) {
+                    FreeServiceFeeOrder freeServiceFeeOrder = this.queryByFreeDepositOrderId(depositPayEntity.getOrderNo());
+                    vo.setCarFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) ? 1 : 0);
+                }
+            }
+        }
+        return vo;
     }
 }
