@@ -260,7 +260,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
                 if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getStatus(), EleDepositOrder.STATUS_SUCCESS)
                         && Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                     FreeServiceFeeOrder freeServiceFeeOrder = this.queryByFreeDepositOrderId(eleDepositOrder.getOrderId());
-                    vo.setBatteryFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) ? 1 : 0);
+                    vo.setBatteryFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) && Objects.equals(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus()) ? 1 : 0);
                 }
             }
         }
@@ -274,7 +274,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
                 if (Objects.nonNull(depositPayEntity) && Objects.equals(depositPayEntity.getPayState(), PayStateEnum.SUCCESS.getCode())
                         && Objects.equals(depositPayEntity.getPayType(), PayTypeEnum.EXEMPT.getCode())) {
                     FreeServiceFeeOrder freeServiceFeeOrder = this.queryByFreeDepositOrderId(depositPayEntity.getOrderNo());
-                    vo.setCarFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) ? 1 : 0);
+                    vo.setCarFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) && Objects.equals(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus()) ? 1 : 0);
                 }
             }
         }
