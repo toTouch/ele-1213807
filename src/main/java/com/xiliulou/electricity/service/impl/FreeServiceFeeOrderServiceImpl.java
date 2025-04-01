@@ -259,8 +259,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
                 EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
                 if (Objects.nonNull(eleDepositOrder) && Objects.equals(eleDepositOrder.getStatus(), EleDepositOrder.STATUS_SUCCESS)
                         && Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
-                    FreeServiceFeeOrder freeServiceFeeOrder = this.queryByFreeDepositOrderId(eleDepositOrder.getOrderId());
-                    vo.setBatteryFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) && Objects.equals(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus()) ? 1 : 0);
+                    vo.setBatteryFreeServiceFeeStatus(Objects.nonNull(this.existsPaySuccessOrder(eleDepositOrder.getOrderId(), uid)) ? 1 : 0);
                 }
             }
         }
@@ -273,8 +272,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
                 CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(memberTermEntity.getDepositPayOrderNo());
                 if (Objects.nonNull(depositPayEntity) && Objects.equals(depositPayEntity.getPayState(), PayStateEnum.SUCCESS.getCode())
                         && Objects.equals(depositPayEntity.getPayType(), PayTypeEnum.EXEMPT.getCode())) {
-                    FreeServiceFeeOrder freeServiceFeeOrder = this.queryByFreeDepositOrderId(depositPayEntity.getOrderNo());
-                    vo.setCarFreeServiceFeeStatus(Objects.nonNull(freeServiceFeeOrder) && Objects.equals(freeServiceFeeOrder.getStatus(), FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus()) ? 1 : 0);
+                    vo.setCarFreeServiceFeeStatus(Objects.nonNull(this.existsPaySuccessOrder(depositPayEntity.getOrderNo(), uid)) ? 1 : 0);
                 }
             }
         }

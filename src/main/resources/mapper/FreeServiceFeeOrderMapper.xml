@@ -73,7 +73,7 @@
         from t_free_service_fee_order
         where free_deposit_order_id = #{freeDepositOrderId}
           and uid = #{uid}
-          and status = '${@com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum@STATUS_SUCCESS.status}'
+          and status = '${@com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum@STATUS_SUCCESS.status}' limit 1
     </select>
 
     <select id="selectPageList" resultType="com.xiliulou.electricity.entity.FreeServiceFeeOrder">
