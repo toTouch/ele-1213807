@@ -179,14 +179,13 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
 
     private void fixLastReturnOrderIsSuccess(RentBatteryOrder lastRentBatteryOrder, ElectricityCabinetBox cabinetBox) {
         // 修改退电流程，补充操作记录
-        RentBatteryOrder updateRentBattery = new RentBatteryOrder();
-        updateRentBattery.setId(lastRentBatteryOrder.getId());
-        updateRentBattery.setElectricityBatterySn(cabinetBox.getSn());
-        updateRentBattery.setCellNo(Integer.parseInt(cabinetBox.getCellNo()));
-        updateRentBattery.setUpdateTime(System.currentTimeMillis());
-        updateRentBattery.setRemark(ExchangeRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
-        updateRentBattery.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
-        rentBatteryOrderService.update(updateRentBattery);
+        lastRentBatteryOrder.setId(lastRentBatteryOrder.getId());
+        lastRentBatteryOrder.setElectricityBatterySn(cabinetBox.getSn());
+        lastRentBatteryOrder.setCellNo(Integer.parseInt(cabinetBox.getCellNo()));
+        lastRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+        lastRentBatteryOrder.setRemark(ExchangeRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
+        lastRentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+        rentBatteryOrderService.update(lastRentBatteryOrder);
 
         // 补充操作记录
         List<ElectricityCabinetOrderOperHistory> list = CollUtil.newArrayList();
