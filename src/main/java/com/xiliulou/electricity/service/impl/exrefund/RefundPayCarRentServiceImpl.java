@@ -69,20 +69,23 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
         if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
             return;
         }
-
+        
+        
         try {
 
             // 退租订单信息
-            CarRentalPackageOrderRentRefundPo rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
+            CarRentalPackageOrderRentRefundPo rentRefundEntity  = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
             if (ObjectUtils.isEmpty(rentRefundEntity)) {
                 log.error("WxRefundPayCarRentServiceImpl.process failed. not found t_car_rental_package_order_rent_refund. refundOrderNo is {}", outRefundNo);
                 return;
             }
-
+        
             if (RefundStateEnum.SUCCESS.getCode().equals(rentRefundEntity.getRefundState())) {
                 log.error("WxRefundPayCarRentServiceImpl.process failed. t_car_rental_package_order_rent_refund processing completed. refundOrderNo is {}", outRefundNo);
                 return;
             }
+            
+  
 
             // 租车会员信息
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
@@ -219,6 +222,7 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
                         divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
                         divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
                         divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+                        carRentalPackageMemberTermService.deleteCache(memberTermEntity.getTenantId(),memberTermEntity.getUid());
                     }
                 });
 
