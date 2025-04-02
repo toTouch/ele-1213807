@@ -175,16 +175,9 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
     }
 
     private void removeLockBox(Integer eid, EleCellVO eleCellVo) {
-        TtlTraceIdSupport.set(eleCellVo.getSessionId());
-        try {
-            serviceWrapper.execute(() -> {
-                boxLockService.updateElectricityCabinetBoxLock(eid, eleCellVo.getCell_no());
-            });
-        } catch (Exception e) {
-            log.error("removeLockBox Error! sessionId is {}", eleCellVo.getSessionId());
-        } finally {
-            TtlTraceIdSupport.clear();
-        }
+        serviceWrapper.execute(() -> {
+            boxLockService.updateElectricityCabinetBoxLock(eid, eleCellVo.getCell_no());
+        });
     }
 
     private void saveLockBox(ElectricityCabinet electricityCabinet, EleCellVO eleCellVo) {
