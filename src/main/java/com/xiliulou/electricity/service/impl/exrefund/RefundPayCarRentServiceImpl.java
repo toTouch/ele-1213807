@@ -69,20 +69,26 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
         if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
             return;
         }
-        CarRentalPackageOrderRentRefundPo rentRefundEntity = null;
+        
+        Integer tenantId = null;
+        
+        Long uid = null;
+        
         try {
 
             // 退租订单信息
-            rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
+            CarRentalPackageOrderRentRefundPo rentRefundEntity  = carRentalPackageOrderRentRefundService.selectByOrderNo(outRefundNo);
             if (ObjectUtils.isEmpty(rentRefundEntity)) {
                 log.error("WxRefundPayCarRentServiceImpl.process failed. not found t_car_rental_package_order_rent_refund. refundOrderNo is {}", outRefundNo);
                 return;
             }
-
+        
             if (RefundStateEnum.SUCCESS.getCode().equals(rentRefundEntity.getRefundState())) {
                 log.error("WxRefundPayCarRentServiceImpl.process failed. t_car_rental_package_order_rent_refund processing completed. refundOrderNo is {}", outRefundNo);
                 return;
             }
+            
+  
 
             // 租车会员信息
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
@@ -90,6 +96,9 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
                 log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_member_term. uid is {}", rentRefundEntity.getUid());
                 throw new BizException("300000", "数据有误");
             }
+            
+            tenantId = memberTermEntity.getTenantId();
+            uid = memberTermEntity.getUid();
 
             // 购买套餐编码
             String orderNo = rentRefundEntity.getRentalPackageOrderNo();
@@ -234,7 +243,7 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
             log.error("WxRefundPayCarRentServiceImpl.process failed. ", e);
         } finally {
             redisService.delete(redisLockKey);
-            carRentalPackageMemberTermService.deleteCache(rentRefundEntity.getTenantId(),rentRefundEntity.getUid());
+            carRentalPackageMemberTermService.deleteCache(tenantId,uid);
         }
     }
 
