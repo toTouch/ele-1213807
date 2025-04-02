@@ -226,11 +226,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     
     @Override
     public void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId) {
-        try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
             
+            try {
                 if (Objects.isNull(eleOuterCommandQuery)) {
                     log.warn("UPDATE LOCK SN WARN! eleOuterCommandQuery is null");
                     return;
@@ -275,19 +275,21 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     }
                     electricityCabinetBoxService.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
                 }
-            });
-        } catch (Exception e) {
-            log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
-        }
+            } catch (Exception e) {
+                log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
     
     @Override
     public void updateOpenCellAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId, List<ElectricityCabinetBox> electricityCabinetBoxList) {
-        try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
-                
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            
+            try {
                 if (CollectionUtils.isNotEmpty(electricityCabinetBoxList)) {
                     // 开全部仓门的，数据都有了，直接保存预修改标签即可
                     for (ElectricityCabinetBox box : electricityCabinetBoxList) {
@@ -328,9 +330,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                         setPreLabel(electricityCabinet.getId(), box.getCellNo(), box.getSn(), modifyDTO);
                     }
                 }
-            });
-        } catch (Exception e) {
-            log.error("UPDATE OPEN CELL ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
-        }
+            } catch (Exception e) {
+                log.error("UPDATE OPEN CELL ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
 }

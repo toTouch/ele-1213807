@@ -215,11 +215,10 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
     }
     
     private void modifyLabelAndClearLockSn(Integer eid, String cellNo) {
-        try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            serviceWrapper.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
-                
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        serviceWrapper.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            try {
                 // 将电池锁定在仓的电池标签处理为闲置
                 ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(eid, cellNo);
                 if (Objects.isNull(box)) {
@@ -232,10 +231,11 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
                 
                 // 注意，此处需要使用锁仓sn查询电池，不可将清除锁仓sn的操作提到修改标签之前
                 electricityCabinetBoxService.updateLockSnByEidAndCellNo(eid, cellNo, null);
-            });
-        } catch (Exception e) {
-            log.error("MODIFY LABEL AND CLEAR LOCK SN ERROR! eid={}, cellNo={}", eid, cellNo, e);
-        }
+            } catch (Exception e) {
+                MDC.clear();
+                log.error("MODIFY LABEL AND CLEAR LOCK SN ERROR! eid={}, cellNo={}", eid, cellNo, e);
+            }
+        });
     }
 
     @Data
