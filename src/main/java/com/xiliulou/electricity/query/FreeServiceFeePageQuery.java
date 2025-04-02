@@ -30,7 +30,7 @@ public class FreeServiceFeePageQuery extends BasePageQuery {
     /**
      * 支付渠道
      */
-    private Integer paymentChannel;
+    private String paymentChannel;
 
     private Long payStartTime;
 

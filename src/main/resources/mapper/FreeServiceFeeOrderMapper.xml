@@ -93,7 +93,7 @@
         <if test="query.status != null">
             and status = #{query.status}
         </if>
-        <if test="query.paymentChannel != null">
+        <if test="query.paymentChannel != null and query.paymentChannel != ''">
             and payment_channel = #{query.paymentChannel}
         </if>
         <if test="query.payStartTime != null">
@@ -131,7 +131,7 @@
         <if test="query.status != null">
             and status = #{query.status}
         </if>
-        <if test="query.paymentChannel != null">
+        <if test="query.paymentChannel != null and query.paymentChannel != ''">
             and payment_channel = #{query.paymentChannel}
         </if>
         <if test="query.payStartTime != null">
