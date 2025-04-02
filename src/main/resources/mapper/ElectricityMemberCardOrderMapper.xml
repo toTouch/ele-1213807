@@ -426,7 +426,11 @@
             update_time     = #{updateTime}
         where id = #{id}
     </update>
-
+    
+    <update id="deactivateUsingOrder">
+        update t_electricity_member_card_order set use_status = 3,update_time = #{updateTime} where uid = #{uid} and use_status in (1,2)
+    </update>
+    
     <sql id="column">
         id ,
         pay_amount ,

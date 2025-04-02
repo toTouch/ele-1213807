@@ -4056,5 +4056,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public ElectricityMemberCardOrder queryUserFirstPaySuccessByUid(Long uid) {
         return baseMapper.selectUserFirstPaySuccessByUid(uid);
     }
-
+    
+    @Override
+    public Integer deactivateUsingOrder(Long uid) {
+        Long updateTime = System.currentTimeMillis();
+        return electricityMemberCardOrderMapper.deactivateUsingOrder(uid, updateTime);
+    }
+    
 }

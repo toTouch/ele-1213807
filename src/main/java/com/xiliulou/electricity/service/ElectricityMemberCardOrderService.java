@@ -180,4 +180,5 @@ public interface ElectricityMemberCardOrderService {
 
     ElectricityMemberCardOrder queryUserFirstPaySuccessByUid(Long uid);
 
+    Integer deactivateUsingOrder(Long uid);
 }
