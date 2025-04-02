@@ -2367,6 +2367,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }
         
+        if (Objects.nonNull(query.getStoreId())) {
+            Store store = storeService.queryByIdFromCache(query.getStoreId());
+            if (Objects.isNull(store) || !Objects.equals(batteryMemberCard.getFranchiseeId(), store.getFranchiseeId())) {
+                return Triple.of(false, "100381", "加盟商与门店不匹配，请重新选择门店与套餐");
+            }
+        }
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
