@@ -70,9 +70,6 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
             return;
         }
         
-        Integer tenantId = null;
-        
-        Long uid = null;
         
         try {
 
@@ -96,9 +93,6 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
                 log.error("WxRefundPayCarRentServiceImpl faild. not find t_car_rental_package_member_term. uid is {}", rentRefundEntity.getUid());
                 throw new BizException("300000", "数据有误");
             }
-            
-            tenantId = memberTermEntity.getTenantId();
-            uid = memberTermEntity.getUid();
 
             // 购买套餐编码
             String orderNo = rentRefundEntity.getRentalPackageOrderNo();
@@ -228,6 +222,7 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
                         divisionAccountOrderDTO.setDivisionAccountType(DivisionAccountEnum.DA_TYPE_REFUND.getCode());
                         divisionAccountOrderDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
                         divisionAccountRecordService.asyncHandleDivisionAccount(divisionAccountOrderDTO);
+                        carRentalPackageMemberTermService.deleteCache(memberTermEntity.getTenantId(),memberTermEntity.getUid());
                     }
                 });
 
@@ -243,7 +238,6 @@ public class RefundPayCarRentServiceImpl implements RefundPayService {
             log.error("WxRefundPayCarRentServiceImpl.process failed. ", e);
         } finally {
             redisService.delete(redisLockKey);
-            carRentalPackageMemberTermService.deleteCache(tenantId,uid);
         }
     }
 
