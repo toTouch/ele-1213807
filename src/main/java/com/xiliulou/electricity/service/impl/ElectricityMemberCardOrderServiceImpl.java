@@ -2370,7 +2370,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(query.getStoreId())) {
             Store store = storeService.queryByIdFromCache(query.getStoreId());
             if (Objects.isNull(store) || !Objects.equals(batteryMemberCard.getFranchiseeId(), store.getFranchiseeId())) {
-                return Triple.of(false, "100381", "加盟商与门店不匹配，请重新选择门店与套餐");
+                return Triple.of(false, "100464", "加盟商与门店不匹配，请重新选择门店与套餐");
             }
         }
         
