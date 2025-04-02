@@ -1754,15 +1754,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
 
-    private FreeServiceFeeOrder getFreeServiceFeeOrder(UserInfo userInfo, UserBatteryDeposit userBatteryDeposit, IsSupportFreeServiceFeeDTO supportFreeServiceFee, BasePayConfig payParamConfig) {
-        String freeServiceFeeOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.FREE_SERVICE_FEE, userInfo.getUid());
-        return  FreeServiceFeeOrder.builder()
-                .uid(userInfo.getUid()).orderId(freeServiceFeeOrderId).freeDepositOrderId(userBatteryDeposit.getOrderId())
-                .payAmount(supportFreeServiceFee.getFreeServiceFee()).status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
-                .paymentChannel(payParamConfig.getPaymentChannel()).tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
-                .storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .build();
-    }
 
     private void dealProfitSharingTradeOrder(Triple<Boolean, String, Object> generateMemberCardOrderResult, Triple<Boolean, String, Object> generateInsuranceOrderResult,
             BasePayConfig payParamConfig, BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {

@@ -169,7 +169,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         return FreeServiceFeeOrder.builder().uid(userInfo.getUid()).name(userInfo.getName()).phone(userInfo.getPhone()).orderId(freeServiceFeeOrderId)
                 .freeDepositOrderId(dto.getDepositOrderId()).payAmount(dto.getFreeServiceFee()).status(dto.getStatus()).depositType(freeDepositOrder.getDepositType())
                 .tenantId(userInfo.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId()).createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).paymentChannel(StrUtil.isNotBlank(dto.getPaymentChannel()) ? dto.getPaymentChannel() : null)
+                .updateTime(System.currentTimeMillis()).paymentChannel(StrUtil.isNotBlank(dto.getPaymentChannel()) ? dto.getPaymentChannel() : "offline")
                 .payTime(Objects.nonNull(dto.getPayTime()) ? dto.getPayTime() : null)
                 .build();
     }
