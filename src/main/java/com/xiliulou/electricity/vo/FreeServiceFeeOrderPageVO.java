@@ -36,4 +36,6 @@ public class FreeServiceFeeOrderPageVO {
     private Integer status;
 
     private String paymentChannel;
+
+    private Long payTime;
 }
