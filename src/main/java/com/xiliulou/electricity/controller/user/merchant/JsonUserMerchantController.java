@@ -57,11 +57,10 @@ public class JsonUserMerchantController extends BaseController {
     
     /**
      * 获取商户详情
-     *
+     *  接口已废弃
      * @return
      */
     @GetMapping("/merchant/getMerchantQrCode")
-    @Deprecated
     public R getMerchantQrCode() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
