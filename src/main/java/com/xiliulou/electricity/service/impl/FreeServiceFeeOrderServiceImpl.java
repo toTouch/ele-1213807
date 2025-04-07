@@ -122,7 +122,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        if (Objects.isNull(franchisee) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
+        if (Objects.isNull(franchisee) || Objects.isNull(franchisee.getFreeServiceFeeSwitch()) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
             log.warn("isSupportFreeServiceFee WARN! FreeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
             return dto;
         }
@@ -141,7 +141,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
     public IsSupportFreeServiceFeeDTO isSupportFreeServiceFeeCar(UserInfo userInfo, String depositOrderId) {
         IsSupportFreeServiceFeeDTO dto = new IsSupportFreeServiceFeeDTO().setSupportFreeServiceFee(false);
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        if (Objects.isNull(franchisee) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
+        if (Objects.isNull(franchisee) || Objects.isNull(franchisee.getFreeServiceFeeSwitch()) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
             log.warn("isSupportFreeServiceFeeCar WARN! freeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
             return dto;
         }
