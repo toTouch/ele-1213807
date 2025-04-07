@@ -53,6 +53,10 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
         log.info("SaveExchangeExceptionCell Info! sessionId is {} , eid is {} , orderStatus is {}, oldCell is {}, newCell is {}", sessionId, eid, orderStatus, oldCell, newCell);
         
         try {
+            if (Objects.isNull(oldCell) && Objects.isNull(newCell)){
+                return;
+            }
+
             Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();
             // 空仓失败
             if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
