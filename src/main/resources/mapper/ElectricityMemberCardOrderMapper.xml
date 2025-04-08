@@ -611,7 +611,7 @@
         where external_agreement_no = #{externalAgreementNo}
     </select>
 
-    <select id="selectUserFirstPaySuccessByUid"
+    <select id="selectUserLastPaySuccessByUid"
             resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select
         <include refid="column"/>
@@ -620,7 +620,7 @@
             status = 1
             and uid = #{uid}
         </where>
-        order by id asc
+        order by id desc
         limit 1
     </select>
 </mapper>
