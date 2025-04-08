@@ -20,6 +20,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrde
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
@@ -248,6 +249,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 log.warn("BATTERY DEPOSIT WARN! user is rent deposit,uid={} ", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
+            }
+            
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                return Triple.of(false, "110211", "用户已缴纳车电一体押金");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(integratedPaymentAdd.getMemberCardId());

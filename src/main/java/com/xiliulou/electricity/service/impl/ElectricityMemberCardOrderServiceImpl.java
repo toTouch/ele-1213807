@@ -74,6 +74,7 @@ import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
@@ -2365,6 +2366,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }
         
+        if (Objects.nonNull(query.getStoreId())) {
+            Store store = storeService.queryByIdFromCache(query.getStoreId());
+            if (Objects.isNull(store) || !Objects.equals(batteryMemberCard.getFranchiseeId(), store.getFranchiseeId())) {
+                return Triple.of(false, "100464", "加盟商与门店不匹配，请重新选择门店与套餐");
+            }
+        }
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
@@ -2381,6 +2389,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0042", "用户已缴纳押金");
+        }
+        
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            return Triple.of(false, "110211", "用户已缴纳车电一体押金");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -4047,5 +4059,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public ElectricityMemberCardOrder queryUserLastPaySuccessByUid(Long uid) {
         return baseMapper.selectUserLastPaySuccessByUid(uid);
     }
-
+    
+    @Override
+    public Integer deactivateUsingOrder(Long uid) {
+        Long updateTime = System.currentTimeMillis();
+        return electricityMemberCardOrderMapper.deactivateUsingOrder(uid, updateTime);
+    }
+    
 }

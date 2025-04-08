@@ -945,16 +945,16 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     @Override
     public void updateUserInsuranceOrderStatusTask() {
         
-        int offset = 0;
+        Integer id = 0;
         int size = 200;
         
         while (true) {
-            List<InsuranceUserInfo> list = this.selectUserInsuranceList(offset, size);
+            List<InsuranceUserInfo> list = this.selectUserInsuranceList(id, size);
             if (CollectionUtils.isEmpty(list)) {
                 return;
             }
             list.parallelStream().forEach(this::userInsuranceExpireAutoConvert);
-            offset += size;
+            id = list.get(list.size() - 1).getId();
         }
     }
 
@@ -999,8 +999,8 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return baseMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid));
     }
     
-    private List<InsuranceUserInfo> selectUserInsuranceList(int offset, int size) {
-        return baseMapper.selectUserInsuranceList(offset, size);
+    private List<InsuranceUserInfo> selectUserInsuranceList(Integer id, int size) {
+        return baseMapper.selectUserInsuranceListWithId(id, size);
     }
 
 
