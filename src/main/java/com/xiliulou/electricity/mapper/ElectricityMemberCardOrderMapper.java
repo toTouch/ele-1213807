@@ -1,15 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -80,5 +75,5 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
 
-    ElectricityMemberCardOrder selectUserFirstPaySuccessByUid(@Param("uid") Long uid);
+    ElectricityMemberCardOrder selectUserLastPaySuccessByUid(@Param("uid") Long uid);
 }

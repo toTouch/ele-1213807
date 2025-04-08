@@ -57,7 +57,7 @@ public class JsonUserMerchantController extends BaseController {
     
     /**
      * 获取商户详情
-     *
+     *  接口已废弃
      * @return
      */
     @GetMapping("/merchant/getMerchantQrCode")
@@ -96,7 +96,7 @@ public class JsonUserMerchantController extends BaseController {
         if (!Objects.equals(user.getUserType(), User.TYPE_USER_MERCHANT_EMPLOYEE)) {
             Merchant merchant = merchantService.queryByUid(uid);
             if (Objects.isNull(merchant)) {
-                log.error("merchant get merchant qr code merchant is null, uid={}", uid);
+                log.info("merchant get merchant qr code merchant is null, uid={}", uid);
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
 
@@ -108,7 +108,7 @@ public class JsonUserMerchantController extends BaseController {
         // 商户员工
         MerchantEmployeeBO merchantEmployeeBO = merchantEmployeeService.queryMerchantAndEmployeeInfoByUid(uid);
         if (Objects.isNull(merchantEmployeeBO)) {
-            log.error("merchant get merchant qr code merchant employee is null, uid={}", uid);
+            log.info("merchant get merchant qr code merchant employee is null, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 

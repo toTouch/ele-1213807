@@ -812,7 +812,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
 
         // 查询骑手的首次支付成功的换电套餐
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryUserFirstPaySuccessByUid(uid);
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryUserLastPaySuccessByUid(uid);
         if (Objects.isNull(electricityMemberCardOrder)) {
             return true;
         }
