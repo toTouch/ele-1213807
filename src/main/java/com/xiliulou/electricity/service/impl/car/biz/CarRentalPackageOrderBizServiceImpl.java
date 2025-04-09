@@ -2011,9 +2011,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         
         boolean hasAssets = checkUserHasAssets(userInfo, tenantId, packageOrderEntity.getRentalPackageType());
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.NOT_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(
+        if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.ALLOW_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(
                 ElectricityConfig.ALLOW_FREEZE_ASSETS, electricityConfig.getAllowFreezeWithAssets()) && hasAssets) {
             throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
+        }
+        
+        if (SystemDefinitionEnum.WX_APPLET.getCode().equals(systemDefinitionEnum.getCode()) && Objects.equals(ElectricityConfig.NOT_ALLOW_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard())) {
+            throw new BizException("100470", "未开启冻结套餐功能");
         }
         
         R<Boolean> checkFreezeLimit = carRentalPackageOrderCheckBizService.checkFreezeLimit(tenantId, uid, applyTerm, hasAssets, checkFreezeDays);

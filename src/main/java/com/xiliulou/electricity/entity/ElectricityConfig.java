@@ -71,7 +71,7 @@ public class ElectricityConfig {
     private Integer isBatteryReview;
     
     /**
-     * 是否开始暂停月卡功能 （0--关闭 1--开启）
+     * 是否开始暂停月卡功能 （0--开启 1--关闭）
      */
     private Integer disableMemberCard;
     
@@ -314,9 +314,9 @@ public class ElectricityConfig {
     
     public static Integer NON_BATTERY_REVIEW = 1;
     
-    public static Integer NOT_DISABLE_MEMBER_CARD = 0;
+    public static Integer ALLOW_DISABLE_MEMBER_CARD = 0;
     
-    public static Integer DISABLE_MEMBER_CARD = 1;
+    public static Integer NOT_ALLOW_DISABLE_MEMBER_CARD = 1;
     
     public static Integer LOW_BATTERY_EXCHANGE = 0;
     
