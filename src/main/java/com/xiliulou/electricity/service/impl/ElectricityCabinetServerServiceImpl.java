@@ -310,7 +310,6 @@ public class ElectricityCabinetServerServiceImpl
 
     @Override
     public R addServerEndTime(ElectricityCabinetServerUpdateRequest request) {
-        TtlTraceIdSupport.set();
 
         log.info("add cabinet server end time info! request:{}", request);
 
@@ -335,20 +334,19 @@ public class ElectricityCabinetServerServiceImpl
             }
 
             // 根据租户id处理柜机服务时间
-            dealWithTenantId(request, uid);
+            return dealWithTenantId(request, uid);
         } catch (Exception e) {
             log.error("add cabinet server end time error!", e);
-        } finally {
-            TtlTraceIdSupport.clear();
         }
 
         return R.ok();
     }
 
-    private void dealWithTenantId(ElectricityCabinetServerUpdateRequest request, Long uid) {
+    private R dealWithTenantId(ElectricityCabinetServerUpdateRequest request, Long uid) {
         Long maxId = 0L;
         Integer size = 500;
         long updateTime = System.currentTimeMillis();
+        int successNum = 0;
 
         while (true) {
             // 查询柜机的服务时间
@@ -356,6 +354,8 @@ public class ElectricityCabinetServerServiceImpl
             if (ObjectUtils.isEmpty(electricityCabinetServerList)) {
                 break;
             }
+
+            successNum = electricityCabinetServerList.size();
 
             maxId = electricityCabinetServerList.get(electricityCabinetServerList.size() - 1).getCabinetId();
 
@@ -387,6 +387,11 @@ public class ElectricityCabinetServerServiceImpl
         }
 
         log.info("add cabinet server end time success! tenantId:{}", request.getTenantId());
+
+        ElectricityCabinetServerTimeAddResultVO resultVO = ElectricityCabinetServerTimeAddResultVO.builder().successNum(successNum)
+               .build();
+
+        return R.ok(resultVO);
     }
 
     private R dealWithCabinetSnList(ElectricityCabinetServerUpdateRequest request, Long uid) {
