@@ -1563,7 +1563,9 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             refundDepositInsertEntity.setPaymentChannel(null);
             refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
             refundDepositInsertEntity.setRealAmount(BigDecimal.ZERO);
-            carRentalPackageDepositRefundService.insert(refundDepositInsertEntity);
+
+            // 退款中，先落库
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, userInfo.getUid(), true);
             return false;
         }
         return true;

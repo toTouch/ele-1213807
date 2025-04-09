@@ -1264,7 +1264,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     /**
      * 处理电池押金0元
      */
-    private Triple<Boolean, String, Object> handleBatteryZeroDepositAndOfflineRefundOrder(EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo) {
+    @Override
+    public Triple<Boolean, String, Object> handleBatteryZeroDepositAndOfflineRefundOrder(EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo) {
         eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderService.update(eleRefundOrderUpdate);

@@ -1260,9 +1260,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             eleRefundOrder.setErrMsg(null);
             eleRefundOrder.setPayType(eleDepositOrder.getPayType());
             eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
-            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrder.setRefundAmount(BigDecimal.ZERO);
             eleRefundOrderService.insert(eleRefundOrder);
+
+            eleRefundOrderService.handleBatteryZeroDepositAndOfflineRefundOrder(eleRefundOrder, userInfo);
             return false;
         }
         return true;
