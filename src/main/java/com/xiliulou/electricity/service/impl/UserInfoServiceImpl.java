@@ -4824,6 +4824,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("120163", "账号处于注销缓冲期内，无法操作");
         }
 
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            // 如果不是零元退押
+            if (eleDepositOrderService.isZeroDepositOrder(userInfo)) {
+                return R.fail("402030", "请退还换电押金后，进行删除操作");
+            }
+        }
+
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+                || Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            if (carRenalPackageDepositV2BizService.isCarZeroDepositOrder(userInfo)) {
+                return R.fail("402030", "请退还租车押金后，进行删除操作");
+            }
+        }
+
         // 注销时不打标记，batch定时任务注销成功时才打标记
         userDelRecordService.insert(uid, StringUtils.EMPTY, StringUtils.EMPTY, UserStatusEnum.USER_STATUS_CANCELLING.getCode(), userInfo.getTenantId(), userInfo.getFranchiseeId(),
                 UserStatusEnum.USER_DELAY_DAY_30.getCode(),userService.getUserLastPayTime(uid));
