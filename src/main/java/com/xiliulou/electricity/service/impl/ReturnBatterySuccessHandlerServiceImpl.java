@@ -128,11 +128,11 @@ public class ReturnBatterySuccessHandlerServiceImpl implements ReturnBatterySucc
                     electricityBatteryService.asyncModifyLabel(oldElectricityBattery, null, dto, false);
                 }
             }
-            
+
+            // 归还电池
+            operateBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(oldElectricityBattery.getSn(), oldElectricityBattery.getPower()));
         }
-        // 归还电池
-        operateBatterSocThreadPool.execute(() -> handlerUserRentBatterySoc(oldElectricityBattery.getSn(), oldElectricityBattery.getPower()));
-        
+
     }
     
     

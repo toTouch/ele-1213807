@@ -1199,6 +1199,9 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, markDelUser.getMiddle(), markDelUser.getRight());
         }
 
+        // 将未使用和使用中的套餐订单更新为已失效
+        electricityMemberCardOrderService.deactivateUsingOrder(uid);
+
         return Triple.of(true, null, null);
     }
     

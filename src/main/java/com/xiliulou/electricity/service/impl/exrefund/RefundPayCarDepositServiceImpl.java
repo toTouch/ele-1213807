@@ -86,10 +86,10 @@ public class RefundPayCarDepositServiceImpl implements RefundPayService {
         if (!redisService.setNx(redisLockKey, outRefundNo, 10 * 1000L, false)) {
             return;
         }
-        
+        CarRentalPackageDepositRefundPo depositRefundEntity = null;
         try {
             // 押金退款单信息
-            CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(outRefundNo);
+            depositRefundEntity =   carRentalPackageDepositRefundService.selectByOrderNo(outRefundNo);
             if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.REFUNDING.getCode().equals(depositRefundEntity.getRefundState())) {
                 log.error("WxRefundPayCarDepositService.process failed. t_car_rental_package_order_rent_refund not found or status wrong. orderNo is {}", outRefundNo);
                 return;
@@ -128,6 +128,9 @@ public class RefundPayCarDepositServiceImpl implements RefundPayService {
             log.error("WxRefundPayCarDepositService.process failed. ", e);
         } finally {
             redisService.delete(redisLockKey);
+            if (Objects.nonNull(depositRefundEntity)){
+                carRentalPackageMemberTermService.deleteCache(depositRefundEntity.getTenantId(),depositRefundEntity.getUid());
+            }
         }
     }
 

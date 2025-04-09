@@ -125,4 +125,9 @@ public class MerchantUpdateShowVO {
      * </p>
     */
     private String openId;
+
+    /**
+     * 站点代付时间限制
+     */
+    private Integer payTimeLimit;
 }

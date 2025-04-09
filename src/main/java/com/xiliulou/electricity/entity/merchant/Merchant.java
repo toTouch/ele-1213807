@@ -111,4 +111,9 @@ public class Merchant {
      * 修改时间
      */
     private Long updateTime;
+
+    /**
+     * 站点代付时间限制
+     */
+    private Integer payTimeLimit;
 }

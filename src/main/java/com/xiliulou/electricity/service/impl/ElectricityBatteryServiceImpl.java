@@ -1594,7 +1594,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Long operatorUid = SecurityUtils.getUid();
         electricityBatteries.parallelStream().forEach(battery -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), operatorUid), false);
+            try {
+                syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode(), operatorUid), false);
+            } finally {
+                MDC.clear();
+            }
         });
         
         return R.ok(
@@ -2158,9 +2162,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         AtomicBoolean result = new AtomicBoolean(false);
         modifyBatteryLabelExecutor.execute(() -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
-            
-            result.set(syncModifyLabel(electricityBattery, box, dto, forcedModification, newSn));
-            
+            try {
+                result.set(syncModifyLabel(electricityBattery, box, dto, forcedModification, newSn));
+            } finally {
+                MDC.clear();
+            }
         });
         return result.get();
     }
@@ -2316,10 +2322,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public void modifyLabelWhenBatteryExitCabin(ElectricityBattery battery, ElectricityCabinetBox box) {
-        try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            modifyBatteryLabelExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        modifyBatteryLabelExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            try {
                 if (Objects.isNull(battery) || Objects.isNull(box)) {
                     log.warn("MODIFY LABEL WHEN BATTERY EXIT CABIN WARN! battery or box is null, battery={}, box={}", battery, box);
                     return;
@@ -2364,10 +2370,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 
                 // 执行完毕删除缓存
                 redisService.delete(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), battery.getSn()));
-            });
-        } catch (Exception e) {
-            log.error("MODIFY LABEL WHEN BATTERY EXIT CABIN ERROR! sn={}", battery.getSn(), e);
-        }
+            } catch (Exception e) {
+                log.error("MODIFY LABEL WHEN BATTERY EXIT CABIN ERROR! sn={}", battery.getSn(), e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
     
     @Slave

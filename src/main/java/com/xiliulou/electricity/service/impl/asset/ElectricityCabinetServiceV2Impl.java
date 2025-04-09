@@ -158,12 +158,6 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             electricityCabinet.setExchangeType(electricityCabinetAddRequest.getExchangeType());
     
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
-        
-                // 新增缓存
-                redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-                redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(),
-                        electricityCabinet);
-        
                 // 添加格挡
                 electricityCabinetBoxService.batchInsertBoxByModelIdV2(electricityCabinetModel, electricityCabinet.getId());
                 // 添加服务时间记录

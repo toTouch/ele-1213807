@@ -7,10 +7,10 @@
     </select>
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_merchant(id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid, tenant_id , auto_up_grade , status , enterprise_package_auth ,
-                               purchase_authority ,uid ,enterprise_id ,invite_auth,exist_place_fee , del_flag, create_time, update_time)
+                               purchase_authority ,uid ,enterprise_id ,invite_auth,exist_place_fee , del_flag, create_time, update_time, pay_time_limit)
         values (#{id}, #{name}, #{franchiseeId}, #{phone}, #{merchantGradeId}, #{channelEmployeeUid}, #{tenantId},#{autoUpGrade}, #{status}, #{enterprisePackageAuth},
                 #{purchaseAuthority},#{uid},#{enterpriseId},#{inviteAuth},#{existPlaceFee}, #{delFlag},
-                #{createTime}, #{updateTime})
+                #{createTime}, #{updateTime}, #{payTimeLimit})
     </insert>
     <update id="update">
         update t_merchant
@@ -45,6 +45,9 @@
                 </if>
                 <if test="updateTime != null">
                     ,update_time = #{updateTime}
+                </if>
+                <if test="payTimeLimit != null">
+                    ,pay_time_limit = #{payTimeLimit}
                 </if>
             </set>
         <where>
@@ -94,7 +97,7 @@
     </delete>
     <sql id="column">
         id, name , franchisee_id , phone , merchant_grade_id , channel_employee_uid , tenant_id , auto_up_grade , status , enterprise_package_auth ,exist_place_fee,
-                               purchase_authority ,uid ,enterprise_id , del_flag, create_time, update_time,invite_auth
+                               purchase_authority ,uid ,enterprise_id , del_flag, create_time, update_time,invite_auth, pay_time_limit
     </sql>
     <select id="selectById" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
         select

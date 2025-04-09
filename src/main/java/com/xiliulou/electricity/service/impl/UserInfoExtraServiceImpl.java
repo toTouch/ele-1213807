@@ -496,21 +496,24 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
 
             // 新增用户商户绑定
             UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
+    
+            UserInfoExtra updateUserInfoExtra = new UserInfoExtra();
             if (Objects.nonNull(userInfoExtra)) {
-                userInfoExtra.setMerchantId(merchantId);
+                updateUserInfoExtra.setUid(uid);
+                updateUserInfoExtra.setMerchantId(merchantId);
                 if (Objects.nonNull(merchant.getChannelEmployeeUid())) {
-                    userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
+                    updateUserInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
                 } else {
-                    userInfoExtra.setChannelEmployeeUid(NumberConstant.ZERO_L);
+                    updateUserInfoExtra.setChannelEmployeeUid(NumberConstant.ZERO_L);
                 }
-                userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
-                userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
-                userInfoExtra.setUpdateTime(System.currentTimeMillis());
-                userInfoExtra.setActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
-                userInfoExtra.setInviterUid(newInviterUid);
-                userInfoExtra.setLatestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
+                updateUserInfoExtra.setPlaceId(NumberConstant.ZERO_L);
+                updateUserInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
+                updateUserInfoExtra.setUpdateTime(System.currentTimeMillis());
+                updateUserInfoExtra.setActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
+                updateUserInfoExtra.setInviterUid(newInviterUid);
+                updateUserInfoExtra.setLatestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
 
-                this.updateByUid(userInfoExtra);
+                this.updateByUid(updateUserInfoExtra);
             } else {
                 UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
                         .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
