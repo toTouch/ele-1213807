@@ -90,7 +90,7 @@
                 package_freeze_count = #{packageFreezeCount},
             </if>
             <if test="remark != null">
-                remark = #{remark}
+                remark = #{remark},
             </if>
             <if test="lostUserStatus != null">
                 lost_user_status = #{lostUserStatus},
@@ -98,10 +98,10 @@
             <if test="lostUserTime != null">
                 lost_user_time = #{lostUserTime},
             </if>
-            <if test="lostUserFirstRebateTime">
+            <if test="lostUserFirstRebateTime != null">
                 lost_user_first_rebate_time = #{lostUserFirstRebateTime},
             </if>
-            <if test="lostUserRecentlyFirstOrderId">
+            <if test="lostUserRecentlyFirstOrderId != null">
                 lost_user_recently_first_order_id = #{lostUserRecentlyFirstOrderId},
             </if>
             </set>

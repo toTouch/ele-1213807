@@ -108,4 +108,11 @@ public class MerchantSaveRequest {
      * 加盟商绑定的数据权限的加盟商id
      */
     private List<Long> bindFranchiseeIdList;
+
+    /**
+     * 站点代付时间限制
+     */
+    @Range(min = 0, message = "站点代付限制时间不能小于零")
+    @NotNull(message = "站点代付限制时间不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer payTimeLimit;
 }

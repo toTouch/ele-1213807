@@ -118,4 +118,9 @@ public class EnterpriseChannelUserQuery {
      * 站点名称
      */
     private String enterpriseName;
+
+    /**
+     * 企业商户对应的uid
+     */
+    private Long merchantUid;
 }

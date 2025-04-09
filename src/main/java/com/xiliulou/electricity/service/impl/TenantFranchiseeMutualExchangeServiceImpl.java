@@ -43,12 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -223,6 +218,10 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
 
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return new ArrayList<>();
+        }
+
         List<TenantFranchiseeMutualExchange> mutualExchangeList = mutualExchangeMapper.selectPageList(query);
         if (CollUtil.isEmpty(mutualExchangeList)) {
             return CollUtil.newArrayList();
@@ -261,6 +260,11 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return NumberConstant.ZERO_L;
         }
 
         if ((SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {

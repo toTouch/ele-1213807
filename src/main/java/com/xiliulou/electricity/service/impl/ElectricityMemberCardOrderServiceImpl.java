@@ -30,6 +30,15 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CheckFreezeDaysSourceEnum;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.OverdueType;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
@@ -58,7 +67,6 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
-import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
@@ -85,7 +93,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -350,7 +357,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Resource
     private FreeServiceFeeOrderService freeServiceFeeOrderService;
-    
+
     /**
      * 根据用户ID查询对应状态的记录
      *
@@ -2320,6 +2327,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }
         
+        if (Objects.nonNull(query.getStoreId())) {
+            Store store = storeService.queryByIdFromCache(query.getStoreId());
+            if (Objects.isNull(store) || !Objects.equals(batteryMemberCard.getFranchiseeId(), store.getFranchiseeId())) {
+                return Triple.of(false, "100464", "加盟商与门店不匹配，请重新选择门店与套餐");
+            }
+        }
+
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
@@ -2338,6 +2352,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.0042", "用户已缴纳押金");
         }
         
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            return Triple.of(false, "110211", "用户已缴纳车电一体押金");
+        }
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())) {
             return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
@@ -4010,6 +4028,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder){
         baseMapper.updatePayChannelById(memberCardOrder);
+    }
+
+    @Override
+    @Slave
+    public ElectricityMemberCardOrder queryUserLastPaySuccessByUid(Long uid) {
+        return baseMapper.selectUserLastPaySuccessByUid(uid);
+    }
+
+    @Override
+    public Integer deactivateUsingOrder(Long uid) {
+        Long updateTime = System.currentTimeMillis();
+        return electricityMemberCardOrderMapper.deactivateUsingOrder(uid, updateTime);
     }
 
 

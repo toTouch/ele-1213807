@@ -2150,6 +2150,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0049", "电池押金已经缴纳，无需重复缴纳");
         }
+        
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            return Triple.of(false, "110211", "用户已缴纳车电一体押金");
+        }
+        
         return Triple.of(true, null, null);
     }
     

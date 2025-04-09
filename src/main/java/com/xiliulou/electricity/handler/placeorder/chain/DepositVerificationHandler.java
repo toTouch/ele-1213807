@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
@@ -49,7 +50,11 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
             throw new BizException("ELECTRICITY.0049", "已缴纳押金");
         }
         
-        if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT.getType()) && Objects.equals(context.getElectricityConfig().getIsEnableSeparateDeposit(),
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            throw new BizException("110211", "用户已缴纳车电一体押金");
+        }
+
+        if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT) && Objects.equals(context.getElectricityConfig().getIsEnableSeparateDeposit(),
                 ElectricityConfig.SEPARATE_DEPOSIT_CLOSE)) {
             throw new BizException("302001", "单独缴纳押金已禁用，请刷新后重新购买");
         }

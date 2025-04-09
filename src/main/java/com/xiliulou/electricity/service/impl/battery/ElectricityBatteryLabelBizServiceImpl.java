@@ -292,8 +292,11 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             String traceId = MDC.get(CommonConstant.TRACE_ID);
             batteriesNeedUpdate.parallelStream().forEach(battery -> {
                 MDC.put(CommonConstant.TRACE_ID, traceId);
-                
-                electricityBatteryService.syncModifyLabel(battery, null, modifyDto, false);
+                try {
+                    electricityBatteryService.syncModifyLabel(battery, null, modifyDto, false);
+                } finally {
+                    MDC.clear();
+                }
             });
             
             return R.ok(BatteryLabelBatchUpdateVO.builder().successCount(snList.size() - failureCount).failureCount(failureCount).failReasons(failReasons).build());
@@ -383,16 +386,17 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     @Override
     public void checkRentStatusForLabel(UserBatteryMemberCard userBatteryMemberCard, CarRentalPackageMemberTermPo memberTermPo) {
-        try {
-            if (Objects.isNull(userBatteryMemberCard) && Objects.isNull(memberTermPo)) {
-                log.warn("CHECK RENT STATUS FOR LABEL WARN! userBatteryMemberCard and memberTermPo is null");
-                return;
-            }
+        if (Objects.isNull(userBatteryMemberCard) && Objects.isNull(memberTermPo)) {
+            log.warn("CHECK RENT STATUS FOR LABEL WARN! userBatteryMemberCard and memberTermPo is null");
+            return;
+        }
+        
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        Integer tenantId = TenantContextHolder.getTenantId();
+        checkRentStatusForLabelExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
             
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            Integer tenantId = TenantContextHolder.getTenantId();
-            checkRentStatusForLabelExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
+            try {
                 Long uid = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getUid() : memberTermPo.getUid();
                 if (Objects.isNull(uid)) {
                     log.warn("CHECK RENT STATUS FOR LABEL WARN! uid is null");
@@ -454,12 +458,12 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     }
                     electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
                 }
-                
-            });
-            
-        } catch (Exception e) {
-            log.error("CHECK RENT STATUS FOR LABEL ERROR! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
-        }
+            } catch (Exception e) {
+                log.error("CHECK RENT STATUS FOR LABEL ERROR! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
     
     @Override
@@ -504,11 +508,10 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     @Override
     public void clearCacheBySn(String sn) {
-        try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            checkRentStatusForLabelExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
-                
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        checkRentStatusForLabelExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            try {
                 List<ElectricityCabinetBox> cabinetBoxes = electricityCabinetBoxService.listBySnList(List.of(sn));
                 if (CollectionUtils.isEmpty(cabinetBoxes)) {
                     return;
@@ -517,10 +520,11 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                 for (ElectricityCabinetBox box : cabinetBoxes) {
                     redisService.delete(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), sn));
                 }
-            });
-            
-        } catch (Exception e) {
-            log.error("CLEAR CACHE BY SN ERROR! sn={}", sn, e);
-        }
+            } catch (Exception e) {
+                log.error("CLEAR CACHE BY SN ERROR! sn={}", sn, e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
 }
