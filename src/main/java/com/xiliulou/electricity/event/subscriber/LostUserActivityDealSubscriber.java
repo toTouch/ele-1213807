@@ -5,6 +5,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantInviterModifyRecordConstant;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.MerchantInviterModifyRecord;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.event.LostUserActivityDealEvent;
@@ -61,6 +62,18 @@ public class LostUserActivityDealSubscriber {
 
         serviceWrapper.execute(() -> {
             try {
+                // 判断用户是否为流失用户
+                UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfoExtra)) {
+                    log.info("HANDLE LOST USER ACTIVITY DEAL EVENT INFO! userInfoExtra is null, uid：{}, orderId:{}", uid, event.getOrderId());
+                    return;
+                }
+
+                if (!Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                    log.info("HANDLE LOST USER ACTIVITY DEAL EVENT INFO! user is not lost user, uid：{}, orderId:{}", uid, event.getOrderId());
+                    return;
+                }
+
                 MerchantInviterVO successInviterVO = userInfoExtraService.querySuccessInviter(uid);
                 if (Objects.isNull(successInviterVO)) {
                     log.info("HANDLE LOST USER ACTIVITY DEAL EVENT INFO! inviter is empty, uid：{}, orderId:{}", uid, event.getOrderId());
