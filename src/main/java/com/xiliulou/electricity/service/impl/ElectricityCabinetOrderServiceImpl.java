@@ -3301,13 +3301,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     @Slave
-    public ElectricityCabinetOrder selectLatelyExchangeOrder(Long uid, Long startTime, Long currentTime) {
-        return electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, startTime, currentTime);
+    public ElectricityCabinetOrder selectLatelyExchangeOrder(Long uid, Long startTime, Long currentTime, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, startTime, currentTime, tenantId);
     }
 
 
     @Override
-    public ElectricityCabinetOrder selectLatelyExchangeOrderByDate(Long uid, Long currentTime) {
-        return electricityCabinetOrderMapper.selectLatelyExchangeOrderByDate(uid, currentTime);
+    @Slave
+    public ElectricityCabinetOrder selectLatelyExchangeOrderByDate(Long uid, Long currentTime, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectLatelyExchangeOrderByDate(uid, currentTime,tenantId);
     }
 }

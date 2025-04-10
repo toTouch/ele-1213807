@@ -121,9 +121,19 @@ public interface ElectricityCabinetOrderService {
     
     void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo);
 
-    ElectricityCabinetOrder selectLatelyExchangeOrderByDate(Long uid,  Long currentTime);
+    ElectricityCabinetOrder selectLatelyExchangeOrderByDate(Long uid,  Long currentTime, Integer tenantId);
 
-    ElectricityCabinetOrder selectLatelyExchangeOrder(Long uid, Long startTime, Long currentTime);
+    /**
+     * selectLatelyExchangeOrder
+     *
+     * @param uid uid
+     * @param startTime startTime
+     * @param currentTime currentTime
+     * @param tenantId tenantId
+     * @return: @return {@link ElectricityCabinetOrder }
+     */
+
+    ElectricityCabinetOrder selectLatelyExchangeOrder(Long uid, Long startTime, Long currentTime, Integer tenantId);
 
     List<ElectricityCabinetOrder> existExchangeOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid);
 }

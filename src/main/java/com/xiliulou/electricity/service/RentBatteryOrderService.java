@@ -89,7 +89,7 @@ public interface RentBatteryOrderService {
     
     List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList);
 
-    RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long scanTime, Long startTime, List<Integer> orderTypes);
+    RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long scanTime, Long startTime, List<Integer> orderTypes, Integer tenantId);
 
 
     R returnBatteryCheck(Integer electricityCabinetId);
@@ -101,5 +101,5 @@ public interface RentBatteryOrderService {
      */
     Boolean isRendReturnOrder(String orderId);
 
-    RentBatteryOrder queryLatelyReturnOrder(Long uid, Long scanTime, Long startTime);
+    RentBatteryOrder queryLatelyReturnOrder(Long uid, Long scanTime, Long startTime , Integer tenantId);
 }
