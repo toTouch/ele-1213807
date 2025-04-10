@@ -417,5 +417,10 @@ public class DateUtils {
             return days + "天" + hours + "小时";
         }
     }
-    
+
+    //时间格式化
+    public static String parseTimeToStringDateSecond(Long timeStamp) {
+        return DateUtil.format(new Date(timeStamp), "YYYY-MM-dd HH:mm:ss");
+    }
+
 }
