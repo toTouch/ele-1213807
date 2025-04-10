@@ -48,7 +48,7 @@ public class ChannelSourceFilter implements Filter {
         try {
             filterChain.doFilter(request, servletResponse);
         } finally {
-            TenantContextHolder.clear();
+            ChannelSourceContextHolder.clear();
         }
     }
 }
