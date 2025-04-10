@@ -70,7 +70,6 @@ public class LostUserActivityDealSubscriber {
                 }
 
                 if (!Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
-                    log.info("HANDLE LOST USER ACTIVITY DEAL EVENT INFO! user is not lost user, uid：{}, orderId:{}", uid, event.getOrderId());
                     return;
                 }
 
