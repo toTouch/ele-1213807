@@ -1549,6 +1549,11 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 log.warn("isCarZeroDepositOrder Info! not found memberTermEntity, uid is {}", userInfo.getUid());
                 return false;
             }
+
+            if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+                throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+            }
+
             CarRentalPackageDepositRefundPo refundDepositInsertEntity = new CarRentalPackageDepositRefundPo();
             refundDepositInsertEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, memberTermEntity.getUid()));
             refundDepositInsertEntity.setUid(memberTermEntity.getUid());
