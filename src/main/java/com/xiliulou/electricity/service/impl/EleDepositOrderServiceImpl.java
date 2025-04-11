@@ -1229,24 +1229,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 throw new BizException("120143", "用户套餐冻结审核中，不允许操作");
             }
 
-
-            // 生成退款订单
-            EleRefundOrder eleRefundOrder = new EleRefundOrder();
-            eleRefundOrder.setOrderId(orderId);
-            eleRefundOrder.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid()));
-            eleRefundOrder.setTenantId(userInfo.getTenantId());
-            eleRefundOrder.setFranchiseeId(userInfo.getFranchiseeId());
-            eleRefundOrder.setCreateTime(System.currentTimeMillis());
-            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
-            eleRefundOrder.setErrMsg(null);
-            eleRefundOrder.setPayType(eleDepositOrder.getPayType());
-            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
-            eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
-            eleRefundOrder.setRefundAmount(BigDecimal.ZERO);
-            eleRefundOrderService.insert(eleRefundOrder);
-
-            eleRefundOrderService.handleBatteryZeroDepositAndOfflineRefundOrder(eleRefundOrder, userInfo);
+            // 测试王洪欣要求后端这样改
+            eleRefundOrderService.batteryOffLineRefund("删除用户，0元退押", eleRefundAmount, userInfo.getUid(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER, CheckPayParamsResultEnum.SUCCESS.getCode());
             return false;
         }
         return true;

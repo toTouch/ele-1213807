@@ -1554,23 +1554,15 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
             }
 
-            CarRentalPackageDepositRefundPo refundDepositInsertEntity = new CarRentalPackageDepositRefundPo();
-            refundDepositInsertEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, memberTermEntity.getUid()));
-            refundDepositInsertEntity.setUid(memberTermEntity.getUid());
-            refundDepositInsertEntity.setDepositPayOrderNo(orderId);
-            refundDepositInsertEntity.setApplyAmount(memberTermEntity.getDeposit());
-            refundDepositInsertEntity.setTenantId(memberTermEntity.getTenantId());
-            refundDepositInsertEntity.setFranchiseeId(memberTermEntity.getFranchiseeId());
-            refundDepositInsertEntity.setStoreId(memberTermEntity.getStoreId());
-            refundDepositInsertEntity.setCreateUid(memberTermEntity.getUid());
-            refundDepositInsertEntity.setPayType(PayTypeEnum.ON_LINE.getCode());
-            refundDepositInsertEntity.setRentalPackageType(memberTermEntity.getRentalPackageType());
-            refundDepositInsertEntity.setPaymentChannel(null);
-            refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
-            refundDepositInsertEntity.setRealAmount(BigDecimal.ZERO);
 
-            // 退款中，先落库
-            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, userInfo.getUid(), true);
+            // 测试王洪欣要求后端这样改
+            CarRentalPackageDepositRefundOptModel optModel = new CarRentalPackageDepositRefundOptModel();
+            optModel.setRealAmount(eleRefundAmount);
+            optModel.setDepositPayOrderNo(orderId);
+            optModel.setCompelOffLine(1);
+            optModel.setUid(userInfo.getUid());
+            refundDepositCreate(optModel, userInfo.getUid());
+
             return false;
         }
         return true;
