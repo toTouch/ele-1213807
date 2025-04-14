@@ -19,4 +19,6 @@ public class IsSupportFreeServiceFeeDTO {
     private Boolean supportFreeServiceFee;
 
     private BigDecimal freeServiceFee;
+
+    private String errorMsg;
 }

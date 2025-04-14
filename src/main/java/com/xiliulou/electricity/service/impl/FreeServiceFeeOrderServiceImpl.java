@@ -111,6 +111,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         // 如果押金类型不是免押，走正常的支付
         if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             log.warn("isSupportFreeServiceFee WARN! User not free order ,uid is {} ", userInfo.getUid());
+            dto.setErrorMsg("不是免押，不需要支付服务费");
             return dto;
         }
 
@@ -118,12 +119,14 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && StrUtil.isNotBlank(userBatteryMemberCard.getOrderId())) {
             log.warn("isSupportFreeServiceFee WARN! User is renew member, don't need pay freeServiceFee, uid is {}", userInfo.getUid());
+            dto.setErrorMsg("续费套餐，不需要支付服务费");
             return dto;
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee) || Objects.isNull(franchisee.getFreeServiceFeeSwitch()) || Objects.equals(franchisee.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_CLOSE)) {
             log.warn("isSupportFreeServiceFee WARN! FreeServiceFeeSwitch is close , franchisee is {} ", userInfo.getFranchiseeId());
+            dto.setErrorMsg("加盟商未开启服务费，不需要支付服务费");
             return dto;
         }
 
@@ -131,6 +134,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         Integer existsPaySuccessOrder = applicationContext.getBean(FreeServiceFeeOrderService.class).existsPaySuccessOrder(eleDepositOrder.getOrderId(), userInfo.getUid());
         if (Objects.nonNull(existsPaySuccessOrder)) {
             log.info("isSupportFreeServiceFee Info! Current User Payed FreeServiceFee, freeDepositOrderId is {} , uid is {} ", eleDepositOrder.getOrderId(), userInfo.getUid());
+            dto.setErrorMsg("已支付过服务费，不需要支付服务费");
             return dto;
         }
 

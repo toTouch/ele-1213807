@@ -79,7 +79,7 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
         if (!supportFreeServiceFee.getSupportFreeServiceFee()) {
             // 如果只是缴纳免押服务费，这个需要中断
             if (Objects.equals(placeOrderType, FREE_SERVICE_FEE.getType())){
-                throw new BizException("402062", "不需要缴纳服务费，请刷新后重试");
+                throw new BizException("402062", supportFreeServiceFee.getErrorMsg());
             }
             fireProcess(context, result, placeOrderType);
             return;
