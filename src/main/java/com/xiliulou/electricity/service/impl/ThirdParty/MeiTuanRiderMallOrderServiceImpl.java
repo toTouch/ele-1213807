@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.ThirdParty;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -729,7 +730,17 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             
             vo.setMidBatteryTypes(midBatteryTypes);
         }
-        
+
+        // 是否新购买套餐
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard) && StrUtil.isNotBlank(userBatteryMemberCard.getOrderId())) {
+            // 续费
+            vo.setIsRenew(NumberConstant.ONE);
+        }else {
+            vo.setIsRenew(NumberConstant.ZERO);
+        }
+
+
         return R.ok(vo);
     }
     
