@@ -396,12 +396,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("FreeServiceFeeOrderHandler Warn! userBatteryDeposit is null, uid is {}", userInfo.getUid());
-            throw new BizException("100209", "未缴纳押金");
+            return Triple.of(false,"100209", "未缴纳押金");
         }
 
         IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
         if (supportFreeServiceFee.getSupportFreeServiceFee()) {
-            throw new BizException("402063", "请缴纳免押服务费");
+            return Triple.of(false, "402063", "请缴纳免押服务费");
         }
 
         return Triple.of(true, null, userInfo);
