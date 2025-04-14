@@ -1193,17 +1193,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal eleRefundAmount = refundAmoun.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmoun;
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
 
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userBatteryMemberCard)) {
-                return false;
-            }
-
-            //校验是否有退租审核中的订单
-            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(userBatteryMemberCard.getOrderId());
-            if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
-                throw new BizException("100282", "租金退款审核中，请等待审核确认后操作");
-            }
-
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
@@ -1218,16 +1207,27 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 throw new BizException("120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
             }
 
-
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("MeiTuan order redeem fail! userBatteryMemberCard disable, uid={}", userInfo.getUid());
-                throw new BizException("120142", "用户套餐冻结中，不允许操作");
-            }
-
-            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
-                log.warn("MeiTuan order redeem fail! userBatteryMemberCard freeze waiting approve, uid={} ", userInfo.getUid());
-                throw new BizException("120143", "用户套餐冻结审核中，不允许操作");
-            }
+//            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+//            if (Objects.isNull(userBatteryMemberCard)) {
+//                return false;
+//            }
+//
+//            //校验是否有退租审核中的订单
+//            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(userBatteryMemberCard.getOrderId());
+//            if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
+//                throw new BizException("100282", "租金退款审核中，请等待审核确认后操作");
+//            }
+//
+//
+//            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+//                log.warn("MeiTuan order redeem fail! userBatteryMemberCard disable, uid={}", userInfo.getUid());
+//                throw new BizException("120142", "用户套餐冻结中，不允许操作");
+//            }
+//
+//            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+//                log.warn("MeiTuan order redeem fail! userBatteryMemberCard freeze waiting approve, uid={} ", userInfo.getUid());
+//                throw new BizException("120143", "用户套餐冻结审核中，不允许操作");
+//            }
 
             // 测试王洪欣要求后端这样改
             eleRefundOrderService.batteryOffLineRefund("删除用户，0元退押", eleRefundAmount, userInfo.getUid(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER, CheckPayParamsResultEnum.SUCCESS.getCode());
