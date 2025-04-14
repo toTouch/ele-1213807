@@ -1230,7 +1230,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //            }
 
             // 测试王洪欣要求后端这样改
-            eleRefundOrderService.batteryOffLineRefund("删除用户，0元退押", eleRefundAmount, userInfo.getUid(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER, CheckPayParamsResultEnum.SUCCESS.getCode());
+            R r = eleRefundOrderService.batteryOffLineRefund("删除用户，0元退押", eleRefundAmount, userInfo.getUid(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER, CheckPayParamsResultEnum.SUCCESS.getCode());
+            if (!r.isSuccess()) {
+                throw new BizException(r.getErrCode(), r.getErrMsg());
+            }
             return false;
         }
         return true;
