@@ -101,7 +101,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(depositOrderId);
         if (Objects.isNull(eleDepositOrder)) {
             log.warn("isSupportFreeServiceFee Warn! EleDepositOrder is null, uid is {}", userInfo.getUid());
-            throw new BizException("ELECTRICITY.0049", "未缴纳押金");
+            throw new BizException("100209", "未缴纳押金");
         }
 
         if (!Objects.equals(eleDepositOrder.getStatus(), EleDepositOrder.STATUS_SUCCESS)) {

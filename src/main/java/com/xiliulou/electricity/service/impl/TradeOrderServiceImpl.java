@@ -528,7 +528,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 log.warn("BATTERY DEPOSIT WARN! user not pay deposit,uid={} ", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.0049", "未缴纳押金");
+                return Triple.of(false, "100209", "未缴纳押金");
             }
             
             BatteryMemberCard batteryMemberCardToBuy = batteryMemberCardService.queryByIdFromCache(query.getMemberId());

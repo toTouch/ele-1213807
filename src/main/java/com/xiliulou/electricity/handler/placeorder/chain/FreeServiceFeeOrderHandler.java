@@ -64,14 +64,14 @@ public class FreeServiceFeeOrderHandler extends AbstractPlaceOrderHandler {
         UserInfo userInfo = context.getUserInfo();
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.warn("PLACE ORDER WARN! user not pay deposit,uid={} ", userInfo.getUid());
-            throw new BizException("ELECTRICITY.0049", "未缴纳押金");
+            throw new BizException("100209", "未缴纳押金");
         }
 
         // 查询用户押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.warn("FreeServiceFeeOrderHandler Warn! userBatteryDeposit is null, uid is {}", userInfo.getUid());
-            throw new BizException("ELECTRICITY.0049", "未缴纳押金");
+            throw new BizException("100209", "未缴纳押金");
         }
 
         // 是否支持免押服务费
