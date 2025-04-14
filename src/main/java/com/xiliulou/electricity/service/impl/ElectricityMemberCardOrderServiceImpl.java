@@ -2847,6 +2847,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setActivityType(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityService.asyncProcessActivity(activityProcessDTO);
+
+        //  免押服务费判断
+        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+            CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                    .userInfo(userInfo)
+                    .depositOrderId(userBatteryDeposit.getOrderId())
+                    .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                    .payTime(System.currentTimeMillis())
+                    .paymentChannel(null)
+                    .build();
+            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO));
+        }
         
         sendUserCoupon(batteryMemberCardToBuy, memberCardOrder);
         Map<String, Object> map = new HashMap<>();
