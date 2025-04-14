@@ -1144,18 +1144,13 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(installmentRecord)) {
             return Triple.of(false, "301051", "该用户存在未完成的分期签约记录");
         }
-        
-        List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
-        if (DataUtil.collectionIsUsable(userOauthBinds)) {
-            delUserOauthBindAndClearToken(userOauthBinds);
-        }
-        
+
         // 判断用户是否为企业用户
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
         if (Objects.nonNull(enterpriseInfo)) {
             return Triple.of(false, "100253", "请先删除企业用户配置");
         }
-        
+
         // 判断企业用户云豆是否回收
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
@@ -1176,6 +1171,11 @@ public class UserServiceImpl implements UserService {
             }
         }
         
+        List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
+        if (DataUtil.collectionIsUsable(userOauthBinds)) {
+            delUserOauthBindAndClearToken(userOauthBinds);
+        }
+
         // 删除企业用户
         enterpriseChannelUserService.deleteByUid(uid);
         
