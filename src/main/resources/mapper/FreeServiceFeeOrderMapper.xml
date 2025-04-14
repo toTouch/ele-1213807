@@ -163,5 +163,6 @@
         <include refid="baseSql"/>
         from t_free_service_fee_order
         where free_deposit_order_id = #{freeDepositOrderId}
+        order by id desc limit 1
     </select>
 </mapper>
