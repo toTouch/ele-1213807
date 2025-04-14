@@ -12,6 +12,7 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.dto.thirdParty.MtDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -29,24 +30,12 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.thirdParty.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.thirdPartyMall.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.thirdParty.OrderQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.thirdParty.NotifyMeiTuanDeliverReq;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.ThirdPartyMallRetrofitService;
 import com.xiliulou.electricity.service.thirdParty.MeiTuanOrderRedeemTxService;
@@ -83,6 +72,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.enums.PlaceOrderTypeEnum.FREE_SERVICE_FEE;
 
 /**
  * @author HeYafeng
@@ -164,6 +155,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private UserDelRecordService userDelRecordService;
+
+    @Resource
+    private FreeServiceFeeOrderService freeServiceFeeOrderService;
     
     @Slave
     @Override
@@ -203,6 +197,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             if (!preCheckUser.getLeft()) {
                 return Triple.of(false, preCheckUser.getMiddle(), preCheckUser.getRight());
             }
+
+
             
             UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfoExtra)) {
@@ -395,7 +391,19 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             log.warn("MeiTuan order redeem fail! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-        
+
+        // 查询用户押金
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("FreeServiceFeeOrderHandler Warn! userBatteryDeposit is null, uid is {}", userInfo.getUid());
+            throw new BizException("100209", "未缴纳押金");
+        }
+
+        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+            throw new BizException("402063", "请缴纳免押服务费");
+        }
+
         return Triple.of(true, null, userInfo);
     }
     
