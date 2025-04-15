@@ -1194,18 +1194,18 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
 
 
-            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userBatteryDeposit)) {
-                log.warn("purchase package by enterprise user error, not found userBatteryDeposit,uid={}", userInfo.getUid());
-                throw new BizException("ELECTRICITY.0001", "用户信息不存在");
-            }
-
-            // 是否有正在进行中的退押
-            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
-            if (refundCount > 0) {
-                log.warn("purchase package by enterprise user error, have refunding order,uid={}", userInfo.getUid());
-                throw new BizException("120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
-            }
+//            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+//            if (Objects.isNull(userBatteryDeposit)) {
+//                log.warn("purchase package by enterprise user error, not found userBatteryDeposit,uid={}", userInfo.getUid());
+//                throw new BizException("ELECTRICITY.0001", "用户信息不存在");
+//            }
+//
+//            // 是否有正在进行中的退押
+//            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+//            if (refundCount > 0) {
+//                log.warn("purchase package by enterprise user error, have refunding order,uid={}", userInfo.getUid());
+//                throw new BizException("120317", "您退押正在审核中，暂无法使用");
+//            }
 
 //            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
 //            if (Objects.isNull(userBatteryMemberCard)) {

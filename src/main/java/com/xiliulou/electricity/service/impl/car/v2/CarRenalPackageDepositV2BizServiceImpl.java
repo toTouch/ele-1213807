@@ -1544,15 +1544,15 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
 
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
-            if (Objects.isNull(memberTermEntity)) {
-                log.warn("isCarZeroDepositOrder Info! not found memberTermEntity, uid is {}", userInfo.getUid());
-                return false;
-            }
-
-            if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-                throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
-            }
+//            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
+//            if (Objects.isNull(memberTermEntity)) {
+//                log.warn("isCarZeroDepositOrder Info! not found memberTermEntity, uid is {}", userInfo.getUid());
+//                return false;
+//            }
+//
+//            if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+//                throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+//            }
 
 
             // 测试王洪欣要求后端这样改
