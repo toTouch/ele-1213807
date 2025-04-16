@@ -2828,7 +2828,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (batteryMemberCardToBuy.getDeposit().compareTo(deposit) > 0) {
             return Triple.of(false, "100033", "套餐押金金额与缴纳押金不匹配，请刷新重试");
         }
-        
+
+        //  免押服务费判断
+        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+            CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                    .userInfo(userInfo)
+                    .depositOrderId(userBatteryDeposit.getOrderId())
+                    .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                    .payTime(System.currentTimeMillis())
+                    .paymentChannel(null)
+                    .build();
+            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO));
+        }
+
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCardToBuy, userBatteryMemberCard, userBindbatteryMemberCard,
                 null, null, null,null);
         
@@ -2848,19 +2862,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityService.asyncProcessActivity(activityProcessDTO);
 
-        //  免押服务费判断
-        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
-        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
-            CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
-                    .userInfo(userInfo)
-                    .depositOrderId(userBatteryDeposit.getOrderId())
-                    .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
-                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
-                    .payTime(System.currentTimeMillis())
-                    .paymentChannel(null)
-                    .build();
-            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO));
-        }
+
         
         sendUserCoupon(batteryMemberCardToBuy, memberCardOrder);
         Map<String, Object> map = new HashMap<>();
@@ -2894,7 +2896,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
         memberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         this.insert(memberCardOrder);
-        
+
+        //  免押服务费判断
+        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, depoisitOrderId);
+        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+            CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                    .userInfo(userInfo)
+                    .depositOrderId(depoisitOrderId)
+                    .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
+                    .payTime(System.currentTimeMillis())
+                    .paymentChannel(null)
+                    .build();
+            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO));
+        }
+
+
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(memberCardOrder.getUid());
         userBatteryMemberCardUpdate.setOrderId(memberCardOrder.getOrderId());
@@ -2956,19 +2973,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityService.asyncProcessActivity(activityProcessDTO);
 
-        //  免押服务费判断
-        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, depoisitOrderId);
-        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
-            CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
-                    .userInfo(userInfo)
-                    .depositOrderId(depoisitOrderId)
-                    .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
-                    .status(FreeServiceFeeStatusEnum.STATUS_SUCCESS.getStatus())
-                    .payTime(System.currentTimeMillis())
-                    .paymentChannel(null)
-                    .build();
-            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO));
-        }
 
 
         // 赠送优惠券
