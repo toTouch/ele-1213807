@@ -117,7 +117,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
         // 是否新购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(userBatteryMemberCard) && StrUtil.isNotBlank(userBatteryMemberCard.getOrderId())) {
+        if (Objects.nonNull(userBatteryMemberCard) && (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L))) {
             log.warn("isSupportFreeServiceFee WARN! User is renew member, don't need pay freeServiceFee, uid is {}", userInfo.getUid());
             dto.setErrorMsg("续费套餐，不需要支付服务费");
             return dto;
