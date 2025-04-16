@@ -1561,6 +1561,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             optModel.setDepositPayOrderNo(orderId);
             optModel.setCompelOffLine(1);
             optModel.setUid(userInfo.getUid());
+            optModel.setTenantId(userInfo.getTenantId());
             refundDepositCreate(optModel, userInfo.getUid());
 
             return false;
