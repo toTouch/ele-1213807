@@ -1131,6 +1131,11 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
+        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            return Triple.of(false, "402030", "请退还押金后，进行删除操作");
+        }
 
         if (Objects.equals(userRentInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还后再删除");
