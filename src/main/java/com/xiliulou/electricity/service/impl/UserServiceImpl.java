@@ -1157,19 +1157,19 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "", "该用户名下有未回收的云豆订单，请联系所属企业处理");
         }
 
-        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            // 如果不是零元退押
-            if (eleDepositOrderService.isZeroDepositOrder(userRentInfo)) {
-                return Triple.of(false, "402030", "请退还换电押金后，进行删除操作");
-            }
-        }
-
-        if (Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
-                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            if (carRenalPackageDepositV2BizService.isCarZeroDepositOrder(userRentInfo)) {
-                return Triple.of(false, "402030", "请退还租车押金后，进行删除操作");
-            }
-        }
+//        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+//            // 如果不是零元退押
+//            if (eleDepositOrderService.isZeroDepositOrder(userRentInfo)) {
+//                return Triple.of(false, "402030", "请退还换电押金后，进行删除操作");
+//            }
+//        }
+//
+//        if (Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+//                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+//            if (carRenalPackageDepositV2BizService.isCarZeroDepositOrder(userRentInfo)) {
+//                return Triple.of(false, "402030", "请退还租车押金后，进行删除操作");
+//            }
+//        }
         
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
