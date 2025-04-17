@@ -210,7 +210,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private static final String OPEN_FAN_CONDITION_KEY = "openFanCondition";
     
     private static final String OPEN_HEAT_CONDITION_KEY = "openHeatCondition";
-    
+
+    private static final Integer ALI_IOT_MODE = 0;
+    private static final Integer HAWEI_IOT_MODE = 1;
+
     /**
      * 吞电池优化版本
      */
@@ -2969,27 +2972,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (StringUtils.isBlank(productKey) || StringUtils.isBlank(deviceName)) {
             return R.fail("SYSTEM.0003", "参数不合法");
         }
-        
-        if (Objects.equals(EleCabinetConstant.TCP_PATTERN, iotConnectMode)) {
-            EleDeviceCode deviceCode = eleDeviceCodeService.queryBySnFromCache(productKey, deviceName);
-            if (Objects.isNull(deviceCode)) {
-                log.warn("checkDevice warn! not found deviceCode,p={},d={}", productKey, deviceName);
-                return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
-            }
-            
-            if (this.deviceIsOnlineForTcp(productKey, deviceName)) {
-                log.warn("checkDevice warn!,device is online,p={},d={}", productKey, deviceName);
-                return R.fail("CUPBOARD.10036", "三元组在线");
-            }
-        } else {
+
+        //0:阿里云 1：华为云 2:阿里云TCP 3:华为云TCP
+        if (Objects.equals(ALI_IOT_MODE, iotConnectMode)) {
             Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
             if (!result.getLeft()) {
                 log.warn("checkDevice warn! errorMsg={}", result.getLeft());
                 return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
             }
-            
+
             if (ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())) {
                 log.warn("checkDevice warn!errorMsg={}", result.getRight());
+                return R.fail("CUPBOARD.10036", "三元组在线");
+            }
+        } else {
+            EleDeviceCode deviceCode = eleDeviceCodeService.queryBySnFromCache(productKey, deviceName);
+            if (Objects.isNull(deviceCode)) {
+                log.warn("checkDevice warn! not found deviceCode,p={},d={}", productKey, deviceName);
+                return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+            }
+
+            if (this.deviceIsOnlineForTcp(productKey, deviceName)) {
+                log.warn("checkDevice warn!,device is online,p={},d={}", productKey, deviceName);
                 return R.fail("CUPBOARD.10036", "三元组在线");
             }
         }
