@@ -1433,6 +1433,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 if (!manageInsuranceOrderResult.getLeft()) {
                     return manageInsuranceOrderResult;
                 }
+            }else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.FREE_SERVICE_FEE)) {
+                // 免押服务费
+                freeServiceFeeOrderService.notifyOrderHandler(orderIdList.get(i), tradeOrderStatus, userInfo);
             }
         }
         
