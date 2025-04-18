@@ -1119,7 +1119,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 // 保存相关订单并调起支付
                 saveOrderAndPayResult = applicationContext.getBean(TradeOrderServiceImpl.class)
                         .saveOrderAndPay(eleDepositOrder, insuranceOrder, installmentRecordTriple.getRight(), memberCardOrderTriple.getRight(), batteryMemberCard, userOauthBind,
-                                userInfo, request);
+                                userInfo, request, basePayConfig);
                 
                 // 设置三天后的当前时刻减去10分钟
                 double score = (double) Instant.now().plus(3, ChronoUnit.DAYS).minus(10, ChronoUnit.MINUTES).toEpochMilli();
@@ -1139,7 +1139,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     }
     
     public Triple<Boolean, String, Object> saveOrderAndPay(EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder, InstallmentRecord installmentRecord,
-            ElectricityMemberCardOrder memberCardOrder, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo, HttpServletRequest request)
+            ElectricityMemberCardOrder memberCardOrder, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo, HttpServletRequest request, BasePayConfig basePayConfig)
             throws PayException {
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
@@ -1173,8 +1173,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         // 保存一期套餐订单
         electricityMemberCardOrderService.insert(memberCardOrder);
 
-        // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-        BasePayConfig basePayConfig = payConfigBizService.queryPayParams(ChannelSourceContextHolder.get(), userInfo.getTenantId(), batteryMemberCard.getFranchiseeId(), null);
 
         // 查询用户押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
