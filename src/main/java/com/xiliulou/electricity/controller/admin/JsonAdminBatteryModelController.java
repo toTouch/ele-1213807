@@ -100,6 +100,14 @@ public class JsonAdminBatteryModelController extends BaseController {
         return R.ok(batteryModelService.selectBatteryTypeAll());
     }
 
+    /**
+     * 获取租户所有电池型号，包含标准型号
+     */
+    @GetMapping("/admin/simple/battery/model/list")
+    public R simpleBatteryTypeList() {
+        return R.ok(batteryModelService.simpleBatteryTypeList());
+    }
+
     @GetMapping("/admin/simple/battery/model/all")
     public R selectBatteryVAll() {
         return R.ok(batteryModelService.selectBatteryVAll());
