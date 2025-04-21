@@ -476,7 +476,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Slave
     public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
 
-        queryConditions(memberCardOrderQuery);
+//        queryConditions(memberCardOrderQuery);
 
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
         if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
@@ -609,7 +609,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Slave
     @Override
     public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
-        queryConditions(memberCardOrderQuery);
+//        queryConditions(memberCardOrderQuery);
         return R.ok(baseMapper.queryCount(memberCardOrderQuery));
     }
 
@@ -1776,12 +1776,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             });
             offset += size;
         }
-    }
-    
-    
-    public static void main(String[] args) {
-        System.out.println(DateUtil.format(new Date(1726303200186L), "yyyy-MM-dd HH:mm:ss"));
-        System.out.println(DateUtil.format(new Date(1726303484455L), "yyyy-MM-dd HH:mm:ss"));
     }
     
     @Override
