@@ -98,7 +98,7 @@
             <if test="query.paymentChannel != null and query.paymentChannel != ''">
                 and tel.payment_channel = #{query.paymentChannel}
             </if>
-            <if test="query.memberCardIds != null">
+            <if test="query.memberCardIds != null and query.memberCardIds.size()>0">
                 and tel.member_card_id in
                 <foreach collection="query.memberCardIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
@@ -182,7 +182,7 @@
             <if test="query.paymentChannel != null and query.paymentChannel != ''">
                 and tel.payment_channel = #{query.paymentChannel}
             </if>
-            <if test="query.memberCardIds != null">
+            <if test="query.memberCardIds != null and query.memberCardIds.size()>0">
                 and tel.member_card_id in
                 <foreach collection="query.memberCardIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
@@ -190,7 +190,6 @@
             </if>
         </where>
     </select>
-    
     
     <select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT * FROM
