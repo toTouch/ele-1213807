@@ -64,6 +64,9 @@ public class NumberConstant {
     public static final BigDecimal TWENTY_FIVE_DB = BigDecimal.valueOf(25);
     
     public static final BigDecimal SEVENTY_FIVE_DB = BigDecimal.valueOf(75);
-    
+
+    public static final BigDecimal MAX_SERVICE_FEE = BigDecimal.valueOf(10000);
+    public static final BigDecimal MIN_SERVICE_FEE = BigDecimal.valueOf(0);
+
     public static final int NUMBER_10 = 10;
 }
