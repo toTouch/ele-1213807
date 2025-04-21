@@ -914,7 +914,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(false, "301041", "服务费开关开启，服务费不能为空");
         }
 
-        if (franchiseeAddAndUpdate.getFreeServiceFee().compareTo(NumberConstant.MIN_SERVICE_FEE) > 0 && franchiseeAddAndUpdate.getFreeServiceFee().compareTo(NumberConstant.MAX_SERVICE_FEE) < 0) {
+        if (!(franchiseeAddAndUpdate.getFreeServiceFee().compareTo(NumberConstant.MIN_SERVICE_FEE) > 0 && franchiseeAddAndUpdate.getFreeServiceFee().compareTo(NumberConstant.MAX_SERVICE_FEE) < 0)) {
             return Triple.of(false, "301045", "免押服务费不合法");
         }
 
