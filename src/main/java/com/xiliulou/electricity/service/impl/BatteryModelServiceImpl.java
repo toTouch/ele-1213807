@@ -264,7 +264,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Collections.emptyList();
         }
 
-        List<BatteryModelItem> simpleBatteryModelList = batteryModels.stream().map(item -> {
+        List<BatteryModelItem> simpleBatteryModelList = batteryModels.stream().sorted(Comparator.comparingDouble(BatteryModel::getBatteryV)).map(item -> {
             BatteryModelItem batteryModelItem = new BatteryModelItem();
             batteryModelItem.setKey(item.getBatteryType());
             batteryModelItem.setValue(item.getBatteryVShort());
