@@ -31,10 +31,10 @@
         tel.external_agreement_no,
         tel.issue
         from t_electricity_member_card_order tel
-        <if test="query.model != null and '' != query.model and query.model != '1'">
+        <if test="query.model != null and '' != query.model and query.model.toString() != '1'">
             left join t_member_card_battery_type mcbt on tel.member_card_id = mcbt.mid
         </if>
-        <if test="query.model != null and '' != query.model and query.model == '1'">
+        <if test="query.model != null and '' != query.model and query.model.toString() == '1'">
             left join t_franchisee tf on tel.franchisee_id = tf.id
         </if>
         <where>
@@ -89,10 +89,10 @@
             <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
                 and tel.external_agreement_no = #{query.externalAgreementNo}
             </if>
-            <if test="query.model != null and '' != query.model and query.model != '1'">
+            <if test="query.model != null and '' != query.model and query.model.toString() != '1'">
                 and mcbt.batteryType = #{query.model}
             </if>
-            <if test="query.model != null and '' != query.model and query.model == '1'">
+            <if test="query.model != null and '' != query.model and query.model.toString() == '1'">
                 and tf.model_type = 1
             </if>
             <if test="query.franchiseeIds != null">
@@ -124,10 +124,10 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_electricity_member_card_order tel
-        <if test="query.model != null and '' != query.model and query.model != '1'">
+        <if test="query.model != null and '' != query.model and query.model.toString() != '1'">
             left join t_member_card_battery_type mcbt on tel.member_card_id = mcbt.mid
         </if>
-        <if test="query.model != null and '' != query.model and query.model == '1'">
+        <if test="query.model != null and '' != query.model and query.model.toString() == '1'">
             left join t_franchisee tf on tel.franchisee_id = tf.id
         </if>
         <where>
@@ -179,10 +179,10 @@
             <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
                 and tel.external_agreement_no = #{query.externalAgreementNo}
             </if>
-            <if test="query.model != null and '' != query.model and query.model != '1'">
+            <if test="query.model != null and '' != query.model and query.model.toString() != '1'">
                 and mcbt.batteryType = #{query.model}
             </if>
-            <if test="query.model != null and '' != query.model and query.model == '1'">
+            <if test="query.model != null and '' != query.model and query.model.toString() == '1'">
                 and tf.model_type = 1
             </if>
             <if test="query.franchiseeIds != null">
