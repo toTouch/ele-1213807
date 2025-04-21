@@ -907,11 +907,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     private Triple<Boolean, String, Object> verifyServiceFee(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
         if (Objects.equals(franchiseeAddAndUpdate.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_OPEN) && Objects.isNull(franchiseeAddAndUpdate.getFreeServiceFee())) {
-            return Triple.of(false, "402060", "服务费开关开启，服务费不能为空");
+            return Triple.of(false, "301041", "服务费开关开启，服务费不能为空");
         }
 
         if (Objects.equals(franchiseeAddAndUpdate.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_OPEN) && BigDecimal.ZERO.compareTo(franchiseeAddAndUpdate.getFreeServiceFee()) == 0) {
-            return Triple.of(false, "402064", "免押服务费不合法");
+            return Triple.of(false, "301045", "免押服务费不合法");
         }
 
         return Triple.of(true, null, null);

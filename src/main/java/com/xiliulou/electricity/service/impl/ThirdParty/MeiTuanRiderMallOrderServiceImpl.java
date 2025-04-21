@@ -401,7 +401,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
 
         IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
         if (supportFreeServiceFee.getSupportFreeServiceFee()) {
-            return Triple.of(false, "402063", "请缴纳免押服务费");
+            return Triple.of(false, "301044", "请缴纳免押服务费");
         }
 
         return Triple.of(true, null, userInfo);

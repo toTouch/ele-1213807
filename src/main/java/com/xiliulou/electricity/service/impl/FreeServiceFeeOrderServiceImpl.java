@@ -168,7 +168,7 @@ public class FreeServiceFeeOrderServiceImpl implements FreeServiceFeeOrderServic
 
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getDepositOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            throw new BizException("402061", "不存在的免押订单");
+            throw new BizException("301042", "不存在的免押订单");
         }
         return FreeServiceFeeOrder.builder().uid(userInfo.getUid()).name(userInfo.getName()).phone(userInfo.getPhone()).orderId(freeServiceFeeOrderId)
                 .freeDepositOrderId(dto.getDepositOrderId()).payAmount(dto.getFreeServiceFee()).status(dto.getStatus()).depositType(freeDepositOrder.getDepositType())
