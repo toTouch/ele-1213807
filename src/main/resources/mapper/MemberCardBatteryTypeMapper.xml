@@ -28,9 +28,12 @@
     </select>
 
     <select id="selectMemberCardIdsByBatteryType" resultType="java.lang.Long">
-        select mid from t_member_card_battery_type
-        where battery_type = #{batteryType}
-        and tenant_id = #{tenantId}
+        select bmc.id
+        from t_battery_member_card bmc
+                 left join t_member_card_battery_type mcbt on bmc.id = mcbt.mid
+        where mcbt.battery_type = #{batteryType}
+          and bmc.tenant_id = #{tenantId}
+          and bmc.del_flag = 0
     </select>
 
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">

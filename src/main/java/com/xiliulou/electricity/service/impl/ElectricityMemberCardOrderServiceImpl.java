@@ -631,11 +631,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 List<Long> currentId = franchiseeIds.stream().filter(item -> Objects.equals(item, memberCardOrderQuery.getFranchiseeId())).collect(Collectors.toList());
                 memberCardOrderQuery.setFranchiseeIds(currentId);
             }
-        } else {
-            // 电池型号
-            List<Long> memberCardIds = memberCardBatteryTypeService.queryMemberCardIdsByBatteryType(memberCardOrderQuery.getTenantId(), memberCardOrderQuery.getModel());
-            memberCardOrderQuery.setMemberCardIds(memberCardIds);
         }
+//        else {
+//            // 电池型号
+//            List<Long> memberCardIds = memberCardBatteryTypeService.queryMemberCardIdsByBatteryType(memberCardOrderQuery.getTenantId(), memberCardOrderQuery.getModel());
+//            memberCardOrderQuery.setMemberCardIds(memberCardIds);
+//        }
 
     }
 
