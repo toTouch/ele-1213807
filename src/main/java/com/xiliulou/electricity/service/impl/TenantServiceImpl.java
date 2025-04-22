@@ -601,7 +601,7 @@ public class TenantServiceImpl implements TenantService {
             return;
         }
         Integer code = JSONUtil.parseObj(result).getInt("code");
-        if (!Objects.equals(code, HttpStatus.OK.value())){
+        if (Objects.isNull(code) || !Objects.equals(code, HttpStatus.OK.value())) {
             return;
         }
         
