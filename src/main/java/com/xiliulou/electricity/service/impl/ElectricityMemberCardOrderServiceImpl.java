@@ -729,8 +729,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         
+        if (Objects.equals(ElectricityConfig.NOT_ALLOW_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard())) {
+            return R.fail("100470", "未开启冻结套餐功能");
+        }
+        
         boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(userInfo, user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
-        if (Objects.equals(ElectricityConfig.NOT_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS,
+        if (Objects.equals(ElectricityConfig.ALLOW_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS,
                 electricityConfig.getAllowFreezeWithAssets()) && hasAssets) {
             throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }

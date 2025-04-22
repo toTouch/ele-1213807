@@ -2,8 +2,11 @@ package com.xiliulou.electricity.service.impl.asset;
 
 import com.xiliulou.electricity.bo.asset.AssetBatchExitWarehouseBO;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
@@ -12,6 +15,8 @@ import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetManageService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -82,10 +87,21 @@ public class AssetManageServiceImpl implements AssetManageService {
                         
                         //库房记录
                         Long warehouseId = assetBatchExitWarehouseRequest.getWarehouseId();
+                        List<String> snList = data.getSnList();
                         if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
                             
-                            assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, data.getSnList(), type,
+                            assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, snList, type,
                                     WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
+                        }
+                        
+                        // 修改电池标签
+                        if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type) && CollectionUtils.isNotEmpty(snList)) {
+                            for (String sn : snList) {
+                                ElectricityBattery battery = ElectricityBattery.builder().sn(sn).tenantId(TenantContextHolder.getTenantId()).build();
+                                BatteryLabelModifyDTO labelModifyDTO = BatteryLabelModifyDTO.builder().newLabel(BatteryLabelEnum.INVENTORY.getCode())
+                                        .operatorUid(SecurityUtils.getUid()).build();
+                                electricityBatteryService.asyncModifyLabel(battery, null, labelModifyDTO, false);
+                            }
                         }
                     }
                 }

@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.battery.BatteryLabelRecord;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
@@ -104,6 +106,9 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     @Resource
     private RedisService redisService;
+    
+    @Resource
+    private UserInfoService userInfoService;
     
     private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 2, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
     
@@ -392,7 +397,6 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         }
         
         String traceId = MDC.get(CommonConstant.TRACE_ID);
-        Integer tenantId = TenantContextHolder.getTenantId();
         checkRentStatusForLabelExecutor.execute(() -> {
             MDC.put(CommonConstant.TRACE_ID, traceId);
             
@@ -402,7 +406,13 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     log.warn("CHECK RENT STATUS FOR LABEL WARN! uid is null");
                     return;
                 }
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfo)) {
+                    log.warn("CHECK RENT STATUS FOR LABEL WARN! userInfo is null, uid={}", uid);
+                    return;
+                }
                 
+                Integer tenantId = userInfo.getTenantId();
                 List<ElectricityBattery> batteries = electricityBatteryService.listByUid(uid, tenantId);
                 
                 if (CollectionUtils.isEmpty(batteries)) {
