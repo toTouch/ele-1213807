@@ -90,7 +90,7 @@
                 and tel.external_agreement_no = #{query.externalAgreementNo}
             </if>
             <if test="query.model != null and '' != query.model and query.model != '1'.toString()">
-                and mcbt.batteryType = #{query.model}
+                and mcbt.battery_type = #{query.model}
             </if>
             <if test="query.model != null and '' != query.model and query.model == '1'.toString()">
                 and tf.model_type = 1
@@ -180,7 +180,7 @@
                 and tel.external_agreement_no = #{query.externalAgreementNo}
             </if>
             <if test="query.model != null and '' != query.model and query.model != '1'.toString()">
-                and mcbt.batteryType = #{query.model}
+                and mcbt.battery_type = #{query.model}
             </if>
             <if test="query.model != null and '' != query.model and query.model == '1'.toString()">
                 and tf.model_type = 1
