@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
@@ -50,6 +51,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -596,19 +598,24 @@ public class TenantServiceImpl implements TenantService {
         headerMap.put("Content-Type", "application/json");
         String result = restTemplateService.postForStringWithJson(endPoint, json.toJSONString(), headerMap);
         if (StrUtil.isEmpty(result)) {
-            throw new BizException("获取卡池信息为空！");
+            return;
         }
-
-        JSONUtil.parseObj(result).getJSONArray("data").forEach(e -> {
-            Map<String, Object> map = (Map<String, Object>) e;
-            CabinetCardDTO dto = CabinetCardDTO.builder().code(map.get("code").toString())
-                    .dataBalance(map.get("data_balance").toString())
-                    .dataTrafficAmount(map.get("data_traffic_amount").toString())
-                    .expiryDate(map.get("expiry_date").toString())
-                    .codeType(codeModeMap.get(map.get("code").toString()).intValue())
-                    .build();
-            cabinetCardMap.put(map.get("iccid").toString(), dto);
-        });
+        Integer code = JSONUtil.parseObj(result).getInt("code");
+        if (!Objects.equals(code, HttpStatus.OK.value())){
+            return;
+        }
+        
+        JSONArray array = JSONUtil.parseObj(result).getJSONArray("data");
+        if (CollUtil.isNotEmpty(array)) {
+            array.forEach(e -> {
+                Map<String, Object> map = (Map<String, Object>) e;
+                CabinetCardDTO dto = CabinetCardDTO.builder().code(map.get("code").toString()).dataBalance(map.get("data_balance").toString())
+                        .dataTrafficAmount(map.get("data_traffic_amount").toString()).expiryDate(map.get("expiry_date").toString())
+                        .codeType(codeModeMap.get(map.get("code").toString()).intValue()).build();
+                cabinetCardMap.put(map.get("iccid").toString(), dto);
+            });
+        }
+       
     }
 
 
@@ -624,7 +631,6 @@ public class TenantServiceImpl implements TenantService {
         Map<String, Double> billingModes = new HashMap<>();
         String params = StringUtils.EMPTY;
         String endPoint = CardInfoConstant.url + CardInfoConstant.apiKey + CardInfoConstant.billGroupPath + "?_sign=" + getMD5(params);
-        System.out.println(endPoint);
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("Content-Type", "application/json");
 
