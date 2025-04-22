@@ -34,7 +34,7 @@ public interface RentBatteryOrderService {
 
     R rentBattery(RentBatteryQuery rentBatteryQuery);
 
-    R returnBattery(Integer electricityCabinetId);
+    R returnBattery(Integer electricityCabinetId, Integer isFreeze);
 
     void update(RentBatteryOrder rentBatteryOrder);
 
@@ -100,4 +100,6 @@ public interface RentBatteryOrderService {
      * 根据订单号判断是否租退电订单
      */
     Boolean isRendReturnOrder(String orderId);
+
+    RentBatteryOrder queryLatelyReturnOrder(Long uid, Long scanTime, Long startTime);
 }

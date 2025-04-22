@@ -367,6 +367,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
         }
         
+        log.info("USER BATTERY MEMBER CARD INFO! query={}", JsonUtil.toJson(query));
+        
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUserV2(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
@@ -797,6 +799,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             // 流失用户查询新租和不限
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
         }
+        
+        log.info("USER BATTERY MEMBER CARD INFO! query={}", JsonUtil.toJson(query));
         
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUserV2(query);
         if (CollectionUtils.isEmpty(list)) {
@@ -1412,6 +1416,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         return Boolean.FALSE;
+    }
+    
+    @Slave
+    @Override
+    public List<BatteryMemberCard> listByIdListIncludeDel(List<Long> ids) {
+        return batteryMemberCardMapper.selectListByIdListIncludeDel(ids);
     }
     
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

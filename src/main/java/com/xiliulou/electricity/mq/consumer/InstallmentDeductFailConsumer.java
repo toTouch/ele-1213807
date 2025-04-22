@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mq.consumer;
 
 import cn.hutool.core.util.IdUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.dto.InstallmentMqCommonDTO;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.Objects;
 
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_DEDUCT_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_DEDUCTING;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
@@ -35,6 +37,9 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 @Component
 @RocketMQMessageListener(topic = MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, selectorExpression = MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, consumerGroup = MqConsumerConstant.INSTALLMENT_DEDUCT_FAIL_GROUP, consumeThreadMax = 3)
 public class InstallmentDeductFailConsumer implements RocketMQListener<String> {
+    
+    @Resource
+    private RedisService redisService;
     
     @Resource
     private InstallmentDeductionPlanService installmentDeductionPlanService;
@@ -62,7 +67,15 @@ public class InstallmentDeductFailConsumer implements RocketMQListener<String> {
             handleDeductPlanFail(deductionPlan);
             
             InstallmentDeductionRecord deductionRecord = installmentDeductionRecordService.queryById(deductionRecordId);
-            handleDeductRecordFail(deductionRecord);
+            if (Objects.isNull(deductionRecord)) {
+                return;
+            }
+            // 不能取反return掉，需要释放锁
+            if (Objects.equals(deductionRecord.getStatus(), DEDUCTION_RECORD_STATUS_INIT)) {
+                handleDeductRecordFail(deductionRecord);
+            }
+            // 释放带扣锁，即使有一次代扣多个代扣计划的套餐，这里也可以直接释放了，不用等待全部都修改成失败再释放
+            redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, deductionRecord.getUid()));
         } catch (Exception e) {
            log.error("INSTALLMENT DEDUCT FAIL CONSUMER. commonDTO={}", commonDTO, e);
         } finally {
@@ -88,10 +101,6 @@ public class InstallmentDeductFailConsumer implements RocketMQListener<String> {
     }
     
     private void handleDeductRecordFail(InstallmentDeductionRecord deductionRecord) {
-        if (Objects.isNull(deductionRecord) || !Objects.equals(deductionRecord.getStatus(), DEDUCTION_RECORD_STATUS_INIT)) {
-            return;
-        }
-        
         InstallmentDeductionRecord deductionRecordUpdate = new InstallmentDeductionRecord();
         deductionRecordUpdate.setId(deductionRecord.getId());
         deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_FAIL);

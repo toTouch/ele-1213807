@@ -1,17 +1,24 @@
 package com.xiliulou.electricity.service.impl.battery;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.battery.BatteryLabelRecord;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -19,11 +26,13 @@ import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
 import com.xiliulou.electricity.request.battery.BatteryLabelBatchUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
@@ -33,6 +42,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.battery.BatteryLabelBatchUpdateVO;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -50,6 +60,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.mq.constant.MqProducerConstant.BATTERY_LABEL_RECORD_TOPIC;
 
 /**
  * @author SJP
@@ -86,7 +98,19 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     @Resource
     private MerchantService merchantService;
     
-    private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 1, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
+    @Resource
+    private RocketMqService rocketMqService;
+    
+    @Resource
+    private ElectricityCabinetBoxService electricityCabinetBoxService;
+    
+    @Resource
+    private RedisService redisService;
+    
+    @Resource
+    private UserInfoService userInfoService;
+    
+    private final static ExecutorService checkRentStatusForLabelExecutor = XllThreadPoolExecutors.newFixedThreadPool("checkRentStatusForLabel", 2, "CHECK_RENT_STATUS_FOR_LABEL_THREAD");
     
     
     @Override
@@ -111,6 +135,7 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
         ElectricityBatteryLabel batteryLabelFromDb = electricityBatteryLabelService.selectBySnAndTenantId(sn, tenantId);
         Long now = System.currentTimeMillis();
         
+        // update方法还是迭代成insertOrUpdate的逻辑了，一开始就直接用insertOrUpdate格式的SQL后续的麻烦也会少很多，没有必要专门用batchInsert
         if (Objects.isNull(batteryLabelFromDb)) {
             ElectricityBatteryLabel newBatteryLabel = new ElectricityBatteryLabel();
             BeanUtils.copyProperties(batteryLabel, newBatteryLabel);
@@ -272,8 +297,11 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
             String traceId = MDC.get(CommonConstant.TRACE_ID);
             batteriesNeedUpdate.parallelStream().forEach(battery -> {
                 MDC.put(CommonConstant.TRACE_ID, traceId);
-                
-                electricityBatteryService.syncModifyLabel(battery, null, modifyDto, false);
+                try {
+                    electricityBatteryService.syncModifyLabel(battery, null, modifyDto, false);
+                } finally {
+                    MDC.clear();
+                }
             });
             
             return R.ok(BatteryLabelBatchUpdateVO.builder().successCount(snList.size() - failureCount).failureCount(failureCount).failReasons(failReasons).build());
@@ -363,22 +391,28 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
     
     @Override
     public void checkRentStatusForLabel(UserBatteryMemberCard userBatteryMemberCard, CarRentalPackageMemberTermPo memberTermPo) {
-        try {
-            if (Objects.isNull(userBatteryMemberCard) && Objects.isNull(memberTermPo)) {
-                log.warn("CHECK RENT STATUS FOR LABEL WARN! userBatteryMemberCard and memberTermPo is null");
-                return;
-            }
+        if (Objects.isNull(userBatteryMemberCard) && Objects.isNull(memberTermPo)) {
+            log.warn("CHECK RENT STATUS FOR LABEL WARN! userBatteryMemberCard and memberTermPo is null");
+            return;
+        }
+        
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        checkRentStatusForLabelExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
             
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            Integer tenantId = TenantContextHolder.getTenantId();
-            checkRentStatusForLabelExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
+            try {
                 Long uid = Objects.isNull(memberTermPo) ? userBatteryMemberCard.getUid() : memberTermPo.getUid();
                 if (Objects.isNull(uid)) {
                     log.warn("CHECK RENT STATUS FOR LABEL WARN! uid is null");
                     return;
                 }
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.isNull(userInfo)) {
+                    log.warn("CHECK RENT STATUS FOR LABEL WARN! userInfo is null, uid={}", uid);
+                    return;
+                }
                 
+                Integer tenantId = userInfo.getTenantId();
                 List<ElectricityBattery> batteries = electricityBatteryService.listByUid(uid, tenantId);
                 
                 if (CollectionUtils.isEmpty(batteries)) {
@@ -434,11 +468,73 @@ public class ElectricityBatteryLabelBizServiceImpl implements ElectricityBattery
                     }
                     electricityBatteryService.syncModifyLabel(battery, null, new BatteryLabelModifyDTO(BatteryLabelEnum.RENT_NORMAL.getCode()), false);
                 }
-                
-            });
-            
-        } catch (Exception e) {
-            log.error("CHECK RENT STATUS FOR LABEL error! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
+            } catch (Exception e) {
+                log.error("CHECK RENT STATUS FOR LABEL ERROR! userBatteryMemberCard={}, memberTermPo={}", userBatteryMemberCard, memberTermPo, e);
+            } finally {
+                MDC.clear();
+            }
+        });
+    }
+    
+    @Override
+    public void sendRecordAndGeneralHandling(ElectricityBattery battery, Long operatorUid, Integer newLabel, Integer oldLabel, Long updateTime, Long oldReceiverId, Long newReceiverId) {
+        BatteryLabelRecord record = new BatteryLabelRecord();
+        record.setSn(battery.getSn());
+        record.setOldLabel(battery.getLabel());
+        record.setNewLabel(newLabel);
+        record.setOperatorUid(operatorUid);
+        record.setOldReceiverId(oldReceiverId);
+        record.setNewReceiverId(newReceiverId);
+        record.setTenantId(battery.getTenantId());
+        record.setFranchiseeId(battery.getFranchiseeId());
+        record.setExchangeTime(TimeUtils.convertToStandardFormatTime(updateTime));
+        
+        rocketMqService.sendAsyncMsg(BATTERY_LABEL_RECORD_TOPIC, JsonUtil.toJson(record));
+        
+        // 8.处理领用人的逻辑
+        if (Objects.nonNull(newLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+            ElectricityBatteryLabel batteryLabelUpdate = new ElectricityBatteryLabel();
+            batteryLabelUpdate.setReceiverId(newReceiverId);
+            updateOrInsertBatteryLabel(battery, batteryLabelUpdate);
         }
+        if (Objects.nonNull(newLabel) && Objects.nonNull(oldLabel) && BatteryLabelConstant.RECEIVED_LABEL_SET.contains(oldLabel)
+                && !BatteryLabelConstant.RECEIVED_LABEL_SET.contains(newLabel)) {
+            electricityBatteryLabelService.deleteReceivedData(battery.getSn());
+        }
+    }
+    
+    @Override
+    public void insertWithBattery(ElectricityBattery battery) {
+        Long now = System.currentTimeMillis();
+        ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().sn(battery.getSn()).tenantId(battery.getTenantId()).franchiseeId(battery.getFranchiseeId())
+                .createTime(now).updateTime(now).build();
+        electricityBatteryLabelService.insert(batteryLabel);
+        
+        // 旧标签会从电池中取，所以把要把电池中的清除掉
+        Integer newLabel = battery.getLabel();
+        battery.setLabel(null);
+        sendRecordAndGeneralHandling(battery, SecurityUtils.getUid(), newLabel, null, now, null, null);
+    }
+    
+    @Override
+    public void clearCacheBySn(String sn) {
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        checkRentStatusForLabelExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            try {
+                List<ElectricityCabinetBox> cabinetBoxes = electricityCabinetBoxService.listBySnList(List.of(sn));
+                if (CollectionUtils.isEmpty(cabinetBoxes)) {
+                    return;
+                }
+                
+                for (ElectricityCabinetBox box : cabinetBoxes) {
+                    redisService.delete(String.format(CacheConstant.PRE_MODIFY_BATTERY_LABEL, box.getElectricityCabinetId(), box.getCellNo(), sn));
+                }
+            } catch (Exception e) {
+                log.error("CLEAR CACHE BY SN ERROR! sn={}", sn, e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
 }

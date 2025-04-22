@@ -332,6 +332,11 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			}
 			UserCouponQuery build = UserCouponQuery.builder().uid(uid).status(UserCoupon.STATUS_UNUSED).build();
 			List<UserCouponVO> userCouponList = Optional.ofNullable(userCouponMapper.queryList(build)).orElse(List.of());
+			if (CollectionUtils.isEmpty(userCouponList)) {
+				log.warn("queryInfo Activity warn! not found userCoupon,uid={}", uid);
+				return R.ok();
+			}
+			
 			Map<Integer, Long> collect = userCouponList.stream().collect(Collectors.toMap(UserCouponVO::getCouponId, UserCouponVO::getDeadline, (v1, v2) -> v1));
 
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();

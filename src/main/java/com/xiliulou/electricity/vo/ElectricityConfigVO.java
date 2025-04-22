@@ -18,4 +18,11 @@ public class ElectricityConfigVO extends ElectricityConfig {
      * @see ElectricityConfigExtraEnum
      */
     private Integer accountDelSwitch;
+    
+    /**
+     * 删除/注销用户是否打标记开关：0-开启（默认） 1-关闭
+     *
+     * @see ElectricityConfigExtraEnum
+     */
+    private Integer delUserMarkSwitch;
 }

@@ -27,4 +27,6 @@ public interface InsuranceUserInfoMapper extends BaseMapper<InsuranceUserInfo> {
     List<InsuranceUserInfo> selectUserInsuranceList(@Param("offset") int offset, @Param("size") int size);
 
     List<InsuranceUserInfo> selectListByUid(@Param("uid") Long uid);
+    
+    List<InsuranceUserInfo> selectUserInsuranceListWithId(@Param("id") Integer id, @Param("size") int size);
 }

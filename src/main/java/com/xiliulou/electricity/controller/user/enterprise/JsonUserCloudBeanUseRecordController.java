@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseInfoVO;
@@ -36,6 +37,9 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
     
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
+
+    @Resource
+    private MerchantEmployeeService merchantEmployeeService;
     
     /**
      * 云豆流水
@@ -87,8 +91,8 @@ public class JsonUserCloudBeanUseRecordController extends BaseController {
      */
     @GetMapping({"/user/cloudBeanUse/recyclabed/{uid}", "/merchant/cloudBeanUse/recyclabed/{uid}"})
     public R cloudBeanUseRecyclabed(@PathVariable("uid") Long uid) {
-        Long id = SecurityUtils.getUid();
-        
+        Long id = merchantEmployeeService.getCurrentMerchantUid(SecurityUtils.getUserInfo());
+
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(id);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
             log.error("channel User Exit Check  enterprise not exists, uid={}", id);

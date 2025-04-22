@@ -9,7 +9,6 @@ import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
-import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -167,7 +166,7 @@ public interface ElectricityMemberCardOrderService {
      * 后台续费套餐、分期套餐续费
      */
     ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard,
-            BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source, List<InstallmentDeductionPlan> deductionPlans);
+            BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source, List<InstallmentDeductionPlan> deductionPlans,  Integer type);
     
     /**
      * 查询分期套餐子套餐订单
@@ -175,4 +174,10 @@ public interface ElectricityMemberCardOrderService {
      * @return 套餐订单
      */
     List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo);
+
+    void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder);
+
+    ElectricityMemberCardOrder queryUserLastPaySuccessByUid(Long uid);
+
+    Integer deactivateUsingOrder(Long uid);
 }

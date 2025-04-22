@@ -77,6 +77,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryCarRentalListForPro(UserInfoQuery userInfoQuery);
     
+    R queryCarRentalListForProV2(UserInfoQuery userInfoQuery);
+    
     R queryCarRentalCount(UserInfoQuery userInfoQuery);
     
     R updateStatus(Long uid, Integer usableStatus);
@@ -159,6 +161,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryEleListForPro(UserInfoQuery userInfoQuery);
     
+    R queryEleListForProV2(UserInfoQuery userInfoQuery);
+    
     R queryEleListCount(UserInfoQuery userInfoQuery);
     
     void deleteCache(Long uid);
@@ -231,4 +235,6 @@ public interface UserInfoService extends IService<UserInfo> {
      *  2、根据手机号查询，曾被删除后又重新注册的用户（删除前payCount>0）
      */
     Boolean isOldUser(UserInfo userInfo);
+
+    void unBindEnterpriseUserFranchiseeId(Long uid);
 }

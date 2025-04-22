@@ -22,6 +22,7 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.dto.UserCouponDTO;
@@ -73,6 +74,7 @@ import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UserStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
@@ -152,7 +154,6 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
-import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
@@ -183,7 +184,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -729,8 +729,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         
+        if (Objects.equals(ElectricityConfig.NOT_ALLOW_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard())) {
+            return R.fail("100470", "未开启冻结套餐功能");
+        }
+        
         boolean hasAssets = carRentalPackageOrderBizService.checkUserHasAssets(userInfo, user.getTenantId(), CarRentalPackageOrderBizServiceImpl.ELE);
-        if (Objects.equals(ElectricityConfig.NOT_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS,
+        if (Objects.equals(ElectricityConfig.ALLOW_DISABLE_MEMBER_CARD, electricityConfig.getDisableMemberCard()) && Objects.equals(ElectricityConfig.ALLOW_FREEZE_ASSETS,
                 electricityConfig.getAllowFreezeWithAssets()) && hasAssets) {
             throw new BizException("300060", "套餐冻结服务，需提前退还租赁的资产，请重新操作");
         }
@@ -2366,6 +2370,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }
         
+        if (Objects.nonNull(query.getStoreId())) {
+            Store store = storeService.queryByIdFromCache(query.getStoreId());
+            if (Objects.isNull(store) || !Objects.equals(batteryMemberCard.getFranchiseeId(), store.getFranchiseeId())) {
+                return Triple.of(false, "100464", "加盟商与门店不匹配，请重新选择门店与套餐");
+            }
+        }
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
@@ -2382,6 +2393,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0042", "用户已缴纳押金");
+        }
+        
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            return Triple.of(false, "110211", "用户已缴纳车电一体押金");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -2858,7 +2873,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCardToBuy, userBatteryMemberCard, userBindbatteryMemberCard,
-                null, null, null);
+                null, null, null,null);
         
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
@@ -2988,7 +3003,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source,
-            List<InstallmentDeductionPlan> deductionPlans) {
+            List<InstallmentDeductionPlan> deductionPlans, Integer type) {
         
         // 分期套餐由此接入，若不传递代扣记录则为普通的后台续费套餐
         ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
@@ -3100,7 +3115,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userInfoUpdate.setPayCount(userInfo.getPayCount() + 1);
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(userInfoUpdate);
-        
+
+        if (Objects.equals(type, InstallmentConstants.DEDUCTION_PLAN_OFFLINE_AGREEMENT)){
+            memberCardOrder.setPaymentChannel(null);
+        }
         this.insert(memberCardOrder);
         
         double oldValidDays = 0.0;
@@ -4034,4 +4052,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         return validDays;
     }
+
+    @Override
+    public void updatePayChannelById(ElectricityMemberCardOrder memberCardOrder){
+        baseMapper.updatePayChannelById(memberCardOrder);
+    }
+
+    @Override
+    @Slave
+    public ElectricityMemberCardOrder queryUserLastPaySuccessByUid(Long uid) {
+        return baseMapper.selectUserLastPaySuccessByUid(uid);
+    }
+    
+    @Override
+    public Integer deactivateUsingOrder(Long uid) {
+        Long updateTime = System.currentTimeMillis();
+        return electricityMemberCardOrderMapper.deactivateUsingOrder(uid, updateTime);
+    }
+    
 }

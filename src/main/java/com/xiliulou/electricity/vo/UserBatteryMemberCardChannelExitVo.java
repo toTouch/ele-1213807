@@ -89,7 +89,12 @@ public class UserBatteryMemberCardChannelExitVo {
      * 企业渠道用户Id
      */
     private Long channelUserId;
-    
+
+    /**
+     * 操作人uid
+     */
+    private Long operateUid;
+
 
     /**
      * 套餐购买次数

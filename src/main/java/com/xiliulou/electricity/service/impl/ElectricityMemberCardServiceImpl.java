@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -504,6 +505,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             query.setBatteryV(
                     Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
         }
+        
+        log.info("USER BATTERY MEMBER CARD INFO! query={}", JsonUtil.toJson(query));
         
         List<BatteryMemberCardAndTypeVO> batteryMemberCardVOS = batteryMemberCardMapper.selectByPageForUserV2(query);
         if (CollectionUtils.isEmpty(batteryMemberCardVOS)) {

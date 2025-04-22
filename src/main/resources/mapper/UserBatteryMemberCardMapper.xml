@@ -341,7 +341,7 @@
                  left join t_user_info tui on tui.uid = ubmc.uid
         where tui.battery_deposit_status = 1
           and tui.del_flag = 0
-          and ubmc.member_card_status = 0
+          and ubmc.member_card_status in (0,3)
             limit #{offset}
             , #{size}
     </select>
@@ -403,12 +403,22 @@
                b.create_time,
                b.update_time,
                b.card_pay_count,
-               a.id as 'channelUserExitId', a.channel_user_id as 'channelUserId'
+               a.id as 'channelUserExitId',
+               a.channel_user_id as 'channelUserId',
+               a.operate_uid
         FROM t_enterprise_channel_user_exit a
                  left JOIN t_user_battery_member_card b on b.uid = a.uid
         where a.del_flag = 0
           and a.type = 0
             limit #{offset}
             , #{size}
+    </select>
+    
+    <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserBatteryMemberCard">
+        <include refid="selectUserBatteryMemberCard"/>
+         where uid in
+        <foreach collection="uidList" item="uid" index="index" open="(" close=")" separator=",">
+            #{uid}
+        </foreach>
     </select>
 </mapper>

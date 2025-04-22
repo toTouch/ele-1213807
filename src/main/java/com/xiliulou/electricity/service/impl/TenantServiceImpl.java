@@ -46,7 +46,6 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -250,7 +249,7 @@ public class TenantServiceImpl implements TenantService {
         //新增租户给租户添加的默认系统配置
         ElectricityConfig electricityConfig = ElectricityConfig.builder().name("").createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(tenant.getId()).isManualReview(ElectricityConfig.MANUAL_REVIEW).isWithdraw(ElectricityConfig.NON_WITHDRAW)
-                .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK).disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD).isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
+                .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK).disableMemberCard(ElectricityConfig.NOT_ALLOW_DISABLE_MEMBER_CARD).isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
                 .lowChargeRate(NumberConstant.TWENTY_FIVE_DB).fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
@@ -480,6 +479,11 @@ public class TenantServiceImpl implements TenantService {
         } catch (IOException e) {
             log.error("运营数据统计分析！", e);
         }
+    }
+
+    @Override
+    public List<Tenant> listTenantByIds(List<Integer> tenantIdList) {
+        return tenantMapper.selectListByIds(tenantIdList);
     }
 
     /**

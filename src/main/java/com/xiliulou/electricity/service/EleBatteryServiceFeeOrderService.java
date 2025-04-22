@@ -86,4 +86,6 @@ public interface EleBatteryServiceFeeOrderService {
      * @return 过期滞纳金起算时间
      */
     Integer getExpiredProtectionTime(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder, Integer tenantId);
+    
+    List<EleBatteryServiceFeeOrder> listByOrderNoList(List<String> expireOrderNoList, Integer tenantId);
 }

@@ -90,11 +90,22 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         // 5分钟内是否有退电订单
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.parseLong(exchangeConfig.getScanTime());
 
-        RentBatteryOrder lastRentBatteryOrder = rentBatteryOrderService.queryLatelyRentReturnOrder(userInfo.getUid(), System.currentTimeMillis() - scanTime, System.currentTimeMillis(),
-                CollUtil.newArrayList(RentBatteryOrder.TYPE_USER_RETURN));
+        RentBatteryOrder lastRentBatteryOrder = rentBatteryOrderService.queryLatelyReturnOrder(userInfo.getUid(), System.currentTimeMillis() - scanTime, System.currentTimeMillis());
         if (Objects.isNull(lastRentBatteryOrder)) {
             log.info("ReturnBattery Check Info! lastRentBatteryOrder is null, uid is {},scanTime is {}, startTime is {} , currentTime is {}", userInfo.getUid(), scanTime, System.currentTimeMillis() - scanTime,
                     System.currentTimeMillis());
+            return Pair.of(false, null);
+        }
+
+        // 上个订单不是退电，走正常退电
+        if (!Objects.equals(lastRentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+            log.info("ReturnBattery Check Info! lastRentBatteryOrder not returnOrder, type is {} ", lastRentBatteryOrder.getType());
+            return Pair.of(false, null);
+        }
+
+        // 如果上个退电成功，走正常退电
+        if (Objects.equals(lastRentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+            log.info("ReturnBattery Check Info! lastRentBatteryOrder.status not success, status is {} ", lastRentBatteryOrder.getStatus());
             return Pair.of(false, null);
         }
 
@@ -168,14 +179,13 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
 
     private void fixLastReturnOrderIsSuccess(RentBatteryOrder lastRentBatteryOrder, ElectricityCabinetBox cabinetBox) {
         // 修改退电流程，补充操作记录
-        RentBatteryOrder updateRentBattery = new RentBatteryOrder();
-        updateRentBattery.setId(lastRentBatteryOrder.getId());
-        updateRentBattery.setElectricityBatterySn(cabinetBox.getSn());
-        updateRentBattery.setCellNo(Integer.parseInt(cabinetBox.getCellNo()));
-        updateRentBattery.setUpdateTime(System.currentTimeMillis());
-        updateRentBattery.setRemark(ExchangeRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
-        updateRentBattery.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
-        rentBatteryOrderService.update(updateRentBattery);
+        lastRentBatteryOrder.setId(lastRentBatteryOrder.getId());
+        lastRentBatteryOrder.setElectricityBatterySn(cabinetBox.getSn());
+        lastRentBatteryOrder.setCellNo(Integer.parseInt(cabinetBox.getCellNo()));
+        lastRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+        lastRentBatteryOrder.setRemark(ExchangeRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
+        lastRentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+        rentBatteryOrderService.update(lastRentBatteryOrder);
 
         // 补充操作记录
         List<ElectricityCabinetOrderOperHistory> list = CollUtil.newArrayList();

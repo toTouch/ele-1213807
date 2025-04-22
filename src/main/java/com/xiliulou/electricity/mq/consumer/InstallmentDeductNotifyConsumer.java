@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK;
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_DEDUCT_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
 
@@ -140,7 +141,7 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
             Triple<Boolean, String, Object> handlePackageTriple = null;
             if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
                 // 处理换电代扣成功的场景
-                handlePackageTriple = installmentBizService.handleBatteryMemberCard(installmentRecord, deductionPlanList, uid);
+                handlePackageTriple = installmentBizService.handleBatteryMemberCard(installmentRecord, deductionPlanList, uid, null);
             }
             
             // 代扣成功后其他记录的处理
@@ -175,6 +176,8 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
                 }
             }
             
+            // 释放代扣锁
+            redisService.delete(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()));
         } finally {
             MDC.clear();
         }

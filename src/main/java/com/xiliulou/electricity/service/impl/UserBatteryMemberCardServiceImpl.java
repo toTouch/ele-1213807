@@ -11,11 +11,11 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
+import com.xiliulou.electricity.thirdparty.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
+import com.xiliulou.electricity.enums.thirdParty.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -28,7 +28,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
-import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.service.thirdParty.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import lombok.extern.slf4j.Slf4j;
@@ -516,5 +516,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public Integer updateByUidForEmptyOrder(UserBatteryMemberCard updateUserBatteryMemberCard) {
         return userBatteryMemberCardMapper.updateByUidForEmptyOrder(updateUserBatteryMemberCard);
+    }
+    
+    @Slave
+    @Override
+    public List<UserBatteryMemberCard> listByUidList(List<Long> uidList) {
+        return userBatteryMemberCardMapper.selectListByUidList(uidList);
     }
 }

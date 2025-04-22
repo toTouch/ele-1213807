@@ -21,9 +21,10 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.battery.BatteryLabelRecordService;
+import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelBizService;
 import com.xiliulou.electricity.service.battery.ElectricityBatteryLabelService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
-import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.battery.ElectricityBatteryLabelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -71,25 +72,19 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     @Resource
     private ElectricityBatteryService electricityBatteryService;
     
+    @Resource
+    private ElectricityBatteryLabelBizService electricityBatteryLabelBizService;
+    
     private final ExecutorService dealBatteryLabelWhenSendCommandExecutor = XllThreadPoolExecutors.newFixedThreadPool("dealBatteryLabelWhenSendCommand", 3, "DEAL_BATTERY_LABEL_WHEN_SEND_COMMAND_THREAD");
     
     
     @Override
     public void insert(ElectricityBatteryLabel batteryLabel) {
-        electricityBatteryLabelMapper.insert(batteryLabel);
-    }
-    
-    @Override
-    public void insertWithBattery(ElectricityBattery battery) {
-        Long now = System.currentTimeMillis();
-        ElectricityBatteryLabel batteryLabel = ElectricityBatteryLabel.builder().sn(battery.getSn()).tenantId(battery.getTenantId()).franchiseeId(battery.getFranchiseeId())
-                .createTime(now).updateTime(now).build();
-        electricityBatteryLabelMapper.insert(batteryLabel);
-        
-        // 旧标签会从电池中取，所以把要把电池中的清除掉
-        Integer newLabel = battery.getLabel();
-        battery.setLabel(null);
-        batteryLabelRecordService.sendRecord(battery, SecurityUtils.getUid(), newLabel, now, null, null);
+        try {
+            electricityBatteryLabelMapper.insert(batteryLabel);
+        } catch (Exception e) {
+            log.warn("INSERT BATTERY LABEL WARN!", e);
+        }
     }
     
     @Override
@@ -107,10 +102,14 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
             
             Integer newLabel = battery.getLabel();
             battery.setLabel(null);
-            batteryLabelRecordService.sendRecord(battery, operatorUid, newLabel, now, null, null);
+            electricityBatteryLabelBizService.sendRecordAndGeneralHandling(battery, operatorUid, newLabel, null, now, null, null);
         }
         
-        electricityBatteryLabelMapper.batchInsert(batteryLabels);
+        try {
+            electricityBatteryLabelMapper.batchInsert(batteryLabels);
+        } catch (Exception e) {
+            log.warn("BATCH INSERT BATTERY LABEL WARN!", e);
+        }
     }
     
     @Slave
@@ -222,16 +221,16 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
     @Slave
     @Override
     public Integer countReceived(Long receiverId) {
-        return electricityBatteryLabelMapper.countReceived(receiverId);
+        return electricityBatteryLabelMapper.countReceived(receiverId, TenantContextHolder.getTenantId());
     }
     
     @Override
     public void updateLockSnAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId) {
-        try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
             
+            try {
                 if (Objects.isNull(eleOuterCommandQuery)) {
                     log.warn("UPDATE LOCK SN WARN! eleOuterCommandQuery is null");
                     return;
@@ -276,19 +275,21 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                     }
                     electricityCabinetBoxService.updateLockSnByEidAndCellNo(eId, cellNo, lockSn);
                 }
-            });
-        } catch (Exception e) {
-            log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
-        }
+            } catch (Exception e) {
+                log.error("UPDATE LOCK SN ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
     
     @Override
     public void updateOpenCellAndBatteryLabel(EleOuterCommandQuery eleOuterCommandQuery, ElectricityCabinet electricityCabinet, Long operatorId, List<ElectricityCabinetBox> electricityCabinetBoxList) {
-        try {
-            String traceId = MDC.get(CommonConstant.TRACE_ID);
-            dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
-                MDC.put(CommonConstant.TRACE_ID, traceId);
-                
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        dealBatteryLabelWhenSendCommandExecutor.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            
+            try {
                 if (CollectionUtils.isNotEmpty(electricityCabinetBoxList)) {
                     // 开全部仓门的，数据都有了，直接保存预修改标签即可
                     for (ElectricityCabinetBox box : electricityCabinetBoxList) {
@@ -329,9 +330,11 @@ public class ElectricityBatteryLabelServiceImpl implements ElectricityBatteryLab
                         setPreLabel(electricityCabinet.getId(), box.getCellNo(), box.getSn(), modifyDTO);
                     }
                 }
-            });
-        } catch (Exception e) {
-            log.error("UPDATE OPEN CELL ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
-        }
+            } catch (Exception e) {
+                log.error("UPDATE OPEN CELL ERROR! eleOuterCommandQuery={}", eleOuterCommandQuery, e);
+            } finally {
+                MDC.clear();
+            }
+        });
     }
 }

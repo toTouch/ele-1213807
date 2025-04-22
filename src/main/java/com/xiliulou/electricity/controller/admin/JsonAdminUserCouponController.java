@@ -52,8 +52,7 @@ public class JsonAdminUserCouponController {
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "discountType", required = false) Integer discountType, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "superposition", required = false) Integer superposition, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "couponType", required = false) List<Integer> couponType,
-            @RequestParam(value = "couponWay", required = false) Long couponWay
+            @RequestParam(value = "couponType", required = false) List<Integer> couponType, @RequestParam(value = "couponWay", required = false) Long couponWay
             ) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -94,8 +93,7 @@ public class JsonAdminUserCouponController {
             @RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "discountType", required = false) Integer discountType,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "superposition", required = false) Integer superposition,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "couponType", required = false) List<Integer> couponType,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "couponType", required = false) List<Integer> couponType,
             @RequestParam(value = "couponWay", required = false) Long couponWay) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -117,8 +115,8 @@ public class JsonAdminUserCouponController {
         }
         
         UserCouponQuery userCouponQuery = UserCouponQuery.builder().couponId(couponId).uid(uid).beginTime(beginTime).endTime(endTime).orderId(orderId).userName(userName)
-                .discountType(discountType).status(status).superposition(superposition).phone(phone).franchiseeIds(franchiseeIds)
-                .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).couponType(couponType).couponWay(couponWay).build();
+                .discountType(discountType).status(status).superposition(superposition).phone(phone).franchiseeIds(franchiseeIds).tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId).couponType(couponType).couponWay(couponWay).build();
         return userCouponService.queryCount(userCouponQuery);
     }
     

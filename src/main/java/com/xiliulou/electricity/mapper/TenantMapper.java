@@ -36,6 +36,7 @@ public interface TenantMapper extends BaseMapper<Tenant> {
      * @date 2024/8/26 16:37
      */
     List<Integer> selectIdListByStartId(@Param("startId") Integer startId, @Param("size") Integer size);
-    
-    
+
+
+    List<Tenant> selectListByIds(@Param("idList") List<Integer> tenantIdList);
 }

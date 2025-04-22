@@ -5,7 +5,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -42,10 +42,7 @@ public class JsonOuterElectricityCabinetController {
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-    @Autowired
-    StorageConfig storageConfig;
 
-    @Qualifier("minioService")
     @Autowired
     StorageService storageService;
 
@@ -124,8 +121,7 @@ public class JsonOuterElectricityCabinetController {
                 ZipEntry zipEntry = entries.nextElement();
                 String innerFileName = deviceName + "_" + "electricityCabinet" + "_" + zipEntry.getName();
                 try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
-                    String bucketName = storageConfig.getMinioBucketName();
-                    storageService.uploadFile(bucketName, innerFileName, inputStream);
+                    storageService.uploadFile(innerFileName, inputStream);
                 }
 
             }
@@ -211,5 +207,23 @@ public class JsonOuterElectricityCabinetController {
         return R.ok();
     }
 
+    /**
+     * 电柜地图
+     */
+    @GetMapping("/outer/electricityCabinet/location")
+    public R listCabinetLocation(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("check") Long check) {
+        if (size < 100 || size > 1000) {
+            size = 1000L;
+        }
 
+        if (offset < 0) {
+            offset = 0L;
+        }
+        // 时间精度处理
+        if (!Objects.equals(check, 183710250307L)) {
+            return R.ok();
+        }
+
+        return electricityCabinetService.listCabinetLocation(size, offset);
+    }
 }

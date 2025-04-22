@@ -5,6 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import com.alipay.api.AlipayApiException;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
@@ -424,6 +425,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             log.info("wechat transfer for single review new end. batch no = {}", batchNo);
         } catch (WechatPayException e) {
             //throw new RuntimeException(e);
+            log.info("wechat transfer for single review new info. msg :  {}", JsonUtil.toJson(e));
             log.error("transfer amount for merchant withdraw review new error", e);
             merchantWithdrawApplicationUpdate.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);
             merchantWithdrawApplicationRecord.setStatus(MerchantWithdrawConstant.WITHDRAW_FAIL);

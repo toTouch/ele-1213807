@@ -25,5 +25,6 @@ public interface EleUserEsignRecordMapper extends BaseMapper<EleUserEsignRecord>
     List<EleUserEsignRecordVO> selectByPage(EleUserEsignRecordQuery query);
 
     Integer selectByPageCount(EleUserEsignRecordQuery query);
-
+    
+    Integer delById(@Param("id") Long id);
 }

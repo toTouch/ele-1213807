@@ -1,28 +1,40 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.battery.BatteryLabelModifyDTO;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
 import com.xiliulou.electricity.enums.LockTypeEnum;
+import com.xiliulou.electricity.enums.battery.BatteryLabelEnum;
+import com.xiliulou.electricity.enums.thirdParty.ThirdPartyOperatorTypeEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.thirdParty.PushDataToThirdService;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import shaded.org.apache.commons.lang3.ArrayUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -45,6 +57,9 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
     @Resource
     ElectricityCabinetBoxLockService boxLockService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
 
 
     private final TtlXllThreadPoolExecutorServiceWrapper serviceWrapper = TtlXllThreadPoolExecutorsSupport.get(
@@ -120,6 +135,10 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinetBox.setVersion(version);
         }
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
+    
+        // 给第三方推送格挡信息
+        pushDataToThirdService.asyncPushCabinetBoxList(TtlTraceIdSupport.get(), electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(),
+                Lists.newArrayList(cellNo), ThirdPartyOperatorTypeEnum.ELE_CABINET_BOX_STATUS.getType());
 
         //格挡禁用  保存禁用原因
         if (StringUtils.isNotEmpty(isForbidden) && Objects.equals(Integer.valueOf(isForbidden), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
@@ -151,7 +170,7 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             
             // 为保证锁仓sn在格挡启用后再删除，只能在此处清除锁仓sn，但是会产生多余的IO
             // 本需求又需要优先保证不影响现有功能，若想整合到上文的格挡更新中就需要提前查询格挡信息并做业务逻辑判断，既没有减少IO，又影响了现有逻辑，暂不整合
-            electricityCabinetBoxService.updateLockSnByEidAndCellNo(electricityCabinet.getId(), cellNo, null);
+            modifyLabelAndClearLockSn(electricityCabinet.getId(), cellNo);
         }
     }
 
@@ -193,6 +212,30 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         } finally {
             TtlTraceIdSupport.clear();
         }
+    }
+    
+    private void modifyLabelAndClearLockSn(Integer eid, String cellNo) {
+        String traceId = MDC.get(CommonConstant.TRACE_ID);
+        serviceWrapper.execute(() -> {
+            MDC.put(CommonConstant.TRACE_ID, traceId);
+            try {
+                // 将电池锁定在仓的电池标签处理为闲置
+                ElectricityCabinetBox box = electricityCabinetBoxService.queryByCellNo(eid, cellNo);
+                if (Objects.isNull(box)) {
+                    log.warn("MODIFY LABEL AND CLEAR LOCK SN WARN! box is null, eid={}, cellNo={}", eid, cellNo);
+                    return;
+                }
+                
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(box.getLockSn(), box.getTenantId());
+                electricityBatteryService.syncModifyLabel(electricityBattery, box, new BatteryLabelModifyDTO(BatteryLabelEnum.UNUSED.getCode()), false);
+                
+                // 注意，此处需要使用锁仓sn查询电池，不可将清除锁仓sn的操作提到修改标签之前
+                electricityCabinetBoxService.updateLockSnByEidAndCellNo(eid, cellNo, null);
+            } catch (Exception e) {
+                MDC.clear();
+                log.error("MODIFY LABEL AND CLEAR LOCK SN ERROR! eid={}, cellNo={}", eid, cellNo, e);
+            }
+        });
     }
 
     @Data

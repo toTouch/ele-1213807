@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.service.retrofit.fallback;
 
-import com.xiliulou.electricity.request.thirdPartyMall.NotifyMeiTuanDeliverReq;
+import com.xiliulou.electricity.request.thirdParty.NotifyMeiTuanDeliverReq;
 import com.xiliulou.electricity.service.retrofit.ThirdPartyMallRetrofitService;
-import com.xiliulou.electricity.dto.thirdMallParty.MtDTO;
-import com.xiliulou.electricity.vo.thirdPartyMall.NotifyMeiTuanDeliverVO;
+import com.xiliulou.electricity.dto.thirdParty.MtDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;

@@ -496,9 +496,9 @@
         <where>
             tecu.uid is not null
             and tecu.payment_status=3
-            <if test="enterpriseId != null">
+            <!--<if test="enterpriseId != null">
                 and tecu.uid not in (select uid from t_electricity_member_card_order where status = 1 and enterprise_id = #{enterpriseId})
-            </if>
+            </if>-->
     
             <if test="enterpriseId != null">
                 and tecu.enterprise_id = #{enterpriseId}

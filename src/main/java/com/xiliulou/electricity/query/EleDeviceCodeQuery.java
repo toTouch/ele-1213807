@@ -50,4 +50,8 @@ public class EleDeviceCodeQuery {
     @NotEmpty(message = "参数不合法", groups = CreateGroup.class)
     @Size(min = 1, max = 500, message = "参数不合法")
     private Set<EleDeviceCodeInsertQuery> deviceNames;
+
+    private Long startTime;
+
+    private Long endTime;
 }
