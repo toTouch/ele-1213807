@@ -37,5 +37,6 @@ public class OrderQuery {
      *
      */
     private Integer orderUseStatus;
-    
+
+    private String version;
 }

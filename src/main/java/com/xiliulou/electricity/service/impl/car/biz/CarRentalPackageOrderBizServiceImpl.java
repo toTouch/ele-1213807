@@ -3148,7 +3148,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 rentalPackageDeposit = BigDecimal.ZERO;
 
                 // 处理免押服务费，判断是否免押
-                if (Objects.equals(depositPayVo.getPayType(), PayTypeEnum.EXEMPT.getCode()) && Objects.equals(depositPayVo.getPayCount(), NumberConstant.ZERO)) {
+                if (Objects.equals(depositPayVo.getPayType(), PayTypeEnum.EXEMPT.getCode()) && Objects.equals(depositPayVo.getPayCount(), NumberConstant.ZERO) && StringUtils.isNotBlank(buyOptModel.getVersion())) {
                     IsSupportFreeServiceFeeDTO supportFreeServiceFeeCar = freeServiceFeeOrderService.isSupportFreeServiceFeeCar(userInfo, depositPayVo.getOrderNo());
                     if (supportFreeServiceFeeCar.getSupportFreeServiceFee()) {
                         CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()

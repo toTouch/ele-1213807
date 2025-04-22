@@ -193,13 +193,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         MeiTuanOrderRedeemRollBackBO rollBackBO;
         try {
-            Triple<Boolean, String, Object> preCheckUser = this.preCheckUser(uid);
+            Triple<Boolean, String, Object> preCheckUser = this.preCheckUser(uid, query.getVersion());
             if (!preCheckUser.getLeft()) {
                 return Triple.of(false, preCheckUser.getMiddle(), preCheckUser.getRight());
             }
 
-
-            
             UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfoExtra)) {
                 log.warn("MeiTuan order redeem fail! not found user extra,uid={}", uid);
@@ -375,7 +373,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return Triple.of(true, meiTuanRiderMallConfig, meiTuanRiderMallOrder);
     }
     
-    private Triple<Boolean, String, Object> preCheckUser(Long uid) {
+    private Triple<Boolean, String, Object> preCheckUser(Long uid, String version) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("MeiTuan order redeem fail! not found user,uid={}", uid);
@@ -399,9 +397,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             return Triple.of(false,"100209", "未缴纳押金");
         }
 
-        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
-        if (supportFreeServiceFee.getSupportFreeServiceFee()) {
-            return Triple.of(false, "301044", "请缴纳免押服务费");
+        //是否需要缴纳免押服务费
+        if (StringUtils.isNotBlank(version)) {
+            IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+            if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+                return Triple.of(false, "301044", "请缴纳免押服务费");
+            }
         }
 
         return Triple.of(true, null, userInfo);
