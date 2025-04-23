@@ -90,7 +90,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         // 5分钟内是否有退电订单
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.parseLong(exchangeConfig.getScanTime());
 
-        RentBatteryOrder lastRentBatteryOrder = rentBatteryOrderService.queryLatelyReturnOrder(userInfo.getUid(), System.currentTimeMillis() - scanTime, System.currentTimeMillis());
+        RentBatteryOrder lastRentBatteryOrder = rentBatteryOrderService.queryLatelyReturnOrder(userInfo.getUid(), System.currentTimeMillis() - scanTime, System.currentTimeMillis(), userInfo.getTenantId());
         if (Objects.isNull(lastRentBatteryOrder)) {
             log.info("ReturnBattery Check Info! lastRentBatteryOrder is null, uid is {},scanTime is {}, startTime is {} , currentTime is {}", userInfo.getUid(), scanTime, System.currentTimeMillis() - scanTime,
                     System.currentTimeMillis());
@@ -244,10 +244,10 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.parseLong(exchangeConfig.getScanTime());
 
         // 上次5分钟内的换电订单
-        ElectricityCabinetOrder lastOrder = electricityCabinetOrderService.selectLatelyExchangeOrder(uid, System.currentTimeMillis() - scanTime, System.currentTimeMillis());
+        ElectricityCabinetOrder lastOrder = electricityCabinetOrderService.selectLatelyExchangeOrder(uid, System.currentTimeMillis() - scanTime, System.currentTimeMillis(), userInfo.getTenantId());
         // 上次5分钟内的租电订单
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryLatelyRentReturnOrder(uid, System.currentTimeMillis() - scanTime, System.currentTimeMillis(),
-                CollUtil.newArrayList(RentBatteryOrder.TYPE_USER_RENT, RentBatteryOrder.TYPE_WEB_BIND));
+                CollUtil.newArrayList(RentBatteryOrder.TYPE_USER_RENT, RentBatteryOrder.TYPE_WEB_BIND), userInfo.getTenantId());
 
         if (Objects.isNull(lastOrder) && Objects.isNull(rentBatteryOrder)) {
             log.warn("OrderV3 WARN! lessTimeExchangeTwoCountAssert.lastOrder and rentBatteryOrder is null, uid is {}, scanTime is {}, startTime is {}, currentTime is {}", scanTime, uid, System.currentTimeMillis() - scanTime,
@@ -391,7 +391,7 @@ public class LessTimeExchangeServiceImpl extends AbstractOrderHandler implements
         }
 
         Long uid = userInfo.getUid();
-        ElectricityCabinetOrder lastOrder = electricityCabinetOrderService.selectLatelyExchangeOrderByDate(uid, System.currentTimeMillis());
+        ElectricityCabinetOrder lastOrder = electricityCabinetOrderService.selectLatelyExchangeOrderByDate(uid, System.currentTimeMillis(), userInfo.getTenantId());
         if (Objects.isNull(lastOrder)) {
             log.warn("OrderOldV3 WARN! lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
             return Pair.of(false, null);

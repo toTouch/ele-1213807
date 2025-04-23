@@ -1957,11 +1957,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
 
 
-
     @Override
     @Slave
-    public RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long startTime, Long currentTime, List<Integer> orderTypes) {
-        return rentBatteryOrderMapper.selectLatelyRentReturnOrder(uid, startTime, currentTime, orderTypes);
+    public RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long startTime, Long currentTime, List<Integer> orderTypes, Integer tenantId) {
+        return rentBatteryOrderMapper.selectLatelyRentReturnOrder(uid, startTime, currentTime, orderTypes, tenantId);
     }
 
 
@@ -2200,7 +2199,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Override
     @Slave
-    public RentBatteryOrder queryLatelyReturnOrder(Long uid, Long scanTime, Long startTime) {
-        return rentBatteryOrderMapper.selectLatelyReturnOrder(uid, scanTime, startTime);
+    public RentBatteryOrder queryLatelyReturnOrder(Long uid, Long scanTime, Long startTime, Integer tenantId) {
+        return rentBatteryOrderMapper.selectLatelyReturnOrder(uid, scanTime, startTime, tenantId);
     }
 }

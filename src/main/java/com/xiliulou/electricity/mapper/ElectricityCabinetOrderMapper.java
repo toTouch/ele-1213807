@@ -63,9 +63,9 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
 
     List<ElectricityCabinetOrder> existExchangeOrderInSameCabinetAndCell(@Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("eid") Integer eid);
 
-    ElectricityCabinetOrder selectLatelyExchangeOrder(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("currentTime") Long currentTime);
+    ElectricityCabinetOrder selectLatelyExchangeOrder(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("currentTime") Long currentTime, @Param("tenantId") Integer tenantId);
 
-    ElectricityCabinetOrder selectLatelyExchangeOrderByDate(@Param("uid") Long uid, @Param("currentTime") Long currentTime);
+    ElectricityCabinetOrder selectLatelyExchangeOrderByDate(@Param("uid") Long uid, @Param("currentTime") Long currentTime, @Param("tenantId") Integer tenantId);
 
 
 }

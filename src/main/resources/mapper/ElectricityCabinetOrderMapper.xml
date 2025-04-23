@@ -465,6 +465,7 @@
                teco.order_status
         from t_electricity_cabinet_order teco
         where uid = #{uid}
+          and tenant_id = #{tenantId}
           and create_time &gt; #{startTime}
           and create_time &lt; #{currentTime}
         order by create_time desc limit 1
@@ -546,6 +547,7 @@
                teco.order_status
         from t_electricity_cabinet_order teco
         where uid = #{uid}
+          and tenant_id = #{tenantId}
           and create_time &lt; #{currentTime}
         order by create_time desc limit 1
     </select>
