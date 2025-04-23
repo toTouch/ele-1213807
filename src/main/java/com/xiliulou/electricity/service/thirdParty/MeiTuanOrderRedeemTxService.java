@@ -29,5 +29,5 @@ public interface MeiTuanOrderRedeemTxService {
     
     void rollback(MeiTuanOrderRedeemRollBackBO rollBackBO);
     
-    void rollbackClearCache(Long uid);
+    void clearCache(Long uid);
 }

@@ -680,7 +680,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
     }
     
     @Override
-    public void rollbackClearCache(Long uid) {
+    public void clearCache(Long uid) {
         redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
         redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
         redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + uid);

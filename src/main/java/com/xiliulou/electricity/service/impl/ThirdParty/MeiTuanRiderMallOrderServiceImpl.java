@@ -313,6 +313,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 pair = meiTuanOrderRedeemTxService.saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
             }
             
+            // 为了防止缓存不一致问题，事务外再次清除缓存
+            meiTuanOrderRedeemTxService.clearCache(uid);
+            
             if (Objects.isNull(pair)) {
                 log.warn("MeiTuan order redeem fail! pair is null, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
                 return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
@@ -328,7 +331,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             if (!deliverResult) {
                 meiTuanOrderRedeemTxService.rollback(rollBackBO);
                 // 清除缓存
-                meiTuanOrderRedeemTxService.rollbackClearCache(uid);
+                meiTuanOrderRedeemTxService.clearCache(uid);
                 log.warn("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
                 return Triple.of(false, "120146", "订单兑换失败，请联系客服处理");
             }
