@@ -300,5 +300,7 @@ public interface ElectricityCabinetService {
 
     R listCabinetLocation(long size, long offset);
 
+    List<ElectricityCabinet> listBySnList(List<String> snList);
+
     List<ElectricityCabinetCardInfoBO> queryEleCardInfoByTenant(List<Integer> list);
 }

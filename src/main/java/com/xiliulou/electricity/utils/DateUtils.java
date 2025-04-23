@@ -418,6 +418,25 @@ public class DateUtils {
         }
     }
 
+    public static long getAfterYear(long timestamp, Integer yearNum) {
+        Instant instant = Instant.ofEpochMilli(timestamp);
+
+        // 步骤 2: 指定时区，这里使用系统默认时区
+        ZoneId zoneId = ZoneId.systemDefault();
+
+        // 步骤 3: 将 Instant 对象和时区结合，转换为 ZonedDateTime 对象
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+
+        // 步骤 4: 从 ZonedDateTime 对象中提取 LocalDateTime 对象
+        LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+
+        LocalDateTime specificNextYearDateTime = localDateTime.plusYears(yearNum);
+
+
+        // 再次转换回时间戳
+        return specificNextYearDateTime.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
+    }
+
     //时间格式化
     public static String parseTimeToStringDateSecond(Long timeStamp) {
         return DateUtil.format(new Date(timeStamp), "YYYY-MM-dd HH:mm:ss");

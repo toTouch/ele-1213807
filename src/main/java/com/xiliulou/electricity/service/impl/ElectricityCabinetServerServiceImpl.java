@@ -1,36 +1,42 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.google.api.client.util.Lists;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetServer;
-import com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetServerBO;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityCabinetServerMapper;
-import com.xiliulou.electricity.service.ElectricityCabinetServerOperRecordService;
-import com.xiliulou.electricity.service.ElectricityCabinetServerService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.request.cabinet.ElectricityCabinetServerUpdateRequest;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetServerTimeAddResultVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetServerVo;
 import com.xiliulou.electricity.vo.PageDataAndCountVo;
 
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.*;
 
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service("electricityCabinetServerService")
 @Slf4j
 public class ElectricityCabinetServerServiceImpl
-        implements ElectricityCabinetServerService {
+        implements ElectricityCabinetServerService, DisposableBean {
     @Resource
     private ElectricityCabinetServerMapper electricityCabinetServerMapper;
 
@@ -58,6 +64,15 @@ public class ElectricityCabinetServerServiceImpl
 
     @Autowired
     private TenantService tenantService;
+
+    @Resource
+    private RedisService redisService;
+
+    @Resource
+    private ElectricityBatteryService electricityBatteryService;
+
+    private final TtlXllThreadPoolExecutorServiceWrapper threadPool = TtlXllThreadPoolExecutorsSupport.get(
+            XllThreadPoolExecutors.newFixedThreadPool("CABINET-SERVER-THREAD-POOL", 10, "cabinetServerThread:"));
 
     /**
      * 通过ID查询单条数据从DB
@@ -292,7 +307,221 @@ public class ElectricityCabinetServerServiceImpl
     public List<ElectricityCabinetServer> listCabinetServerByEids(List<Integer> electricityCabinetIdList) {
         return this.electricityCabinetServerMapper.selectListByEids(electricityCabinetIdList);
     }
-    
+
+    @Override
+    public R addServerEndTime(ElectricityCabinetServerUpdateRequest request) {
+
+        log.info("add cabinet server end time info! request:{}", request);
+
+        if (Objects.isNull(request.getTenantId()) && ObjectUtils.isEmpty(request.getCabinetSnList())) {
+            return R.fail("请求参数错误!");
+        }
+
+        Long uid = SecurityUtils.getUid();
+
+        // 判断租户是否存在
+        if (Objects.nonNull(request.getTenantId())) {
+            Tenant tenant = tenantService.queryByIdFromCache(request.getTenantId());
+            if (Objects.isNull(tenant)) {
+                return R.fail("ELECTRICITY.00101", "找不到租户!");
+            }
+        }
+
+        try {
+            // 根据柜机sn处理服务时间
+            if (ObjectUtils.isNotEmpty(request.getCabinetSnList())) {
+                return dealWithCabinetSnList(request, uid);
+            }
+
+            // 根据租户id处理柜机服务时间
+            return dealWithTenantId(request, uid);
+        } catch (Exception e) {
+            log.error("add cabinet server end time error!", e);
+        }
+
+        return R.ok();
+    }
+
+    private R dealWithTenantId(ElectricityCabinetServerUpdateRequest request, Long uid) {
+        Long maxId = 0L;
+        Integer size = 500;
+        long updateTime = System.currentTimeMillis();
+        int successNum = 0;
+
+        while (true) {
+            // 查询柜机的服务时间
+            List<ElectricityCabinetServerBO> electricityCabinetServerList = electricityCabinetServerMapper.listByTenantId(request.getTenantId(), null, maxId, size);
+            if (ObjectUtils.isEmpty(electricityCabinetServerList)) {
+                break;
+            }
+
+            successNum = electricityCabinetServerList.size();
+
+            maxId = electricityCabinetServerList.get(electricityCabinetServerList.size() - 1).getCabinetId();
+
+            electricityCabinetServerList.stream().forEach(item -> {
+                threadPool.execute(() -> {
+                    if (Objects.isNull(item.getServerEndTime())) {
+                        return;
+                    }
+
+                    try {
+                        long serverEndTime = DateUtils.getAfterYear(item.getServerEndTime(), request.getYearNum());
+                        // 修改柜机的服务时间
+                        electricityCabinetServerMapper.updateServerEndTime(item.getCabinetServerId(), serverEndTime, updateTime);
+
+                        ElectricityCabinetServerOperRecord insert = new ElectricityCabinetServerOperRecord();
+                        insert.setCreateUid(uid);
+                        insert.setEleServerId(item.getCabinetServerId());
+                        insert.setOldServerBeginTime(item.getServerBeginTime());
+                        insert.setOldServerEndTime(item.getServerEndTime());
+                        insert.setNewServerBeginTime(item.getServerBeginTime());
+                        insert.setNewServerEndTime(serverEndTime);
+                        insert.setCreateTime(System.currentTimeMillis());
+                        electricityCabinetServerOperRecordService.insert(insert);
+                    } catch (Exception e) {
+                        log.error("add cabinet server end time error! cabinetId={}", item.getCabinetId(), e);
+                    }
+                });
+            });
+        }
+
+        log.info("add cabinet server end time success! tenantId:{}", request.getTenantId());
+
+        ElectricityCabinetServerTimeAddResultVO resultVO = ElectricityCabinetServerTimeAddResultVO.builder().successNum(successNum)
+               .build();
+
+        return R.ok(resultVO);
+    }
+
+    private R dealWithCabinetSnList(ElectricityCabinetServerUpdateRequest request, Long uid) {
+        List<String> cabinetSnList = new ArrayList<>(request.getCabinetSnList());
+        List<String> repeatSnList = new ArrayList<>();
+        List<String> notFindSnList = new ArrayList<>();
+        Long updateTime = System.currentTimeMillis();
+        List<ElectricityCabinetServer> cabinetServerList = new ArrayList<>();
+
+        // 初始化柜机信息
+        List<ElectricityCabinetServerBO> existsCabinetList = checkBatterySnList(cabinetSnList, repeatSnList, cabinetServerList);
+        if (ObjectUtils.isEmpty(existsCabinetList)) {
+            ElectricityCabinetServerTimeAddResultVO resultVO = ElectricityCabinetServerTimeAddResultVO.builder().successNum(0).failNum(request.getCabinetSnList().size())
+                    .notFoundSnList(cabinetSnList).build();
+            return R.ok(resultVO);
+        }
+
+        Map<String, ElectricityCabinetServerBO> existsMap = existsCabinetList.stream().collect(Collectors.toMap(ElectricityCabinetServerBO::getSn, Function.identity(), (v1, v2) -> v1));
+        AtomicReference<Integer> successNum = new AtomicReference<>(0);
+
+        cabinetSnList.stream().forEach(sn -> {
+            // 过滤掉不存在的
+            if (!existsMap.containsKey(sn)) {
+                notFindSnList.add(sn);
+                return;
+            }
+
+            // 过滤掉重复的
+            if (repeatSnList.contains(sn)) {
+                return;
+            }
+
+            // 过滤服务时间为空的
+            ElectricityCabinetServerBO electricityCabinetServerBO = existsMap.get(sn);
+            if (Objects.isNull(electricityCabinetServerBO.getServerEndTime())) {
+                return;
+            }
+
+            successNum.set(successNum.get() + 1);
+
+            threadPool.execute(() -> {
+                try {
+                    // 修改柜机的服务时间
+                    long serverEndTime = DateUtils.getAfterYear(electricityCabinetServerBO.getServerEndTime(), request.getYearNum());
+                    electricityCabinetServerMapper.updateServerEndTime(electricityCabinetServerBO.getCabinetServerId(), serverEndTime, updateTime);
+
+                    ElectricityCabinetServerOperRecord insert = new ElectricityCabinetServerOperRecord();
+                    insert.setCreateUid(uid);
+                    insert.setEleServerId(electricityCabinetServerBO.getCabinetServerId());
+                    insert.setOldServerBeginTime(electricityCabinetServerBO.getServerBeginTime());
+                    insert.setOldServerEndTime(electricityCabinetServerBO.getServerEndTime());
+                    insert.setNewServerBeginTime(electricityCabinetServerBO.getServerBeginTime());
+                    insert.setNewServerEndTime(serverEndTime);
+                    insert.setCreateTime(System.currentTimeMillis());
+                    electricityCabinetServerOperRecordService.insert(insert);
+                } catch (Exception e) {
+                    log.error("add cabinet server end time error! cabinetId={}", electricityCabinetServerBO.getCabinetId(), e);
+                }
+            });
+
+        });
+
+        ElectricityCabinetServerTimeAddResultVO resultVO = ElectricityCabinetServerTimeAddResultVO.builder().successNum(successNum.get()).failNum(repeatSnList.size() + notFindSnList.size())
+                .notFoundSnList(notFindSnList).repeatSnList(repeatSnList).build();
+
+        log.info("add cabinet server end time success! request:{}", request);
+
+        return R.ok(resultVO);
+    }
+
+    private List<ElectricityCabinetServerBO> checkBatterySnList(List<String> batterySnList, List<String> repeatSnList, List<ElectricityCabinetServer> cabinetServerList) {
+        if (batterySnList.size() > 500) {
+            List<List<String>> partition = ListUtils.partition(batterySnList, 500);
+            List<ElectricityCabinetServerBO> existsCabinetSnList = Collections.synchronizedList(new ArrayList<>());
+            List<String> repeatCabinetSnList = Collections.synchronizedList(new ArrayList<>());
+
+            List<CompletableFuture<List<ElectricityCabinetServerBO>>> collect = partition.stream().map(item -> {
+                CompletableFuture<List<ElectricityCabinetServerBO>> exceptionally = CompletableFuture.supplyAsync(() -> {
+                    List<ElectricityCabinetServerBO> electricityCabinetServerList = electricityCabinetServerMapper.listByTenantId(null, item, 0L, 500);
+                    return electricityCabinetServerList;
+                }, threadPool).whenComplete((result, throwable) -> {
+                    if (result != null && ObjectUtils.isNotEmpty(result)) {
+                        existsCabinetSnList.addAll(result);
+
+                        Map<String, List<ElectricityCabinetServerBO>> cabinetMap = result.stream().collect(Collectors.groupingBy(ElectricityCabinetServerBO::getSn));
+                        cabinetMap.keySet().forEach(sn -> {
+                            if (ObjectUtils.isNotEmpty(cabinetMap.get(sn)) && cabinetMap.get(sn).size() > 1) {
+                                repeatCabinetSnList.add(sn);
+                            }
+                        });
+                    }
+
+                    if (throwable != null) {
+                        log.error("add cabinet server time check  error", throwable);
+                    }
+
+                });
+                return exceptionally;
+            }).collect(Collectors.toList());
+
+            CompletableFuture<Void> resultFuture = CompletableFuture.allOf(collect.toArray(new CompletableFuture[collect.size()]));
+
+            try {
+                resultFuture.get(10, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                log.error("Data summary browsing error for add cabinet server time check", e);
+            }
+
+            if (ObjectUtils.isNotEmpty(repeatCabinetSnList)) {
+                repeatSnList.addAll(repeatCabinetSnList);
+            }
+
+            return existsCabinetSnList;
+        }
+
+        List<ElectricityCabinetServerBO> electricityCabinetServerList = electricityCabinetServerMapper.listByTenantId(null, batterySnList, 0L, 500);
+        if (ObjectUtils.isEmpty(electricityCabinetServerList)) {
+            return Collections.emptyList();
+        }
+
+        Map<String, List<ElectricityCabinetServerBO>> cabinetMap = electricityCabinetServerList.stream().collect(Collectors.groupingBy(ElectricityCabinetServerBO::getSn));
+        cabinetMap.forEach((sn, value) -> {
+            if (ObjectUtils.isNotEmpty(value) && value.size() > 1) {
+                repeatSnList.add(sn);
+            }
+        });
+
+        return electricityCabinetServerList;
+    }
+
     @Override
     public Integer deleteByEid(Integer eid) {
         return this.electricityCabinetServerMapper.deleteByEid(eid);
@@ -305,5 +534,10 @@ public class ElectricityCabinetServerServiceImpl
         electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_DEL);
         electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
         return this.electricityCabinetServerMapper.updateByEid(electricityCabinetServer);
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        threadPool.shutdown();
     }
 }

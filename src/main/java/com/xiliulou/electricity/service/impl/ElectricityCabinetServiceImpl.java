@@ -332,7 +332,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
-    
+
     @Autowired
     StorageService storageService;
 
@@ -5855,6 +5855,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
 
         return R.ok(electricityCabinetList);
+    }
+
+
+    @Override
+    @Slave
+    public List<ElectricityCabinet> listBySnList(List<String> snList) {
+        return electricityCabinetMapper.selectListBySns(snList);
     }
 
     private void setCabinetInfo(List<ElectricityCabinetVO> electricityCabinetList) {

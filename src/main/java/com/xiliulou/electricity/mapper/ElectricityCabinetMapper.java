@@ -6,6 +6,7 @@ import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetIdByFilterQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -147,6 +148,8 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<Integer> selectCabinetIdByFilter(ElectricityCabinetIdByFilterQuery query);
 
     List<CabinetLocationVO> selectCabinetLocationByPage(@Param("size") Long size, @Param("offset") Long offset);
+
+    List<ElectricityCabinet> selectListBySns(@Param("snList") List<String> snList);
 
     List<ElectricityCabinetCardInfoBO> selectEleCardInfoByTenant(@Param("list") List<Integer> list);
 }
