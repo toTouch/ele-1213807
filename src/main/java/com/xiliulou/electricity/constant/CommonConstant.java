@@ -101,4 +101,8 @@ public interface CommonConstant {
      */
     Integer SWITCH_OFF = 1;
     
+    /**
+     * 测试环境
+     */
+    String ACTIVE_PROFILES_DEV = "dev";
 }

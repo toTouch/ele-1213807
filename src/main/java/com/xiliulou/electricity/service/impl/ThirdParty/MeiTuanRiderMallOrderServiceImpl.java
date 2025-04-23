@@ -68,11 +68,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -163,6 +165,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private UserDelRecordService userDelRecordService;
+    
+    @Resource
+    private Environment env;
     
     @Slave
     @Override
@@ -325,8 +330,14 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             rollBackBO = pair.getRight();
             
             // 通知美团发货
-            Boolean deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
-            //Boolean deliverResult = assertDeliverSuccess(meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            Boolean deliverResult;
+            String activeProfiles = Arrays.toString(env.getActiveProfiles());
+            if (activeProfiles.contains(CommonConstant.ACTIVE_PROFILES_DEV)) {
+                // 测试环境断言发货成功
+                deliverResult = assertDeliverSuccess(meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            } else {
+                deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            }
             // 发货失败，执行回滚
             if (!deliverResult) {
                 meiTuanOrderRedeemTxService.rollback(rollBackBO);
