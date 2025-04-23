@@ -193,7 +193,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         MeiTuanOrderRedeemRollBackBO rollBackBO;
         try {
-            Triple<Boolean, String, Object> preCheckUser = this.preCheckUser(uid, query.getVersion());
+            Triple<Boolean, String, Object> preCheckUser = this.preCheckUser(uid);
             if (!preCheckUser.getLeft()) {
                 return Triple.of(false, preCheckUser.getMiddle(), preCheckUser.getRight());
             }
@@ -249,7 +249,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             // 已缴纳押金
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 // 押金及退租校验
-                Triple<Boolean, String, Object> checkDepositAndRefund = preCheckDepositAndRefund(uid, batteryMemberCard);
+                Triple<Boolean, String, Object> checkDepositAndRefund = preCheckDepositAndRefund(userInfo, batteryMemberCard, query.getVersion());
                 if (!checkDepositAndRefund.getLeft()) {
                     return Triple.of(false, checkDepositAndRefund.getMiddle(), checkDepositAndRefund.getRight());
                 }
@@ -373,7 +373,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return Triple.of(true, meiTuanRiderMallConfig, meiTuanRiderMallOrder);
     }
     
-    private Triple<Boolean, String, Object> preCheckUser(Long uid, String version) {
+    private Triple<Boolean, String, Object> preCheckUser(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("MeiTuan order redeem fail! not found user,uid={}", uid);
@@ -388,21 +388,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("MeiTuan order redeem fail! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
-        }
-
-        // 查询用户押金
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryDeposit)) {
-            log.warn("FreeServiceFeeOrderHandler Warn! userBatteryDeposit is null, uid is {}", userInfo.getUid());
-            return Triple.of(false,"100209", "未缴纳押金");
-        }
-
-        //是否需要缴纳免押服务费
-        if (StringUtils.isNotBlank(version)) {
-            IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
-            if (supportFreeServiceFee.getSupportFreeServiceFee()) {
-                return Triple.of(false, "301044", "请缴纳免押服务费");
-            }
         }
 
         return Triple.of(true, null, userInfo);
@@ -474,24 +459,24 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return Triple.of(true, null, null);
     }
     
-    private Triple<Boolean, String, Object> preCheckDepositAndRefund(Long uid, BatteryMemberCard batteryMemberCard) {
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+    private Triple<Boolean, String, Object> preCheckDepositAndRefund(UserInfo userInfo, BatteryMemberCard batteryMemberCard, String version) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.warn("MeiTuan order redeem fail! not found userBatteryDeposit,uid={}", uid);
+            log.warn("MeiTuan order redeem fail! not found userBatteryDeposit,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00110", "用户押金信息不存在");
         }
         
         // 是否有正在进行中的退押
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
-            log.warn("MeiTuan order redeem fail! have refunding order,uid={}", uid);
+            log.warn("MeiTuan order redeem fail! have refunding order,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0047", "押金退款审核中");
         }
         
         // 是否有正在进行中的退租
-        List<BatteryMembercardRefundOrder> batteryMemberCardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(uid);
+        List<BatteryMembercardRefundOrder> batteryMemberCardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
         if (CollectionUtils.isNotEmpty(batteryMemberCardRefundOrders)) {
-            log.warn("MeiTuan order redeem fail! battery memberCard refund review,uid={}", uid);
+            log.warn("MeiTuan order redeem fail! battery memberCard refund review,uid={}", userInfo.getUid());
             return Triple.of(false, "100018", "套餐租金退款审核中");
         }
         
@@ -501,6 +486,14 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             log.warn("MeiTuan order redeem fail! batteryMemberCard is not freeDeposit, memberCardId={}", batteryMemberCard.getId());
             return Triple.of(false, "120153", "该换电卡的押金不支持免押，已缴纳押金为免押类型，请先退押，重新缴纳押金后兑换");
         }
+
+        //是否需要缴纳免押服务费
+        if (StringUtils.isNotBlank(version)) {
+            IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+            if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+                return Triple.of(false, "301044", "请缴纳免押服务费");
+            }
+        }
         
         // 押金金额判断
         BigDecimal deposit =
@@ -508,7 +501,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                         UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
         BigDecimal memberCardDeposit = batteryMemberCard.getDeposit();
         if (memberCardDeposit.compareTo(deposit) > 0) {
-            log.warn("MeiTuan order redeem fail! memberCardDeposit is greater than deposit, uid={}, memberCardDeposit={}, deposit={}", uid, memberCardDeposit, deposit);
+            log.warn("MeiTuan order redeem fail! memberCardDeposit is greater than deposit, uid={}, memberCardDeposit={}, deposit={}", userInfo.getUid(), memberCardDeposit, deposit);
             return Triple.of(false, "120152", "该换电卡兑换套餐需缴纳押金" + memberCardDeposit + "元，已缴纳押金不足，请先退押，重新缴纳押金后兑换");
         }
         
