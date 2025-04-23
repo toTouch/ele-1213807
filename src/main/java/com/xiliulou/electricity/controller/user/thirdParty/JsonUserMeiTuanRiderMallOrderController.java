@@ -121,7 +121,7 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
         
-        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderRequest.getOrderId()).build();
+        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderRequest.getOrderId()).version(orderRequest.getVersion()).build();
         return returnTripleResult(meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query));
     }
     
