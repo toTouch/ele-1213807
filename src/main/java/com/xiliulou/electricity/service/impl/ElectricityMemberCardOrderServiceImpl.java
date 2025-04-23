@@ -2376,7 +2376,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 return Triple.of(false, "100464", "加盟商与门店不匹配，请重新选择门店与套餐");
             }
         }
-        
+
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
@@ -2398,7 +2398,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             return Triple.of(false, "110211", "用户已缴纳车电一体押金");
         }
-        
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())) {
             return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
@@ -4063,11 +4063,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public ElectricityMemberCardOrder queryUserLastPaySuccessByUid(Long uid) {
         return baseMapper.selectUserLastPaySuccessByUid(uid);
     }
-    
+
     @Override
     public Integer deactivateUsingOrder(Long uid) {
         Long updateTime = System.currentTimeMillis();
         return electricityMemberCardOrderMapper.deactivateUsingOrder(uid, updateTime);
     }
-    
+
+
+    @Override
+    @Slave
+    public Long queryLastPayTime(Long uid) {
+        return electricityMemberCardOrderMapper.selectLastPayTime(uid);
+    }
 }

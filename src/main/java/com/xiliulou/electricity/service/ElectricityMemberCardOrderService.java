@@ -180,4 +180,6 @@ public interface ElectricityMemberCardOrderService {
     ElectricityMemberCardOrder queryUserLastPaySuccessByUid(Long uid);
 
     Integer deactivateUsingOrder(Long uid);
+
+    Long queryLastPayTime(Long uid);
 }

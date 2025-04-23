@@ -276,7 +276,16 @@
             )
         </where>
     </select>
-    
+
+    <select id="selectDepositOrderByUid"
+            resultType="com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo">
+        SELECT
+        <include refid="all_field"/>
+        FROM
+        <include refid="table_name"/>
+       where uid =#{uid} and pay_state=2 and del_flag=0 order by id desc limit 1
+    </select>
+
     <!-- 条件新增 -->
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO

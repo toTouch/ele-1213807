@@ -39,4 +39,7 @@ public interface TenantMapper extends BaseMapper<Tenant> {
 
 
     List<Tenant> selectListByIds(@Param("idList") List<Integer> tenantIdList);
+
+
+    List<Tenant> selectListAll();
 }

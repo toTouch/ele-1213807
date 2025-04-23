@@ -426,11 +426,11 @@
             update_time     = #{updateTime}
         where id = #{id}
     </update>
-    
+
     <update id="deactivateUsingOrder">
         update t_electricity_member_card_order set use_status = 3,update_time = #{updateTime} where uid = #{uid} and use_status in (1,2)
     </update>
-    
+
     <sql id="column">
         id ,
         pay_amount ,
@@ -622,5 +622,13 @@
         </where>
         order by id desc
         limit 1
+    </select>
+
+    <select id="selectLastPayTime" resultType="java.lang.Long">
+        select create_time
+        from t_electricity_member_card_order
+        where uid = #{uid}
+          and status = 1
+        order by create_time desc limit 1
     </select>
 </mapper>

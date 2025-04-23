@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
+import com.xiliulou.electricity.query.TrafficExportQuery;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -107,6 +108,15 @@ public class JsonAdminTenantController extends BaseController {
     @GetMapping(value = "/admin/tenant/dataAnalyze")
     public R dataAnalyze(@RequestParam("passWord") String passWord, HttpServletResponse response) {
         tenantService.dataAnalyze(passWord, response);
+        return R.ok();
+    }
+
+
+
+
+    @PostMapping(value = "/admin/tenant/trafficExport")
+    public R trafficExport(@RequestBody TrafficExportQuery query, HttpServletResponse response) {
+        tenantService.trafficExport(query, response);
         return R.ok();
     }
 

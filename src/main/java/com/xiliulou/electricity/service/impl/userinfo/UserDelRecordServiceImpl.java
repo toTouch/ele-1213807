@@ -4,8 +4,10 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserInfoGroupConstant;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
@@ -14,9 +16,11 @@ import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetai
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory;
 import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.lostuser.LostUserFirstEnum;
 import com.xiliulou.electricity.mapper.userinfo.UserDelRecordMapper;
 import com.xiliulou.electricity.query.supper.ClearUserDelMarkRequest;
 import com.xiliulou.electricity.queryModel.ClearUserDelMarkQueryModel;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
@@ -30,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -70,7 +75,13 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
     
     @Resource
     private UserInfoExtraService userInfoExtraService;
-    
+
+    @Resource
+    private ApplicationContext applicationContext;
+
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+
     @Slave
     @Override
     public Boolean existsByDelPhone(String phone, Integer tenantId) {
@@ -120,10 +131,10 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
     }
     
     @Override
-    public Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay) {
+    public Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay, Long userLastPayTime) {
         UserDelRecord userDelRecord = UserDelRecord.builder().uid(uid).delPhone(Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone)
                 .delIdNumber(Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber).delTime(System.currentTimeMillis()).delayDay(delayDay).status(status)
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(franchiseeId).tenantId(tenantId).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(franchiseeId).tenantId(tenantId).purchaseTime(userLastPayTime).build();
     
         return userDelRecordMapper.insert(userDelRecord);
     }
@@ -161,14 +172,14 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
             }
     
             // 根据身份证号查询曾被删除过的uid
-            Long delUid = this.queryDelUidByDelIdNumber(idNumber, tenantId);
-            if (Objects.isNull(delUid)) {
+            UserDelRecord userDelRecord = applicationContext.getBean(UserDelRecordService.class).queryDelUidByDelIdNumber(idNumber, tenantId);
+            if (Objects.isNull(userDelRecord)) {
                 log.warn("asyncRecoverUserInfoGroup after auth, delUid is null, uid={}", uid);
                 return;
             }
             
             // 恢复流失用户标记
-            recoverLostUserMark(uid, delUid);
+            recoverLostUserMark(userInfo, userDelRecord);
     
             // 1.若当前uid已存在用户分组,则不恢复历史分组
             Integer existsGroup = userInfoGroupDetailService.existsByUid(uid);
@@ -178,7 +189,7 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
             }
         
             // 2.按加盟商查询最新分组信息（非退押的分组信息，因为退押后分组信息加盟商为0。 说明：用户可以绑定多个加盟商分组信息这个功能上线后，退押不再删除分组信息）
-            List<UserInfoGroupDetailHistory> franchiseeHistoryList = userInfoGroupDetailHistoryService.listFranchiseeLatestHistory(delUid, tenantId);
+            List<UserInfoGroupDetailHistory> franchiseeHistoryList = userInfoGroupDetailHistoryService.listFranchiseeLatestHistory(userDelRecord.getUid(), tenantId);
             if (CollectionUtils.isEmpty(franchiseeHistoryList)) {
                 log.warn("asyncRecoverUserInfoGroup after auth, list group by franchisee is empty, uid={}", uid);
                 return;
@@ -202,16 +213,43 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
         });
     }
     
-    private void recoverLostUserMark(Long uid, Long delUid) {
+    private void recoverLostUserMark(UserInfo userInfo, UserDelRecord userDelRecord) {
         // 判断被删前是否为流失用户
-        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(delUid);
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userDelRecord.getUid());
         if (Objects.isNull(userInfoExtra)) {
             return;
         }
         
         // 恢复流失用户标记
         if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
-            userInfoExtraService.updateByUid(UserInfoExtra.builder().lostUserStatus(YesNoEnum.YES.getCode()).uid(uid).build());
+            userInfoExtraService.updateByUid(UserInfoExtra.builder().lostUserStatus(YesNoEnum.YES.getCode()).uid(userInfo.getUid()).build());
+        }
+
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            log.info("recoverLostUserMark Info! electricityConfig is null, tenantId is {}", userInfo.getTenantId());
+            return;
+        }
+
+        // 流失用户拉新 是否关闭
+        if (Objects.equals(electricityConfig.getLostUserFirst(), LostUserFirstEnum.CLOSE.getCode())) {
+            log.info("recoverLostUserMark Info! lostUserFirst is close, uid is {}", userInfo.getUid());
+            return;
+        }
+
+        if (Objects.isNull(electricityConfig.getLostUserDays())) {
+            log.info("recoverLostUserMark Info! lostUserDays is close, uid is {}", userInfo.getUid());
+            return;
+        }
+
+        if (Objects.isNull(userDelRecord.getPurchaseTime())) {
+            log.info("recoverLostUserMark Info! purchaseTime is null, uid is {}", userDelRecord.getUid());
+            return;
+        }
+        long timeMillis = System.currentTimeMillis() - userDelRecord.getPurchaseTime();
+        log.info("recoverLostUserMark Info! timeMillis is {}, lostUserDays is {}, uid is {}, delUid is {}", timeMillis, electricityConfig.getLostUserDays(), userInfo.getUid(), userDelRecord.getUid());
+        if (timeMillis > (electricityConfig.getLostUserDays() * TimeConstant.DAY_MILLISECOND)) {
+            userInfoExtraService.updateByUid(UserInfoExtra.builder().lostUserStatus(YesNoEnum.YES.getCode()).lostUserTime(System.currentTimeMillis()).uid(userInfo.getUid()).build());
         }
     }
     
@@ -346,7 +384,7 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
     
     @Slave
     @Override
-    public Long queryDelUidByDelIdNumber(String idNumber, Integer tenantId) {
+    public UserDelRecord queryDelUidByDelIdNumber(String idNumber, Integer tenantId) {
         return userDelRecordMapper.selectDelUidByDelIdNumber(idNumber, tenantId);
     }
     
@@ -358,20 +396,20 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
         if (StringUtils.isBlank(phoneDelMark) && StringUtils.isBlank(idNumberDelMark)) {
             return R.fail("120165", "手机号和身份证号码不能同时为空");
         }
-        
+
         return R.ok(clearUserDelMark(phoneDelMark, idNumberDelMark, tenantId));
     }
-    
+
     @Override
     public Integer clearUserDelMark(String phone, String idNumber, Integer tenantId) {
         Integer count = 0;
-        
+
         // 手机号和身份证号码同时存在时，先根据手机号清除再根据身份证号码清除
         if (StringUtils.isNotBlank(phone) && StringUtils.isNotBlank(phone)) {
             ClearUserDelMarkQueryModel phoneQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).phoneDelMark(phone).build();
             Integer delPhoneCount = userDelRecordMapper.clearUserDelMark(phoneQueryModel);
             count += delPhoneCount;
-            
+
             ClearUserDelMarkQueryModel idNumberQueryModel = ClearUserDelMarkQueryModel.builder().tenantId(tenantId).idNumberDelMark(idNumber).build();
             Integer delIdNumberCount = userDelRecordMapper.clearUserDelMark(idNumberQueryModel);
             count += delIdNumberCount;
@@ -386,13 +424,13 @@ public class UserDelRecordServiceImpl implements UserDelRecordService {
             Integer delIdNumberCount = userDelRecordMapper.clearUserDelMark(idNumberQueryModel);
             count += delIdNumberCount;
         }
-        
+
         return count;
     }
-    
+
     @Override
     public Integer update(UserDelRecord userDelRecord) {
         return userDelRecordMapper.update(userDelRecord);
     }
-    
+
 }

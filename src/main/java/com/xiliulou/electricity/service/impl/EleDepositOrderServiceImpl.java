@@ -12,30 +12,7 @@ import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.UserDelStatusDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.PxzConfig;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCarDeposit;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -44,45 +21,13 @@ import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
 import com.xiliulou.electricity.event.SiteMessageEvent;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.EleUserOperateRecordService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarModelService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.StoreGoodsService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
@@ -109,6 +54,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -263,7 +209,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Resource
     private UserDelRecordService userDelRecordService;
-    
+
+    @Resource
+    private ApplicationContext applicationContext;
+
+    @Resource
+    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
         return eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, orderNo));
@@ -1212,5 +1164,78 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         return Pair.of(Boolean.FALSE, null);
+    }
+
+    @Override
+    @Slave
+    public EleDepositOrder queryDepositOrderByUid(Long uid) {
+        return eleDepositOrderMapper.selectDepositOrderByUid(uid);
+    }
+
+    @Override
+    public Boolean isZeroDepositOrder(UserInfo userInfo) {
+        EleDepositOrder eleDepositOrder = applicationContext.getBean(EleDepositOrderService.class).queryDepositOrderByUid(userInfo.getUid());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.info("isZeroDepositOrder Info! not found eleDepositOrder, uid is {}", userInfo.getUid());
+            return false;
+        }
+
+        BigDecimal refundAmoun = eleDepositOrder.getPayAmount();
+        String orderId = eleDepositOrder.getOrderId();
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                refundAmoun = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+                orderId = freeDepositOrder.getOrderId();
+            }
+        }
+
+        BigDecimal eleRefundAmount = refundAmoun.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmoun;
+        if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+
+
+//            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+//            if (Objects.isNull(userBatteryDeposit)) {
+//                log.warn("purchase package by enterprise user error, not found userBatteryDeposit,uid={}", userInfo.getUid());
+//                throw new BizException("ELECTRICITY.0001", "用户信息不存在");
+//            }
+//
+//            // 是否有正在进行中的退押
+//            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+//            if (refundCount > 0) {
+//                log.warn("purchase package by enterprise user error, have refunding order,uid={}", userInfo.getUid());
+//                throw new BizException("120317", "您退押正在审核中，暂无法使用");
+//            }
+
+//            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+//            if (Objects.isNull(userBatteryMemberCard)) {
+//                return false;
+//            }
+//
+//            //校验是否有退租审核中的订单
+//            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(userBatteryMemberCard.getOrderId());
+//            if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
+//                throw new BizException("100282", "租金退款审核中，请等待审核确认后操作");
+//            }
+//
+//
+//            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
+//                log.warn("MeiTuan order redeem fail! userBatteryMemberCard disable, uid={}", userInfo.getUid());
+//                throw new BizException("120142", "用户套餐冻结中，不允许操作");
+//            }
+//
+//            if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+//                log.warn("MeiTuan order redeem fail! userBatteryMemberCard freeze waiting approve, uid={} ", userInfo.getUid());
+//                throw new BizException("120143", "用户套餐冻结审核中，不允许操作");
+//            }
+
+            // 测试王洪欣要求后端这样改
+            R r = eleRefundOrderService.batteryOffLineRefund("删除用户，0元退押", eleRefundAmount, userInfo.getUid(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER, CheckPayParamsResultEnum.SUCCESS.getCode());
+            if (!r.isSuccess()) {
+                throw new BizException(r.getErrCode(), r.getErrMsg());
+            }
+            return false;
+        }
+        return true;
     }
 }

@@ -44,7 +44,6 @@ public class ElectricityAppConfigServiceImpl extends ServiceImpl<ElectricityAppC
     private RedisService redisService;
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R edit(ElectricityAppConfigQuery electricityAppConfigQuery) {
         //用户
         TokenUser userInfo = SecurityUtils.getUserInfo();

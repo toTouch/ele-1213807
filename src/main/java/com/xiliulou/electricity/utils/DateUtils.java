@@ -436,4 +436,10 @@ public class DateUtils {
         // 再次转换回时间戳
         return specificNextYearDateTime.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
     }
+
+    //时间格式化
+    public static String parseTimeToStringDateSecond(Long timeStamp) {
+        return DateUtil.format(new Date(timeStamp), "YYYY-MM-dd HH:mm:ss");
+    }
+
 }

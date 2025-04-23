@@ -557,4 +557,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
 
         return false;
     }
+
+    @Override
+    @Slave
+    public Long queryLastPayTime(Long uid) {
+        return carRentalPackageOrderMapper.selectLastPayTime(uid);
+    }
 }

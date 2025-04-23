@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.ElectricityCabinetCardInfoBO;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
@@ -149,4 +150,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<CabinetLocationVO> selectCabinetLocationByPage(@Param("size") Long size, @Param("offset") Long offset);
 
     List<ElectricityCabinet> selectListBySns(@Param("snList") List<String> snList);
+
+    List<ElectricityCabinetCardInfoBO> selectEleCardInfoByTenant(@Param("list") List<Integer> list);
 }

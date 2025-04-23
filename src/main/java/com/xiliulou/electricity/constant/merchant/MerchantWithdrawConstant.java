@@ -38,6 +38,11 @@ public class MerchantWithdrawConstant {
      * 提现失败
      */
     public static final Integer WITHDRAW_FAIL = 6;
+
+    /**
+     * 线下转账
+     */
+    public static final Integer OFF_LINE_TRANSFER = 7;
     
     /**
      * 提现类型 微信

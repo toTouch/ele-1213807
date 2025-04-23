@@ -77,6 +77,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriUtils;
@@ -183,7 +184,8 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
     @Resource
     private PayServiceDispatcher payServiceDispatcher;
     
-    
+    @Resource
+    private ApplicationContext applicationContext;
     
     @Override
     public FreeDepositUserInfoVo queryFreeDepositStatus(Integer tenantId, Long uid) {
@@ -682,7 +684,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
      * @param compelOffLine     是否强制线下退款
      * @return
      */
-    private CarRentalPackageDepositRefundPo budidCarRentalPackageOrderRentRefund(CarRentalPackageMemberTermPo memberTermEntity, String depositPayOrderNo,
+    public CarRentalPackageDepositRefundPo budidCarRentalPackageOrderRentRefund(CarRentalPackageMemberTermPo memberTermEntity, String depositPayOrderNo,
             SystemDefinitionEnum systemDefinition, boolean depositAuditFlag, Integer payType, BigDecimal refundAmount, Long optUid, Integer compelOffLine,String paymentChannel) {
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = new CarRentalPackageDepositRefundPo();
         refundDepositInsertEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, memberTermEntity.getUid()));
@@ -1520,4 +1522,51 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         }
         return null;
     }
+
+
+    @Override
+    public Boolean isCarZeroDepositOrder(UserInfo userInfo) {
+        CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = applicationContext.getBean(CarRentalPackageDepositPayService.class).queryDepositOrderByUid(userInfo.getUid());
+        if (Objects.isNull(carRentalPackageDepositPayPo)) {
+            log.info("isCarZeroDepositOrder Info! not found eleDepositOrder, uid is {}", userInfo.getUid());
+            return false;
+        }
+
+        BigDecimal refundAmount = carRentalPackageDepositPayPo.getDeposit();
+        String orderId = carRentalPackageDepositPayPo.getOrderNo();
+        if (Objects.equals(carRentalPackageDepositPayPo.getPayType(), PayTypeEnum.EXEMPT.getCode())) {
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(carRentalPackageDepositPayPo.getOrderNo());
+            if (Objects.nonNull(freeDepositOrder)) {
+                refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+                orderId = freeDepositOrder.getOrderId();
+            }
+        }
+
+        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+//            CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
+//            if (Objects.isNull(memberTermEntity)) {
+//                log.warn("isCarZeroDepositOrder Info! not found memberTermEntity, uid is {}", userInfo.getUid());
+//                return false;
+//            }
+//
+//            if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+//                throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+//            }
+
+
+            // 测试王洪欣要求后端这样改
+            CarRentalPackageDepositRefundOptModel optModel = new CarRentalPackageDepositRefundOptModel();
+            optModel.setRealAmount(eleRefundAmount);
+            optModel.setDepositPayOrderNo(orderId);
+            optModel.setCompelOffLine(1);
+            optModel.setUid(userInfo.getUid());
+            optModel.setTenantId(userInfo.getTenantId());
+            refundDepositCreate(optModel, userInfo.getUid());
+
+            return false;
+        }
+        return true;
+    }
+
 }

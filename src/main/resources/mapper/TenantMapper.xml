@@ -85,4 +85,11 @@
         </where>
     </select>
 
+    <select id="selectListAll" resultType="com.xiliulou.electricity.entity.Tenant">
+        select    id,
+                  name
+        from t_tenant
+        where del_flag = 0
+    </select>
+
 </mapper>

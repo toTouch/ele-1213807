@@ -557,9 +557,19 @@
             </foreach>
         </where>
     </select>
-    
+
     <update id="updatePhoneByUid">
         update t_ele_deposit_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
-    
+
+
+    <select id="selectDepositOrderByUid" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
+        select uid, order_id, status, order_type, pay_type, pay_amount
+        from t_ele_deposit_order
+        where uid = #{uid}
+          and deposit_type = 0
+          and status = 1
+        order by id desc limit 1
+    </select>
+
 </mapper>

@@ -23,6 +23,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.ElectricityCabinetCardInfoBO;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
@@ -307,7 +308,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
-    
+
     @Autowired
     StorageConverter storageConverter;
     
@@ -316,7 +317,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     StorageProperties storageProperties;
-    
+
     @Autowired
     EleCommonConfig eleCommonConfig;
     
@@ -334,7 +335,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     StorageService storageService;
-    
+
     @Autowired
     UserDataScopeService userDataScopeService;
     
@@ -6057,5 +6058,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         );
 
         return R.ok(cabinetList);
+    }
+
+    @Override
+    @Slave
+    public  List<ElectricityCabinetCardInfoBO> queryEleCardInfoByTenant(List<Integer> list) {
+        return electricityCabinetMapper.selectEleCardInfoByTenant(list);
     }
 }

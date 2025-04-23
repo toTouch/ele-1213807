@@ -33,6 +33,7 @@ import com.xiliulou.electricity.entity.UserDelRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.UserRole;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -69,7 +70,11 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
@@ -216,10 +221,20 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private UserDelRecordService userDelRecordService;
-    
+
+    @Resource
+    private EleDepositOrderService eleDepositOrderService;
+
+    @Resource
+    private CarRenalPackageDepositV2BizService carRenalPackageDepositV2BizService;
+
+    @Resource
+    private CarRentalPackageOrderService carRentalPackageOrderService;
+
     @Resource
     private ElectricityConfigExtraService electricityConfigExtraService;
-    
+
+
     /**
      * 启用锁定用户
      *
@@ -1121,7 +1136,7 @@ public class UserServiceImpl implements UserService {
                 || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             return Triple.of(false, "402030", "请退还押金后，进行删除操作");
         }
-        
+
         if (Objects.equals(userRentInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还后再删除");
         }
@@ -1134,24 +1149,38 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(installmentRecord)) {
             return Triple.of(false, "301051", "该用户存在未完成的分期签约记录");
         }
-        
-        List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
-        if (DataUtil.collectionIsUsable(userOauthBinds)) {
-            delUserOauthBindAndClearToken(userOauthBinds);
-        }
-        
+
         // 判断用户是否为企业用户
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
         if (Objects.nonNull(enterpriseInfo)) {
             return Triple.of(false, "100253", "请先删除企业用户配置");
         }
-        
+
         // 判断企业用户云豆是否回收
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
             return Triple.of(false, "", "该用户名下有未回收的云豆订单，请联系所属企业处理");
         }
+
+//        if (Objects.equals(userRentInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+//            // 如果不是零元退押
+//            if (eleDepositOrderService.isZeroDepositOrder(userRentInfo)) {
+//                return Triple.of(false, "402030", "请退还换电押金后，进行删除操作");
+//            }
+//        }
+//
+//        if (Objects.equals(userRentInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)
+//                || Objects.equals(userRentInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+//            if (carRenalPackageDepositV2BizService.isCarZeroDepositOrder(userRentInfo)) {
+//                return Triple.of(false, "402030", "请退还租车押金后，进行删除操作");
+//            }
+//        }
         
+        List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
+        if (DataUtil.collectionIsUsable(userOauthBinds)) {
+            delUserOauthBindAndClearToken(userOauthBinds);
+        }
+
         // 删除企业用户
         enterpriseChannelUserService.deleteByUid(uid);
         
@@ -1175,10 +1204,10 @@ public class UserServiceImpl implements UserService {
         if (!markDelUser.getLeft()) {
             return Triple.of(false, markDelUser.getMiddle(), markDelUser.getRight());
         }
-        
+
         // 将未使用和使用中的套餐订单更新为已失效
         electricityMemberCardOrderService.deactivateUsingOrder(uid);
-    
+
         return Triple.of(true, null, null);
     }
     
@@ -1188,10 +1217,10 @@ public class UserServiceImpl implements UserService {
             log.error("MarkDelUser error! electricityConfigExtra is null,tenantId={} ", tenantId);
             return Triple.of(false, "302003", "运营商配置异常，请联系客服");
         }
-        
+
         String delPhone = StringUtils.EMPTY;
         String delIdNumber = StringUtils.EMPTY;
-        
+
         // 是否为"注销中"
         UserDelRecord userDelRecord = userDelRecordService.queryByUidAndStatus(uid, List.of(UserStatusEnum.USER_STATUS_CANCELLING.getCode()));
         if (Objects.nonNull(userDelRecord)) {
@@ -1204,17 +1233,17 @@ public class UserServiceImpl implements UserService {
                     delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
                 }
             }
-            
+
             // 更新为"已删除"，并打标记
             userDelRecordService.update(
                     UserDelRecord.builder().id(userDelRecord.getId()).status(UserStatusEnum.USER_STATUS_DELETED.getCode()).updateTime(System.currentTimeMillis())
                             .delPhone(Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone).delIdNumber(Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber).build());
-            
+
             // 关闭状态：清除历史标记
             if (Objects.equals(ElectricityConfigExtraEnum.SWITCH_OFF.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
                 userDelRecordService.clearUserDelMark(userRentInfo.getPhone(), userRentInfo.getIdNumber(), tenantId);
             }
-            
+
             return Triple.of(true, null, null);
         }
         
@@ -1227,18 +1256,19 @@ public class UserServiceImpl implements UserService {
                 delIdNumber = remarkPhoneAndIdNumber.getDelIdNumber();
             }
         }
-        
+
         userDelRecordService.insert(uid, Objects.isNull(delPhone) ? StringUtils.EMPTY : delPhone, Objects.isNull(delIdNumber) ? StringUtils.EMPTY : delIdNumber,
-                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0);
-        
+                UserStatusEnum.USER_STATUS_DELETED.getCode(), tenantId, userRentInfo.getFranchiseeId(), 0, getUserLastPayTime(uid));
+
         // 关闭状态：清除历史标记
         if (Objects.equals(ElectricityConfigExtraEnum.SWITCH_OFF.getCode(), electricityConfigExtra.getDelUserMarkSwitch())) {
             userDelRecordService.clearUserDelMark(userRentInfo.getPhone(), userRentInfo.getIdNumber(), tenantId);
         }
-        
+
         return Triple.of(true, null, null);
     }
-    
+
+
     @Override
     public R userAutoCodeGeneration() {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
@@ -1469,5 +1499,18 @@ public class UserServiceImpl implements UserService {
         
         return Boolean.TRUE;
     }
-    
+
+
+    @Override
+    public Long getUserLastPayTime(Long uid) {
+        Long batteryOrderPayTime = electricityMemberCardOrderService.queryLastPayTime(uid);
+        Long carOrderPayTime = carRentalPackageOrderService.queryLastPayTime(uid);
+        if (Objects.nonNull(batteryOrderPayTime) && Objects.nonNull(carOrderPayTime)) {
+            return Math.max(batteryOrderPayTime, carOrderPayTime);
+        }
+        if (Objects.nonNull(batteryOrderPayTime)) {
+            return batteryOrderPayTime;
+        }
+        return carOrderPayTime;
+    }
 }

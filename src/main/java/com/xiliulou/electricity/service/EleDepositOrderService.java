@@ -97,4 +97,8 @@ public interface EleDepositOrderService {
             BasePayConfig basePayConfig);
     
     List<EleDepositOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList);
+
+    EleDepositOrder queryDepositOrderByUid(Long uid);
+
+    Boolean isZeroDepositOrder(UserInfo userInfo);
 }

@@ -11,6 +11,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositPayMapper;
@@ -45,7 +46,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
-    
+
     /**
      * 查询用户最后一次的免押订单生成信息
      *
@@ -262,11 +263,11 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     public List<CarRentalPackageDepositPayPo> listByOrders(Integer tenantId, List<String> orderNoList) {
         return carRentalPackageDepositPayMapper.selectListByOrders(tenantId, orderNoList);
     }
-    
+
     @Override
     public Boolean isCarDepositRefund(CarRentalPackageMemberTermPo carRentalPackageMemberTermPo) {
         boolean depositRefundFlag = true;
-    
+
         if (Objects.isNull(carRentalPackageMemberTermPo)) {
             depositRefundFlag = false;
         } else {
@@ -294,7 +295,17 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
                 }
             }
         }
-    
+
         return depositRefundFlag;
     }
+
+
+    @Override
+    @Slave
+    public CarRentalPackageDepositPayPo queryDepositOrderByUid(Long uid) {
+        return carRentalPackageDepositPayMapper.selectDepositOrderByUid(uid);
+    }
+
+
+
 }

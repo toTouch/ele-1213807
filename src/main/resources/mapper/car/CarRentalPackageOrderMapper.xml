@@ -450,4 +450,12 @@
     <select id="existNotFinishOrderByUid" resultType="java.lang.Integer">
         select 1 from t_car_rental_package_order where uid = #{uid} and pay_state = 2 and use_state in (1, 2) limit 1
     </select>
+    <select id="selectLastPayTime" resultType="java.lang.Long">
+        select create_time
+        from t_car_rental_package_order
+        where uid = #{uid}
+          and pay_state = 2
+          and del_flag = 0
+        order by create_time desc limit 1
+    </select>
 </mapper>

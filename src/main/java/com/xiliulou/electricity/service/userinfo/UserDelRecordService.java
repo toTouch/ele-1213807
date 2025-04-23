@@ -34,7 +34,7 @@ public interface UserDelRecordService {
     
     UserDelRecord queryByUidAndStatus(Long uid, List<Integer> statusList);
     
-    Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay);
+    Integer insert(Long uid, String delPhone, String delIdNumber, Integer status, Integer tenantId, Long franchiseeId, Integer delayDay,  Long userLastPayTime);
     
     void asyncRecoverUserInfoGroup(Long uid);
     
@@ -45,15 +45,15 @@ public interface UserDelRecordService {
     Map<Long, UserDelStatusDTO> listUserStatus(List<Long> uidList, List<Integer> status);
     
     Integer getUserStatus(Long uid, Map<Long, UserDelStatusDTO> userStatusMap);
-    
-    Long queryDelUidByDelIdNumber(String idNumber, Integer tenantId);
-    
+
     /**
      * 该接口只用于内部测试，外部请勿调用
      */
     R adminClearUserDelMark(ClearUserDelMarkRequest clearUserDelMarkRequest);
-    
+
     Integer clearUserDelMark(String phone, String idNumber, Integer tenantId);
-    
+
     Integer update(UserDelRecord userDelRecord);
+
+    UserDelRecord queryDelUidByDelIdNumber(String idNumber, Integer tenantId);
 }

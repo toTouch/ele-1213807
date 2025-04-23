@@ -5,6 +5,7 @@ import com.xiliulou.electricity.bo.EleDepositRefundBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
 import com.xiliulou.pay.base.exception.PayException;
@@ -122,4 +123,6 @@ public interface EleRefundOrderService {
     List<EleRefundOrder> listByOrderIdList(Integer tenantId, List<String> orderIdList);
     
     EleDepositRefundBO queryLastSuccessOrderByUid(Long uid);
+
+    Triple<Boolean, String, Object> handleBatteryZeroDepositAndOfflineRefundOrder(EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo);
 }

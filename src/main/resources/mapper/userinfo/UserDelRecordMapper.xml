@@ -4,12 +4,12 @@
     <!-- 基础字段 -->
     <sql id="basic_field">
         id
-        ,uid,del_phone,del_id_number,del_time,delay_day,status,create_time,update_time,franchisee_id,tenant_id
+        ,uid,del_phone,del_id_number,del_time,delay_day,status,create_time,update_time,franchisee_id,tenant_id,purchase_time
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_del_record(uid, del_phone, del_id_number, del_time, delay_day, status, create_time, update_time, franchisee_id, tenant_id)
-        values (#{uid}, #{delPhone}, #{delIdNumber}, #{delTime}, #{delayDay}, #{status}, #{createTime}, #{updateTime}, #{franchiseeId}, #{tenantId})
+        insert into t_user_del_record(uid, del_phone, del_id_number, del_time, delay_day, status, create_time, update_time, franchisee_id, tenant_id,purchase_time)
+        values (#{uid}, #{delPhone}, #{delIdNumber}, #{delTime}, #{delayDay}, #{status}, #{createTime}, #{updateTime}, #{franchiseeId}, #{tenantId},#{purchaseTime})
     </insert>
     
     <update id="updateStatusById">
@@ -102,8 +102,8 @@
         order by id desc
     </select>
     
-    <select id="selectDelUidByDelIdNumber" resultType="java.lang.Long">
-        select uid
+    <select id="selectDelUidByDelIdNumber" resultType="com.xiliulou.electricity.entity.UserDelRecord">
+        select  <include refid="basic_field"/>
         from t_user_del_record
         where tenant_id = #{tenantId}
           and del_id_number is not null
