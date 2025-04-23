@@ -14,5 +14,6 @@ public class CreateMemberCardOrderRequest {
     
     @NotBlank(message = "订单号不能为空")
     private String orderId;
-    
+
+    private String version;
 }
