@@ -145,6 +145,11 @@
         where electricity_cabinet_id = #{electricityCabinetId}
     </update>
 
+    <update id="updateServerEndTime">
+        update t_electricity_cabinet_server set server_end_time = #{serverEndTime}, update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_electricity_cabinet_server where id = #{id}
@@ -234,6 +239,35 @@
         <foreach collection="eIdList" separator="," open="(" close=")" item="id">
             #{id}
         </foreach>
+    </select>
+
+    <select id="listByTenantId" resultType="com.xiliulou.electricity.bo.cabinet.ElectricityCabinetServerBO">
+        SELECT
+        s.id 'cabinetServerId',
+        s.server_end_time 'serverEndTime',
+        s.server_begin_time 'serverBeginTime',
+        c.id 'cabinetId',
+        c.sn
+        FROM
+        t_electricity_cabinet c
+        inner JOIN t_electricity_cabinet_server s ON c.id = s.electricity_cabinet_id
+
+        <where>
+            c.del_flag = 0
+            and s.del_flag = 0
+            and c.id > #{maxId}
+            <if test="tenantId != null">
+                and c.tenant_id = #{tenantId}
+            </if>
+
+            <if test="cabinetSnList != null and cabinetSnList.size() > 0">
+                and c.sn in
+                <foreach collection="cabinetSnList" close=")" open="(" item="sn" separator=",">
+                    #{sn}
+                </foreach>
+            </if>
+        </where>
+        limit #{size}
     </select>
 
 </mapper>

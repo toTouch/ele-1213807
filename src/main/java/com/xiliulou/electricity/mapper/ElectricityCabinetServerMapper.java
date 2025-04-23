@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetServerBO;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
@@ -80,4 +81,8 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
     Integer updateByEid(ElectricityCabinetServer electricityCabinetServer);
     
     List<ElectricityCabinetServer> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
+
+    List<ElectricityCabinetServerBO> listByTenantId(@Param("tenantId") Integer tenantId, @Param("cabinetSnList") List<String> cabinetSnList, @Param("maxId") Long maxId, @Param("size") Integer size);
+
+    Integer updateServerEndTime(@Param("id") Long id,@Param("serverEndTime") long serverEndTime, @Param("updateTime") Long updateTime);
 }

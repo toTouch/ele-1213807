@@ -298,4 +298,6 @@ public interface ElectricityCabinetService {
     R listFullPowerByPage(ElectricityCabinetQuery electricityCabinetQuery);
 
     R listCabinetLocation(long size, long offset);
+
+    List<ElectricityCabinet> listBySnList(List<String> snList);
 }
