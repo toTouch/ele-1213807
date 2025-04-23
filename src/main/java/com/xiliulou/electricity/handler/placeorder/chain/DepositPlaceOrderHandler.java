@@ -21,7 +21,7 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_DEPOSIT;
+import static com.xiliulou.electricity.enums.PlaceOrderTypeEnum.PLACE_ORDER_DEPOSIT;
 
 /**
  * @Description 押金订单生成及计算金额节点，同时需要将后续处理需要的数据存入上下文对象context中
@@ -38,7 +38,7 @@ public class DepositPlaceOrderHandler extends AbstractPlaceOrderHandler {
     @PostConstruct
     public void init() {
         this.nextHandler = memberCardVerificationHandler;
-        this.nodePlaceOrderType = PLACE_ORDER_DEPOSIT;
+        this.nodePlaceOrderType = PLACE_ORDER_DEPOSIT.getType();
     }
     
     @Override

@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Region;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.FranchiseeSearchVO;
+import com.xiliulou.electricity.vo.FreeServiceFeeInfoVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Triple;
@@ -91,4 +92,8 @@ public interface FranchiseeService {
     Triple<Boolean, String, Object> selectById(Long id);
     
     List<Long> listFranchiseeIdsByTenantId(Integer tenantId);
+
+    List<Long> queryOldByTenantId(Integer tenantId);
+
+    FreeServiceFeeInfoVO getFreeServiceFee(Long franchiseeId);
 }

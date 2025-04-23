@@ -23,12 +23,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
-import com.xiliulou.electricity.constant.AssetConstant;
-import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.constant.battery.BatteryLabelConstant;
 import com.xiliulou.electricity.constant.battery.BindBatteryConstants;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
@@ -48,6 +43,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.battery.ElectricityBatteryLabel;
+import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -106,14 +102,7 @@ import com.xiliulou.electricity.tx.AdminSupperTxService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.BatteryChangeInfoVO;
-import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
-import com.xiliulou.electricity.vo.DeleteBatteryListVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryExcelVO;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
-import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.electricity.vo.battery.BindBatteryFailReasonVO;
 import com.xiliulou.electricity.vo.battery.BindBatteryResultVO;
@@ -154,6 +143,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -2430,5 +2420,20 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         return map;
+    }
+
+
+    @Override
+    @Slave
+    public List<BatteryModelItem> listBatteryModel(String model) {
+        List<String> listModel = electricitybatterymapper.selectListModel(TenantContextHolder.getTenantId(), model);
+        if (CollUtil.isEmpty(listModel)) {
+            return CollUtil.newArrayList();
+        }
+        List<String> modelList = listModel.stream().filter(s -> !PatternConstant.BATTERY_PATTERN.matcher(s).matches()).collect(Collectors.toList());
+        Map<String, String> map = batteryModelService.listBatteryModelByBatteryTypeList(modelList, TenantContextHolder.getTenantId()).stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryVShort, (k1, k2) -> k1));
+        List<BatteryModelItem> items = modelList.stream().map(s -> BatteryModelItem.builder().key(s).value(map.get(s)).build()).collect(Collectors.toList());
+        items.add(0, BatteryModelItem.builder().key("1").value("标准型号").build());
+        return items;
     }
 }

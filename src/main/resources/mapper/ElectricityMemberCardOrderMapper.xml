@@ -31,6 +31,12 @@
         tel.external_agreement_no,
         tel.issue
         from t_electricity_member_card_order tel
+        <if test="query.model != null and '' != query.model and query.model != '1'.toString()">
+            left join t_member_card_battery_type mcbt on tel.member_card_id = mcbt.mid
+        </if>
+        <if test="query.model != null and '' != query.model and query.model == '1'.toString()">
+            left join t_franchisee tf on tel.franchisee_id = tf.id
+        </if>
         <where>
             <if test="query.cardPayCount != null">
                 and tel.pay_count =#{query.cardPayCount}
@@ -83,6 +89,12 @@
             <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
                 and tel.external_agreement_no = #{query.externalAgreementNo}
             </if>
+            <if test="query.model != null and '' != query.model and query.model != '1'.toString()">
+                and mcbt.battery_type = #{query.model}
+            </if>
+            <if test="query.model != null and '' != query.model and query.model == '1'.toString()">
+                and tf.model_type = 1
+            </if>
             <if test="query.franchiseeIds != null">
                 and tel.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -97,6 +109,12 @@
             </if>
             <if test="query.paymentChannel != null and query.paymentChannel != ''">
                 and tel.payment_channel = #{query.paymentChannel}
+            </if>
+            <if test="query.memberCardIds != null and query.memberCardIds.size()>0">
+                and tel.member_card_id in
+                <foreach collection="query.memberCardIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         order by tel.id desc
@@ -106,6 +124,12 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_electricity_member_card_order tel
+        <if test="query.model != null and '' != query.model and query.model != '1'.toString()">
+            left join t_member_card_battery_type mcbt on tel.member_card_id = mcbt.mid
+        </if>
+        <if test="query.model != null and '' != query.model and query.model == '1'.toString()">
+            left join t_franchisee tf on tel.franchisee_id = tf.id
+        </if>
         <where>
             <if test="query.uid != null">
                 and tel.uid = #{query.uid}
@@ -155,6 +179,12 @@
             <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
                 and tel.external_agreement_no = #{query.externalAgreementNo}
             </if>
+            <if test="query.model != null and '' != query.model and query.model != '1'.toString()">
+                and mcbt.battery_type = #{query.model}
+            </if>
+            <if test="query.model != null and '' != query.model and query.model == '1'.toString()">
+                and tf.model_type = 1
+            </if>
             <if test="query.franchiseeIds != null">
                 and tel.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -176,10 +206,15 @@
             <if test="query.paymentChannel != null and query.paymentChannel != ''">
                 and tel.payment_channel = #{query.paymentChannel}
             </if>
+            <if test="query.memberCardIds != null and query.memberCardIds.size()>0">
+                and tel.member_card_id in
+                <foreach collection="query.memberCardIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
     </select>
-    
-    
+
     <select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT * FROM
         t_electricity_member_card_order
@@ -630,5 +665,12 @@
         where uid = #{uid}
           and status = 1
         order by create_time desc limit 1
+    </select>
+
+    <select id="selectMemberCardId" resultType="java.lang.Long">
+        select member_card_id
+        from t_electricity_member_card_order
+        where tenant_id = #{tenantId}
+        group by member_card_id
     </select>
 </mapper>

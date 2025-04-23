@@ -80,4 +80,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     Integer deactivateUsingOrder(@Param("uid") Long uid, @Param("updateTime") Long updateTime);
 
     Long selectLastPayTime(@Param("uid") Long uid);
+
+    List<Long> selectMemberCardId(@Param("tenantId") Integer tenantId);
 }

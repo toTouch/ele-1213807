@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Objects;
 
-import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_INSURANCE;
+import static com.xiliulou.electricity.enums.PlaceOrderTypeEnum.PLACE_ORDER_INSURANCE;
+
 
 /**
  * @Description 保险订单生成及计算金额节点，同时需要将后续处理需要的数据存入上下文对象context中
@@ -32,7 +33,7 @@ public class InsurancePlaceOrderHandler extends AbstractPlaceOrderHandler {
     
     @PostConstruct
     public void init() {
-        this.nodePlaceOrderType = PLACE_ORDER_INSURANCE;
+        this.nodePlaceOrderType = PLACE_ORDER_INSURANCE.getType();
     }
     
     @Override

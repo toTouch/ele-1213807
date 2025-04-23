@@ -76,5 +76,6 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
      * @see ChannelEnum
      */
     private String paymentChannel;
-    
+
+    private String version;
 }

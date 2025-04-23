@@ -13,14 +13,13 @@ import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.service.userinfo.UserDelRecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
 
-import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_DEPOSIT;
+import static com.xiliulou.electricity.enums.PlaceOrderTypeEnum.PLACE_ORDER_DEPOSIT;
 
 /**
  * @Description 押金校验处理节点，同时需要将后续处理需要的数据存入上下文对象context中
@@ -39,7 +38,7 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
     @PostConstruct
     public void init() {
         this.nextHandler = depositPlaceOrderHandler;
-        this.nodePlaceOrderType = PLACE_ORDER_DEPOSIT;
+        this.nodePlaceOrderType = PLACE_ORDER_DEPOSIT.getType();
     }
     
     @Override
@@ -54,7 +53,7 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             throw new BizException("110211", "用户已缴纳车电一体押金");
         }
-        
+
         if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT) && Objects.equals(context.getElectricityConfig().getIsEnableSeparateDeposit(),
                 ElectricityConfig.SEPARATE_DEPOSIT_CLOSE)) {
             throw new BizException("302001", "单独缴纳押金已禁用，请刷新后重新购买");

@@ -66,6 +66,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.vo.FreeServiceFeeInfoVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -187,24 +188,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Transactional(rollbackFor = Exception.class)
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
         franchiseeAddAndUpdate.setName(franchiseeAddAndUpdate.getName().replaceAll(SPACE, ""));
-        //押金参数判断
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-            if (Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
-            }
+
+        //校验免押服务费
+        Triple<Boolean, String, Object> verifyServiceFeeResult = verifyServiceFee(franchiseeAddAndUpdate);
+        if (!verifyServiceFeeResult.getLeft()) {
+            return R.fail(verifyServiceFeeResult.getMiddle(), (String) verifyServiceFeeResult.getRight());
         }
-        
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            if (ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
-            }
-            
-            //封装型号押金
-            String modelBatteryDeposit = JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
-            franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
-            
-        }
-        
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
@@ -269,7 +259,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return R.fail("ELECTRICITY.0086", "操作失败");
         
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
@@ -283,25 +273,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (!Objects.equals(oldFranchisee.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-        
-        //押金参数判断
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-            if (Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
-            }
+
+        //校验免押服务费
+        Triple<Boolean, String, Object> verifyServiceFeeResult = verifyServiceFee(franchiseeAddAndUpdate);
+        if (!verifyServiceFeeResult.getLeft()) {
+            return R.fail(verifyServiceFeeResult.getMiddle(), (String) verifyServiceFeeResult.getRight());
         }
-        
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            if (ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
-            }
-            
-            //封装型号押金
-            String modelBatteryDeposit = JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
-            franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
-            
-        }
-        
+
         //检查修改后的名称是否重复.
         if (!oldFranchisee.getName().equals(franchiseeAddAndUpdate.getName())) {
             User userNameExists = userService.queryByUserNameAndTenantId(franchiseeAddAndUpdate.getName(), TenantContextHolder.getTenantId());
@@ -309,7 +287,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 return R.fail("110200", "用户名已经存在！");
             }
         }
-        
+
         Franchisee updateFranchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, updateFranchisee);
         updateFranchisee.setUpdateTime(System.currentTimeMillis());
@@ -926,6 +904,22 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         
         return Triple.of(true, "", "迁移成功！");
     }
+
+    private Triple<Boolean, String, Object> verifyServiceFee(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+        if (!Objects.equals(franchiseeAddAndUpdate.getFreeServiceFeeSwitch(), Franchisee.FREE_SERVICE_FEE_SWITCH_OPEN)) {
+            return Triple.of(true, null, null);
+        }
+
+        if (Objects.isNull(franchiseeAddAndUpdate.getFreeServiceFee())) {
+            return Triple.of(false, "301041", "服务费开关开启，服务费不能为空");
+        }
+
+        if (!(franchiseeAddAndUpdate.getFreeServiceFee().compareTo(NumberConstant.MIN_SERVICE_FEE) > 0 && franchiseeAddAndUpdate.getFreeServiceFee().compareTo(NumberConstant.MAX_SERVICE_FEE) < 0)) {
+            return Triple.of(false, "301045", "免押服务费不合法");
+        }
+
+        return Triple.of(true, null, null);
+    }
     
     private Triple<Boolean, String, Object> verifyFranchiseeMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard,
             Franchisee newFranchisee, String batteryType) {
@@ -1019,5 +1013,20 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         
         return franchiseeMoveRecord;
     }
-    
+
+    @Override
+    @Slave
+    public List<Long> queryOldByTenantId(Integer tenantId) {
+        return franchiseeMapper.selectOldByTenantId(tenantId);
+    }
+
+    @Override
+    public FreeServiceFeeInfoVO getFreeServiceFee(Long franchiseeId) {
+        Franchisee franchisee = queryByIdFromCache(franchiseeId);
+        if (Objects.nonNull(franchisee)) {
+            return FreeServiceFeeInfoVO.builder().freeServiceFeeSwitch(franchisee.getFreeServiceFeeSwitch())
+                    .freeServiceFee(franchisee.getFreeServiceFee()).build();
+        }
+        return new FreeServiceFeeInfoVO();
+    }
 }

@@ -19,10 +19,7 @@ import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryEnableAllocateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
-import com.xiliulou.electricity.vo.BatteryChangeInfoVO;
-import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
+import com.xiliulou.electricity.vo.*;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -220,4 +217,12 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void modifyLabelWhenBatteryExitCabin(ElectricityBattery battery, ElectricityCabinetBox box);
     
     R listAllBatterySn(ElectricityBatteryQuery batteryQuery);
+
+
+    /**
+     * @param model model
+     * @return: @return {@link List }<{@link BatteryModelItem }>
+     */
+
+    List<BatteryModelItem> listBatteryModel(String model);
 }

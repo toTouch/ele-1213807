@@ -26,7 +26,16 @@
         </foreach>
         and tenant_id = #{tenantId}
     </select>
-    
+
+    <select id="selectMemberCardIdsByBatteryType" resultType="java.lang.Long">
+        select bmc.id
+        from t_battery_member_card bmc
+                 left join t_member_card_battery_type mcbt on bmc.id = mcbt.mid
+        where mcbt.battery_type = #{batteryType}
+          and bmc.tenant_id = #{tenantId}
+          and bmc.del_flag = 0
+    </select>
+
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_member_card_battery_type(battery_type, battery_v,mid, create_time, update_time, tenant_id)
         values
@@ -34,5 +43,20 @@
             (#{item.batteryType},#{item.batteryV},#{item.mid}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
         </foreach>
     </insert>
+
+
+    <select id="selectListByMemberCardIdsAndModel"
+            resultType="com.xiliulou.electricity.entity.MemberCardBatteryType">
+        select battery_type from t_member_card_battery_type
+        where mid in
+        <foreach item="item" index="index" collection="memberCardIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and tenant_id = #{tenantId}
+        <if test="model != null and model != ''">
+            and battery_type like concat('%', #{model}, '%')
+        </if>
+        group by battery_type
+    </select>
 
 </mapper>

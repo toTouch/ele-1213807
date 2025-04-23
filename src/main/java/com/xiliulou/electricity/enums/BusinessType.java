@@ -107,7 +107,12 @@ public enum BusinessType {
     INSTALLMENT_SIGN(101),
     
     // 代扣支付
-    INSTALLMENT_SIGN_AGREEMENT_PAY(102);
+    INSTALLMENT_SIGN_AGREEMENT_PAY(102),
+
+    /**
+     * 免押服务费订单
+     */
+    FREE_SERVICE_FEE(103);
 
     private final Integer business;
     

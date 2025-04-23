@@ -12,6 +12,8 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
+import com.xiliulou.electricity.dto.CreateFreeServiceFeeOrderDTO;
+import com.xiliulou.electricity.dto.IsSupportFreeServiceFeeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.FreeServiceFeeStatusEnum;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
@@ -26,35 +29,11 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderType
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.TradeOrderService;
-import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
@@ -204,6 +183,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Autowired
     private EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
+    @Resource
+    private FreeServiceFeeOrderService freeServiceFeeOrderService;
     
     
     @Override
@@ -528,7 +510,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 log.warn("BATTERY DEPOSIT WARN! user not pay deposit,uid={} ", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.0049", "未缴纳押金");
+                return Triple.of(false, "100209", "未缴纳押金");
             }
             
             BatteryMemberCard batteryMemberCardToBuy = batteryMemberCardService.queryByIdFromCache(query.getMemberId());
@@ -968,8 +950,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
         }
-        
-        
     }
     
     @Override
@@ -1028,9 +1008,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("INSTALLMENT PAY WARN! not found user oauth bind or third id is null,uid={}", uid);
                 return R.fail("100308", "未找到用户的第三方授权信息!");
             }
-            
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
-                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
                 if (Objects.isNull(userBatteryDeposit)) {
                     log.warn("INSTALLMENT PAY WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
                     return R.fail("ELECTRICITY.0001", "用户信息不存在");
@@ -1117,6 +1097,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     }
                     insuranceOrder = (InsuranceOrder) insuranceOrderTriple.getRight();
                 }
+
+                //生成免押服务费订单
+                FreeServiceFeeOrder freeServiceFeeOrder = generateFreeServiceFeeOrder(userInfo, userBatteryDeposit, basePayConfig, query.getVersion());
                 
                 // 生成分期签约记录
                 installmentRecordTriple = installmentRecordService.generateInstallmentRecord(query, batteryMemberCard, null, userInfo);
@@ -1135,8 +1118,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 // 保存相关订单并调起支付
                 saveOrderAndPayResult = applicationContext.getBean(TradeOrderServiceImpl.class)
-                        .saveOrderAndPay(eleDepositOrder, insuranceOrder, installmentRecordTriple.getRight(), memberCardOrderTriple.getRight(), batteryMemberCard, userOauthBind,
-                                userInfo, request);
+                        .saveOrderAndPay(eleDepositOrder, insuranceOrder, freeServiceFeeOrder, installmentRecordTriple.getRight(), memberCardOrderTriple.getRight(), batteryMemberCard, userOauthBind,
+                                userInfo, request, basePayConfig);
                 
                 // 设置三天后的当前时刻减去10分钟
                 double score = (double) Instant.now().plus(3, ChronoUnit.DAYS).minus(10, ChronoUnit.MINUTES).toEpochMilli();
@@ -1154,9 +1137,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         return R.fail("301001", "购买分期套餐失败，请联系管理员");
     }
-    
-    public Triple<Boolean, String, Object> saveOrderAndPay(EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder, InstallmentRecord installmentRecord,
-            ElectricityMemberCardOrder memberCardOrder, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo, HttpServletRequest request)
+
+    public Triple<Boolean, String, Object> saveOrderAndPay(EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder, FreeServiceFeeOrder freeServiceFeeOrder, InstallmentRecord installmentRecord,
+            ElectricityMemberCardOrder memberCardOrder, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo, HttpServletRequest request, BasePayConfig basePayConfig)
             throws PayException {
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
@@ -1183,13 +1166,48 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             payAmountList.add(insuranceOrder.getPayAmount());
             totalAmount = totalAmount.add(insuranceOrder.getPayAmount());
         }
+
+        //保存免押服务费订单
+        if (Objects.nonNull(freeServiceFeeOrder)) {
+            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+
+            orderList.add(freeServiceFeeOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.FREE_SERVICE_FEE);
+            payAmountList.add(freeServiceFeeOrder.getPayAmount());
+            totalAmount = totalAmount.add(freeServiceFeeOrder.getPayAmount());
+       }
         
         // 保存签约记录
         installmentRecordService.insert(installmentRecord);
         
         // 保存一期套餐订单
         electricityMemberCardOrderService.insert(memberCardOrder);
-        
+
+//        // 查询用户押金
+//        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+//        if (Objects.nonNull(userBatteryDeposit)) {
+//            // 是否支持免押服务费
+//            IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+//            if (supportFreeServiceFee.getSupportFreeServiceFee()) {
+//                // 生成服务费订单
+//                CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+//                        .userInfo(userInfo)
+//                        .depositOrderId(userBatteryDeposit.getOrderId())
+//                        .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+//                        .status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
+//                        .paymentChannel(basePayConfig.getPaymentChannel())
+//                        .payTime(null)
+//                        .build();
+//                FreeServiceFeeOrder freeServiceFeeOrder = freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO);
+//                freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+//
+//                orderList.add(freeServiceFeeOrder.getOrderId());
+//                orderTypeList.add(UnionPayOrder.FREE_SERVICE_FEE);
+//                payAmountList.add(supportFreeServiceFee.getFreeServiceFee());
+//                totalAmount = totalAmount.add(supportFreeServiceFee.getFreeServiceFee());
+//            }
+//        }
+
         // 计算服务费并设置ElectricityTradeOrder的相关数据
         if (batteryMemberCard.getInstallmentServiceFee().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
             orderList.add(OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SERVICE_FEE, userInfo.getUid()));
@@ -1207,9 +1225,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return Triple.of(true, "", null);
         }
         
-        // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-        BasePayConfig basePayConfig = payConfigBizService.queryPayParams(ChannelSourceContextHolder.get(), userInfo.getTenantId(), batteryMemberCard.getFranchiseeId(), null);
-        
+
         // 调起支付
         UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                 .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalAmount).tenantId(userInfo.getTenantId()).attach(UnionTradeOrder.ATTACH_INSTALLMENT)
@@ -1218,7 +1234,35 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 installmentRecord.getExternalAgreementNo());
         return Triple.of(true, null, resultDTO);
     }
-    
+
+    private FreeServiceFeeOrder generateFreeServiceFeeOrder(UserInfo userInfo, UserBatteryDeposit userBatteryDeposit, BasePayConfig basePayConfig, String version) {
+        if (StringUtils.isBlank(version)) {
+            return null;
+        }
+
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("generateFreeServiceFeeOrder warn!userBatteryDeposit is null, uid = {}", userInfo.getUid());
+            return null;
+        }
+
+        // 是否支持免押服务费
+        IsSupportFreeServiceFeeDTO supportFreeServiceFee = freeServiceFeeOrderService.isSupportFreeServiceFee(userInfo, userBatteryDeposit.getOrderId());
+        if (!supportFreeServiceFee.getSupportFreeServiceFee()) {
+            return null;
+        }
+
+        // 生成服务费订单
+        CreateFreeServiceFeeOrderDTO createFreeServiceFeeOrderDTO = CreateFreeServiceFeeOrderDTO.builder()
+                .userInfo(userInfo)
+                .depositOrderId(userBatteryDeposit.getOrderId())
+                .freeServiceFee(supportFreeServiceFee.getFreeServiceFee())
+                .status(FreeServiceFeeStatusEnum.STATUS_UNPAID.getStatus())
+                .paymentChannel(basePayConfig.getPaymentChannel())
+                .payTime(null)
+                .build();
+        return freeServiceFeeOrderService.createFreeServiceFeeOrder(createFreeServiceFeeOrderDTO);
+    }
+
     @Override
     public void dealProfitSharingTradeOrderV2(ElectricityMemberCardOrder electricityMemberCardOrder, InsuranceOrder insuranceOrder, BasePayConfig payParamConfig,
             BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {

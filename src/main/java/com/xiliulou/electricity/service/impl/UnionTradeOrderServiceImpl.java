@@ -66,51 +66,7 @@ import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderUpdate;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
-import com.xiliulou.electricity.service.ActivityService;
-import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
-import com.xiliulou.electricity.service.ChannelActivityHistoryService;
-import com.xiliulou.electricity.service.DivisionAccountRecordService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.EnableMemberCardRecordService;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.InvitationActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.OldUserActivityService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.ShareActivityMemberCardService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.ShippingManagerService;
-import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserAmountService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCarDepositService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserCarService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoExtraService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
@@ -346,6 +302,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     
     @Autowired
     private InstallmentRecordService installmentRecordService;
+
+    @Resource
+    private FreeServiceFeeOrderService freeServiceFeeOrderService;
     
     @Override
     public BasePayOrderCreateDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, BasePayConfig payParamConfig, String openId,
@@ -598,6 +557,10 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 manageMemberCardOrderV2(orderIdList.get(i), tradeOrderStatus, userInfo);
+            }
+
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.FREE_SERVICE_FEE)) {
+                freeServiceFeeOrderService.notifyOrderHandler(orderIdList.get(i), tradeOrderStatus, userInfo);
             }
         }
         
@@ -1470,6 +1433,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 if (!manageInsuranceOrderResult.getLeft()) {
                     return manageInsuranceOrderResult;
                 }
+            }else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.FREE_SERVICE_FEE)) {
+                // 免押服务费
+                freeServiceFeeOrderService.notifyOrderHandler(orderIdList.get(i), tradeOrderStatus, userInfo);
             }
         }
         
@@ -1647,7 +1613,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         } else {
             log.warn("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
-        
+
         for (int i = 0; i < orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
                 Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus, userInfo, null);
@@ -1659,14 +1625,19 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 if (!manageInsuranceOrderResult.getLeft()) {
                     return manageInsuranceOrderResult;
                 }
-                
+
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrderV2(orderIdLIst.get(i), depositOrderStatus, userInfo);
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.FREE_SERVICE_FEE)) {
+                Pair<Boolean, Object> freeServiceFeeOrderResult = freeServiceFeeOrderService.notifyOrderHandler(orderIdLIst.get(i), depositOrderStatus, userInfo);
+                if (!freeServiceFeeOrderResult.getLeft()) {
+                    return freeServiceFeeOrderResult;
+                }
             } else {
-                log.error("WX PAY CALL BACK ERROR!not found order type ,tradeOrderNo={}",tradeOrderNo);
+                log.error("WX PAY CALL BACK ERROR!not found order type ,tradeOrderNo={}", tradeOrderNo);
             }
         }
         

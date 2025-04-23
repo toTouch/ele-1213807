@@ -966,6 +966,14 @@
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
         </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
+        </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -1033,6 +1041,14 @@
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
         </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
+        </if>
     </select>
     
     <update id="updateGuessUidById">
@@ -1095,6 +1111,14 @@
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
         </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
+        </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -1148,6 +1172,14 @@
         </if>
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
+        </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
         </if>
     </select>
     
@@ -1208,6 +1240,14 @@
         </if>
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
+        </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
         </if>
         <if test="query.sort == 0">
             order by temc.member_card_expire_time desc
@@ -1271,6 +1311,14 @@
         </if>
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
+        </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
         </if>
     </select>
     <select id="queryOverdueCarBatteryList" resultType="com.xiliulou.electricity.vo.ElectricityBatteryDataVO">
@@ -1451,6 +1499,14 @@
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
         </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
+        </if>
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -1506,6 +1562,14 @@
         </if>
         <if test="query.receiverId != null">
             and ebl.receiver_id = #{query.receiverId}
+        </if>
+        <if test="query.model != null and query.model != ''">
+            <if test='query.model == "1" '>
+                and teb.model NOT LIKE '%B\\_%V%' ESCAPE '\\'
+            </if>
+            <if test='query.model != "1" '>
+                and teb.model = #{query.model}
+            </if>
         </if>
         order by teb.create_time desc
     </select>
@@ -1759,6 +1823,14 @@
     <select id="selectBySnAndTenantId" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         <include refid="selectElectricityBattery"/>
         where sn = #{sn} and tenant_id = #{tenantId}
+    </select>
+
+    <select id="selectListModel" resultType="java.lang.String">
+        select model from t_electricity_battery where del_flag = 0 and tenant_id = #{tenantId}
+        <if test="model != null and model != ''">
+            and model like concat('%',#{model},'%')
+        </if>
+        group by model
     </select>
 
 

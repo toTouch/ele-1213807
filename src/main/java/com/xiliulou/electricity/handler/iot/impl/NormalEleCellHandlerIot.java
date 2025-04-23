@@ -175,42 +175,32 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
     }
 
     private void removeLockBox(Integer eid, EleCellVO eleCellVo) {
-        TtlTraceIdSupport.set(eleCellVo.getSessionId());
-        try {
-            serviceWrapper.execute(() -> {
-                boxLockService.updateElectricityCabinetBoxLock(eid, eleCellVo.getCell_no());
-            });
-        } catch (Exception e) {
-            log.error("removeLockBox Error! sessionId is {}", eleCellVo.getSessionId());
-        } finally {
-            TtlTraceIdSupport.clear();
-        }
+        serviceWrapper.execute(() -> {
+            boxLockService.updateElectricityCabinetBoxLock(eid, eleCellVo.getCell_no());
+        });
     }
 
     private void saveLockBox(ElectricityCabinet electricityCabinet, EleCellVO eleCellVo) {
         // 这里只保存锁仓类型为人工和系统的
-        TtlTraceIdSupport.set(eleCellVo.getSessionId());
-        try {
-            if (LockTypeEnum.lockTypeCodeByDefined(eleCellVo.getLockType())) {
-                serviceWrapper.execute(() -> {
+        if (LockTypeEnum.lockTypeCodeByDefined(eleCellVo.getLockType())) {
+            serviceWrapper.execute(() -> {
+                try {
                     if (StrUtil.isEmpty(eleCellVo.getCell_no())) {
                         log.error("SaveLockBox Error! cellNo is empty,sessionId is {}", eleCellVo.getSessionId());
                         return;
                     }
                     ElectricityCabinetBoxLock cabinetBoxLock = ElectricityCabinetBoxLock.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(eleCellVo.getCell_no()))
                             .lockType(eleCellVo.getLockType()).lockReason(eleCellVo.getLockReason()).lockStatusChangeTime(eleCellVo.getLockStatusChangeTime())
-                             .sn(electricityCabinet.getSn())
-                             .createTime(System.currentTimeMillis())
+                            .sn(electricityCabinet.getSn())
+                            .createTime(System.currentTimeMillis())
                             .deviceName(electricityCabinet.getDeviceName()).productKey(electricityCabinet.getProductKey())
                             .updateTime(System.currentTimeMillis()).tenantId(electricityCabinet.getTenantId())
                             .storeId(electricityCabinet.getStoreId()).franchiseeId(electricityCabinet.getFranchiseeId()).build();
                     boxLockService.insertElectricityCabinetBoxLock(cabinetBoxLock);
-                });
-            }
-        } catch (Exception e) {
-            log.error("saveLockBox Error! sessionId is {}", eleCellVo.getSessionId());
-        } finally {
-            TtlTraceIdSupport.clear();
+                } catch (Exception e) {
+                    log.warn("SaveLockBox Warn! sessionId is {}", eleCellVo.getSessionId());
+                }
+            });
         }
     }
     

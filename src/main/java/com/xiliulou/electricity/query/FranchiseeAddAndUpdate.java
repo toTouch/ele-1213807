@@ -86,5 +86,14 @@ public class FranchiseeAddAndUpdate {
      */
     private Integer disableCardTimeType;
 
+    /**
+     * 免押服务费开关
+     */
+    @NotNull(message = "免押服务费开关不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer freeServiceFeeSwitch;
 
+    /**
+     * 免押服务费
+     */
+    private BigDecimal freeServiceFee;
 }

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.PlaceOrderTypeEnum;
 import com.xiliulou.electricity.enums.UserStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -47,6 +48,8 @@ public class PlaceOrderChainManager {
     private final DepositVerificationHandler depositVerificationHandler;
     
     private final MemberCardVerificationHandler memberCardVerificationHandler;
+
+    private final FreeServiceFeeOrderHandler freeServiceFeeOrderHandler;
     
     private final UserInfoService userInfoService;
     
@@ -79,16 +82,20 @@ public class PlaceOrderChainManager {
     private final UserDelRecordService userDelRecordService;
 
     private final UserInfoExtraService userInfoExtraService;
+
+    private final FreeServiceFeeOrderService freeServiceFeeOrderService;
     
     private final HashMap<Integer, AbstractPlaceOrderHandler> FIRST_NODES = new HashMap<>();
     
     @PostConstruct
     public void init() {
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT, depositVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD, depositVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD, memberCardVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE, memberCardVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_ALL, depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_DEPOSIT.getType(), depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD.getType(), depositVerificationHandler);
+        // 套餐单独、套餐+保险 都需从免押服务费开始
+        FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_MEMBER_CARD.getType(), freeServiceFeeOrderHandler);
+        FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE.getType(), freeServiceFeeOrderHandler);
+        FIRST_NODES.put(PlaceOrderTypeEnum.PLACE_ORDER_ALL.getType(), depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderTypeEnum.FREE_SERVICE_FEE.getType(), freeServiceFeeOrderHandler);
     }
     
     /**
@@ -251,6 +258,11 @@ public class PlaceOrderChainManager {
         if (Objects.nonNull(insuranceOrder)) {
             insuranceOrderService.insert(insuranceOrder);
         }
+
+        FreeServiceFeeOrder freeServiceFeeOrder = context.getFreeServiceFeeOrder();
+        if (Objects.nonNull(freeServiceFeeOrder)) {
+            freeServiceFeeOrderService.insertOrder(freeServiceFeeOrder);
+        }
         
         UserInfo userInfo = context.getUserInfo();
         BatteryMemberCard batteryMemberCard = context.getBatteryMemberCard();
@@ -267,11 +279,12 @@ public class PlaceOrderChainManager {
             }
             return R.ok();
         }
-        
+
+        String payDesc = PlaceOrderTypeEnum.getDescByType(context.getPlaceOrderQuery().getPlaceOrderType());
         // 调起支付
         UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                 .jsonSingleFee(JsonUtil.toJson(context.getAllPayAmount())).payAmount(context.getTotalAmount()).tenantId(batteryMemberCard.getTenantId())
-                .attach(UnionTradeOrder.ATTACH_PLACE_ORDER).description("租电租金（含押金）").uid(userInfo.getUid()).build();
+                .attach(UnionTradeOrder.ATTACH_PLACE_ORDER).description(payDesc).uid(userInfo.getUid()).build();
         
         // 处理分账交易订单
         tradeOrderService.dealProfitSharingTradeOrderV2(electricityMemberCardOrder, insuranceOrder, payParamConfig, batteryMemberCard, unionPayOrder, userInfo, orderList);

@@ -9,36 +9,7 @@ import java.math.BigDecimal;
  */
 public interface PlaceOrderConstant {
     
-    /**
-     * 业务类型--押金缴纳
-     */
-    Integer PLACE_ORDER_DEPOSIT = 1;
-    
-    /**
-     * 业务类型--套餐购买
-     */
-    Integer PLACE_ORDER_MEMBER_CARD = 2;
-    
-    /**
-     * 购买押金及套餐
-     */
-    Integer PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD = 3;
-    
-    /**
-     * 业务类型--保险购买
-     */
-    Integer PLACE_ORDER_INSURANCE = 4;
-    
-    /**
-     * 业务类型--套餐及保险购买
-     */
-    Integer PLACE_ORDER_MEMBER_CARD_AND_INSURANCE = 6;
-    
-    /**
-     * 业务类型--押金、套餐及保险购买
-     */
-    Integer PLACE_ORDER_ALL = 7;
-    
+
     /**
      * 业务来源 0--后台 1--用户端
      */

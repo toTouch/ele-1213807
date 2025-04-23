@@ -57,6 +57,11 @@ public class MtBatteryDepositVO {
      * 不展示的场景:已缴纳车电一体押金
      */
     private Integer isShow;
+
+    /**
+     * 是否是续费套餐。0否 1是
+     */
+    private Integer isRenew;
     
     public static final Integer IS_SHOW = 0;
     

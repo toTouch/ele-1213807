@@ -19,7 +19,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
 
-import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_INSURANCE;
+import static com.xiliulou.electricity.enums.PlaceOrderTypeEnum.PLACE_ORDER_INSURANCE;
 
 /**
  * @Description 保险校验处理节点，同时需要将后续处理需要的数据存入上下文对象context中
@@ -40,7 +40,7 @@ public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
     @PostConstruct
     public void init() {
         this.nextHandler = insurancePlaceOrderHandler;
-        this.nodePlaceOrderType = PLACE_ORDER_INSURANCE;
+        this.nodePlaceOrderType = PLACE_ORDER_INSURANCE.getType();
     }
     
     @Override

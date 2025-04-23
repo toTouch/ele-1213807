@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.BatteryModelDTO;
 import com.xiliulou.electricity.entity.BatteryMaterial;
 import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.BatteryModelMapper;
 import com.xiliulou.electricity.query.BatteryModelQuery;
@@ -254,7 +256,25 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/")))
                 .distinct().sorted(Comparator.comparing(item -> Integer.parseInt(item.substring(0, item.length() - 1)))).collect(Collectors.toList());
     }
-    
+
+    @Override
+    public List<BatteryModelItem> simpleBatteryTypeList() {
+        List<BatteryModel> batteryModels = applicationContext.getBean(BatteryModelService.class).queryByTenantIdFromDB(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        List<BatteryModelItem> simpleBatteryModelList = batteryModels.stream().sorted(Comparator.comparingDouble(BatteryModel::getBatteryV)).map(item -> {
+            BatteryModelItem batteryModelItem = new BatteryModelItem();
+            batteryModelItem.setKey(item.getBatteryType());
+            batteryModelItem.setValue(item.getBatteryVShort());
+            return batteryModelItem;
+        }).collect(Collectors.toList());
+
+        simpleBatteryModelList.add(0, BatteryModelItem.builder().key(NumberConstant.ONE.toString()).value("标准型号").build());
+        return simpleBatteryModelList;
+    }
+
     /**
      * 长电池型号转为短电池型号
      *
@@ -915,7 +935,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return vo;
         }).collect(Collectors.toList());
     }
-    
+
+    @Override
     public List<BatteryModel> listBatteryModelByBatteryTypeList(List<String> batteryTypeList, Integer tenantId) {
         if (CollectionUtils.isEmpty(batteryTypeList)) {
             return Lists.newArrayList();

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
+import com.xiliulou.electricity.vo.BatteryModelItem;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -182,4 +183,14 @@ public interface ElectricityMemberCardOrderService {
     Integer deactivateUsingOrder(Long uid);
 
     Long queryLastPayTime(Long uid);
+
+
+    /**
+     * getBatteryMode
+     *
+     * @param model model
+     * @return: @return {@link List }<{@link BatteryModelItem }>
+     */
+
+    List<BatteryModelItem> getBatteryMode(String model);
 }

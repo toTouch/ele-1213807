@@ -102,4 +102,6 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      * 用户状态:0-正常,1-已删除, 2-已注销
      */
     private Integer userStatus;
+
+    private List<String> model;
 }

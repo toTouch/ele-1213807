@@ -153,4 +153,16 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     public List<MemberCardBatteryType> listByMemberCardIds(Integer tenantId, List<Long> memberCardIds) {
         return memberCardBatteryTypeMapper.selectListByMemberCardIds(tenantId, memberCardIds);
     }
+
+    @Override
+    @Slave
+    public List<Long> queryMemberCardIdsByBatteryType(Integer tenantId, String batteryType) {
+        return memberCardBatteryTypeMapper.selectMemberCardIdsByBatteryType(tenantId, batteryType);
+    }
+
+    @Override
+    @Slave
+    public List<MemberCardBatteryType> listByMemberCardIdsAndModel(Integer tenantId, List<Long> memberCardIds, String model) {
+        return memberCardBatteryTypeMapper.selectListByMemberCardIdsAndModel(tenantId, memberCardIds, model);
+    }
 }

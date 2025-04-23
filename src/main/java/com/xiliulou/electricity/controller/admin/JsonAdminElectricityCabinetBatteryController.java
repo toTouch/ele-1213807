@@ -891,4 +891,17 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         
         return electricityBatteryService.listAllBatterySn(batteryQuery);
     }
+
+
+    /**
+     * 当前租户下电池型号，如果电池没有电池型号，标记为标准型号
+     *
+     * @return: @return {@link R }
+     */
+
+    @GetMapping("/admin/battery/getModel")
+    public R getBatteryModel(@RequestParam(value = "model", required = false) String model) {
+        return R.ok(electricityBatteryService.listBatteryModel(model));
+    }
+
 }

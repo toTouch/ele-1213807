@@ -46,4 +46,10 @@ public interface MemberCardBatteryTypeService {
     Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee, UserInfo userInfo);
     
     List<MemberCardBatteryType> listByMemberCardIds(Integer tenantId, List<Long> memberCardIds);
+
+
+    List<Long> queryMemberCardIdsByBatteryType(Integer tenantId, String batteryType);
+
+    List<MemberCardBatteryType> listByMemberCardIdsAndModel(Integer tenantId, List<Long> memberCardIds, String model);
+
 }

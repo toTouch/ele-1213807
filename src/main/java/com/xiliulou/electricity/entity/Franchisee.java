@@ -92,6 +92,17 @@ public class Franchisee {
      */
     private Integer regionId;
 
+    /**
+     * 免押服务费开关
+     */
+    private Integer freeServiceFeeSwitch;
+
+    /**
+     * 免押服务费
+     */
+    private BigDecimal freeServiceFee;
+
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
@@ -102,5 +113,10 @@ public class Franchisee {
     public static final Integer CLOSE_SERVICE_FEE = 1;
 
     public static final Integer DISABLE_MEMBER_CARD_PAY_TYPE = 1;
+
+
+    public static final Integer FREE_SERVICE_FEE_SWITCH_CLOSE = 0;
+
+    public static final Integer FREE_SERVICE_FEE_SWITCH_OPEN = 1;
 
 }
